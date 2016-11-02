@@ -1,0 +1,31 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Electrophys Feature Extraction GUI</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+
+    {# Bower Dependencies #}
+    <link rel="stylesheet" href="{% static 'hbp-collaboratory-theme/dist/css/bootstrap.css' %}">
+  </head>
+  <body>
+    {% block content %}{% endblock %}
+    <h2>Select the features you want to extract from the previously selected files</h2>
+    <form action="/selectFeatures/" method="post">
+        <select name="feature_names" id="feature_names" size={{list_length}} style="width: 100%;" multiple>
+            {% for feature in feature_names%}
+                <option value= {{feature}} >{{feature}}</option>
+            {% endfor %}
+        </select>
+        <br><br>
+        <input type="submit" value="Extract features">
+    </form>
+    {# Bower Dependencies #}
+    <script type="text/javascript" src="{% static 'jquery/dist/jquery.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'lodash/dist/lodash.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'angular/angular.min.js' %}"></script>
+<!--    <script type="text/javascript" src="{% static 'angular-bootstrap/ui-bootstrap-tpls.min.js' %}"></script>-->
+  </body>
+</html>

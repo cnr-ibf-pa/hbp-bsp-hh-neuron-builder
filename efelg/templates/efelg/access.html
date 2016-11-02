@@ -1,0 +1,51 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Feature extraction GUI overview</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width">
+
+        {# Bower Dependencies #}
+        <link rel="stylesheet" href="{% static 'hbp-collaboratory-theme/dist/css/bootstrap.css' %}">
+        <link rel="stylesheet" href="{% static 'css/cdp2.css' %}">
+        <script type="text/javascript" src="{% static 'jquery/dist/jquery.min.js' %}"></script>
+    </head>
+    <body>
+        {% block content %}{% endblock %}
+<!--
+<script src="{% static 'hello.all.min.js' %}"></script>
+<script src="{% static 'hbp.hello.js-master/hbp.hello.js' %}"></script>
+-->
+
+<script type="text/javascript">
+      // This is the code you need to make the application work.
+hello.init({
+        hbp: '49652f11-ee18-4f57-9f56-e62cceffed3a' // Replace with your app id
+      }, {redirect_uri: 'https://bspg.humanbrainproject.eu/overview/'});
+hello.login('hbp', {force: true, display: 'https://bspg.humanbrainproject.eu/overview/'})
+	//hello.login('hbp', {force: true});
+      //hello.on('auth.login', displayAuthStatus);
+      //hello.on('auth.logout', displayAuthStatus);
+  //    function displayAuthStatus(event) {
+    //    console.log(event);
+      //  if (event.authResponse) {
+          //document.getElementById('status').innerHTML = 'Logged In'
+       // } else {
+          //document.getElementById('status').innerHTML = 'Not Logged In'
+       // }
+       // document.getElementById('auth-response').innerHTML =
+        //  JSON.stringify(event.authResponse, null, 2);
+     // }
+
+    </script>
+
+
+
+
+
+
+
+        </body>
+    </html>

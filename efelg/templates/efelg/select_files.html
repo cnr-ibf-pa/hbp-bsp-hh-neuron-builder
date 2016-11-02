@@ -1,0 +1,156 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <!--        <title>Feature extraction GUIs: file selection</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width">
+        {# Bower Dependencies #}
+        <link rel="stylesheet" href="{% static 'hbp-collaboratory-theme/dist/css/bootstrap.css' %}">
+        <link rel="stylesheet" href="{% static 'css/cdp2.css' %}">
+        <script type="text/javascript" src="{% static 'plotly-latest.min.js' %}"></script>
+        <script type="text/javascript" src="{% static 'angular-bootstrap/ui-bootstrap-tpls.min.js' %}"></script>
+        <script type="text/javascript" src="{% static 'jquery/dist/jquery.min.js' %}"></script>
+        -->
+        <title>Feature extraction GUI</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width">
+
+        {# Bower Dependencies #}
+        <link rel="stylesheet" href="{% static 'hbp-collaboratory-theme/dist/css/bootstrap.css' %}">
+        <link rel="stylesheet" href="{% static 'css/cdp2.css' %}">
+        <script type="text/javascript" src="{% static 'jquery/dist/jquery.min.js' %}"></script>
+        <script type="text/javascript" src="{% static 'plotly-latest.min.js' %}"></script>
+    </head>
+    <body>
+        <div class="panel panel-info" width=100% id="input-groups">
+            <div class="panel-heading"><h3>Upload and/or select the trace file(s) for feature extraction</h3></div>
+        </div>
+        <br>
+        <form id="select_files_form" action="/select_traces/" method="post">
+            <!--
+            <form id="upload_files" name="upload_files_name" method="POST" enctype="multipart/form-data" action="/upload_files">
+                <div class="panel panel-success" id="input-groups">
+                    <div class="panel-heading">Upload your own file(s) and then select them from the list below</div>
+                    <br>
+                    <input type="file" name="user_files" multiple/>
+                    <br>
+                    <input type="submit" id="upload_button" name="upload_button_name" value="Upload" />
+                    <br>
+                </div>
+            </form>
+            -->
+            <div id="result"></div>
+            <br>
+            {% for cell_type,file in file_dict.items %}
+            <div class="panel panel-success" id="input-groups">
+                <div class="panel-heading">Select from cell type: {{cell_type}}</div>
+                <br>
+                <input  id={{cell_type}} name='check_files_all' type='button'class="btn btn-link" value='Select/Deselect all' onclick="togglecheckboxes(this)">
+                <br><br>
+                {% for crr_file in file %}
+                <div style="display:inline-block;">
+                    <div style="margin:auto;">
+                        <label class="label-check">
+                            {% with cell_type|add:crr_file as full_file  %}
+                            <input  class={{cell_type}} type="checkbox" id={{full_file}} value={{full_file}}  name='check_files'>
+                            {% endwith %}
+                            <span class="span-check">{{crr_file|slice:"1:"}}<br>{{cell_type}}</span>
+                        </label>
+                    </div>
+                    <div id={{crr_file}} style="width:350px;height:350px;"></div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        <br>
+        {% endfor %}
+        <br>
+         <input id="submit_button" type="submit" class="btn btn-primary" value="Select individual traces" ;> 
+        <br><br>
+     
+    </form>
+
+    {# Bower Dependencies #}
+    <script>
+        var my_dict = {{ file_plots|safe }};
+        var layout = {
+            xaxis: {range: [0, 5000]},
+            yaxis: {range: [-130, 50]},
+            showlegend : false,
+            margin: {l: 40, b: 70, t: 3},
+        };
+
+        for (var key in my_dict){
+            var y =[];
+            if (my_dict.hasOwnProperty(key)){
+                TESTER = document.getElementById(key);
+                var crr_data = my_dict[key];
+                for (i=0; i<crr_data.length; i++){
+                    y.push({y: crr_data[i]});
+                }
+                //Plotly.plot(TESTER, y, {margin: {t: 0}}, layout=layout);
+                Plotly.newPlot(key, y, layout, {showLink: false});
+                document.querySelector('[data-title="Autoscale"]').click();
+            }
+        }
+    </script>
+    <script>
+        //$("#mydiv").append("<p>crr</p>");
+        /* $.getJSON('/features_dict', function(data) {
+            orderedOuterKeys = Object.keys(data).sort(function(a,b){
+                return a.toLowerCase().localeCompare(b.toLowerCase());
+            });
+        });*/
+        function upload_files(){
+            $.get("/upload_files");
+        };
+    </script>
+    <script>
+        function togglecheckboxes(thisCheckbox){
+            var crrid = thisCheckbox.id;
+            var cbarray = document.getElementsByClassName(crrid);
+            firstElem = document.getElementById(cbarray[1].id);
+            if (firstElem.checked){
+                flag = false;
+                } else {
+                flag = true;
+            }
+
+            for(var i = 0; i < cbarray.length; i++){
+                var cb = document.getElementById(cbarray[i].id);
+                if(cb)
+                cb.checked = flag;
+            }
+        }
+    </script>
+
+
+    <script>
+        $("form#upload_files").submit(function() {
+            var formData = new FormData($(this)[0]);
+
+            $.post($(this).attr("action"), formData);
+            console.log(formData)
+            return false;
+        });
+    </script>
+    <!--
+    <script>
+        $("form#upload_files").submit(function() {
+            var formData = new FormData($(this)[0]);
+
+
+            $.post($(this).attr("action"), formData, function(data) {
+                alert(data);
+            }, false);
+            console.log(formData)
+            return false;
+        });
+    </script>
+    -->
+    <script type="text/javascript" src="{% static 'lodash/dist/lodash.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'angular/angular.min.js' %}"></script>
+</body>
+    </html>

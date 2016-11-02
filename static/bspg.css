@@ -1,0 +1,43 @@
+.span-check{
+    padding: 6px;
+    border-radius: 14px;
+}
+
+.label-check {
+    position:relative;
+    cursor:pointer;
+}
+
+.label-check [type="checkbox"] {
+    display:none; 
+}
+
+[type="checkbox"] + span.span-check {
+    display:inline-block;
+    background:#e6e6e6;
+}   
+
+:checked + span.span-check {
+    background:#99ceff;
+
+}   
+[type="checkbox"][disabled] + span.span-check{
+    background:#f0f0f5;  
+}
+
+<style>
+
+div.justify-class{
+    text-align:justify;
+    position:relative;
+}
+div.justify-class span{
+    display:inline-block;
+}
+div.justify-class:after {
+    display:inline-block;
+    width:100%;
+    content:'';
+}
+</style>
+

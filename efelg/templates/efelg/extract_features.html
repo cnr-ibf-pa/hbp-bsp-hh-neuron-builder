@@ -1,0 +1,59 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Tutorial Application</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width">
+
+        {# Bower Dependencies #}
+        <link rel="stylesheet" href="{% static 'hbp-collaboratory-theme/dist/css/bootstrap.css' %}">
+    </head>
+    <body>
+        <div style="text-align: center" class="alert alert-success">
+            Execution completed.<br><a href="/download_zip" class="alert-link">Download all results in .zip format</a>.
+        </div>
+        <br>
+
+        <div id="features-json">
+        </div>
+
+        <div id="protocol-json">
+        </div>
+        <div id='pdf-div' style="text-align: center">
+            Mean feature values snapshot
+            <br>
+            <div id="loading_message_id" style="text-align:center"><p>Loading image ...<p></div>
+            <object><iframe id="fred" style="border:1px solid #666CCC; max-width:800px;"  title="PDF in an i-Frame" src="{% static "features_step.pdf" %}" frameborder="1" scrolling="auto" height="1200" width="100%" onload="iframe_onload()" ></iframe></object>
+            <object><iframe id="fred" style="border:1px solid #666CCC; max-width:800px;"  title="PDF in an i-Frame" src="{% static "features_step.pdf" %}" frameborder="1" scrolling="auto" height="1200" width="100%" onload="iframe_onload()" ></iframe></object>
+            <object><iframe id="fred" style="border:1px solid #666CCC; max-width:800px;"  title="PDF in an i-Frame" src="{% static "features_step.pdf" %}" frameborder="1" scrolling="auto" height="1200" width="100%" onload="iframe_onload()" ></iframe></object>
+        </div>
+
+        {# Bower Dependencies #}
+    </script>        
+    <script type="text/javascript" src="{% static 'jquery/dist/jquery.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'lodash/dist/lodash.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'angular/angular.min.js' %}"></script>
+    <!--<script type="text/javascript" src="{% static 'angular-bootstrap/ui-bootstrap-tpls.min.js' %}"></script>-->
+    <script> function iframe_onload(){
+        document.getElementById("loading_message_id").style.display="none";
+    }
+</script>
+<script>
+    $(document).ready(function(){
+        $.getJSON('/features_json', function(data) {
+            $('#feature-json').append(data);
+        });
+        $.getJSON('/protocol_json', function(data) {
+            $('#protocol-json').append(data);
+        });
+        $('#features-json').append("<p>prova paragrafo</p>");
+    });
+
+
+
+
+</script>
+</body>
+</html>

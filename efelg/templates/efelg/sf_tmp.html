@@ -1,0 +1,58 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <!--        <title>Feature extraction GUIs: file selection</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width">
+        {# Bower Dependencies #}
+        <link rel="stylesheet" href="{% static 'hbp-collaboratory-theme/dist/css/bootstrap.css' %}">
+        <link rel="stylesheet" href="{% static 'css/cdp2.css' %}">
+        <script type="text/javascript" src="{% static 'plotly-latest.min.js' %}"></script>
+        <script type="text/javascript" src="{% static 'angular-bootstrap/ui-bootstrap-tpls.min.js' %}"></script>
+        <script type="text/javascript" src="{% static 'jquery/dist/jquery.min.js' %}"></script>
+        -->
+        <title>Feature extraction GUI</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width">
+
+        {# Bower Dependencies #}
+        <link rel="stylesheet" href="{% static 'hbp-collaboratory-theme/dist/css/bootstrap.css' %}">
+        <link rel="stylesheet" href="{% static 'css/cdp2.css' %}">
+        <script type="text/javascript" src="{% static 'jquery/dist/jquery.min.js' %}"></script>
+        <script type="text/javascript" src="{% static 'plotly-latest.min.js' %}"></script>
+    </head>
+    <body>
+        <div class="panel panel-info" width=100% id="input-groups">
+            <div class="panel-heading"><h3>Upload and/or select the trace file(s) for feature extraction</h3></div>
+        </div>
+        <br>
+            <form id="upload_files" name="upload_files_name" method="POST" enctype="multipart/form-data" action="/upload_files">
+                <div class="panel panel-success" id="input-groups">
+                    <div class="panel-heading">Upload your own file(s) and then select them from the list below</div>
+                    <br>
+                    <input type="file" name="user_files" multiple/>
+                    <br>
+                    <input type="submit" id="upload_button" name="upload_button_name" value="Upload" />
+                    <br>
+                </div>
+            </form>
+
+    <script>
+        $("form#upload_files").submit(function() {
+            var formData = new FormData($(this)[0]);
+
+		$.ajax({
+	    		url: $(this).attr("action"),
+    			data: formData,
+    			type: 'POST',
+    			contentType: false,
+    			processData: false
+		});	
+
+		return false
+        });
+    </script>
+</body>
+</html>

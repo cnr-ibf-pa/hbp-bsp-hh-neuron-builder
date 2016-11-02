@@ -1,0 +1,91 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Feature extraction GUI</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width">
+
+        {# Bower Dependencies #}
+        <link rel="stylesheet" href="{% static 'hbp-collaboratory-theme/dist/css/bootstrap.css' %}">
+
+        <!-- internal style -->
+        <style>
+            .page-iframes {
+                border: 3px solid #606060;
+                width: 650px;
+                height: 800px;
+                max-width: 800px;
+                max-height: 1200px;
+                frameborder: 1;
+                scrolling: "auto"
+            }
+
+            .toggle-text {
+                font-size: 25px;
+            }
+        </style>
+
+
+    </head>
+    <body>
+        <!-- Execution completed div  -->
+        <div style="text-align: center" class="alert alert-success">
+            <h2>Execution completed<br><a href="/download_zip" class="alert-link">Download all results in .zip format</a></h2>
+        </div>
+
+        <!-- feature.json div  -->
+        <div style="text-align: center" class="">
+            <input type="text" class="btn btn-link toggle-text" value="'features.json' preview">
+            <div id="" class="div-toggle">
+                <!-- feature.json iframe  -->
+                <object><iframe id="features" class="page-iframes"  src="{% static "features.json" %}"></iframe></object>
+                <br>
+            </div>
+        </div>
+        <br>
+
+        <!-- protocols.json div  -->
+        <div style="text-align: center" class="">
+            <input type="text" class="btn btn-link toggle-text" value="'protocols.json' preview">
+            <div id="" class="div-toggle">
+                <!-- protocols.json iframe  -->
+                <object><iframe id="protocols" class="page-iframes" src="{% static "protocols.json" %}" ></iframe></object>
+                <br>
+            </div>
+        </div>
+        <br>
+
+        <!-- pdf div  -->
+        <div id='pdf-div' style="text-align: center">
+            <input type="text" class="btn btn-link toggle-text" value="plots preview">
+            <div class="div-toggle">
+                <!-- pdf iframe  -->
+                <object><iframe id="plots" class="page-iframes" src="{% static "features_step.pdf" %}"></iframe></object>
+                <br>
+            </div>
+        </div>
+        <br>
+
+        {# Bower Dependencies #}
+    </script>        
+    <script type="text/javascript" src="{% static 'jquery/dist/jquery.min.js' %}"></script>
+</script>
+<script>
+    $(".div-toggle").toggle();
+    $(document).ready(function(){
+        $.getJSON('/features_json', function(data) {
+            $('#feature-json').append(data);
+        });
+        $.getJSON('/protocol_json', function(data) {
+            $('#protocol-json').append(data);
+        });
+    });
+    $(".toggle-text").on("click", function(){
+        $(this).siblings("div").slideToggle("normal", function(){});
+    });
+
+</script>
+</body>
+</html>

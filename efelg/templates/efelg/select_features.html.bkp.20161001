@@ -1,0 +1,129 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Feature extraction GUI</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width">
+
+        {# Bower Dependencies #}
+        <link rel="stylesheet" href="{% static 'hbp-collaboratory-theme/dist/css/bootstrap.css' %}">
+        <link rel="stylesheet" href="{% static 'css/cdp2.css' %}">
+        <script type="text/javascript" src="{% static 'jquery/dist/jquery.min.js' %}"></script>
+    </head>
+    <body>
+        <div id="message_div" style="display:none; text-align:center">
+            <br><br>
+            <p style="font-size:25px">Please wait. This may take a few minutes  ...</p>
+            <br>
+        </div>
+        {% block content %}{% endblock %}
+        <form id="select_feature_form" action="/extract_features/" method="post">
+            <fieldset id="field_set">
+                <div class="panel panel-info" id="panels">
+                    <div class="panel-heading">
+                        <h3>Select the features to extract</h3>
+                    </div>
+                </div>
+
+                {% for feature_class,feature_name in features_dict.items  %}
+                <div class="panel panel-success" id="input-groups" style="text-align:'justify'">
+                    <div class="panel-heading">{{ feature_class }} (click to select, mouse over for tooltip)</div>
+                    <div class="justify-div">
+                        <br>
+                        {% for crr_feature,crr_feature_tip in feature_name.items  %}
+                        <label class="label-check">
+                            <input type="checkbox" id={{crr_feature}}  name="crr_feature_check_features" value={{crr_feature}}>
+                            <span class="span-check" title="{{crr_feature_tip}}">{{crr_feature}}</span>
+                        </label>
+                        {% endfor  %}
+                        <br><br>
+                        {% endfor  %}
+                    </div>
+                </div>
+                <div id="mainDiv"></div>
+                <button type="button" class="btn btn-primary" onclick="submit_form()">Extract features</button>
+            </fieldset>
+        </form>
+        {# Bower Dependencies #}
+        <script>
+            function submit_form(){
+                document.getElementById("select_feature_form").submit();
+                document.getElementById("message_div").style.display='block';
+                document.getElementById("message_div").scrollIntoView();
+                document.getElementById("field_set").style.display =  "none";
+            }
+
+        </script>
+        <script>
+            $.getJSON('/features_dict', function(data) {
+                $.each(data, function (i, ob) {
+                    var crrid = i.split(' ').join('_');
+                    var innerDivId = crrid + "_inner";
+                    var crrSelectButtonId = crrid + "_button";
+                    var crrContainerDiv = $("<div/>");
+                        crrContainerDiv.attr("id", crrid);
+                        crrContainerDiv.addClass("panel panel-success");
+
+                        var crrHeadingDiv = $("<div/>");
+                            crrHeadingDiv.attr("name", crrid);
+                            crrHeadingDiv.addClass("panel-heading");
+
+                            var crrElemDiv = $("<div/>");
+                                crrElemDiv.addClass("justify-div");
+                                crrElemDiv.attr("id", innerDivId);
+                                var crrElemDivButton = $("<input/>");
+                                crrElemDivButton.attr("id", crrSelectButtonId);
+                                crrElemDivButton.attr("type", "button");
+                                crrElemDivButton.attr("value","Select/Deselect all");
+                                crrElemDivButton.addClass("btn btn-link btn-not-selected");
+                                crrElemDivButton.on("click", function(){
+                                    if ($(this).hasClass("btn-not-selected")){
+                                        $(this).parent().children().children().prop("checked", true);
+                                        $(this).addClass('btn-selected');
+                                        $(this).removeClass('btn-not-selected');
+                                        } else {
+                                        $(this).parent().children().children().prop("checked", false);
+                                        $(this).addClass('btn-not-selected');
+                                        $(this).removeClass('btn-selected');
+                                    }
+                                });
+
+                                $("#mainDiv").append(crrContainerDiv);
+                                $('#' + crrid).append(crrHeadingDiv);
+                                $("div[name=" + crrid + "]").append(i);
+                                $('#' + crrid).append(crrElemDiv);
+                                $('#' + innerDivId).append(crrElemDivButton).append("<br>");
+
+
+
+                                $.each(ob, function (ind, obj) {
+                                    var crrElemLabelId = ind + "label";
+                                    var crrElemLabel = $("<label/>");
+                                        crrElemLabel.addClass("label-check");
+                                        crrElemLabel.attr("id", crrElemLabelId);
+                                        var crrInputElem = $("<input/>");
+                                        crrInputElem.attr("id", ind);
+                                        crrInputElem.attr("type", "checkbox");             
+                                        crrInputElem.attr("name", "crr_feature_check_features");
+                                        crrInputElem.attr("value", ind);
+
+                                        var crrSpanElem = $("<span/>");
+                                            crrSpanElem.attr("title", obj)
+                                            crrSpanElem.addClass("span-check");
+                                            crrSpanElem.append(ind);
+
+                                            $('#' + innerDivId).append(crrElemLabel);
+                                            $('#' + crrElemLabelId).append(crrInputElem);
+                                            $('#' + crrElemLabelId).append(crrSpanElem);
+                                        });
+                                        $('#' + crrid).append("<br>");
+                                    });
+                                })
+
+                            </script>
+                            <script type="text/javascript" src="{% static 'lodash/dist/lodash.min.js' %}"></script>
+                            <script type="text/javascript" src="{% static 'angular/angular.min.js' %}"></script>
+                        </body>
+                    </html>

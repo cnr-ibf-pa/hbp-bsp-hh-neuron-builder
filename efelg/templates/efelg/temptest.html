@@ -1,0 +1,23 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Feature extraction GUI overview</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width">
+
+        {# Bower Dependencies #}
+        <link rel="stylesheet" href="{% static 'hbp-collaboratory-theme/dist/css/bootstrap.css' %}">
+    </head>
+    <body>
+        {% block content %}{% endblock %}
+        <h3>Test file for upload</h3>
+        <br>
+        <p> {{temp_var}} </p>
+            <br>
+        </form>
+       <!-- <script type="text/javascript" src="{% static 'angular-bootstrap/ui-bootstrap-tpls.min.js' %}"></script>-->
+       <!-- <script type="text/javascript" src="{% static 'angular-bootstrap/ui-bootstrap-tpls.min.js' %}"></script>-->
+    </body>
+</html>
