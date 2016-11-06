@@ -1,11 +1,11 @@
 server {
     listen 80;
-    server_name 194.119.208.22 bspg.pa.ibf.cnr.it;
+    server_name 194.119.208.22;
     
 
     location = /favicon.ico { access_log off; log_not_found off; }
     location /static/ {
-         root /web/bspg;
+        root /web/bspg/;
     }
 
     location / {

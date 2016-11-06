@@ -17,6 +17,7 @@
 <h3 id= "title">Feature extraction Graphical User Interface (GUI)</h3>
 <br>
 <form action="show_traces/" method="post">{% csrf_token %} 
+{{ temp_var }}
 <p>The feature extraction GUI allows users to select data from an HBP dataset and/or upload their own, and extract electrophysiological features of interest.<br>
 The application leverages the Python Electrophys Feature Extract Library (<a href="https://github.com/BlueBrain/eFEL" target=_blank>eFEL</a>) and provides a friendly interface to select both individual voltage traces (based on the stimulus current applied) and features to be extracted.</p>
 <br>

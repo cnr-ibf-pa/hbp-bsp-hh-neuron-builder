@@ -4,42 +4,38 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render_to_response, render, redirect
 from django.core.urlresolvers import reverse
 from django.conf import settings
-from uuid import UUID
-from markdown import markdown
-#from django.core.context_processors import csrf
-from django import forms
-import bleach, os, shutil, zipfile, zlib
-from django.http import HttpResponse
-#from django.core.servers.basehttp import FileWrapper
-from . import manage_json
-from math import trunc
-import numpy, efel, neo
-import os, time, sys, datetime
-from neo import io
-from os.path import join
-import matplotlib
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt
 from django.template import RequestContext
 from django.views.decorators.csrf import csrf_exempt
-import fnmatch
 from django.core.files.base import ContentFile
+from django import forms
+from django.http import HttpResponse
+#from django.core.context_processors import csrf
+from uuid import UUID
+from markdown import markdown
+import os, time, sys, datetime,bleach, shutil, zipfile, zlib
+from math import trunc
+import numpy, efel, neo
+import matplotlib
+matplotlib.use('Agg')
+import requests
 import json
 import re
-
+from . import manage_json
 try:
     import cPickle as pickle
 except:
     import pickle
 sys.path.append(os.path.join(settings.BASE_DIR, 'BluePyExtract'))
-
+from hbp_app_python_auth.auth import get_access_token, get_token_type
+from bbp_client.oidc.client import BBPOIDCClient
+from bbp_client.document_service.client import Client as DocClient
+import bbp_client
+import bbp_services.client as bsc
 import bluepyextract as bpext
-
 import logging
 logging.basicConfig(stream=sys.stdout)
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
-
 
 def ibf(request):
     return redirect("http://joomla.pa.ibf.cnr.it")
@@ -77,7 +73,7 @@ def select_files(request):
         # for every file, if it is an .abf, save its full path
         for fname in fileList:
             if fname[-4:]=='.abf':
-                crrfullname = join(dirName, fname);
+                crrfullname = os.path.join(dirName, fname);
                 all_name_list.append(crrfullname);
 
     # sort list
@@ -97,7 +93,7 @@ def select_files(request):
             if idx != -1:
                 crr_key = crr_file_rel_path[:idx + len(crr_etype)]
                 crr_fin_name = crr_file_rel_path[idx + len(crr_etype):]
-        r = io.AxonIO(crr_file)
+        r = neo.io.AxonIO(crr_file)
         bl = r.read_block(lazy=False, cascade=True)
         all_volt_val = []
         for i_seg, seg in enumerate(bl.segments):
@@ -159,7 +155,6 @@ def get_data(request, cellname=""):
     elif os.path.isfile(os.path.join(full_crr_uploaded_folder, cellname) + '.json'):
         cellname_path = os.path.join(full_crr_uploaded_folder, cellname) + '.json'
 
-    #with open(os.path.join(json_dir, cellname) + '.json') as f:
     with open(cellname_path) as f:
         content = f.read()
     
@@ -181,7 +176,7 @@ def select_traces(request):
         crr_etype = [i for i in etype if crr_file_full.find(i)]
         if not os.path.isfile(crr_file_full):
             continue
-        r = io.AxonIO(crr_file_full)
+        r = neo.io.AxonIO(crr_file_full)
         bl = r.read_block(lazy = False, cascade = True)
         all_trace_dict[crr_file] = []
 
@@ -353,11 +348,10 @@ def extract_features_rest(request):
 def download_zip(request):
     result_file_zip = request.session['result_file_zip']
     result_file_zip_name = request.session['result_file_zip_name']
-    zip_file = open(result_file_zip, 'r')
+    zip_file = open(result_file_zip, 'rb')
     response = HttpResponse(zip_file, content_type='application/force-download')
     response['Content-Disposition'] = 'attachment; filename="%s"' % result_file_zip_name
     return response
-
 
 @login_required(login_url='/login/hbp')
 def access(request):
@@ -365,6 +359,16 @@ def access(request):
 
 @login_required(login_url='/login/hbp')
 def overview(request):
+    request.user.social_auth.get()
+    request.user.username
+    services = bsc.get_services()
+    access_token = get_access_token(request.user.social_auth.get())
+
+    oidc_client = BBPOIDCClient.bearer_auth(services['oidc_service']['prod']['url'], access_token)
+    doc_client = DocClient(services['document_service']['prod']['url'], oidc_client)
+    context = UUID(request.GET.get('ctx'))
+
+    
     data_dir = os.path.join(settings.BASE_DIR, 'media', 'efel_data', 'app_data')
     json_dir = os.path.join(settings.BASE_DIR, 'media', 'efel_data', 'json_data')
     full_result_folder = os.path.join(settings.BASE_DIR, 'media', 'efel_data', 'users_results')
@@ -406,8 +410,18 @@ def overview(request):
 
     if not os.path.exists(full_crr_uploaded_folder):
         os.makedirs(full_crr_uploaded_folder)
-    
-    return render(request, 'efelg/overview.html')
+    services = bsc.get_services()
+
+
+
+    #client = BBPOIDCClient.bearer_auth('prod', oauth.get_token())
+    #myclient =  BBPClient(task_client=TaskClient(get_services()['task_service']['prod']['url'], client), prov_client=ProvClient(get_services()['prov_service']['prod']['url'], client), document_client=DocumentClient(get_services()['document_service']['prod']['url'], client),    mimetype_client=MIMETypeClient(get_services()['mimetype_service']['prod']['url']))
+
+
+
+
+
+    return render(request, 'efelg/overview.html',{'temp_var': {'1': request.user.username, '2': request.session.items(), '3': get_access_token(request.user.social_auth.get()), '4': '', '5': '', '6': '', '7': '', '8': DocClient.getcwd(doc_client)}})
 
 @login_required(login_url='/login/hbp')
 def features_dict(request):

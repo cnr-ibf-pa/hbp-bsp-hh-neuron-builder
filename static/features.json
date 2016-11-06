@@ -1,52 +1,36 @@
 {
-    "/web/bspg/media/efel_data/users_results/efel_hbp_20161102082219683644/crr_result": {
-        "step_-1.0": {},
-        "step_-0.8": {},
-        "step_-0.6": {},
-        "step_-0.4": {},
-        "step_-0.2": {},
-        "step_0.2": {},
+    "/web/bspg/media/efel_data/users_results/efel_hbp_20161105093743524232/crr_result": {
+        "step_-1.0": {}, 
+        "step_-0.8": {}, 
+        "step_-0.6": {}, 
+        "step_-0.4": {}, 
+        "step_-0.2": {}, 
+        "step_0.2": {}, 
         "step_0.4": {
             "soma": {
-                "decay_time_constant_after_stim": [
-                    5.081920615760546,
+                "time_to_first_spike": [
+                    14.200000000000372, 
                     0.0
-                ],
-                "min_AHP_values": [
-                    -68.14730392153623,
-                    0.0
-                ],
-                "steady_state_voltage": [
-                    -82.24172794117895,
-                    0.0
-                ],
-                "voltage_base": [
-                    -78.59274193548387,
+                ], 
+                "time_to_last_spike": [
+                    178.64999999999236, 
                     0.0
                 ]
             }
-        },
-        "step_0.6": {},
+        }, 
+        "step_0.6": {}, 
         "step_0.8": {
             "soma": {
-                "decay_time_constant_after_stim": [
-                    5.279620205843472,
+                "time_to_first_spike": [
+                    4.9000000000002402, 
                     0.0
-                ],
-                "min_AHP_values": [
-                    -59.24644048939247,
-                    0.0
-                ],
-                "steady_state_voltage": [
-                    -82.35285364146056,
-                    0.0
-                ],
-                "voltage_base": [
-                    -79.26612903225808,
+                ], 
+                "time_to_last_spike": [
+                    381.40000000002533, 
                     0.0
                 ]
             }
-        },
+        }, 
         "step_1.0": {}
     }
 }
