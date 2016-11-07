@@ -26,10 +26,11 @@ try:
 except:
     import pickle
 sys.path.append(os.path.join(settings.BASE_DIR, 'BluePyExtract'))
-from hbp_app_python_auth.auth import get_access_token, get_token_type
+from hbp_app_python_auth.auth import get_access_token, get_token_type, get_auth_header
 from bbp_client.oidc.client import BBPOIDCClient
 from bbp_client.document_service.client import Client as DocClient
 import bbp_client
+from bbp_client.client import *
 import bbp_services.client as bsc
 import bluepyextract as bpext
 import logging
@@ -365,10 +366,17 @@ def overview(request):
     access_token = get_access_token(request.user.social_auth.get())
 
     oidc_client = BBPOIDCClient.bearer_auth(services['oidc_service']['prod']['url'], access_token)
+    bearer_client = BBPOIDCClient.bearer_auth('prod', access_token)
     doc_client = DocClient(services['document_service']['prod']['url'], oidc_client)
-    context = UUID(request.GET.get('ctx'))
+    context_uuid = UUID(request.GET.get('ctx'))
+    context = request.GET.get('ctx')
+    svc_url = settings.HBP_COLLAB_SERVICE_URL
+    url = '%scollab/context/%s/' % (svc_url, context)
+    headers = {'Authorization': get_auth_header(request.user.social_auth.get())}
+    res = requests.get(url, headers=headers)
+    collab_id = res.json()['collab']['id']
+    url = '%scollab/%s/permissions/' % (svc_url, collab_id)
 
-    
     data_dir = os.path.join(settings.BASE_DIR, 'media', 'efel_data', 'app_data')
     json_dir = os.path.join(settings.BASE_DIR, 'media', 'efel_data', 'json_data')
     full_result_folder = os.path.join(settings.BASE_DIR, 'media', 'efel_data', 'users_results')
@@ -412,16 +420,21 @@ def overview(request):
         os.makedirs(full_crr_uploaded_folder)
     services = bsc.get_services()
 
+    task_client = bbp_client.client.TaskClient(get_services()['task_service']['prod']['url'], bearer_client)
+    prov_client = bbp_client.client.ProvClient(get_services()['prov_service']['prod']['url'], bearer_client)
+    document_client = bbp_client.client.DocumentClient(get_services()['document_service']['prod']['url'], bearer_client)
+    mimetype_client = bbp_client.client.MIMETypeClient(get_services()['mimetype_service']['prod']['url'])
 
+    myclient =  bbp_client.client.Client(task_client = task_client, prov_client = prov_client, document_client = document_client,    mimetype_client = mimetype_client)
+    storage = myclient.document
+    #myclient =  bbp_client.client.Client(task_client = bbp_client.client.TaskClient(get_services()['task_service']['prod']['url'], bearer_client), prov_client = bbp_client.client.ProvClient(get_services()['prov_service']['prod']['url'], bearer_client), document_client = bbp_client.client.DocumentClient(get_services()['document_service']['prod']['url'], bearer_client),    mimetype_client = bbp_client.client.MIMETypeClient(get_services()['mimetype_service']['prod']['url']))
+    
+    hdr = myclient.task.oauth_client.get_auth_header()
+    resp = requests.get('https://services.humanbrainproject.eu/collab/v0/collab/context/' + context + '/permissions/', headers={'Authorization': hdr}, verify=False)
 
-    #client = BBPOIDCClient.bearer_auth('prod', oauth.get_token())
-    #myclient =  BBPClient(task_client=TaskClient(get_services()['task_service']['prod']['url'], client), prov_client=ProvClient(get_services()['prov_service']['prod']['url'], client), document_client=DocumentClient(get_services()['document_service']['prod']['url'], client),    mimetype_client=MIMETypeClient(get_services()['mimetype_service']['prod']['url']))
+    get_collab_storage_path = lambda: ('/' + myclient.document.get_project_by_collab_id('1256')['_name']) 
 
-
-
-
-
-    return render(request, 'efelg/overview.html',{'temp_var': {'1': request.user.username, '2': request.session.items(), '3': get_access_token(request.user.social_auth.get()), '4': '', '5': '', '6': '', '7': '', '8': DocClient.getcwd(doc_client)}})
+    return render(request, 'efelg/overview.html',{'temp_var': {'1': request.user.username, '2': request.session.items(), '3': get_access_token(request.user.social_auth.get()), '4': storage, '5': services, '6': collab_id, '7': DocClient.getcwd(doc_client), '8': bearer_client}})
 
 @login_required(login_url='/login/hbp')
 def features_dict(request):

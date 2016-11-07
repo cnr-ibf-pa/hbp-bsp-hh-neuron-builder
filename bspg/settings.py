@@ -30,6 +30,7 @@ ALLOWED_HOSTS = [
         '*',
 ]
 
+HBP_COLLAB_SERVICE_URL = 'https://services.humanbrainproject.eu/collab/v0/'
 
 USE_X_FORWARDED_HOST = True
 
