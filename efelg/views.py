@@ -358,24 +358,16 @@ def download_zip(request):
 def access(request):
 	return render(request, 'access.html') 
 
+
+
+
+
+
+
+
+
 @login_required(login_url='/login/hbp')
 def overview(request):
-    request.user.social_auth.get()
-    request.user.username
-    services = bsc.get_services()
-    access_token = get_access_token(request.user.social_auth.get())
-
-    oidc_client = BBPOIDCClient.bearer_auth(services['oidc_service']['prod']['url'], access_token)
-    bearer_client = BBPOIDCClient.bearer_auth('prod', access_token)
-    doc_client = DocClient(services['document_service']['prod']['url'], oidc_client)
-    context_uuid = UUID(request.GET.get('ctx'))
-    context = request.GET.get('ctx')
-    svc_url = settings.HBP_COLLAB_SERVICE_URL
-    url = '%scollab/context/%s/' % (svc_url, context)
-    headers = {'Authorization': get_auth_header(request.user.social_auth.get())}
-    res = requests.get(url, headers=headers)
-    collab_id = res.json()['collab']['id']
-    url = '%scollab/%s/permissions/' % (svc_url, collab_id)
 
     data_dir = os.path.join(settings.BASE_DIR, 'media', 'efel_data', 'app_data')
     json_dir = os.path.join(settings.BASE_DIR, 'media', 'efel_data', 'json_data')
@@ -418,23 +410,69 @@ def overview(request):
 
     if not os.path.exists(full_crr_uploaded_folder):
         os.makedirs(full_crr_uploaded_folder)
-    services = bsc.get_services()
-
-    task_client = bbp_client.client.TaskClient(get_services()['task_service']['prod']['url'], bearer_client)
-    prov_client = bbp_client.client.ProvClient(get_services()['prov_service']['prod']['url'], bearer_client)
-    document_client = bbp_client.client.DocumentClient(get_services()['document_service']['prod']['url'], bearer_client)
-    mimetype_client = bbp_client.client.MIMETypeClient(get_services()['mimetype_service']['prod']['url'])
-
-    myclient =  bbp_client.client.Client(task_client = task_client, prov_client = prov_client, document_client = document_client,    mimetype_client = mimetype_client)
-    storage = myclient.document
-    #myclient =  bbp_client.client.Client(task_client = bbp_client.client.TaskClient(get_services()['task_service']['prod']['url'], bearer_client), prov_client = bbp_client.client.ProvClient(get_services()['prov_service']['prod']['url'], bearer_client), document_client = bbp_client.client.DocumentClient(get_services()['document_service']['prod']['url'], bearer_client),    mimetype_client = bbp_client.client.MIMETypeClient(get_services()['mimetype_service']['prod']['url']))
     
-    hdr = myclient.task.oauth_client.get_auth_header()
-    resp = requests.get('https://services.humanbrainproject.eu/collab/v0/collab/context/' + context + '/permissions/', headers={'Authorization': hdr}, verify=False)
+    request.user.social_auth.get()
+    username = request.user.username
+    services = bsc.get_services()
+    access_token = get_access_token(request.user.social_auth.get())
 
-    get_collab_storage_path = lambda: ('/' + myclient.document.get_project_by_collab_id('1256')['_name']) 
+    oidc_client = BBPOIDCClient.bearer_auth(services['oidc_service']['prod']['url'], access_token)
+    bearer_client = BBPOIDCClient.bearer_auth('prod', access_token)
+    doc_client = DocClient(services['document_service']['prod']['url'], oidc_client)
+    context_uuid = UUID(request.GET.get('ctx'))
+    context = request.GET.get('ctx')
+    
+    svc_url = settings.HBP_COLLAB_SERVICE_URL
+    url = '%scollab/context/%s/' % (svc_url, context)
+    headers = {'Authorization': get_auth_header(request.user.social_auth.get())}
+    res = requests.get(url, headers=headers)
+    collab_id = res.json()['collab']['id']
+    #url_permissions = '%scollab/%s/permissions/' % (svc_url, collab_id)
+    #res_permissions = requests.get(url_permissions, headers=headers)
+    #services = bsc.get_services()
 
-    return render(request, 'efelg/overview.html',{'temp_var': {'1': request.user.username, '2': request.session.items(), '3': get_access_token(request.user.social_auth.get()), '4': storage, '5': services, '6': collab_id, '7': DocClient.getcwd(doc_client), '8': bearer_client}})
+    #task_client = bbp_client.client.TaskClient(get_services()['task_service']['prod']['url'], bearer_client)
+    #prov_client = bbp_client.client.ProvClient(get_services()['prov_service']['prod']['url'], bearer_client)
+    #document_client = bbp_client.client.DocumentClient(get_services()['document_service']['prod']['url'], bearer_client)
+    #mimetype_client = bbp_client.client.MIMETypeClient(get_services()['mimetype_service']['prod']['url'])
+
+    #myclient =  bbp_client.client.Client(task_client = task_client, prov_client = prov_client, document_client = document_client,    mimetype_client = mimetype_client)
+    #storage = myclient.document
+    
+    #hdr = myclient.task.oauth_client.get_auth_header()
+    #resp = requests.get('https://services.humanbrainproject.eu/collab/v0/collab/context/' + context + '/permissions/', headers={'Authorization': hdr}, verify=False)
+
+    #get_collab_storage_path = lambda: ('/' + myclient.document.get_project_by_collab_id(collab_id)['_name']) 
+    project = doc_client.get_project_by_collab_id(collab_id)
+    root = doc_client.get_path_by_id(project["_uuid"])
+    test_folder = os.path.join(root, 'testtest')
+    logger.info("test_folder" + test_folder)
+    temp_var = {'1': '', '2': '', '3': '', '4': '', '5': '', '6': '', '7': '',     '8': '', '9': '', '10': ''}
+    logger.info("creating folder")
+    start_time = int(datetime.datetime.now().strftime('%S%f'))
+    logger.info("creating folder start " + datetime.datetime.now().strftime('%S%f'))
+    #if doc_client.exists(test_folder):
+    #    test_folder = test_folder + '1'
+    #    doc_client.mkdir(test_folder)
+    #else:
+    #    test_folder = test_folder + '2'
+    #    doc_client.mkdir(test_folder)
+    end_time = int(datetime.datetime.now().strftime('%S%f'))
+    logger.info("creating folder end " + datetime.datetime.now().strftime('%S%f'))
+    logger.info("creating folder diff time " + str(end_time - start_time))
+
+    return render(request, 'efelg/overview.html')
+
+
+
+
+
+
+
+
+
+
+
 
 @login_required(login_url='/login/hbp')
 def features_dict(request):
@@ -538,7 +576,9 @@ def upload_files(request):
 
 @login_required(login_url='/login/hbp')
 def get_progress(request):
-
+    """
+     
+    """
 
     crr_status_string = ""
     return HttpResponse(crr_status_string)
