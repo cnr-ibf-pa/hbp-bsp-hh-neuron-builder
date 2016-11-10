@@ -26,9 +26,9 @@ urlpatterns = [
     url(r'^edit/$', views.edit),
     url(r'^download_zip', views.download_zip),
     url(r'^features_dict', views.features_dict),
-    url(r'^features_json', views.features_json),
-    url(r'^protocol_json', views.protocol_json),
-    url(r'^pdf_path/$', views.pdf_path),
+    url(r'^features_json_address', views.features_json_address),
+    url(r'^protocols_json_address', views.protocols_json_address),
+    url(r'^pdf_path$', views.pdf_path),
     url(r'^get_directory_structure', views.get_directory_structure),
     url(r'^upload_files', views.upload_files),
 ]

@@ -1,5 +1,5 @@
 '''Views'''
-
+from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render_to_response, render, redirect
 from django.core.urlresolvers import reverse
@@ -397,23 +397,28 @@ def select_all_features(request):
 
 @login_required(login_url='/login/hbp')
 def features_json(request):
-    full_result_folder = request.session['full_result_folder']
-    with open(os.path.join(full_result_folder, 'features.json')) as json_file:
+    full_user_crr_res_res_folder = request.session['full_user_crr_res_res_folder']
+    with open(os.path.join(full_user_crr_res_res_folder, 'features.json')) as json_file:
         features_json = json.load(json_file) 
     return HttpResponse(json.dumps(features_json))
 
 @login_required(login_url='/login/hbp')
-def protocol_json(request):
-    full_result_folder = request.session['full_result_folder']
-    with open(os.path.join(full_result_folder, 'protocols.json')) as json_file:
-        protocols_json = json.load(json_file) 
-    return HttpResponse(json.dumps(protocols_json))
+def features_json_address(request):
+    rel_url = request.session['media_rel_crr_user_res']
+    full_feature_json_file = os.path.join(rel_url, 'features.json')
+    return HttpResponse(json.dumps({'path' : os.path.join(os.sep, full_feature_json_file)}))
+
+@login_required(login_url='/login/hbp')
+def protocols_json_address(request):
+    rel_url = request.session['media_rel_crr_user_res']
+    full_feature_json_file = os.path.join(rel_url, 'protocols.json')
+    return HttpResponse(json.dumps({'path' : os.path.join(os.sep, full_feature_json_file)}))
 
 @login_required(login_url='/login/hbp')
 def pdf_path(request):
-    full_result_folder = request.session['full_result_folder']
-    pdf_path = os.path.join(full_result_folder, "features_step.pdf")
-    return HttpResponse(pdf_path)
+    rel_url = request.session['media_rel_crr_user_res']
+    full_feature_json_file = os.path.join(rel_url, 'features_step.pdf')
+    return HttpResponse(json.dumps({'path' : os.path.join(os.sep, full_feature_json_file)}))
 
 @login_required(login_url='/login/hbp')
 @csrf_exempt
@@ -542,10 +547,14 @@ def create_session_var(request):
     full_user_crr_res_res_folder = os.path.join(full_result_folder, username, time_info, 'u_res')
     full_user_crr_res_data_folder = os.path.join(full_result_folder, username, time_info, 'u_data')
     
+    # build media relative result path
+    media_rel_crr_user_res = os.path.join('media', 'efel_data', rel_result_folder, username, time_info, 'u_res')
+
     # storage relative path folder
     st_rel_user_results_folder = os.path.join(rel_result_folder, rel_user_crr_results_folder)
     st_rel_user_uploaded_folder = os.path.join(rel_uploaded_folder, username)
     
+    request.session['media_rel_crr_user_res'] = media_rel_crr_user_res 
     request.session['st_rel_user_results_folder'] = st_rel_user_results_folder
     request.session['st_rel_user_uploaded_folder'] = st_rel_user_uploaded_folder
     request.session['full_user_crr_results_folder'] = full_user_crr_results_folder
