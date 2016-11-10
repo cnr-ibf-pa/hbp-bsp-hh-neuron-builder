@@ -26,9 +26,6 @@ def getCellInfo(filename, upload_flag=False):
 
     bn_ext = os.path.basename(filename)
     bn = os.path.splitext(bn_ext)[0]
-    logger.info('bn_' + bn)
-    logger.info('upload_flag')
-    logger.info(upload_flag)
     if upload_flag is True:
         c_species = 'udSp' 
         c_area = 'udSt'
@@ -37,7 +34,6 @@ def getCellInfo(filename, upload_flag=False):
         c_etype = 'udEt'
         c_name = 'udNm'
         c_sample = bn 
-        logger.info(c_species + '_' + c_area)
         return (c_species, c_area, c_region, c_type, c_etype, c_name, c_sample) 
 
     elif (result):
@@ -98,15 +94,15 @@ def getTracesInfo(filename):
         
     return (traces, volt_unit, amp_unit)
     
-
-
 def genDataStruct(filename, upload_flag = False):
+    logger.info("generating data struct with " + filename)
     if upload_flag:
         c_species, c_area, c_region, c_type, c_etype, c_name, c_sample = getCellInfo(filename, upload_flag)
         
     else:
         c_species, c_area, c_region, c_type, c_etype, c_name, c_sample = getCellInfo(filename)
     
+    logger.info('gettracesinfofilename ' + filename)
     traces, volt_unit, amp_unit = getTracesInfo(filename)
     
     obj = {

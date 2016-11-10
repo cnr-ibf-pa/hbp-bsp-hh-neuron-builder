@@ -9,8 +9,11 @@
 
 {# Bower Dependencies #}
 <link rel="stylesheet" href="{% static 'hbp-collaboratory-theme/dist/css/bootstrap.css' %}">
-<link rel="stylesheet" href="{% static 'efelg/css/efelg.css' %}">
+<link rel="stylesheet" href="{% static 'bspg.css' %}">
 <script type="text/javascript" src="{% static 'jquery/dist/jquery.min.js' %}"></script>
+<script>
+$.get( "select_files_tree" )
+</script>
 </head>
 <body>
 {% block content %}{% endblock %}
@@ -69,15 +72,16 @@ A feature.json and protocol.json files are generated for both individual cells a
 <!--</div>-->
 <br>
 <br>
-<br>
-<br>
 <input id='next_btn' class="btn btn-primary" type="submit" value="Next">
 <br>
 </form>
 
 
 <script type="text/javascript">
-$.get( "select_files_tree" )
+//$.get( "select_files_tree" )
+$(document).ready(function(){
+$.get( "create_session_var" )
+})
 </script>
 <!-- <script type="text/javascript" src="{% static 'angular-bootstrap/ui-bootstrap-tpls.min.js' %}"></script>-->
 <!-- <script type="text/javascript" src="{% static 'angular-bootstrap/ui-bootstrap-tpls.min.js' %}"></script>-->

@@ -53,20 +53,23 @@ INSTALLED_APPS = [
     'social.apps.django_app.default',
     ]
 
-MIDDLEWARE_CLASSES = [
-    'django.contrib.sessions.middleware.SessionMiddleware',
+#MIDDLEWARE_CLASSES = [
+    #'django.contrib.sessions.middleware.SessionMiddleware',
     #'social.apps.django_app.middleware.SocialAuthExceptionMiddleware',
-#    'django.middleware.csrf.CsrfViewMiddleware',
-]
+    # 'django.middleware.csrf.CsrfViewMiddleware',
+#]
 
 MIDDLEWARE = [
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.locale.LocaleMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
+    #'social.apps.django_app.middleware.SocialAuthExceptionMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
     #'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.security.SecurityMiddleware',
 ]

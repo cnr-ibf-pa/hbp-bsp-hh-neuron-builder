@@ -81,7 +81,7 @@ def overview(request):
     request.session['context'] = context
     request.session['headers'] = headers
     request.session['collab_id'] = collab_id
-    # render to html page
+    # render to html 
     return render(request, 'efelg/overview.html')
 
     
