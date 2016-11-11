@@ -22,6 +22,7 @@ requests.packages.urllib3.disable_warnings()
 import json
 import re
 from . import manage_json
+from . import resources
 from . import manage_collab_storage
 
 sys.path.append(os.path.join(settings.BASE_DIR, 'BluePyExtract'))
@@ -449,9 +450,7 @@ def upload_files(request):
             continue
         crr_file_name = k.name
         crr_file_name = re.sub('-', '_', k.name)
-        name_abf_list.append(crr_file_name) 
         crr_local_filename = os.path.join(full_user_uploaded_folder, crr_file_name)
-        names_full_path.append(crr_local_filename)
 
         # if file exists delete and recreate it
         if os.path.isfile(crr_local_filename):
@@ -466,6 +465,13 @@ def upload_files(request):
         else:
             final_file.write(k.read())
             final_file.close()
+
+        if resources.valid_abf_file(crr_local_filename):
+            name_abf_list.append(crr_file_name) 
+            names_full_path.append(crr_local_filename)
+        else:
+            os.remove(crr_local_filename)
+            
 
     #for root, dirs, files in os.walk(full_crr_uploaded_folder):
     for name in names_full_path:
