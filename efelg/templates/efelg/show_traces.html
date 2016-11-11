@@ -106,7 +106,11 @@
                 <br>
                 <input type="file" name="user_files" accept=".abf" multiple/>
                 <br>
-                <input type="submit" id="upload_button" name="upload_button_name" value="Upload" />
+                
+                <div id="fileloaderform">
+                    <input type="submit" id="upload_button" name="upload_button_name" value="Upload" />
+                    <span class="glyphicon glyphicon-refresh spinning lg" ></span>
+                </div>
             </div>
         </form>
         <div id='charts_upload'></div>
@@ -121,8 +125,11 @@
 
         <!-- js script section -->
         <script>
+            $('#fileloaderform > .glyphicon').hide()
 
             $("form#upload_files").submit(plotTraces, function(e) {
+                $('#fileloaderform > .glyphicon').show()
+            
                 var formData = new FormData($(this)[0]);
                 $.ajax({
                     url: $(this).attr("action"),
@@ -131,6 +138,8 @@
                     contentType: false,
                     processData: false,
                     success: function(name_dict) {
+                        $('#fileloaderform > .glyphicon').hide()
+                    
                         $('#charts_upload').empty()
                         all_json_names = name_dict['all_json_names'];
                         index = 'user_div' 
