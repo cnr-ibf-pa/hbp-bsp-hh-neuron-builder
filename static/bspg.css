@@ -41,17 +41,17 @@ div.justify-class:after {
 }
 
 .spinning {
-    font-size: 6em;
+    font-size: 1.5em;
     width: 1.5em;
     height: 1.5em;
     line-height: 1.5em;
-  -webkit-animation: spin .2s infinite linear;
-  -moz-animation: spin .2s infinite linear;
-  -o-animation: spin .2s infinite linear;
-  animation: spin .2s infinite linear;
-     -webkit-transform-origin: 50% 46%;
-         transform-origin: 50% 46%;
-         -ms-transform-origin:50% 46%; /* IE 9 */
+    -webkit-animation: spin .8s infinite linear;
+    -moz-animation: spin .8s infinite linear;
+    -o-animation: spin .8s infinite linear;
+    animation: spin .8s infinite linear;
+    -webkit-transform-origin: 50% 50%;
+    transform-origin: 50% 50%;
+    -ms-transform-origin:50% 50%; /* IE 9 */
 }
 
 @-moz-keyframes spin {
@@ -59,7 +59,7 @@ div.justify-class:after {
     -moz-transform: rotate(0deg);
   }
   to {
-    -moz-transform: rotate(360deg);
+    -moz-transform: rotate(359deg);
   }
 }
 
@@ -68,7 +68,7 @@ div.justify-class:after {
     -webkit-transform: rotate(0deg);
   }
   to {
-    -webkit-transform: rotate(360deg);
+    -webkit-transform: rotate(359deg);
   }
 }
 
@@ -77,10 +77,10 @@ div.justify-class:after {
     transform: rotate(0deg);
   }
   to {
-    transform: rotate(360deg);
+    transform: rotate(359deg);
   }
 }
 
 .glyphicon.lg {
-    font-size: 6em;
+    font-size: 1.6em;
 }
