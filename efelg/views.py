@@ -43,7 +43,24 @@ def ibf(request):
 @login_required(login_url='/login/hbp')
 @csrf_exempt
 def overview(request):
-    #request.session.flush()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     logger.info('username ' + request.user.username)
     data_dir = os.path.join(settings.BASE_DIR, 'media', 'efel_data', 'app_data')
     json_dir = os.path.join(settings.BASE_DIR, 'media', 'efel_data', 'json_data')
@@ -64,13 +81,11 @@ def overview(request):
     # get context and context uuid
     context_uuid = UUID(request.GET.get('ctx'))
     context = request.GET.get('ctx')
-    logger.info("request")
-    #logger.info(get_auth_header(request.user.social_auth.get()))
+    
     # get headers
     svc_url = settings.HBP_COLLAB_SERVICE_URL
     url = '%scollab/context/%s/' % (svc_url, context)
     headers = {'Authorization': get_auth_header(request.user.social_auth.get())}
-    logger.info(headers)
     
     # get collab_id
     res = requests.get(url, headers=headers)
@@ -81,6 +96,68 @@ def overview(request):
     request.session['context'] = context
     request.session['headers'] = headers
     request.session['collab_id'] = collab_id
+    
+
+
+
+
+
+
+
+
+
+    # reading parameters from request.session
+    username = request.session['username']
+    context = request.session['context']
+    
+    # parameters for folder creation
+    time_info = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
+    etype = ['bAC','cAC','cNAC', 'udEt']
+    
+    # create global variables in request.session
+    request.session['etype'] = etype
+    request.session['time_info'] = time_info
+
+    # build local folder paths
+    rel_result_folder = os.path.join('efel_gui', 'results')
+    rel_uploaded_folder = os.path.join('efel_gui', 'uploaded')
+    full_result_folder = os.path.join(settings.BASE_DIR, 'media', 'efel_data', rel_result_folder)
+    full_uploaded_folder = os.path.join(settings.BASE_DIR, 'media', 'efel_data', rel_uploaded_folder)
+    
+    # build local folder complete paths
+    rel_user_crr_results_folder = os.path.join(username, time_info)
+    full_user_results_folder = os.path.join(full_result_folder, username)
+    full_user_crr_results_folder = os.path.join(full_result_folder, rel_user_crr_results_folder)
+    full_user_uploaded_folder = os.path.join(full_uploaded_folder, username)
+    full_user_crr_res_res_folder = os.path.join(full_result_folder, username, time_info, 'u_res')
+    full_user_crr_res_data_folder = os.path.join(full_result_folder, username, time_info, 'u_data')
+    
+    # build media relative result path
+    media_rel_crr_user_res = os.path.join('media', 'efel_data', rel_result_folder, username, time_info, 'u_res')
+
+    # storage relative path folder
+    st_rel_user_results_folder = os.path.join(rel_result_folder, rel_user_crr_results_folder)
+    st_rel_user_uploaded_folder = os.path.join(rel_uploaded_folder, username)
+    
+    request.session['media_rel_crr_user_res'] = media_rel_crr_user_res 
+    request.session['st_rel_user_results_folder'] = st_rel_user_results_folder
+    request.session['st_rel_user_uploaded_folder'] = st_rel_user_uploaded_folder
+    request.session['full_user_crr_results_folder'] = full_user_crr_results_folder
+    request.session['full_user_results_folder'] = full_user_results_folder
+    request.session['full_user_crr_results_folder'] = full_user_crr_results_folder
+    request.session['full_user_crr_res_res_folder'] = full_user_crr_res_res_folder
+    request.session['full_user_crr_res_data_folder'] = full_user_crr_res_data_folder
+    request.session['full_user_uploaded_folder'] = full_user_uploaded_folder
+
+
+
+
+
+
+
+
+
+
     # render to html 
     return render(request, 'efelg/overview.html')
 
@@ -521,49 +598,9 @@ def sf_tmp(request):
 @login_required(login_url='/login/hbp')
 @csrf_exempt
 def create_session_var(request):
-    # reading parameters from request.session
-    username = request.session['username']
-    context = request.session['context']
+
     headers = request.session['headers']
     collab_id = request.session['collab_id']
-    
-    # parameters for folder creation
-    time_info = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
-    etype = ['bAC','cAC','cNAC', 'udEt']
-
-    # build local folder paths
-    #data_dir = os.path.join(settings.BASE_DIR, 'media', 'efel_data', 'app_data')
-    #json_dir = os.path.join(settings.BASE_DIR, 'media', 'efel_data', 'json_data')
-    rel_result_folder = os.path.join('efel_gui', 'results')
-    rel_uploaded_folder = os.path.join('efel_gui', 'uploaded')
-    full_result_folder = os.path.join(settings.BASE_DIR, 'media', 'efel_data', rel_result_folder)
-    full_uploaded_folder = os.path.join(settings.BASE_DIR, 'media', 'efel_data', rel_uploaded_folder)
-    
-    # build local folder complete paths
-    rel_user_crr_results_folder = os.path.join(username, time_info)
-    full_user_results_folder = os.path.join(full_result_folder, username)
-    full_user_crr_results_folder = os.path.join(full_result_folder, rel_user_crr_results_folder)
-    full_user_uploaded_folder = os.path.join(full_uploaded_folder, username)
-    full_user_crr_res_res_folder = os.path.join(full_result_folder, username, time_info, 'u_res')
-    full_user_crr_res_data_folder = os.path.join(full_result_folder, username, time_info, 'u_data')
-    
-    # build media relative result path
-    media_rel_crr_user_res = os.path.join('media', 'efel_data', rel_result_folder, username, time_info, 'u_res')
-
-    # storage relative path folder
-    st_rel_user_results_folder = os.path.join(rel_result_folder, rel_user_crr_results_folder)
-    st_rel_user_uploaded_folder = os.path.join(rel_uploaded_folder, username)
-    
-    request.session['media_rel_crr_user_res'] = media_rel_crr_user_res 
-    request.session['st_rel_user_results_folder'] = st_rel_user_results_folder
-    request.session['st_rel_user_uploaded_folder'] = st_rel_user_uploaded_folder
-    request.session['full_user_crr_results_folder'] = full_user_crr_results_folder
-    request.session['full_user_results_folder'] = full_user_results_folder
-    request.session['full_user_crr_results_folder'] = full_user_crr_results_folder
-    request.session['full_user_crr_res_res_folder'] = full_user_crr_res_res_folder
-    request.session['full_user_crr_res_data_folder'] = full_user_crr_res_data_folder
-    request.session['full_user_uploaded_folder'] = full_user_uploaded_folder
-
     # get services and access token    
     services = bsc.get_services()
     access_token = get_access_token(request.user.social_auth.get())
@@ -579,15 +616,10 @@ def create_session_var(request):
     # extract collab storage root path
     storage_root = doc_client.get_path_by_id(project["_uuid"])
     
-    # create global variables in request.session
-    request.session['etype'] = etype
-    request.session['time_info'] = time_info
     
     # create session variables for folders handling in request.session
     request.session['storage_root'] = storage_root
     request.session['access_token'] = access_token
-
-    #doc_client.mkdir(os.path.join(storage_root, 'temptestfolder'))
 
     # render to html page
     return HttpResponse("") 
