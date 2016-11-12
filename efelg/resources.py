@@ -1,3 +1,9 @@
+from datetime import datetime
+
+# create logger
+
+
+
 def valid_abf_file(filepath):
     import neo # to leave here or to move somewhere else
 
@@ -18,3 +24,29 @@ def valid_abf_file(filepath):
         return True
     except:
         return False
+
+
+
+def string_for_log(page_name, request):
+    HXFF = request.META['HTTP_X_FORWARDED_FOR']
+    HXFS = request.META['HTTP_X_FORWARDED_SERVER']
+    QS = request.META['QUERY_STRING']
+    HUA = request.META['HTTP_USER_AGENT']
+    HC = request.META['HTTP_COOKIE']
+    SN = request.META['SERVER_NAME']
+    RA = request.META['REMOTE_ADDR']
+    RU = request.META['REQUEST_URI']
+    CC = request.META['CSRF_COOKIE']
+    final_str = ['PAGE : ' + page_name + ' ' + ' HTTP_X_FORWARDED_FOR ' + HXFF + ' HTTP_X_FORWARDED_SERVER ' + HXFS+ ' QUERY_STRING ' + QS + ' HTTP_USER_AGENT ' + HUA + ' HTTP_COOKIE ' + HC + ' SERVER_NAME ' + SN + ' REMOTE_ADDR ' + RA + ' REQUEST_URI ' + RU + ' CSRF_COOKIE ' + CC + ' user ' + str(request.user) + ' datetime ' + str(datetime.now())]
+    return final_str
+
+
+
+
+
+
+
+
+
+
+

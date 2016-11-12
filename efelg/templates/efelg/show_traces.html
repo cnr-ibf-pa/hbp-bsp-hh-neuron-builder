@@ -257,7 +257,7 @@
 
             function plotTraces(container_id, cellname) {
                 var SHOW_FADED = 0.15
-                var SHOW_CHECK = 0.65
+                var SHOW_CHECK = 0.75
                 var SHOW_HOVER = 1.0
 
                 $('#' + container_id).empty()
@@ -353,6 +353,7 @@
 
                                 document.querySelector('#' + container_id + ' .selall').onclick = function(ev) {
                                     var plot_id = $('#' + container_id + ' > div[id^="plot_"]')[0].id
+                                    console.log(container_id)
 
                                     opacities.fill(SHOW_CHECK)
                                     $('#' + container_id + ' form > input').prop('checked', true)

@@ -12,7 +12,7 @@ from django.http import HttpResponse
 #from django.core.context_processors import csrf
 from uuid import UUID
 from markdown import markdown
-import os, time, sys, datetime,bleach, shutil, zipfile, zlib
+import os, time, sys, datetime,bleach, shutil, zipfile, zlib, pprint
 from math import trunc
 import numpy, efel, neo
 import matplotlib
@@ -37,6 +37,13 @@ import logging
 logging.basicConfig(stream=sys.stdout)
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
+# create logger
+accesslogger = logging.getLogger('efelg_access.log')
+accesslogger.addHandler(logging.FileHandler('./efelg_access.log'))
+accesslogger.setLevel(logging.DEBUG)
+
+
+
 
 def ibf(request):
     return redirect("http://joomla.pa.ibf.cnr.it")
@@ -45,22 +52,7 @@ def ibf(request):
 @csrf_exempt
 def overview(request):
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    accesslogger.info(resources.string_for_log('overview', request))
 
     logger.info('username ' + request.user.username)
     data_dir = os.path.join(settings.BASE_DIR, 'media', 'efel_data', 'app_data')
@@ -167,11 +159,13 @@ def overview(request):
 def select_features(request):
     with open(os.path.join(settings.BASE_DIR, 'static', 'efelg', 'efel_features_final.json')) as json_file:
         features_dict = json.load(json_file) 
-    selected_traces = request.POST.getlist('check_traces')
-    request.session['selected_traces'] = selected_traces
+    #selected_traces = request.POST.getlist('check_traces')
+    #request.session['selected_traces'] = selected_traces
     feature_names = efel.getFeatureNames()
     selected_traces_rest = request.POST.get('data')
     selected_traces_rest_json = json.loads(selected_traces_rest)
+    logger.info("selected traces rest json")
+    logger.info(pprint.pprint(selected_traces_rest_json))
     request.session['selected_traces_rest_json'] = selected_traces_rest_json
     
     return render(request, 'efelg/select_features.html', {'feature_names': feature_names, 'features_dict': features_dict})
@@ -335,6 +329,8 @@ def extract_features_rest(request):
             os.makedirs(crr_cell_data_folder)
         if not os.path.isfile(os.path.join(crr_cell_data_folder, crr_abf_name_ext)):
             shutil.copy(crr_abf_file_path, crr_cell_data_folder)
+        
+        logger.info(crr_file_sel_stim)
 
         if crr_key in cell_dict:
             cell_dict[crr_key]['stim'].append(crr_file_sel_stim)
@@ -347,12 +343,37 @@ def extract_features_rest(request):
             cell_dict[crr_key]['all_stim'] = crr_file_all_stim
    
     final_cell_dict = {}  
+    final_exclude = []
     for key in cell_dict:
         crr_el = cell_dict[key]
-        all_ch_stim = [item for sublist in crr_el['stim'] for item in sublist]
-        crr_diff_stim = list(set(crr_el['all_stim']) - set(all_ch_stim))
-        crr_exc = [float(i) for i in crr_diff_stim]
-        final_cell_dict[cell_dict[key]['cell_name']] = {'v_corr':False, 'ljp':0, 'experiments':{'step': {'location':'soma', 'files': [str(i) for i in crr_el['files']]}}, 'etype':'etype', 'exclude':list(set(crr_exc))}
+        logger.info(crr_el['stim'])
+        logger.info('crr_stim_list')
+        logger.info('crr_stim_list')
+        logger.info('crr_stim_list')
+        logger.info(str(crr_el['stim']))
+        #all_ch_stim = [item for sublist in crr_el['stim'] for item in sublist]
+        #crr_diff_stim = list(set(crr_el['all_stim']) - set(all_ch_stim))
+        #crr_exc = [float(i) for i in crr_diff_stim]
+
+
+
+
+        # new start
+        exc_stim_lists = [list(set(crr_el['all_stim']) - set(sublist)) for sublist in crr_el['stim']]
+        crr_exc = []
+        for crr_list in exc_stim_lists:
+            crr_stim_val = [float(i) for i in crr_list]
+            crr_exc.append(crr_stim_val)
+        # new end
+
+
+        logger.info('crr_exc')
+        logger.info('crr_exc')
+        logger.info('crr_exc')
+        logger.info('crr_exc')
+        logger.info(str(crr_exc))
+        #final_cell_dict[cell_dict[key]['cell_name']] = {'v_corr':False, 'ljp':0, 'experiments':{'step': {'location':'soma', 'files': [str(i) for i in crr_el['files']]}}, 'etype':'etype', 'exclude':list(set(crr_exc))}
+        final_cell_dict[cell_dict[key]['cell_name']] = {'v_corr':False, 'ljp':0, 'experiments':{'step': {'location':'soma', 'files': [str(i) for i in crr_el['files']]}}, 'etype':'etype', 'exclude':crr_exc}
         
     # build configuration dictionary
     config = {}
