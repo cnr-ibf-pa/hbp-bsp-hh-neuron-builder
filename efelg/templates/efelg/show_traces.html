@@ -104,14 +104,19 @@
             <div class="panel panel-success" id="input-groups">
                 <div class="panel-heading">Upload your own file(s) and then select individual traces</div>
                 <br>
-                <input type="file" name="user_files" accept=".abf" multiple/>
+                
+                <label class="custom-file">
+                    <input type="file" name="user_files" accept=".abf" multiple/>
+                    <span class="custom-file-control"></span>
+                </label>
                 <br>
                 
                 <div id="fileloaderform">
-                    <input type="submit" id="upload_button" name="upload_button_name" value="Upload" />
- 		    <div class="glyphicon" style="text-align:center">
-                    <span class="glyphicon glyphicon-refresh spinning lg"></span>
-		    </div>
+                    <input type="submit" id="upload_button" name="upload_button_name" class="btn btn-default" value="Upload" />
+                    
+         		    <div class="glyphicon" style="text-align:center">
+                            <span class="glyphicon glyphicon-refresh spinning lg"></span>
+		            </div>
                 </div>
             </div>
         </form>
