@@ -12,7 +12,7 @@ from django.http import HttpResponse
 #from django.core.context_processors import csrf
 from uuid import UUID
 from markdown import markdown
-import os, time, sys, datetime,bleach, shutil, zipfile, zlib, pprint
+import os, time, sys, datetime,bleach, shutil, zipfile, zlib, pprint, inspect
 from math import trunc
 import numpy, efel, neo
 import matplotlib
@@ -53,7 +53,6 @@ def ibf(request):
 def overview(request):
 
     accesslogger.info(resources.string_for_log('overview', request))
-
     logger.info('username ' + request.user.username)
     data_dir = os.path.join(settings.BASE_DIR, 'media', 'efel_data', 'app_data')
     json_dir = os.path.join(settings.BASE_DIR, 'media', 'efel_data', 'json_data')
@@ -89,15 +88,6 @@ def overview(request):
     request.session['context'] = context
     request.session['headers'] = headers
     request.session['collab_id'] = collab_id
-    
-
-
-
-
-
-
-
-
 
     # reading parameters from request.session
     username = request.session['username']
@@ -142,15 +132,6 @@ def overview(request):
     request.session['full_user_crr_res_data_folder'] = full_user_crr_res_data_folder
     request.session['full_user_uploaded_folder'] = full_user_uploaded_folder
 
-
-
-
-
-
-
-
-
-
     # render to html 
     return render(request, 'efelg/overview.html')
 
@@ -159,14 +140,14 @@ def overview(request):
 def select_features(request):
     with open(os.path.join(settings.BASE_DIR, 'static', 'efelg', 'efel_features_final.json')) as json_file:
         features_dict = json.load(json_file) 
-    #selected_traces = request.POST.getlist('check_traces')
-    #request.session['selected_traces'] = selected_traces
     feature_names = efel.getFeatureNames()
     selected_traces_rest = request.POST.get('data')
     selected_traces_rest_json = json.loads(selected_traces_rest)
-    logger.info("selected traces rest json")
-    logger.info(pprint.pprint(selected_traces_rest_json))
+    #logger.info("selected traces rest json")
+    #logger.info(pprint.pprint(selected_traces_rest_json))
     request.session['selected_traces_rest_json'] = selected_traces_rest_json
+
+    accesslogger.info(resources.string_for_log('select_features', request, page_spec_string = selected_traces_rest))
     
     return render(request, 'efelg/select_features.html', {'feature_names': feature_names, 'features_dict': features_dict})
 
@@ -178,6 +159,7 @@ def upload_files_page(request):
 
 @login_required(login_url='/login/hbp')
 def select_files_tree(request):
+    #accesslogger.info(resources.string_for_log('select_files_tree', request, page_spec_str = ''))
     data_dir = request.session['data_dir']
     json_dir = request.session['json_dir']
     for root, dirs, files in os.walk(data_dir):
@@ -211,12 +193,9 @@ def get_list(request):
 def get_data(request, cellname=""):
     json_dir = request.session['json_dir']
     full_user_uploaded_folder = request.session['full_user_uploaded_folder']
-    
 
     if os.path.isfile(os.path.join(json_dir, cellname) + '.json'):
         cellname_path = os.path.join(json_dir, cellname) + '.json'
-    #elif os.path.isfile(os.path.join(full_crr_uploaded_folder, cellname) + '.json'):
-    #    cellname_path = os.path.join(full_crr_uploaded_folder, cellname) + '.json'
     elif os.path.isfile(os.path.join(full_user_uploaded_folder, cellname) + '.json'):
         cellname_path = os.path.join(full_user_uploaded_folder, cellname) + '.json'
 
@@ -228,6 +207,8 @@ def get_data(request, cellname=""):
 # handle select_traces template
 @login_required(login_url='/login/hbp')
 def select_traces(request):
+    
+    
     temp = []
     all_trace_dict = {}
     all_trace_plt = {}
@@ -278,6 +259,8 @@ def select_traces(request):
     request.session['all_trace_dict'] = all_trace_dict
     # create dictionary for all cell type
     all_trace_plt = json.dumps(all_trace_plt)
+
+    #accesslogger.info(resources.string_for_log('select_traces', request))
     return render_to_response('select_traces.html', {'all_trace_dict': all_trace_dict, 'all_trace_plt': all_trace_plt, 'temp_var': all_post})
 
 @login_required(login_url='/login/hbp')
@@ -372,7 +355,6 @@ def extract_features_rest(request):
         logger.info('crr_exc')
         logger.info('crr_exc')
         logger.info(str(crr_exc))
-        #final_cell_dict[cell_dict[key]['cell_name']] = {'v_corr':False, 'ljp':0, 'experiments':{'step': {'location':'soma', 'files': [str(i) for i in crr_el['files']]}}, 'etype':'etype', 'exclude':list(set(crr_exc))}
         final_cell_dict[cell_dict[key]['cell_name']] = {'v_corr':False, 'ljp':0, 'experiments':{'step': {'location':'soma', 'files': [str(i) for i in crr_el['files']]}}, 'etype':'etype', 'exclude':crr_exc}
         
     # build configuration dictionary
@@ -448,11 +430,13 @@ def extract_features_rest(request):
     #shutil.copy(os.path.join(full_crr_result_folder, 'features_step.pdf'), os.path.join(settings.BASE_DIR, 'static'))
     #shutil.copy(os.path.join(full_crr_result_folder, 'protocols.json'), os.path.join(settings.BASE_DIR, 'static'))
     #shutil.copy(os.path.join(full_crr_result_folder, 'features.json'), os.path.join(settings.BASE_DIR, 'static'))
+    accesslogger.info(resources.string_for_log('show_traces', request, page_spec_string = '___'.join(check_features)))
     return render(request, 'efelg/extract_features_rest.html') 
 
 
 @login_required(login_url='/login/hbp')
 def download_zip(request):
+    accesslogger.info(resources.string_for_log('download_zip', request))
     result_file_zip = request.session['result_file_zip']
     result_file_zip_name = request.session['result_file_zip_name']
     zip_file = open(result_file_zip, 'rb')
@@ -462,7 +446,7 @@ def download_zip(request):
 
 @login_required(login_url='/login/hbp')
 def access(request):
-	return render(request, 'access.html') 
+    return render(request, 'access.html') 
 
 
 
@@ -485,7 +469,6 @@ def edit(request):
 def _reverse_url(view_name, context_uuid):
     """generate an URL for a view including the ctx query param"""
     return '%s?ctx=%s' % (reverse(view_name), context_uuid)
-
 
 @login_required(login_url='/login/hbp')
 def select_all_features(request):
@@ -588,6 +571,7 @@ def upload_files(request):
     doc_client = manage_collab_storage.create_doc_client(access_token)
 
     #doc_client.mkdir(os.path.join(storage_root, 'temptestfolder'))
+    accesslogger.info(resources.string_for_log('upload_files', request, page_spec_string = str(len(names_full_path))))
 
     return HttpResponse(json.dumps(data_name_dict), content_type="application/json") 
 
@@ -602,6 +586,7 @@ def get_progress(request):
 
 @login_required(login_url='/login/hbp')
 def get_directory_structure(request):
+    accesslogger.info(resources.string_for_log('get_directory_structure', request))
     """ 
     Creates a nested dictionary that represents the folder structure of rootdir
     """

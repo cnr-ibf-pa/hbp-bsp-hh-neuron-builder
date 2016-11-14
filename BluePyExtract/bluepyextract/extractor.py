@@ -131,7 +131,7 @@ class Extractor(object):
                 files = self.cells[cellname]['experiments'][expname]['files']
                 for i_file, filename in enumerate(files):
 
-                    data = self.process_file(filename, cellname, expname)
+                    data = self.process_file(filename, cellname, expname, i_file)
                     dataset_cell_exp[expname]['voltage'].append(data['voltage'])
                     dataset_cell_exp[expname]['current'].append(data['current'])
                     dataset_cell_exp[expname]['dt'].append(data['dt'])
@@ -144,7 +144,7 @@ class Extractor(object):
                     dataset_cell_exp[expname]['hypamp'].append(data['hypamp'])
 
 
-    def process_file(self, filename, cellname, expname):
+    def process_file(self, filename, cellname, expname, i_file):
 
         data = collections.OrderedDict()
         data['voltage'] = []
@@ -227,7 +227,7 @@ class Extractor(object):
 		#logger.info(amp)
 		#logger.info(abs(self.cells[cellname]['exclude'] - amp))
                 if ('exclude' in self.cells[cellname] and
-                    any(abs(self.cells[cellname]['exclude'] - amp) < 1e-4)):
+                    any(abs(self.cells[cellname]['exclude'][i_file] - amp) < 1e-4)):
                     #logger.info(" Not using trace with amplitude %f", amp)
                     pass
                 else:
