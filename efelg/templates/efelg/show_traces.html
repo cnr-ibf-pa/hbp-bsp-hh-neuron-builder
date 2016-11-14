@@ -172,7 +172,7 @@
                 for (var i=0; i < forms.length; i++) {
                     var cell_name = $(forms[i]).parent()[0].id
                     var traces = []
-                    for (var j=1; j < forms[i].length; j++) {
+                    for (var j=0; j < forms[i].length; j++) {
                         if ((forms[i][j].checked))
                         traces.push(forms[i][j].name)
                     }
