@@ -426,11 +426,7 @@ def extract_features_rest(request):
     zip_collab_storage_path = os.path.join(crr_collab_storage_folder, crr_user_folder + '_results.zip')
     if not doc_client.exists(zip_collab_storage_path):
         doc_client.upload_file(output_path, zip_collab_storage_path) 
-    #doc_client.mkdir(os.path.join(storage_root, 'temptestfolder'))
-    #shutil.copy(os.path.join(full_crr_result_folder, 'features_step.pdf'), os.path.join(settings.BASE_DIR, 'static'))
-    #shutil.copy(os.path.join(full_crr_result_folder, 'protocols.json'), os.path.join(settings.BASE_DIR, 'static'))
-    #shutil.copy(os.path.join(full_crr_result_folder, 'features.json'), os.path.join(settings.BASE_DIR, 'static'))
-    accesslogger.info(resources.string_for_log('show_traces', request, page_spec_string = '___'.join(check_features)))
+    accesslogger.info(resources.string_for_log('extract_features_rest', request, page_spec_string = '___'.join(check_features)))
     return render(request, 'efelg/extract_features_rest.html') 
 
 
