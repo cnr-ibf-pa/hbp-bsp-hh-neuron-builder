@@ -173,6 +173,7 @@ def select_files_tree(request):
 @login_required(login_url='/login/hbp')
 def show_traces(request):
     return render_to_response('efelg/show_traces.html')
+#test
 
 @login_required(login_url='/login/hbp')
 def get_list(request):
