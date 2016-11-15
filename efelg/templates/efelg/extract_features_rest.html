@@ -9,24 +9,7 @@
 
 {# Bower Dependencies #}
 <link rel="stylesheet" href="{% static 'hbp-collaboratory-theme/dist/css/bootstrap.css' %}">
-
-<!-- internal style -->
-<style>
-.page-iframes {
-border: 3px solid #606060;
-width: 650px;
-height: 800px;
-	max-width: 800px;
-	max-height: 1200px;
-frameborder: 1;
-scrolling: "auto"
-}
-
-.toggle-text {
-	font-size: 25px;
-}
-</style>
-
+<link rel="stylesheet" href="{% static 'bspg.css' %}">
 
 </head>
 <body>
@@ -69,25 +52,7 @@ scrolling: "auto"
 <br>
 
 {# Bower Dependencies #}
-</script>        
 <script type="text/javascript" src="{% static 'jquery/dist/jquery.min.js' %}"></script>
-</script>
-<script>
-$(".div-toggle").toggle();
-$(document).ready(function(){
-    $.getJSON('/efelg/features_json_address', function(data){
-        document.getElementById('iframe-features').setAttribute('src', data['path']);
-    });
-    $.getJSON('/efelg/protocols_json_address', function(data2){
-        document.getElementById('iframe-protocols').setAttribute('src', data2['path']);
-    });
-    $.getJSON('/efelg/pdf_path', function(data3){
-        document.getElementById('iframe-pdf').setAttribute('src', data3['path']);
-    });
-    $(".toggle-text").on("click", function(){
-        $(this).siblings("div").slideToggle("normal", function(){});
-    });
-});
-</script>
+<script type="text/javascript" src="{% static 'efelg/js/extract_features_rest.js' %}"></script>
 </body>
 </html>

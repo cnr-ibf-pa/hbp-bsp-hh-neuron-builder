@@ -1,3 +1,41 @@
+.page-iframes {
+border: 3px solid #606060;
+width: 650px;
+height: 800px;
+max-width: 800px;
+max-height: 1200px;
+}
+
+.toggle-text {
+        font-size: 25px;
+}
+
+
+.fn-container {
+    font-size: 20px;
+}   
+
+.cell {
+    margin: 2em 0;
+}   
+
+.ctrl_box {
+    font-family: sans-serif;
+    color: #808080;
+    width: 100%;
+    text-align: center;
+    padding: 15pt 0;
+}   
+                    
+#gonextform {
+    display: inline;
+}       
+
+
+
+
+
+
 .span-check{
     padding: 6px;
     border-radius: 10px;
@@ -25,7 +63,6 @@
     background:#f0f0f5;  
 }
 
-<style>
 
 div.justify-class{
     text-align:justify;

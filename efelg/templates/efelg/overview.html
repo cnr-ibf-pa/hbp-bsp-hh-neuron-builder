@@ -7,20 +7,16 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width">
 
-{# Bower Dependencies #}
 <link rel="stylesheet" href="{% static 'hbp-collaboratory-theme/dist/css/bootstrap.css' %}">
 <link rel="stylesheet" href="{% static 'bspg.css' %}">
 <script type="text/javascript" src="{% static 'jquery/dist/jquery.min.js' %}"></script>
-<script>
-$.get( "select_files_tree" )
-</script>
 </head>
+
 <body>
 {% block content %}{% endblock %}
 <h3 id= "title">Feature extraction Graphical User Interface (GUI)</h3>
 <br>
 <form action="show_traces/" method="post">{% csrf_token %} 
-{{ temp_var }}
 <p>The feature extraction GUI allows users to select data from an HBP dataset and/or upload their own, and extract electrophysiological features of interest.<br>
 The application leverages the Python Electrophys Feature Extract Library (<a href="https://github.com/BlueBrain/eFEL" target=_blank>eFEL</a>) and provides a friendly interface to select both individual voltage traces (based on the stimulus current applied) and features to be extracted.</p>
 <br>
@@ -64,12 +60,10 @@ Once the selection is completed, click on the Next button to launch the extracti
 The feature extraction process computes the means and standard deviations of the selected features for individual cells and for individual stimuli. Once a stimulus is chosen for a single file, it will be taken into account for all the selected files corresponding to the same cell. Finally, a grand mean is computed among different cells.
 A feature.json and protocol.json files are generated for both individual cells and the entire ensemble. A preview is provided on the last page for the .json files corresponding to the grand means and a link to .zip file containing the entire set of results is provided (see Fig. 4).
 <br><br>
-<!-- <div style="text-align:center">-->
 <figure>
 <img src="{% static "efelg/img/efelg_download.png" %}" alt="efel_download" style="width:100%;max-width:600px; border:2px solid #666"/><br>
 <figcaption>Fig 4. - Results page.</figcaption>
 </figure>
-<!--</div>-->
 <br>
 <br>
 <input id='next_btn' class="btn btn-primary" type="submit" value="Next">
@@ -78,12 +72,10 @@ A feature.json and protocol.json files are generated for both individual cells a
 
 
 <script type="text/javascript">
-//$.get( "select_files_tree" )
 $(document).ready(function(){
+$.get( "/efelg/select_files_tree" )
 $.get( "/efelg/create_session_var" )
 });
 </script>
-<!-- <script type="text/javascript" src="{% static 'angular-bootstrap/ui-bootstrap-tpls.min.js' %}"></script>-->
-<!-- <script type="text/javascript" src="{% static 'angular-bootstrap/ui-bootstrap-tpls.min.js' %}"></script>-->
 </body>
 </html>
