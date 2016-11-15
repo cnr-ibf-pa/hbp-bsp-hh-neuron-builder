@@ -42,9 +42,6 @@ accesslogger = logging.getLogger('efelg_access.log')
 accesslogger.addHandler(logging.FileHandler('./efelg_access.log'))
 accesslogger.setLevel(logging.DEBUG)
 
-
-
-
 def ibf(request):
     return redirect("http://joomla.pa.ibf.cnr.it")
 
@@ -52,8 +49,6 @@ def ibf(request):
 @csrf_exempt
 def overview(request):
 
-    accesslogger.info(resources.string_for_log('overview', request))
-    logger.info('username ' + request.user.username)
     data_dir = os.path.join(settings.BASE_DIR, 'media', 'efel_data', 'app_data')
     json_dir = os.path.join(settings.BASE_DIR, 'media', 'efel_data', 'json_data')
     
@@ -131,6 +126,8 @@ def overview(request):
     request.session['full_user_crr_res_res_folder'] = full_user_crr_res_res_folder
     request.session['full_user_crr_res_data_folder'] = full_user_crr_res_data_folder
     request.session['full_user_uploaded_folder'] = full_user_uploaded_folder
+    
+    accesslogger.info(resources.string_for_log('overview', request))
 
     # render to html 
     return render(request, 'efelg/overview.html')
@@ -143,8 +140,6 @@ def select_features(request):
     feature_names = efel.getFeatureNames()
     selected_traces_rest = request.POST.get('data')
     selected_traces_rest_json = json.loads(selected_traces_rest)
-    #logger.info("selected traces rest json")
-    #logger.info(pprint.pprint(selected_traces_rest_json))
     request.session['selected_traces_rest_json'] = selected_traces_rest_json
 
     accesslogger.info(resources.string_for_log('select_features', request, page_spec_string = selected_traces_rest))
@@ -159,7 +154,6 @@ def upload_files_page(request):
 
 @login_required(login_url='/login/hbp')
 def select_files_tree(request):
-    #accesslogger.info(resources.string_for_log('select_files_tree', request, page_spec_str = ''))
     data_dir = request.session['data_dir']
     json_dir = request.session['json_dir']
     for root, dirs, files in os.walk(data_dir):
@@ -179,8 +173,6 @@ def select_files_tree(request):
 @login_required(login_url='/login/hbp')
 def show_traces(request):
     return render_to_response('efelg/show_traces.html')
-
-
 
 @login_required(login_url='/login/hbp')
 def get_list(request):
@@ -207,7 +199,6 @@ def get_data(request, cellname=""):
 # handle select_traces template
 @login_required(login_url='/login/hbp')
 def select_traces(request):
-    
     
     temp = []
     all_trace_dict = {}
@@ -260,7 +251,6 @@ def select_traces(request):
     # create dictionary for all cell type
     all_trace_plt = json.dumps(all_trace_plt)
 
-    #accesslogger.info(resources.string_for_log('select_traces', request))
     return render_to_response('select_traces.html', {'all_trace_dict': all_trace_dict, 'all_trace_plt': all_trace_plt, 'temp_var': all_post})
 
 @login_required(login_url='/login/hbp')
@@ -334,12 +324,6 @@ def extract_features_rest(request):
         logger.info('crr_stim_list')
         logger.info('crr_stim_list')
         logger.info(str(crr_el['stim']))
-        #all_ch_stim = [item for sublist in crr_el['stim'] for item in sublist]
-        #crr_diff_stim = list(set(crr_el['all_stim']) - set(all_ch_stim))
-        #crr_exc = [float(i) for i in crr_diff_stim]
-
-
-
 
         # new start
         exc_stim_lists = [list(set(crr_el['all_stim']) - set(sublist)) for sublist in crr_el['stim']]
@@ -360,7 +344,7 @@ def extract_features_rest(request):
     # build configuration dictionary
     config = {}
     config['features'] = {'step':[str(i) for i in check_features]}
-    config['path'] = full_crr_data_folder
+    config['path'] = full_crr_data_folder + os.sep
     config['format'] = 'axon'
     config['comment'] = []
     config['cells'] = final_cell_dict
@@ -441,25 +425,12 @@ def download_zip(request):
     return response
 
 @login_required(login_url='/login/hbp')
-def access(request):
-    return render(request, 'access.html') 
-
-
-
-@login_required(login_url='/login/hbp')
 def features_dict(request):
     '''Render the feature dictionary containing all feature names, grouped by feature type'''
     with open(os.path.join(settings.BASE_DIR, 'static', 'efelg', 'efel_features_final.json')) as json_file:
         features_dict = json.load(json_file) 
     return HttpResponse(json.dumps(features_dict))
 
-@login_required(login_url='/login/hbp')
-def edit(request):
-    '''Render the wiki edit form using the provided context query parameter'''
-
-    #context = UUID(request.GET.get('ctx'))
-    # get or build the wiki page
-    return render(request, 'edit.html')
 
 @login_required(login_url='/login/hbp')
 def _reverse_url(view_name, context_uuid):
@@ -571,14 +542,6 @@ def upload_files(request):
 
     return HttpResponse(json.dumps(data_name_dict), content_type="application/json") 
 
-@login_required(login_url='/login/hbp')
-def get_progress(request):
-    """
-     
-    """
-    crr_status_string = ""
-    return HttpResponse(crr_status_string)
-
 
 @login_required(login_url='/login/hbp')
 def get_directory_structure(request):
@@ -598,10 +561,6 @@ def get_directory_structure(request):
     with open(os.path.join(settings.BASE_DIR, 'static', 'efel_features_final.json')) as json_file:
         features_dict = json.load(json_file) 
     return HttpResponse(json.dumps(features_dict))
-
-@login_required(login_url='/login/hbp')
-def sf_tmp(request):
-    return render_to_response("sf_tmp.html")
 
 @login_required(login_url='/login/hbp')
 @csrf_exempt
