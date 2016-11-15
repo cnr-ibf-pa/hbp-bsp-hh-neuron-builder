@@ -135,7 +135,6 @@
             $('#fileloaderform > .glyphicon').hide()
 
             $("form#upload_files").submit(plotTraces, function(e) {
-                if (e.target.files.length > 0) {
                     $('#fileloaderform > .glyphicon').show()
                 
                     var formData = new FormData($(this)[0]);
@@ -160,7 +159,6 @@
                     });
                     e.preventDefault();
                     //return false
-                }
             });
 
 
@@ -436,11 +434,5 @@
                         }
 
 		    </script>
-
-                    {# Bower Dependencies #}
-                    <!--
-                    <script type="text/javascript" src="{% static 'lodash/dist/lodash.min.js' %}"></script>
-                    <script type="text/javascript" src="{% static 'angular/angular.min.js' %}"></script>
-                    -->
                 </body>
             </html>
