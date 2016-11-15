@@ -106,7 +106,7 @@
                 <br>
                 
                 <label class="custom-file">
-                    <input type="file" name="user_files" accept=".abf" multiple/>
+                    <input type="file" name="user_files" id="user_files" accept=".abf" multiple/>
                     <span class="custom-file-control"></span>
                 </label>
                 <br>
@@ -135,30 +135,32 @@
             $('#fileloaderform > .glyphicon').hide()
 
             $("form#upload_files").submit(plotTraces, function(e) {
-                $('#fileloaderform > .glyphicon').show()
-            
-                var formData = new FormData($(this)[0]);
-                $.ajax({
-                    url: $(this).attr("action"),
-                    data: formData,
-                    type: 'POST',
-                    contentType: false,
-                    processData: false,
-                    success: function(name_dict) {
-                        $('#fileloaderform > .glyphicon').hide()
-                    
-                        $('#charts_upload').empty()
-                        all_json_names = name_dict['all_json_names'];
-                        index = 'user_div' 
-                        $('#charts_upload').append('<div class="cell panel panel-default" id="' + index  + '"></div>')
-                        $.each(all_json_names, function(idx, elem) {
-                            $('#' + index).append('<div id="' + elem + '"></div>')
-                            plotTraces(elem , elem)
-                        })
-                    }
-                });
-                e.preventDefault();
-                //return false
+                if (e.target.files.length > 0) {
+                    $('#fileloaderform > .glyphicon').show()
+                
+                    var formData = new FormData($(this)[0]);
+                    $.ajax({
+                        url: $(this).attr("action"),
+                        data: formData,
+                        type: 'POST',
+                        contentType: false,
+                        processData: false,
+                        success: function(name_dict) {
+                            $('#fileloaderform > .glyphicon').hide()
+                        
+                            $('#charts_upload').empty()
+                            all_json_names = name_dict['all_json_names'];
+                            index = 'user_div' 
+                            $('#charts_upload').append('<div class="cell panel panel-default" id="' + index  + '"></div>')
+                            $.each(all_json_names, function(idx, elem) {
+                                $('#' + index).append('<div id="' + elem + '"></div>')
+                                plotTraces(elem , elem)
+                            })
+                        }
+                    });
+                    e.preventDefault();
+                    //return false
+                }
             });
 
 
