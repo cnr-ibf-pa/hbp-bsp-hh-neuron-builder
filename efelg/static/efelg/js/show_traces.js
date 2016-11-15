@@ -1,3 +1,4 @@
+$(document).ready(function(){
             $('#fileloaderform > .glyphicon').hide()
 
             $("form#upload_files").submit(plotTraces, function(e) {
@@ -28,37 +29,6 @@
             });
 
 
-            function submitAll() {
-                var data = serializeAll()
-                var form = $('#gonextform')[0]
-
-                form[0].value = JSON.stringify(data)
-                form.submit()
-            }
-
-            function serializeAll() {
-                var obj = {}
-                var forms = $('form[id^="form_"]')
-
-                for (var i=0; i < forms.length; i++) {
-                    var cell_name = $(forms[i]).parent()[0].id
-                    var traces = []
-                    for (var j=0; j < forms[i].length; j++) {
-                        if ((forms[i][j].checked))
-                        traces.push(forms[i][j].name)
-                    }
-
-                    if (traces.length != 0)
-                    obj[cell_name] = traces
-                }
-
-                return obj
-            }
-
-            function splitFilename(cellname){
-                var filenameTokens = cellname.split('_');
-                return filenameTokens
-            }
 
             /*		resetAll()
 
@@ -293,4 +263,37 @@
                                 }
                             })
                         }
+});
 
+
+            function submitAll() {
+                var data = serializeAll()
+                var form = $('#gonextform')[0]
+
+                form[0].value = JSON.stringify(data)
+                form.submit()
+            }
+
+            function serializeAll() {
+                var obj = {}
+                var forms = $('form[id^="form_"]')
+
+                for (var i=0; i < forms.length; i++) {
+                    var cell_name = $(forms[i]).parent()[0].id
+                    var traces = []
+                    for (var j=0; j < forms[i].length; j++) {
+                        if ((forms[i][j].checked))
+                        traces.push(forms[i][j].name)
+                    }
+
+                    if (traces.length != 0)
+                    obj[cell_name] = traces
+                }
+
+                return obj
+            }
+
+            function splitFilename(cellname){
+                var filenameTokens = cellname.split('_');
+                return filenameTokens
+            }

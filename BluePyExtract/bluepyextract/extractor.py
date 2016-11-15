@@ -989,9 +989,11 @@ class Extractor(object):
                 for fi, feature in enumerate(self.features[expname]):
 
                     feat_vals = numpy.array(feature_array[feature])
+                    logger.info("feat_vals " + str(fi) + ' ' + str(feat_vals)) #llb
 
                     for i_feat, feat_vals_ in enumerate(feat_vals):
-
+                        logger.info("filenames[i_feat]" + str (i_feat)) #llb
+                        logger.info(filenames[i_feat]) #llb
                         color = colormarker_dict[filenames[i_feat]][0]
                         marker = colormarker_dict[filenames[i_feat]][1]
 
