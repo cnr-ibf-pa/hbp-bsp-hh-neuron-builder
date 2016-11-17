@@ -30,7 +30,7 @@ def valid_abf_file(filepath):
 
 def string_for_log(page_name, request, page_spec_string = ''):
     RU = request.META['REQUEST_URI']
-    HXFF = request.META['HTTP_X_FORWARDED_FOR']
+    #HXFF = request.META['HTTP_X_FORWARDED_FOR']
     USER = str(request.user)
     DT = str(datetime.now())
     PSS = page_spec_string
@@ -38,7 +38,7 @@ def string_for_log(page_name, request, page_spec_string = ''):
 
     final_dict['DT'] = DT
     final_dict['USER'] = USER
-    final_dict['HXFF'] = HXFF
+    #final_dict['HXFF'] = HXFF
     final_dict['RU'] = RU
     final_dict['PSS'] = PSS
 
@@ -46,7 +46,7 @@ def string_for_log(page_name, request, page_spec_string = ''):
 
     if '?ctx=' in RU:
         PAGE_NAME = 'EFELG_HOMEPAGE'
-        HXFS = request.META['HTTP_X_FORWARDED_SERVER']
+        #HXFS = request.META['HTTP_X_FORWARDED_SERVER']
         QS = request.META['QUERY_STRING']
         HUA = request.META['HTTP_USER_AGENT']
         HC = request.META['HTTP_COOKIE']
@@ -54,7 +54,7 @@ def string_for_log(page_name, request, page_spec_string = ''):
         RA = request.META['REMOTE_ADDR']
         CC = request.META['CSRF_COOKIE']
         final_dict['PAGE'] = PAGE_NAME
-        final_dict['HXFS'] = HXFS
+        #final_dict['HXFS'] = HXFS
         final_dict['QS'] = QS
         final_dict['HUA'] = HUA
         final_dict['HC'] = HC

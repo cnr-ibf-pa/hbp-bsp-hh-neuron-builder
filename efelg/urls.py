@@ -11,6 +11,7 @@ urlpatterns = [
     url(r'^$', views.overview),    
     url('', include('social.apps.django_app.urls', namespace='social')),
     url(r'^login/hbp', auth_views.login),
+    url(r'^onunload_last$', views.onunload_last),
     url(r'^show_traces/$', views.show_traces),
     url(r'^select_files_tree$', views.select_files_tree),
     url(r'^create_session_var$', views.create_session_var),

@@ -1,6 +1,7 @@
 '''Views'''
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth import logout
 from django.shortcuts import render_to_response, render, redirect
 from django.core.urlresolvers import reverse
 from django.conf import settings
@@ -48,7 +49,8 @@ def ibf(request):
 @login_required(login_url='/login/hbp')
 @csrf_exempt
 def overview(request):
-
+    #if not 'collab' in request.session:
+    #    return redirect('/login/hbp')
     data_dir = os.path.join(settings.BASE_DIR, 'media', 'efel_data', 'app_data')
     json_dir = os.path.join(settings.BASE_DIR, 'media', 'efel_data', 'json_data')
     
@@ -397,15 +399,7 @@ def extract_features_rest(request):
     access_token = request.session['access_token']
     doc_client = manage_collab_storage.create_doc_client(access_token)
     crr_collab_storage_folder = os.path.join(storage_root, st_rel_user_results_folder)
-    logger.info("starting manipulating collab storage")
-    logger.info("starting manipulating collab storage")
-    logger.info("starting manipulating collab storage")
-    logger.info("starting manipulating collab storage")
-    logger.info("starting manipulating collab storage")
-    logger.info("starting manipulating collab storage")
-    logger.info("starting manipulating collab storage")
-    logger.info("starting manipulating collab storage")
-
+    # upload to storage
     #if not doc_client.exists(crr_collab_storage_folder):
     #    doc_client.makedirs(crr_collab_storage_folder)
     # final zip collab storage path
@@ -573,7 +567,7 @@ def create_session_var(request):
     # get services and access token    
     services = bsc.get_services()
     access_token = get_access_token(request.user.social_auth.get())
-
+    
     # get clients from bbp python packages
     oidc_client = BBPOIDCClient.bearer_auth(services['oidc_service']['prod']['url'], access_token)
     bearer_client = BBPOIDCClient.bearer_auth('prod', access_token)
@@ -594,4 +588,9 @@ def create_session_var(request):
     return HttpResponse("") 
 
 
+@login_required(login_url='/login/hbp')
+@csrf_exempt
+def onunload_last(request):
+    logger.info("loggin out")
+    logout(request)
 
