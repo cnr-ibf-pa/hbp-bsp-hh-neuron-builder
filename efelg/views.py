@@ -1,7 +1,15 @@
 '''Views'''
 from django.http import JsonResponse
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth import logout
+import os
+
+if 'HBPDEV' not in os.environ:
+    from django.contrib.auth.decorators import login_required
+else:
+    def login_required(login_url=None):
+        def decorator(f):
+            return f
+        return decorator
+        
 from django.shortcuts import render_to_response, render, redirect
 from django.core.urlresolvers import reverse
 from django.conf import settings
@@ -13,7 +21,7 @@ from django.http import HttpResponse
 #from django.core.context_processors import csrf
 from uuid import UUID
 from markdown import markdown
-import os, time, sys, datetime,bleach, shutil, zipfile, zlib, pprint, inspect
+import time, sys, datetime,bleach, shutil, zipfile, zlib, pprint, inspect
 from math import trunc
 import numpy, efel, neo
 import matplotlib
@@ -24,24 +32,27 @@ import json
 import re
 from . import manage_json
 from . import resources
-from . import manage_collab_storage
 
 sys.path.append(os.path.join(settings.BASE_DIR, 'BluePyExtract'))
-from hbp_app_python_auth.auth import get_access_token, get_token_type, get_auth_header
-from bbp_client.oidc.client import BBPOIDCClient
-from bbp_client.document_service.client import Client as DocClient
-import bbp_client
-from bbp_client.client import *
-import bbp_services.client as bsc
+if 'HBPDEV' not in os.environ:
+    from . import manage_collab_storage
+    from hbp_app_python_auth.auth import get_access_token, get_token_type, get_auth_header
+    from bbp_client.oidc.client import BBPOIDCClient
+    from bbp_client.document_service.client import Client as DocClient
+    import bbp_client
+    from bbp_client.client import *
+    import bbp_services.client as bsc
+    
 import bluepyextract as bpext
 import logging
 logging.basicConfig(stream=sys.stdout)
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 # create logger
-accesslogger = logging.getLogger('efelg_access.log')
-accesslogger.addHandler(logging.FileHandler('./efelg_access.log'))
-accesslogger.setLevel(logging.DEBUG)
+if 'HBPDEV' not in os.environ:
+    accesslogger = logging.getLogger('efelg_access.log')
+    accesslogger.addHandler(logging.FileHandler('./efelg_access.log'))
+    accesslogger.setLevel(logging.DEBUG)
 
 def ibf(request):
     return redirect("http://joomla.pa.ibf.cnr.it")
@@ -64,21 +75,27 @@ def overview(request):
     if not os.path.exists(json_dir):
         os.makedirs(json_dir)
 
-    # get username from request
-    username = request.user.username
+    if 'HBPDEV' not in os.environ:
+        # get username from request
+        username = request.user.username
 
-    # get context and context uuid
-    context_uuid = UUID(request.GET.get('ctx'))
-    context = request.GET.get('ctx')
-    
-    # get headers
-    svc_url = settings.HBP_COLLAB_SERVICE_URL
-    url = '%scollab/context/%s/' % (svc_url, context)
-    headers = {'Authorization': get_auth_header(request.user.social_auth.get())}
-    
-    # get collab_id
-    res = requests.get(url, headers=headers)
-    collab_id = res.json()['collab']['id']
+        # get context and context uuid
+        context_uuid = UUID(request.GET.get('ctx'))
+        context = request.GET.get('ctx')
+        
+        # get headers
+        svc_url = settings.HBP_COLLAB_SERVICE_URL
+        url = '%scollab/context/%s/' % (svc_url, context)
+        headers = {'Authorization': get_auth_header(request.user.social_auth.get())}
+        
+        # get collab_id
+        res = requests.get(url, headers=headers)
+        collab_id = res.json()['collab']['id']
+    else:
+        username = 'test'
+        headers = {}
+        context = 'local'
+        collab_id = 0
 
     # save parameters in request.session
     request.session['username'] = username
@@ -129,7 +146,8 @@ def overview(request):
     request.session['full_user_crr_res_data_folder'] = full_user_crr_res_data_folder
     request.session['full_user_uploaded_folder'] = full_user_uploaded_folder
     
-    accesslogger.info(resources.string_for_log('overview', request))
+    if 'HBPDEV' not in os.environ:
+        accesslogger.info(resources.string_for_log('overview', request))
 
     # render to html 
     return render(request, 'efelg/overview.html')
@@ -144,7 +162,8 @@ def select_features(request):
     selected_traces_rest_json = json.loads(selected_traces_rest)
     request.session['selected_traces_rest_json'] = selected_traces_rest_json
 
-    accesslogger.info(resources.string_for_log('select_features', request, page_spec_string = selected_traces_rest))
+    if 'HBPDEV' not in os.environ:
+        accesslogger.info(resources.string_for_log('select_features', request, page_spec_string = selected_traces_rest))
     
     return render(request, 'efelg/select_features.html', {'feature_names': feature_names, 'features_dict': features_dict})
 
@@ -392,14 +411,15 @@ def extract_features_rest(request):
     finally:
         zip_file.close()
 
-    # save files in the collab storage
-    st_rel_user_results_folder = request.session['st_rel_user_results_folder']
-    st_rel_user_uploaded_folder = request.session['st_rel_user_uploaded_folder']
-    storage_root = request.session['storage_root']
-    access_token = request.session['access_token']
-    doc_client = manage_collab_storage.create_doc_client(access_token)
-    crr_collab_storage_folder = os.path.join(storage_root, st_rel_user_results_folder)
-    # upload to storage
+    if 'HBPDEV' not in os.environ:
+        # save files in the collab storage
+        st_rel_user_results_folder = request.session['st_rel_user_results_folder']
+        st_rel_user_uploaded_folder = request.session['st_rel_user_uploaded_folder']
+        storage_root = request.session['storage_root']
+        access_token = request.session['access_token']
+        doc_client = manage_collab_storage.create_doc_client(access_token)
+        crr_collab_storage_folder = os.path.join(storage_root, st_rel_user_results_folder)
+        logger.info("starting manipulating collab storage")
     #if not doc_client.exists(crr_collab_storage_folder):
     #    doc_client.makedirs(crr_collab_storage_folder)
     # final zip collab storage path
@@ -412,7 +432,8 @@ def extract_features_rest(request):
 
 @login_required(login_url='/login/hbp')
 def download_zip(request):
-    accesslogger.info(resources.string_for_log('download_zip', request))
+    if 'HBPDEV' not in os.environ:
+        accesslogger.info(resources.string_for_log('download_zip', request))
     result_file_zip = request.session['result_file_zip']
     result_file_zip_name = request.session['result_file_zip_name']
     zip_file = open(result_file_zip, 'rb')
@@ -529,19 +550,21 @@ def upload_files(request):
         if outfilename[:-5] not in data_name_dict['all_json_names']:
             data_name_dict['all_json_names'].append(outfilename[:-5])
 
-    access_token = request.session['access_token']
-    storage_root = request.session['storage_root']
-    doc_client = manage_collab_storage.create_doc_client(access_token)
+    if 'HBPDEV' not in os.environ:
+        access_token = request.session['access_token']
+        storage_root = request.session['storage_root']
+        doc_client = manage_collab_storage.create_doc_client(access_token)
 
-    #doc_client.mkdir(os.path.join(storage_root, 'temptestfolder'))
-    accesslogger.info(resources.string_for_log('upload_files', request, page_spec_string = str(len(names_full_path))))
+        #doc_client.mkdir(os.path.join(storage_root, 'temptestfolder'))
+        accesslogger.info(resources.string_for_log('upload_files', request, page_spec_string = str(len(names_full_path))))
 
     return HttpResponse(json.dumps(data_name_dict), content_type="application/json") 
 
 
 @login_required(login_url='/login/hbp')
 def get_directory_structure(request):
-    accesslogger.info(resources.string_for_log('get_directory_structure', request))
+    if 'HBPDEV' not in os.environ:
+        accesslogger.info(resources.string_for_log('get_directory_structure', request))
     """ 
     Creates a nested dictionary that represents the folder structure of rootdir
     """
@@ -561,28 +584,28 @@ def get_directory_structure(request):
 @login_required(login_url='/login/hbp')
 @csrf_exempt
 def create_session_var(request):
+    if 'HBPDEV' not in os.environ:
+        headers = request.session['headers']
+        collab_id = request.session['collab_id']
+        # get services and access token    
+        services = bsc.get_services()
+        access_token = get_access_token(request.user.social_auth.get())
 
-    headers = request.session['headers']
-    collab_id = request.session['collab_id']
-    # get services and access token    
-    services = bsc.get_services()
-    access_token = get_access_token(request.user.social_auth.get())
-    
-    # get clients from bbp python packages
-    oidc_client = BBPOIDCClient.bearer_auth(services['oidc_service']['prod']['url'], access_token)
-    bearer_client = BBPOIDCClient.bearer_auth('prod', access_token)
-    doc_client = DocClient(services['document_service']['prod']['url'], oidc_client)
+        # get clients from bbp python packages
+        oidc_client = BBPOIDCClient.bearer_auth(services['oidc_service']['prod']['url'], access_token)
+        bearer_client = BBPOIDCClient.bearer_auth('prod', access_token)
+        doc_client = DocClient(services['document_service']['prod']['url'], oidc_client)
 
-    # extract project from collab_id
-    project = doc_client.get_project_by_collab_id(collab_id)
-    
-    # extract collab storage root path
-    storage_root = doc_client.get_path_by_id(project["_uuid"])
-    
-    
-    # create session variables for folders handling in request.session
-    request.session['storage_root'] = storage_root
-    request.session['access_token'] = access_token
+        # extract project from collab_id
+        project = doc_client.get_project_by_collab_id(collab_id)
+        
+        # extract collab storage root path
+        storage_root = doc_client.get_path_by_id(project["_uuid"])
+        
+        
+        # create session variables for folders handling in request.session
+        request.session['storage_root'] = storage_root
+        request.session['access_token'] = access_token
 
     # render to html page
     return HttpResponse("") 
