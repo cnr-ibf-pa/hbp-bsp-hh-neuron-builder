@@ -70,18 +70,25 @@
                 <div class="panel-heading">Upload your own file(s) and then select individual traces</div>
                 <br>
                 
-                <label class="custom-file">
-                    <input type="file" name="user_files" id="user_files" accept=".abf" multiple/>
-                    <span class="custom-file-control"></span>
-                </label>
-                <br>
-                
-                <div id="fileloaderform">
-                    <input type="submit" id="upload_button" name="upload_button_name" class="btn btn-default" value="Upload" />
+                <div class="panel">
+                    <label class="btn btn-default btn-file">
+                        Browse files...
+                        <input type="file" name="user_files" id="user_files" accept=".abf" multiple style="display:none"/>
+                        <span class="custom-file-control"></span>
+                    </label>
                     
-         		    <div class="glyphicon" style="text-align:center">
+                    <input type="submit" id="upload_button" name="upload_button_name" class="btn btn-default" value="Upload" />
+	            </div>
+	            
+                <div id="loadfile_box" id="input-groups">
+                    <div class="panel-heading">
+             		    <div id="loadfile_icon" class="glyphicon" style="text-align:center">
                             <span class="glyphicon glyphicon-refresh spinning lg"></span>
-		            </div>
+	                    </div>
+	                    
+	                    
+	                    <span id="loadfile_info"></span> 
+                    </div>
                 </div>
             </div>
         </form>
