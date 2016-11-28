@@ -9,18 +9,22 @@ from bspg import auth
 import urllib
 import requests
 from django.contrib.auth import logout as auth_logout
+from django.contrib.auth.views import logout as views_logout
 
 # Create your views here.
 
 def sitemap(request):
     context = request.GET.get('ctx')
-    if 'this_ctx' in request.session:
-        auth_logout(request)
-        nextUrl = urllib.quote('%s?ctx=%s' % (request.path, context))
-        return redirect('%s?next=%s' % (settings.LOGIN_URL, nextUrl))
+    nextUrl = urllib.quote('%s?ctx=%s' % (request.path, context))
+    request.session['nextUrl'] = nextUrl
     request.session['this_ctx'] = context
-    request.session['nextUrl'] = urllib.quote('%s?ctx=%s' % (request.path, context))
-    #request.session['home_request'] = request
+    hdr =  auth.get_authorization_header(request)
+    crr_user = auth.get_user(request)
+    logger.info(crr_user)
+    if not bool(hdr) or not bool(crr_user):
+        auth_logout(request)
+        return redirect('%s?next=%s' % (settings.LOGIN_URL, nextUrl))
+    
     return render(request, 'sitemap/sitemap.html')
 
 
@@ -29,6 +33,13 @@ def tree_json(request):
         return HttpResponse(json.dumps(request.session['sitemap']))
         
     hdr =  auth.get_authorization_header(request)
+    logger.info("header from tree_json")
+    logger.info("header from tree_json")
+    logger.info("header from tree_json")
+    logger.info("header from tree_json")
+    logger.info("header from tree_json")
+    logger.info("header from tree_json")
+    logger.info(hdr)
     bsp_url = settings.HBP_COLLAB_SERVICE_URL + 'collab/161/nav/all/'
     res = requests.get(bsp_url, headers = hdr)
     if res.status_code != 200:
@@ -37,12 +48,13 @@ def tree_json(request):
         logger.info('bad code')
         logger.info('bad code')
         #context = request.GET.get('ctx')
-        request.session.flush()
+        #request.session.flush()
+        views_logout(request)
         auth_logout(request)
         #nextUrl = urllib.quote('%s?ctx=%s' % (request.path, context))
-        #return redirect('%s?next=%s' % (settings.LOGIN_URL, request.session['nextUrl']))
+        return redirect('%s?next=%s' % (settings.LOGIN_URL, request.session['nextUrl']))
         #return redirect('%s?next=%s' % (settings.LOGIN_URL, 'sitemap'))
-        return redirect('https://bspg.pa.ibf.cnr.it/sitemap')
+        #return redirect('https://bspg.pa.ibf.cnr.it/sitemap')
 
     all_data = res.json()
     first_level_collab = []

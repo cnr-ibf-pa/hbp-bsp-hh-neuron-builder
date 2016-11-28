@@ -5,8 +5,7 @@ logger.setLevel(logging.DEBUG)
 from django.conf import settings
 import requests
 from social.apps.django_app.default.models import UserSocialAuth
-from hbp_app_python_auth.auth import get_auth_header
-
+from hbp_app_python_auth.auth import get_access_token, get_token_type, get_auth_header
 import json
 from datetime import date
 from django.shortcuts import render
@@ -89,7 +88,8 @@ def get_user(request):
     res = requests.get(url, headers=headers)
     if res.status_code != 200:
         logger.debug("Error" + res.content)
-        raise Exception(res.content)
+        return {}
+        #raise Exception(res.content)
     logger.debug("User information retrieved")
     return res.json()
 
