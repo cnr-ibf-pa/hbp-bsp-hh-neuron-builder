@@ -10,10 +10,12 @@ else:
             return f
         return decorator
         
+import urllib
+from django.contrib.auth import logout as auth_logout
 from django.shortcuts import render_to_response, render, redirect
 from django.core.urlresolvers import reverse
 from django.conf import settings
-from django.template import RequestContext
+from django.template.context import RequestContext
 from django.views.decorators.csrf import csrf_exempt
 from django.core.files.base import ContentFile
 from django import forms
@@ -54,14 +56,37 @@ if 'HBPDEV' not in os.environ:
     accesslogger.addHandler(logging.FileHandler('./efelg_access.log'))
     accesslogger.setLevel(logging.DEBUG)
 
-def ibf(request):
-    return redirect("http://joomla.pa.ibf.cnr.it")
 
 @login_required(login_url='/login/hbp')
 @csrf_exempt
 def overview(request):
-    #if not 'collab' in request.session:
-    #    return redirect('/login/hbp')
+    logger.info("logging information")
+    logger.info(request.user)
+    logger.info(request)
+    context = RequestContext(request, {'request':request, 'user':request.user})
+    logger.info("printing context")
+    pprint.pprint(context)
+    logger.info("is authenticated???")
+    logger.info("is authenticated???")
+    logger.info("is authenticated???")
+    logger.info("is authenticated???")
+    logger.info("is authenticated???")
+    logger.info(request.user.is_authenticated)
+
+
+    if 'collab_id' in request.session.keys():
+        context = request.GET.get('ctx')
+        auth_logout(request)
+        nextUrl = urllib.quote('%s?ctx=%s' % (request.path, context))
+        return redirect('%s?next=%s' % (settings.LOGIN_URL, nextUrl))
+    
+    my_url = 'https://services.humanbrainproject.eu/idm/v1/api/user/me'
+    headers = {'Authorization': get_auth_header(request.user.social_auth.get())}
+    
+    res = requests.get(my_url, headers = headers)
+    pprint.pprint(res.json())
+    logger.info("access token")
+    logger.info(get_access_token(request.user.social_auth.get()))
     data_dir = os.path.join(settings.BASE_DIR, 'media', 'efel_data', 'app_data')
     json_dir = os.path.join(settings.BASE_DIR, 'media', 'efel_data', 'json_data')
     
@@ -90,6 +115,11 @@ def overview(request):
         
         # get collab_id
         res = requests.get(url, headers=headers)
+        if res.status_code !=200:
+            context = request.GET.get('ctx')
+            auth_logout(request)
+            nextUrl = urllib.quote('%s?ctx=%s' % (request.path, context))
+            return redirect('%s?next=%s' % (settings.LOGIN_URL, nextUrl))
         collab_id = res.json()['collab']['id']
     else:
         username = 'test'
@@ -420,13 +450,13 @@ def extract_features_rest(request):
         doc_client = manage_collab_storage.create_doc_client(access_token)
         crr_collab_storage_folder = os.path.join(storage_root, st_rel_user_results_folder)
         logger.info("starting manipulating collab storage")
-    #if not doc_client.exists(crr_collab_storage_folder):
-    #    doc_client.makedirs(crr_collab_storage_folder)
+    if not doc_client.exists(crr_collab_storage_folder):
+        doc_client.makedirs(crr_collab_storage_folder)
     # final zip collab storage path
-    #zip_collab_storage_path = os.path.join(crr_collab_storage_folder, crr_user_folder + '_results.zip')
-    #if not doc_client.exists(zip_collab_storage_path):
-    #    doc_client.upload_file(output_path, zip_collab_storage_path) 
-    #accesslogger.info(resources.string_for_log('extract_features_rest', request, page_spec_string = '___'.join(check_features)))
+    zip_collab_storage_path = os.path.join(crr_collab_storage_folder, crr_user_folder + '_results.zip')
+    if not doc_client.exists(zip_collab_storage_path):
+        doc_client.upload_file(output_path, zip_collab_storage_path) 
+    accesslogger.info(resources.string_for_log('extract_features_rest', request, page_spec_string = '___'.join(check_features)))
     return render(request, 'efelg/extract_features_rest.html') 
 
 
@@ -585,6 +615,8 @@ def get_directory_structure(request):
 @csrf_exempt
 def create_session_var(request):
     if 'HBPDEV' not in os.environ:
+        logger.info("entering create_session_var")
+        logger.info(datetime.datetime.now().strftime('%Y%m%d%H%M%S'))
         headers = request.session['headers']
         collab_id = request.session['collab_id']
         # get services and access token    
@@ -606,6 +638,8 @@ def create_session_var(request):
         # create session variables for folders handling in request.session
         request.session['storage_root'] = storage_root
         request.session['access_token'] = access_token
+        logger.info(datetime.datetime.now().strftime('%Y%m%d%H%M%S'))
+        logger.info("exiting create_session_var")
 
     # render to html page
     return HttpResponse("") 
@@ -615,5 +649,4 @@ def create_session_var(request):
 @csrf_exempt
 def onunload_last(request):
     logger.info("loggin out")
-    logout(request)
 
