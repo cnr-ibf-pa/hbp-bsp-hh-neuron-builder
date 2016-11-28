@@ -1,1 +1,0 @@
-/home/frafra/TEST/bspg/efelg/static/efelg/js/show_traces_n.js
