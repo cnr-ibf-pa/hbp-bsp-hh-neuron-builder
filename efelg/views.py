@@ -11,7 +11,8 @@ else:
         return decorator
         
 import urllib
-from django.contrib.auth import logout as auth_logout
+if 'HBPDEV' not in os.environ:
+    from django.contrib.auth import logout as auth_logout
 from django.shortcuts import render_to_response, render, redirect
 from django.core.urlresolvers import reverse
 from django.conf import settings
@@ -73,20 +74,21 @@ def overview(request):
     logger.info("is authenticated???")
     logger.info(request.user.is_authenticated)
 
-
-    if 'collab_id' in request.session.keys():
-        context = request.GET.get('ctx')
-        auth_logout(request)
-        nextUrl = urllib.quote('%s?ctx=%s' % (request.path, context))
-        return redirect('%s?next=%s' % (settings.LOGIN_URL, nextUrl))
-    
-    my_url = 'https://services.humanbrainproject.eu/idm/v1/api/user/me'
-    headers = {'Authorization': get_auth_header(request.user.social_auth.get())}
-    
-    res = requests.get(my_url, headers = headers)
-    pprint.pprint(res.json())
-    logger.info("access token")
-    logger.info(get_access_token(request.user.social_auth.get()))
+    if 'HBPDEV' not in os.environ:
+        if 'collab_id' in request.session.keys():
+            context = request.GET.get('ctx')
+            auth_logout(request)
+            nextUrl = urllib.quote('%s?ctx=%s' % (request.path, context))
+            return redirect('%s?next=%s' % (settings.LOGIN_URL, nextUrl))
+        
+        my_url = 'https://services.humanbrainproject.eu/idm/v1/api/user/me'
+        headers = {'Authorization': get_auth_header(request.user.social_auth.get())}
+        
+        res = requests.get(my_url, headers = headers)
+        pprint.pprint(res.json())
+        logger.info("access token")
+        logger.info(get_access_token(request.user.social_auth.get()))
+        
     data_dir = os.path.join(settings.BASE_DIR, 'media', 'efel_data', 'app_data')
     json_dir = os.path.join(settings.BASE_DIR, 'media', 'efel_data', 'json_data')
     

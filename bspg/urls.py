@@ -13,6 +13,9 @@ Including another URLconf
     1. Import the include() function: from django.conf.urls import url, include
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
+
+import os
+
 from django.conf.urls import include, url
 from django.contrib import admin
 from efelg import views
@@ -20,7 +23,9 @@ urlpatterns = [
     #url(r'^$', views.ibf),
     url('', include('social.apps.django_app.urls', namespace='social')),
     url(r'^efelg/', include('efelg.urls'), name='efelg'),
-    url(r'^sitemap/', include('sitemap.urls'), name='sitemap'),
     url(r'^admin/', admin.site.urls),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
 ]
+
+if 'HBPDEV' not in os.environ:
+    urlpatterns.append(url(r'^sitemap/', include('sitemap.urls'), name='sitemap'))
