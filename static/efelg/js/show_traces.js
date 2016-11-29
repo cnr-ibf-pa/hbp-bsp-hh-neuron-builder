@@ -315,7 +315,7 @@ $(document).ready(function(){
 		                $.each(elem, function(i, e) {
 		                    $('#' + index).append('<div id="' + e + '"></div>')
 							$.getJSON('/efelg/get_data/' + e, function(data) {
-								TracePlot(e, JSON.parse(data))
+								new TracePlot(e, JSON.parse(data))
 							})
 		                })
 		            })

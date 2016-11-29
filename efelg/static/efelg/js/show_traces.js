@@ -265,7 +265,7 @@ $(document).ready(function(){
                     $.each(all_json_names, function(idx, elem) {
 	                    $('#' + index).append('<div id="' + elem + '"></div>')
 						$.getJSON('/efelg/get_data/' + elem, function(data) {
-							TracePlot(elem, JSON.parse(data))
+							new TracePlot(elem, JSON.parse(data))
 						})
                     })
                 }
@@ -315,7 +315,7 @@ $(document).ready(function(){
 		                $.each(elem, function(i, e) {
 		                    $('#' + index).append('<div id="' + e + '"></div>')
 							$.getJSON('/efelg/get_data/' + e, function(data) {
-								TracePlot(e, JSON.parse(data))
+								new TracePlot(e, JSON.parse(data))
 							})
 		                })
 		            })
