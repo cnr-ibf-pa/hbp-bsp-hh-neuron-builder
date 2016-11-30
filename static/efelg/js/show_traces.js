@@ -51,6 +51,7 @@ function TracePlot(container_id, cell_obj) {
         self.infobox.append('<button class="selall btn btn-link btn-default">Select all</button>')
         self.infobox.append('<button class="dselall btn btn-link btn-default">Deselect all</button>')
         self.infobox.append('<button class="invsel btn btn-default btn-link">Invert selection</button>')
+        self.infobox.append('<div class="input-group col-xs-3 pull-right"> <div class="input-group-addon input-sm">Voltage correction</div> <input type="text" class="form-control input-sm vcorr" value="+0.0"> </div>')
     }
 
 	function manageLegend() {
@@ -350,6 +351,7 @@ function submitAll() {
 function serializeAll() {
     var obj = {}
     var forms = $('[id^="form_"]')
+    var infos = $('[id^="info_"]')
 
     for (var i=0; i < forms.length; i++) {
         var cell_name = $(forms[i]).parent()[0].id
@@ -360,8 +362,14 @@ function serializeAll() {
             traces.push(cboxes[j].name)
         }
 
-        if (traces.length != 0)
-            obj[cell_name] = traces
+        if (traces.length != 0) {
+            var sampleObj = {}
+            
+            sampleObj['traces'] = traces
+            sampleObj['vcorr'] = $(infos[i]).find('.vcorr').val()
+            
+            obj[cell_name] = sampleObj
+        }
     }
 
     return obj

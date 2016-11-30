@@ -345,7 +345,7 @@ def extract_features_rest(request):
 
         crr_file_dict = json.loads(crr_file_dict_read)
         crr_file_all_stim = crr_file_dict['traces'].keys()
-        crr_file_sel_stim = selected_traces_rest_json[k]
+        crr_file_sel_stim = selected_traces_rest_json[k]['traces']
         crr_abf_file_path = crr_file_dict['abfpath']
         logger.info('crr_abf_file_path')
         logger.info(crr_abf_file_path)
