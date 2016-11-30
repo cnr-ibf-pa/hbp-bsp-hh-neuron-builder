@@ -349,18 +349,19 @@ function submitAll() {
 
 function serializeAll() {
     var obj = {}
-    var forms = $('form[id^="form_"]')
+    var forms = $('[id^="form_"]')
 
     for (var i=0; i < forms.length; i++) {
         var cell_name = $(forms[i]).parent()[0].id
+        var cboxes = $(forms[i]).find('[type="checkbox"]')
         var traces = []
-        for (var j=0; j < forms[i].length; j++) {
-            if ((forms[i][j].checked))
-            traces.push(forms[i][j].name)
+        for (var j=0; j < cboxes.length; j++) {
+            if (cboxes[j].checked)
+            traces.push(cboxes[j].name)
         }
 
         if (traces.length != 0)
-        obj[cell_name] = traces
+            obj[cell_name] = traces
     }
 
     return obj
