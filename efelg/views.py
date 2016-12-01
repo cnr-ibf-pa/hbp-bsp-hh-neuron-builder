@@ -452,13 +452,13 @@ def extract_features_rest(request):
         doc_client = manage_collab_storage.create_doc_client(access_token)
         crr_collab_storage_folder = os.path.join(storage_root, st_rel_user_results_folder)
         logger.info("starting manipulating collab storage")
-    if not doc_client.exists(crr_collab_storage_folder):
-        doc_client.makedirs(crr_collab_storage_folder)
-    # final zip collab storage path
-    zip_collab_storage_path = os.path.join(crr_collab_storage_folder, crr_user_folder + '_results.zip')
-    if not doc_client.exists(zip_collab_storage_path):
-        doc_client.upload_file(output_path, zip_collab_storage_path) 
-    accesslogger.info(resources.string_for_log('extract_features_rest', request, page_spec_string = '___'.join(check_features)))
+        if not doc_client.exists(crr_collab_storage_folder):
+            doc_client.makedirs(crr_collab_storage_folder)
+        # final zip collab storage path
+        zip_collab_storage_path = os.path.join(crr_collab_storage_folder, crr_user_folder + '_results.zip')
+        if not doc_client.exists(zip_collab_storage_path):
+            doc_client.upload_file(output_path, zip_collab_storage_path) 
+        accesslogger.info(resources.string_for_log('extract_features_rest', request, page_spec_string = '___'.join(check_features)))
     return render(request, 'efelg/extract_features_rest.html') 
 
 
