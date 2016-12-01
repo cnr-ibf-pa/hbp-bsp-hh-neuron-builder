@@ -365,7 +365,7 @@ function serializeAll() {
         if (traces.length != 0) {
             var sampleObj = {}
             
-            sampleObj['traces'] = traces
+            sampleObj['stim'] = traces
             sampleObj['vcorr'] = $(infos[i]).find('.vcorr').val()
             
             obj[cell_name] = sampleObj
