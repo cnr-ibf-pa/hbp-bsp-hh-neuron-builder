@@ -11,7 +11,8 @@ else:
         return decorator
         
 import urllib
-from django.contrib.auth import logout as auth_logout
+if 'HBPDEV' not in os.environ:
+    from django.contrib.auth import logout as auth_logout
 from django.shortcuts import render_to_response, render, redirect
 from django.core.urlresolvers import reverse
 from django.conf import settings
@@ -73,20 +74,21 @@ def overview(request):
     logger.info("is authenticated???")
     logger.info(request.user.is_authenticated)
 
-
-    if 'collab_id' in request.session.keys():
-        context = request.GET.get('ctx')
-        auth_logout(request)
-        nextUrl = urllib.quote('%s?ctx=%s' % (request.path, context))
-        return redirect('%s?next=%s' % (settings.LOGIN_URL, nextUrl))
-    
-    my_url = 'https://services.humanbrainproject.eu/idm/v1/api/user/me'
-    headers = {'Authorization': get_auth_header(request.user.social_auth.get())}
-    
-    res = requests.get(my_url, headers = headers)
-    pprint.pprint(res.json())
-    logger.info("access token")
-    logger.info(get_access_token(request.user.social_auth.get()))
+    if 'HBPDEV' not in os.environ:
+        if 'collab_id' in request.session.keys():
+            context = request.GET.get('ctx')
+            auth_logout(request)
+            nextUrl = urllib.quote('%s?ctx=%s' % (request.path, context))
+            return redirect('%s?next=%s' % (settings.LOGIN_URL, nextUrl))
+        
+        my_url = 'https://services.humanbrainproject.eu/idm/v1/api/user/me'
+        headers = {'Authorization': get_auth_header(request.user.social_auth.get())}
+        
+        res = requests.get(my_url, headers = headers)
+        pprint.pprint(res.json())
+        logger.info("access token")
+        logger.info(get_access_token(request.user.social_auth.get()))
+        
     data_dir = os.path.join(settings.BASE_DIR, 'media', 'efel_data', 'app_data')
     json_dir = os.path.join(settings.BASE_DIR, 'media', 'efel_data', 'json_data')
     
@@ -343,7 +345,7 @@ def extract_features_rest(request):
 
         crr_file_dict = json.loads(crr_file_dict_read)
         crr_file_all_stim = crr_file_dict['traces'].keys()
-        crr_file_sel_stim = selected_traces_rest_json[k]
+        crr_file_sel_stim = selected_traces_rest_json[k]['stim']
         crr_abf_file_path = crr_file_dict['abfpath']
         logger.info('crr_abf_file_path')
         logger.info(crr_abf_file_path)
@@ -450,13 +452,13 @@ def extract_features_rest(request):
         doc_client = manage_collab_storage.create_doc_client(access_token)
         crr_collab_storage_folder = os.path.join(storage_root, st_rel_user_results_folder)
         logger.info("starting manipulating collab storage")
-    if not doc_client.exists(crr_collab_storage_folder):
-        doc_client.makedirs(crr_collab_storage_folder)
-    # final zip collab storage path
-    zip_collab_storage_path = os.path.join(crr_collab_storage_folder, crr_user_folder + '_results.zip')
-    if not doc_client.exists(zip_collab_storage_path):
-        doc_client.upload_file(output_path, zip_collab_storage_path) 
-    accesslogger.info(resources.string_for_log('extract_features_rest', request, page_spec_string = '___'.join(check_features)))
+        if not doc_client.exists(crr_collab_storage_folder):
+            doc_client.makedirs(crr_collab_storage_folder)
+        # final zip collab storage path
+        zip_collab_storage_path = os.path.join(crr_collab_storage_folder, crr_user_folder + '_results.zip')
+        if not doc_client.exists(zip_collab_storage_path):
+            doc_client.upload_file(output_path, zip_collab_storage_path) 
+        accesslogger.info(resources.string_for_log('extract_features_rest', request, page_spec_string = '___'.join(check_features)))
     return render(request, 'efelg/extract_features_rest.html') 
 
 

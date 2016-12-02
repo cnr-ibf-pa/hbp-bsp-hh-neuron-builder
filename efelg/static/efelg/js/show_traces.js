@@ -51,6 +51,7 @@ function TracePlot(container_id, cell_obj) {
         self.infobox.append('<button class="selall btn btn-link btn-default">Select all</button>')
         self.infobox.append('<button class="dselall btn btn-link btn-default">Deselect all</button>')
         self.infobox.append('<button class="invsel btn btn-default btn-link">Invert selection</button>')
+        self.infobox.append('<div class="input-group col-xs-3 pull-right"> <div class="input-group-addon input-sm">Voltage correction (mV)</div> <input type="number" class="form-control input-sm vcorr" step="0.5" value="0"> </div>')
     }
 
 	function manageLegend() {
@@ -265,7 +266,7 @@ $(document).ready(function(){
                     $.each(all_json_names, function(idx, elem) {
 	                    $('#' + index).append('<div id="' + elem + '"></div>')
 						$.getJSON('/efelg/get_data/' + elem, function(data) {
-							TracePlot(elem, JSON.parse(data))
+							new TracePlot(elem, JSON.parse(data))
 						})
                     })
                 }
@@ -315,7 +316,7 @@ $(document).ready(function(){
 		                $.each(elem, function(i, e) {
 		                    $('#' + index).append('<div id="' + e + '"></div>')
 							$.getJSON('/efelg/get_data/' + e, function(data) {
-								TracePlot(e, JSON.parse(data))
+								new TracePlot(e, JSON.parse(data))
 							})
 		                })
 		            })
@@ -349,18 +350,26 @@ function submitAll() {
 
 function serializeAll() {
     var obj = {}
-    var forms = $('form[id^="form_"]')
+    var forms = $('[id^="form_"]')
+    var infos = $('[id^="info_"]')
 
     for (var i=0; i < forms.length; i++) {
         var cell_name = $(forms[i]).parent()[0].id
+        var cboxes = $(forms[i]).find('[type="checkbox"]')
         var traces = []
-        for (var j=0; j < forms[i].length; j++) {
-            if ((forms[i][j].checked))
-            traces.push(forms[i][j].name)
+        for (var j=0; j < cboxes.length; j++) {
+            if (cboxes[j].checked)
+            traces.push(cboxes[j].name)
         }
 
-        if (traces.length != 0)
-        obj[cell_name] = traces
+        if (traces.length != 0) {
+            var sampleObj = {}
+            
+            sampleObj['stim'] = traces
+            sampleObj['vcorr'] = $(infos[i]).find('.vcorr').val()
+            
+            obj[cell_name] = sampleObj
+        }
     }
 
     return obj
