@@ -51,7 +51,7 @@ function TracePlot(container_id, cell_obj) {
         self.infobox.append('<button class="selall btn btn-link btn-default">Select all</button>')
         self.infobox.append('<button class="dselall btn btn-link btn-default">Deselect all</button>')
         self.infobox.append('<button class="invsel btn btn-default btn-link">Invert selection</button>')
-        self.infobox.append('<div class="input-group col-xs-3 pull-right"> <div class="input-group-addon input-sm">Voltage correction</div> <input type="text" class="form-control input-sm vcorr" value="+0.0"> </div>')
+        self.infobox.append('<div class="input-group col-xs-3 pull-right"> <div class="input-group-addon input-sm">Voltage correction (mV)</div> <input type="number" class="form-control input-sm vcorr" step="0.5" value="0"> </div>')
     }
 
 	function manageLegend() {
