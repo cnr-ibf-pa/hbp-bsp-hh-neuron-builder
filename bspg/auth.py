@@ -6,6 +6,12 @@ from django.conf import settings
 import requests
 from social.apps.django_app.default.models import UserSocialAuth
 from hbp_app_python_auth.auth import get_access_token, get_token_type, get_auth_header
+from bbp_client.oidc.client import BBPOIDCClient
+from bbp_client.document_service.client import Client as DocClient
+import bbp_services.client as bsc 
+
+
+
 import json
 from datetime import date
 from django.shortcuts import render
@@ -20,13 +26,18 @@ from django.http import (HttpResponse, JsonResponse,
         HttpResponseRedirect)       # 302
 from django.core.serializers.json import DjangoJSONEncoder
 
+def retrieve_access_token(request):
+    return get_access_token(request.user.social_auth.get())
+   
+
+
 def get_authorization_header(request):
     auth = request.META.get("HTTP_AUTHORIZATION", None)
     if auth is None:
         try:
             auth = get_auth_header(request.user.social_auth.get())
             logger.debug("Got authorization from database")
-        except AttributeError:
+        except Exception:
             #pass
             return {}
     # in case of 401 error, need to trap and redirect to login
@@ -34,6 +45,15 @@ def get_authorization_header(request):
         logger.debug("Got authorization from HTTP header")
     return {'Authorization': auth}
 
+def get_doc_client(request):
+    services = bsc.get_services()
+    try:
+        access_token = retrieve_access_token(request)
+        oidc_client = BBPOIDCClient.bearer_auth(services['oidc_service']['prod']['url'], access_token)
+        doc_client = DocClient(services['document_service']['prod']['url'], oidc_client)
+    except Exception as err:
+        return False
+    return doc_client
 
 def get_permissions(request, context):
     """
