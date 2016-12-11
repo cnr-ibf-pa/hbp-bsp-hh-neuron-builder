@@ -311,8 +311,34 @@ $(document).ready(function(){
 		            $(el).prop("disabled", true)
 
 		            $.each(tree[ev.target.value], function(index, elem) {
-		                $('#charts').append('<div class="cell panel panel-default" id="' + index + '"></div>')
-
+		            	var cell_name = elem[0].replace('_', ' -> ')
+		            	var cell_container = $('<div class="cell panel panel-default" />')
+		            	cell_container.append('<div class="panel-heading"> \
+		            		<a href="#">Cell samples: ' + cell_name + '</a>	\
+		            		<button class="cell_invsel btn-link pull-right">Invert selection</button> \
+		            		<button class="cell_dselall btn-link pull-right">Deselect all traces</button> \
+		            		<button class="cell_selall btn-link pull-right">Select all traces</button> \
+		            		</div>')
+		            	cell_container.append('<div id="' + index + '"></div>')
+		                $('#charts').append(cell_container)
+		                
+		            	$('#charts').find('.cell:last-of-type a').click(function(){
+                            $('#' + index).toggle()
+                            return false
+                        })
+                        
+		            	$('#charts').find('.cell:last-of-type .cell_selall').click(function(){
+                            $(this).parents('.cell').find('.selall').click()
+                        })
+                        
+		            	$('#charts').find('.cell:last-of-type .cell_invsel').click(function(){
+                            $(this).parents('.cell').find('.invsel').click()
+                        })
+                        
+		            	$('#charts').find('.cell:last-of-type .cell_dselall').click(function(){
+                            $(this).parents('.cell').find('.dselall').click()
+                        })
+                                                
 		                $.each(elem, function(i, e) {
 		                    $('#' + index).append('<div id="' + e + '"></div>')
 							$.getJSON('/efelg/get_data/' + e, function(data) {
