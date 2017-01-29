@@ -215,7 +215,7 @@ class Extractor(object):
                         dataset_cell_exp[expname]['hypamp'] += data['hypamp']
 
 
-    def process_file(self, filename, cellname, expname, i_file):
+    def process_file(self, filename, cellname, expname, idx_file):
 
         data = OrderedDict()
         data['voltage'] = []
@@ -385,7 +385,12 @@ class Extractor(object):
 
                 # normalize membrane potential to known value (given in UCL excel sheet)
                 if v_corr:
-                    voltage = voltage - numpy.mean(voltage[0:ion]) + v_corr
+                    if len(v_corr) == 1:
+                        voltage = voltage - numpy.mean(voltage[0:ion]) + v_corr[0]
+                    elif len(v_corr) - 1 >= idx_file:
+                        voltage = voltage - numpy.mean(voltage[0:ion]) + v_corr[idx_file]
+
+
 
                 voltage = voltage - ljp
 
@@ -395,7 +400,7 @@ class Extractor(object):
                 # llb #logger.info(str(i_file))
                 if ('exclude' in self.cells[cellname] and
                     #any(abs(self.cells[cellname]['exclude'] - amp) < 1e-4)):
-                    any(abs(self.cells[cellname]['exclude'][i_file] - amp) < 1e-4)):
+                    any(abs(self.cells[cellname]['exclude'][idx_file] - amp) < 1e-4)):
                     continue # llb
                     # llb #logger.info(" Not using trace with amplitude %f", amp)
 
