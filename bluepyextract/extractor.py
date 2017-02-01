@@ -10,7 +10,7 @@ import fnmatch
 import itertools
 import collections
 from itertools import cycle
-
+import pprint
 try:
     import cPickle as pickle
 except:
@@ -156,10 +156,9 @@ class Extractor(object):
 
     def create_dataset(self):
 
-        # llb #logger.info(" Filling dataset")
-
         for i_cell, cellname in enumerate(self.cells):
 
+            crr_cell_stim_dict = []
             self.dataset[cellname] = OrderedDict()
             self.dataset[cellname]['v_corr'] = self.cells[cellname]['v_corr']
 
@@ -176,12 +175,16 @@ class Extractor(object):
 
                 files = self.cells[cellname]['experiments'][expname]['files']
                 if len(files) > 0:
-                    # llb #logger.debug(" Adding experiment %s", expname)
+
 
                     if expname not in self.experiments:
                         self.experiments.append(expname)
 
+
                     dataset_cell_exp[expname] = OrderedDict()
+
+                    dataset_cell_exp[expname]['stim_feat'] = []
+
 
                     dataset_cell_exp[expname]['location'] =\
                         self.cells[cellname]['experiments'][expname]['location']
@@ -232,6 +235,12 @@ class Extractor(object):
 
         ljp = self.dataset[cellname]['ljp']
         v_corr = self.dataset[cellname]['v_corr']
+
+        # read stimulus features if present
+        stim_feats = []
+        if 'stim_feats' in self.cells[cellname]['experiments'][expname]:
+            stim_feats = self.cells[cellname]['experiments'][expname]['stim_feats']
+            #pprint.pprint(stim_feats)
 
         if self.format == 'igor':
 
@@ -294,11 +303,6 @@ class Extractor(object):
             else:
                 amp = numpy.mean( i[ion+iborder:ioff-iborder] ) - hypamp
 
-            #print hypamp, amp
-            #plt.figure()
-            #plt.plot(t, i)
-            #plt.show()
-
             # clean voltage from transients
             if expname in ['IDRest', 'IDrest', 'IDthresh', 'IDdepol']:
                 cut_start = int(ion+numpy.ceil(1.0/dt))
@@ -331,24 +335,19 @@ class Extractor(object):
             data['hypamp'].append(hypamp)
             data['filename'].append(ordinal)
 
-            # llb #logger.debug(" Added igor file with ordinal %s", ordinal)
-
-
         elif self.format == 'axon':
-
-            if isinstance(filename, str) is False:
-                raise Exception('Please provide a string with filename of axon file')
-
-            # llb #logger.debug(" Adding axon file %s", filename)
+            #if isinstance(str(filename), str) is False:
+            #    raise Exception('Please provide a string with filename of axon file')
 
             from neo import io
-            f = self.path + cellname + '/' + filename + '.abf'
+            f = self.path + cellname + os.sep + filename + '.abf'
             r = io.AxonIO(filename = f) #
             bl = r.read_block(lazy=False, cascade=True)
-
+            if stim_feats:
+                all_stims = self.stim_feats_from_meta(stim_feats, len(bl.segments))
+            else:
+                pass
             for i_seg, seg in enumerate(bl.segments):
-
-                # llb #logger.debug(" Adding segment %d of %d", i_seg, len(bl.segments))
 
                 voltage = numpy.array(seg.analogsignals[0]).astype(numpy.float64)
                 current = numpy.array(seg.analogsignals[1]).astype(numpy.float64)
@@ -390,14 +389,11 @@ class Extractor(object):
                     elif len(v_corr) - 1 >= idx_file:
                         voltage = voltage - numpy.mean(voltage[0:ion]) + v_corr[idx_file]
 
-
-
                 voltage = voltage - ljp
 
                 # clip spikes after stimulus so they are not analysed
                 voltage[ioff:] = numpy.clip(voltage[ioff:], -300, -40)
-                # llb #logger.info(cellname)
-                # llb #logger.info(str(i_file))
+
                 if ('exclude' in self.cells[cellname] and
                     #any(abs(self.cells[cellname]['exclude'] - amp) < 1e-4)):
                     any(abs(self.cells[cellname]['exclude'][idx_file] - amp) < 1e-4)):
@@ -483,6 +479,48 @@ class Extractor(object):
 
         return data
 
+    # author: Luca Leonardo Bologna
+    def stim_feats_from_meta(self, stim_feats, num_segments):
+        if not stim_feats:
+            return (0, "Empty metadata in file")
+        
+        elif len(stim_feats) != num_segments and len(stim_feats) !=1:
+            return (0, "Stimulus dictionaries are different from the number of segments")
+        else: 
+            # array for storing all stimulus features 
+            all_stim_feats = []
+
+            # for every segment in the axon file
+            for i in range(num_segments):
+
+                # read current stimulus dict
+                if len(stim_feats) == 1:
+                    crr_dict = stim_feats[0]
+                else: 
+                    crr_dict = stim_feats[i]
+
+                # read stimulus information
+                ty = crr_dict['stimulus_type']
+                tu = crr_dict['stimulus_time_unit'],
+                st = crr_dict['stimulus_start']
+                en = crr_dict['stimulus_end']
+                u = crr_dict['stimulus_unit'],
+                fa = float(format(crr_dict['stimulus_first_amplitude'], '.3f'))
+                inc = float(format(crr_dict['stimulus_increment'], '.3f'))
+                ru = crr_dict['sampling_rate_unit']
+                r = crr_dict['sampling_rate']
+
+                # compute current stimulus amplitud
+                crr_val = float(format(fa + inc * float(format(i, '.3f')), '.3f'))
+                crr_stim_feats = (ty, tu, st, en, u, crr_val, ru, r)
+
+                # store current tuple
+                all_stim_feats.append(crr_stim_feats)  
+            #pprint.pprint(all_stim_feats)
+
+    # function written by Luca Leonardo Bologna
+    def stim_feats_from_header(self):
+        pass
 
     def plt_traces(self):
         tools.makedir(self.maindirname)
