@@ -240,7 +240,6 @@ class Extractor(object):
         stim_feats = []
         if 'stim_feats' in self.cells[cellname]['experiments'][expname]:
             stim_feats = self.cells[cellname]['experiments'][expname]['stim_feats']
-            #pprint.pprint(stim_feats)
 
         if self.format == 'igor':
 
@@ -342,30 +341,56 @@ class Extractor(object):
             from neo import io
             f = self.path + cellname + os.sep + filename + '.abf'
             r = io.AxonIO(filename = f) #
+            header = r.read_header() # read file header
+            sampling_rate = 1.e6 / header['protocol']['fADCSequenceInterval'] # read sampling rate
+
+            dt = 1./int(sampling_rate) * 1e3
+            version = header['fFileVersionNumber'] # read file version
             bl = r.read_block(lazy=False, cascade=True)
+            all_stims = []
             if stim_feats:
-                all_stims = self.stim_feats_from_meta(stim_feats, len(bl.segments))
-            else:
-                pass
+                res = self.stim_feats_from_meta(stim_feats, len(bl.segments), idx_file)
+                if res[0]:
+                    all_stims = res[1]
+                    print('printing stim feats from meta')
+                    pprint.pprint(all_stims)
+                else:
+                    print(res[1])
+            if not all_stims:
+                res = self.stim_feats_from_header(header)
+                if res[0]:
+                    all_stims = res[1]
+                    print('printing stim feats from header')
+                    pprint.pprint(all_stims)
+                else:
+                    pprint.pprint("No valid stimulus was found in metadata or files. Skipping current file")
+                    return
+
+            # for all segments in file
             for i_seg, seg in enumerate(bl.segments):
 
                 voltage = numpy.array(seg.analogsignals[0]).astype(numpy.float64)
                 current = numpy.array(seg.analogsignals[1]).astype(numpy.float64)
 
-                dt = 1./int(seg.analogsignals[0].sampling_rate) * 1e3
+                #dt = 1./int(seg.analogsignals[0].sampling_rate) * 1e3
 
                 t = numpy.arange(len(voltage)) * dt
 
                 # when does voltage change
-                c_changes = numpy.where( abs(numpy.gradient(current, 1.)) > 0.0 )[0]
+                #c_changes = numpy.where( abs(numpy.gradient(current, 1.)) > 0.0 )[0]
 
                 # detect on and off of current
-                c_changes2 = numpy.where( abs(numpy.gradient(c_changes, 1.)) > 10.0 )[0]
+                #c_changes2 = numpy.where( abs(numpy.gradient(c_changes, 1.)) > 10.0 )[0]
 
-                ion = c_changes[c_changes2[0]]
-                ioff = c_changes[-1]
-                ton = ion * dt
-                toff = ioff * dt
+                #ion = c_changes[c_changes2[0]]
+                #ioff = c_changes[-1]
+                #ton = ion * dt
+                #toff = ioff * dt
+
+                ton = all_stims[i_seg][1]
+                toff = all_stims[i_seg][2]
+                ion = int(ton / dt)
+                ioff = int(toff / dt)
 
                 # estimate hyperpolarization current
                 hypamp = numpy.mean( current[0:ion] )
@@ -480,12 +505,11 @@ class Extractor(object):
         return data
 
     # author: Luca Leonardo Bologna
-    def stim_feats_from_meta(self, stim_feats, num_segments):
+    def stim_feats_from_meta(self, stim_feats, num_segments, idx_file):
         if not stim_feats:
             return (0, "Empty metadata in file")
-        
-        elif len(stim_feats) != num_segments and len(stim_feats) !=1:
-            return (0, "Stimulus dictionaries are different from the number of segments")
+        elif len(stim_feats) - 1 < idx_file and len(stim_feats) !=1:
+            return (0, "Stimulus dictionaries are different from the number of files")
         else: 
             # array for storing all stimulus features 
             all_stim_feats = []
@@ -497,30 +521,93 @@ class Extractor(object):
                 if len(stim_feats) == 1:
                     crr_dict = stim_feats[0]
                 else: 
-                    crr_dict = stim_feats[i]
+                    crr_dict = stim_feats[idx_file]
 
                 # read stimulus information
-                ty = crr_dict['stimulus_type']
-                tu = crr_dict['stimulus_time_unit'],
+                ty = str(crr_dict['stimulus_type'])
+                tu = crr_dict['stimulus_time_unit']
                 st = crr_dict['stimulus_start']
                 en = crr_dict['stimulus_end']
-                u = crr_dict['stimulus_unit'],
+                u = str(crr_dict['stimulus_unit'])
                 fa = float(format(crr_dict['stimulus_first_amplitude'], '.3f'))
                 inc = float(format(crr_dict['stimulus_increment'], '.3f'))
                 ru = crr_dict['sampling_rate_unit']
                 r = crr_dict['sampling_rate']
-
-                # compute current stimulus amplitud
+                if tu == 's':
+                    st = st * 1e3
+                    en = en * 1e3
+                # compute current stimulus amplitude
                 crr_val = float(format(fa + inc * float(format(i, '.3f')), '.3f'))
-                crr_stim_feats = (ty, tu, st, en, u, crr_val, ru, r)
+                crr_stim_feats = (ty, st, en, crr_val, u)
 
                 # store current tuple
                 all_stim_feats.append(crr_stim_feats)  
-            #pprint.pprint(all_stim_feats)
+            return (1, all_stim_feats)
+
 
     # function written by Luca Leonardo Bologna
-    def stim_feats_from_header(self):
-        pass
+    def stim_feats_from_header(self, header):
+        sampling_rate = 1.e6 / header['protocol']['fADCSequenceInterval'] # read sampling rate
+        version = header['fFileVersionNumber'] # read file version
+    
+        # extract protocol for version >=.2
+        if version >= 2.:        
+            #prot = r.read_protocol() # read protocol        
+            dictEpochInfoPerDAC = header['dictEpochInfoPerDAC'] # read info for DAC
+
+            # if field is empty
+            if not (dictEpochInfoPerDAC):
+                return (0, "No 'dictEpochInfoPerDAC' field")
+        
+            # if field is not empty, read all stimulus segments
+            else:            
+                valid_epoch_dicts = [k for k, v in dictEpochInfoPerDAC.iteritems() if bool(v)]
+            
+                # if more than one channel is activated for the stimulus 
+                # or a number of epochs different than 3 is found
+                if len(valid_epoch_dicts) != 1 or len(dictEpochInfoPerDAC[0]) != 3: 
+                    return (0, 'Exiting. More than one channel used for stimulation')            
+                else:
+                    stim_epochs = dictEpochInfoPerDAC[k] # read all stimulus epochs                
+                    stim_ch_info = [(i['DACChNames'], i['DACChUnits'], i['nDACNum']) for i in header['listDACInfo'] if bool(i['nWaveformEnable'])] # read enabled waveforms
+
+                    # if epoch initial levels and increment are not compatible with a step stimulus
+                    if (stim_epochs[0]['fEpochInitLevel'] != stim_epochs[2]['fEpochInitLevel'] or
+                        stim_epochs[0]['fEpochLevelInc'] != stim_epochs[2]['fEpochLevelInc'] or
+                        float(format(stim_epochs[0]['fEpochLevelInc'], '.3f')) != 0 or
+                        (len(stim_ch_info) != 1 or stim_ch_info[0][2] != k)):
+                            # return 0 with message      
+                            return (0, "A stimulus different from the steps has been detected")                        
+                    else:
+                        ty = "step"
+                        u = stim_ch_info[0][1]
+                        nADC = header['sections']['ADCSection']['llNumEntries'] # number of ADC channels
+                        nDAC = header['sections']['DACSection']['llNumEntries'] # number of DAC channels
+                        nSam = header['protocol']['lNumSamplesPerEpisode']/nADC # number of samples per episode
+                        nEpi = header['lActualEpisodes'] # number of actual episodes
+                                        
+                        e_zero = header['dictEpochInfoPerDAC'][stim_ch_info[0][2]][0] # read first stimulus epoch
+                        e_one = header['dictEpochInfoPerDAC'][stim_ch_info[0][2]][1] # read second stimulus epoch
+                        e_two = header['dictEpochInfoPerDAC'][stim_ch_info[0][2]][2] # read third stimulus epoch
+                                        
+                        i_last = int(nSam*15625/10**6) # index of stimulus beginning
+                                        
+                        all_stim_info = [] # create array for all stimulus info
+                    
+                        e_one_inc = float(format(e_one['fEpochLevelInc'] , '.3f')) # step increment
+                        e_one_init_level = float(format(e_one['fEpochInitLevel'] , '.3f')) # step initial level
+
+                        # for every episode, compute stimulus start, stimulus end, stimulus value
+                        for epiNum in range(nEpi):                        
+                            st = i_last + e_zero['lEpochInitDuration'] + e_zero['lEpochDurationInc'] * epiNum
+                            en = st + e_one['lEpochInitDuration'] +  e_one['lEpochDurationInc'] * epiNum
+                            crr_val_full = float(format(e_one_init_level + e_one_inc * epiNum, '.3f'))
+                            crr_val = float(format(crr_val_full, '.3f'))
+                            st = 1/sampling_rate * st * 1e3
+                            en = 1/sampling_rate * en * 1e3
+                            all_stim_info.append((ty, st, en, crr_val, u))
+                        return (1, all_stim_info)
+
 
     def plt_traces(self):
         tools.makedir(self.maindirname)
@@ -603,8 +690,6 @@ class Extractor(object):
 
 
     def extract_features(self, threshold=-20):
-
-        # llb #logger.info(" Extracting features")
 
         #efel.Settings.derivative_threshold = 5.0
         efel.Settings.threshold = threshold
@@ -783,7 +868,7 @@ class Extractor(object):
                 else:
                     amp_rel = numpy.array(amp)
 
-                # absolute absolute amplitude not relative to hypamp
+                # absolute amplitude not relative to hypamp
                 amp_abs = numpy.abs(numpy.array(dataset_cell_exp[expname]['amp']) +
                             numpy.array(dataset_cell_exp[expname]['hypamp']))
 
@@ -853,6 +938,7 @@ class Extractor(object):
 
                         feat = numpy.atleast_1d(numpy.array(feat_vals)[idx])
 
+                        #if len(feat) > 0: # commmented out by Luca Leonardo Bologna
                         if len(feat) > 0:
 
                             if (target == 'noinput'):
@@ -867,6 +953,7 @@ class Extractor(object):
 
                             dataset_cell_exp[expname]['mean_features'][feature][str(target)] = meanfeat
                             dataset_cell_exp[expname]['std_features'][feature][str(target)] = stdfeat
+
 
         # mean for all cells
         for i_exp, expname in enumerate(self.experiments):
@@ -964,6 +1051,7 @@ class Extractor(object):
                 for target in self.options["target"]:
                     feat = self.dataset_mean[expname]['features'][feature][str(target)]
                     self.dataset_mean[expname]['mean_features'][feature][str(target)] = self.newmean(feat)
+
                     self.dataset_mean[expname]['std_features'][feature][str(target)] = self.newstd(feat)
                     self.dataset_mean[expname]['ncells'][feature][str(target)] = numpy.sum(numpy.invert(numpy.isnan(numpy.atleast_1d(feat))))
 
@@ -1129,7 +1217,7 @@ class Extractor(object):
     def feature_config_cells(self, version=None):
         for i_cell, cellname in enumerate(self.dataset):
             dataset_cell_exp = self.dataset[cellname]['experiments']
-            self.create_feature_config(self.maindirname+cellname+'/',
+            self.create_feature_config(self.maindirname+cellname+os.sep,
                             dataset_cell_exp, version=version)
 
 
@@ -1297,7 +1385,9 @@ class Extractor(object):
 
         #tools.print_dict(stimulus_dict)
         #tools.print_dict(feature_dict)
-
+        #feature_dict = self.clean_zero_std(feature_dict, directory)
+         
+    
         s = json.dumps(stimulus_dict, indent=2)
         s = tools.collapse_json(s, indent=6)
         with open(directory + "protocols.json", "w") as f:
@@ -1307,3 +1397,27 @@ class Extractor(object):
         s = tools.collapse_json(s, indent=6)
         with open(directory + "features.json", "w") as f:
             f.write(s)
+
+
+    def clean_zero_std(self, feature_dict, directory):
+        # delete from feature_dict all empty dictionaries
+        feat_final_dict = OrderedDict()
+        for etype in feature_dict:
+            for exp in feature_dict[etype]:
+                for loc in feature_dict[etype][exp]:
+                    crr_dict = OrderedDict()
+                    for key_feat_val, feat_val in feature_dict[etype][exp][loc].items():
+                        if feat_val[1] != 0.0:
+                            crr_dict[key_feat_val] = feat_val
+                    if crr_dict:
+                        if etype not in feat_final_dict:
+                            feat_final_dict[etype] = OrderedDict()
+                        if exp not in feat_final_dict[etype]:
+                            feat_final_dict[etype][exp] = OrderedDict()
+                        feat_final_dict[etype][exp][loc] = crr_dict
+        
+        if not feat_final_dict:
+            feat_final_dict["ERROR"] = "Either all features had zero standard deviation or no feature could be extracted from traces"
+        return feat_final_dict
+
+
