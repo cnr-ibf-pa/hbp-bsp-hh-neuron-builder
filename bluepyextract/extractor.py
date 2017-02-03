@@ -352,16 +352,12 @@ class Extractor(object):
                 res = self.stim_feats_from_meta(stim_feats, len(bl.segments), idx_file)
                 if res[0]:
                     all_stims = res[1]
-                    print('printing stim feats from meta')
-                    pprint.pprint(all_stims)
                 else:
                     print(res[1])
             if not all_stims:
                 res = self.stim_feats_from_header(header)
                 if res[0]:
                     all_stims = res[1]
-                    print('printing stim feats from header')
-                    pprint.pprint(all_stims)
                 else:
                     pprint.pprint("No valid stimulus was found in metadata or files. Skipping current file")
                     return
@@ -938,7 +934,7 @@ class Extractor(object):
 
                         feat = numpy.atleast_1d(numpy.array(feat_vals)[idx])
 
-                        #if len(feat) > 0: # commmented out by Luca Leonardo Bologna
+                        #
                         if len(feat) > 0:
 
                             if (target == 'noinput'):
@@ -967,13 +963,16 @@ class Extractor(object):
             self.dataset_mean[expname]['toff'] = []
             self.dataset_mean[expname]['tend'] = []
             self.dataset_mean[expname]['features'] = OrderedDict()
+            self.dataset_mean[expname]['cell_std_features'] = OrderedDict()
             self.dataset_mean[expname]['ncells'] = OrderedDict()
 
             for feature in self.features[expname]:
                 self.dataset_mean[expname]['features'][feature] = OrderedDict()
+                self.dataset_mean[expname]['cell_std_features'][feature] = OrderedDict()
                 self.dataset_mean[expname]['ncells'][feature] = OrderedDict()
                 for target in self.options["target"]:
                     self.dataset_mean[expname]['features'][feature][str(target)] = []
+                    self.dataset_mean[expname]['cell_std_features'][feature][str(target)] = []
 
             for target in self.options["target"]:
                 self.dataset_mean[expname]['amp'][str(target)] = []
@@ -1012,6 +1011,8 @@ class Extractor(object):
                             if str(target) in dataset_cell_exp[expname]['mean_features'][feature]:
                                 result = dataset_cell_exp[expname]['mean_features'][feature][str(target)]
                                 self.dataset_mean[expname]['features'][feature][str(target)].append(result)
+                                cell_std_result = dataset_cell_exp[expname]['std_features'][feature][str(target)]
+                                self.dataset_mean[expname]['cell_std_features'][feature][str(target)].append(cell_std_result)
 
             #create means
             self.dataset_mean[expname]['mean_amp'] = OrderedDict()
@@ -1050,9 +1051,14 @@ class Extractor(object):
             for feature in self.features[expname]:
                 for target in self.options["target"]:
                     feat = self.dataset_mean[expname]['features'][feature][str(target)]
-                    self.dataset_mean[expname]['mean_features'][feature][str(target)] = self.newmean(feat)
-
-                    self.dataset_mean[expname]['std_features'][feature][str(target)] = self.newstd(feat)
+                    cell_std_feat = self.dataset_mean[expname]['cell_std_features'][feature][str(target)]
+                    # added by Luca Leonardo Bologna to handle the case in which only one feature value is present at this point
+                    if len(feat) == 1:
+                        self.dataset_mean[expname]['mean_features'][feature][str(target)] = feat
+                        self.dataset_mean[expname]['std_features'][feature][str(target)] = cell_std_feat
+                    else:
+                       self.dataset_mean[expname]['mean_features'][feature][str(target)] = self.newmean(feat)                       
+                       self.dataset_mean[expname]['std_features'][feature][str(target)] = self.newstd(feat)
                     self.dataset_mean[expname]['ncells'][feature][str(target)] = numpy.sum(numpy.invert(numpy.isnan(numpy.atleast_1d(feat))))
 
 
@@ -1386,7 +1392,6 @@ class Extractor(object):
         #tools.print_dict(stimulus_dict)
         #tools.print_dict(feature_dict)
         #feature_dict = self.clean_zero_std(feature_dict, directory)
-         
     
         s = json.dumps(stimulus_dict, indent=2)
         s = tools.collapse_json(s, indent=6)
