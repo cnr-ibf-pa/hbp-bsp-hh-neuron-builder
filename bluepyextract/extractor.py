@@ -1054,8 +1054,9 @@ class Extractor(object):
                     cell_std_feat = self.dataset_mean[expname]['cell_std_features'][feature][str(target)]
                     # added by Luca Leonardo Bologna to handle the case in which only one feature value is present at this point
                     if len(feat) == 1:
-                        self.dataset_mean[expname]['mean_features'][feature][str(target)] = feat
-                        self.dataset_mean[expname]['std_features'][feature][str(target)] = cell_std_feat
+                        if cell_std_feat != 0.0:
+                            self.dataset_mean[expname]['mean_features'][feature][str(target)] = feat
+                            self.dataset_mean[expname]['std_features'][feature][str(target)] = cell_std_feat
                     else:
                        self.dataset_mean[expname]['mean_features'][feature][str(target)] = self.newmean(feat)                       
                        self.dataset_mean[expname]['std_features'][feature][str(target)] = self.newstd(feat)
@@ -1391,7 +1392,7 @@ class Extractor(object):
 
         #tools.print_dict(stimulus_dict)
         #tools.print_dict(feature_dict)
-        #feature_dict = self.clean_zero_std(feature_dict, directory)
+        feature_dict = self.clean_zero_std(feature_dict, directory)
     
         s = json.dumps(stimulus_dict, indent=2)
         s = tools.collapse_json(s, indent=6)
