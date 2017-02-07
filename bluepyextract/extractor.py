@@ -500,7 +500,7 @@ class Extractor(object):
 
         return data
 
-    # author: Luca Leonardo Bologna
+    # author Luca Leonardo Bologna
     def stim_feats_from_meta(self, stim_feats, num_segments, idx_file):
         if not stim_feats:
             return (0, "Empty metadata in file")
@@ -541,7 +541,7 @@ class Extractor(object):
             return (1, all_stim_feats)
 
 
-    # function written by Luca Leonardo Bologna
+    # author Luca Leonardo Bologna
     def stim_feats_from_header(self, header):
         sampling_rate = 1.e6 / header['protocol']['fADCSequenceInterval'] # read sampling rate
         version = header['fFileVersionNumber'] # read file version
@@ -1055,8 +1055,8 @@ class Extractor(object):
                     # added by Luca Leonardo Bologna to handle the case in which only one feature value is present at this point
                     if len(feat) == 1:
                         if cell_std_feat != 0.0:
-                            self.dataset_mean[expname]['mean_features'][feature][str(target)] = feat
-                            self.dataset_mean[expname]['std_features'][feature][str(target)] = cell_std_feat
+                            self.dataset_mean[expname]['mean_features'][feature][str(target)] = feat[0]
+                            self.dataset_mean[expname]['std_features'][feature][str(target)] = cell_std_feat[0]
                     else:
                        self.dataset_mean[expname]['mean_features'][feature][str(target)] = self.newmean(feat)                       
                        self.dataset_mean[expname]['std_features'][feature][str(target)] = self.newstd(feat)
