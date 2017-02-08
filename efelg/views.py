@@ -68,10 +68,6 @@ def overview(request):
     logger.info("printing context")
     pprint.pprint(context)
     logger.info("is authenticated???")
-    logger.info("is authenticated???")
-    logger.info("is authenticated???")
-    logger.info("is authenticated???")
-    logger.info("is authenticated???")
     logger.info(request.user.is_authenticated)
 
     if 'HBPDEV' not in os.environ:
@@ -88,14 +84,19 @@ def overview(request):
         pprint.pprint(res.json())
         logger.info("access token")
         logger.info(get_access_token(request.user.social_auth.get()))
-        
+
+    data_dir_abf = os.path.join(settings.BASE_DIR, 'media', 'efel_data', 'app_data', 'abf')
     data_dir = os.path.join(settings.BASE_DIR, 'media', 'efel_data', 'app_data')
     json_dir = os.path.join(settings.BASE_DIR, 'media', 'efel_data', 'json_data')
     
+    request.session['data_dir_abf'] = data_dir_abf
     request.session['data_dir'] = data_dir
     request.session['json_dir'] = json_dir
 
     # create folder for global data and json files if not existing
+    if not os.path.exists(data_dir_abf):
+        os.makedirs(data_dir_abf)
+
     if not os.path.exists(data_dir):
         os.makedirs(data_dir)
 
@@ -206,7 +207,7 @@ def upload_files_page(request):
     return render(request, 'upload_files_page.html')
 
 @login_required(login_url='/login/hbp')
-def select_files_tree(request):
+def select_files_tree_orig(request):
     data_dir = request.session['data_dir']
     json_dir = request.session['json_dir']
     for root, dirs, files in os.walk(data_dir):
@@ -223,6 +224,30 @@ def select_files_tree(request):
                         json.dump(data, f)
     return HttpResponse("")
 
+
+
+@login_required(login_url='/login/hbp')
+def select_files_tree(request):
+    data_dir = request.session['data_dir_abf']
+    json_dir = request.session['json_dir']
+    all_files = os.listdir(data_dir)
+    for name in all_files:
+        if name.endswith('.abf'):
+            fname = os.path.splitext(name)[0]
+            metadata_file = os.path.join(data_dir, fname + '_metadata.json')
+            if not os.path.isfile(metadata_file):
+                continue
+            else:
+                outfilename = '_'.join(manage_json.get_cell_info(metadata_file)) + '.json'
+                outfilepath = os.path.join(json_dir, outfilename)
+                if not os.path.isfile(outfilepath):
+                    data = manage_json.gen_data_struct(os.path.join(data_dir,name), metadata_file)
+
+                    with open(outfilepath, 'w') as f:
+                        json.dump(data, f)
+    return HttpResponse("")
+
+
 @login_required(login_url='/login/hbp')
 def show_traces(request):
     return render_to_response('efelg/show_traces.html')
@@ -234,6 +259,21 @@ def get_list(request):
     allfiles = [f[:-5] for f in os.listdir(json_dir) if f.endswith('.json')]
     
     return HttpResponse(json.dumps(allfiles), content_type="application/json")
+
+#@login_required(login_url='/login/hbp')
+#def get_data(request, cellname=""):
+#    json_dir = request.session['json_dir']
+#    full_user_uploaded_folder = request.session['full_user_uploaded_folder']
+#
+#    if os.path.isfile(os.path.join(json_dir, cellname) + '.json'):
+#        cellname_path = os.path.join(json_dir, cellname) + '.json'
+#    elif os.path.isfile(os.path.join(full_user_uploaded_folder, cellname) + '.json'):
+#        cellname_path = os.path.join(full_user_uploaded_folder, cellname) + '.json'
+#
+#    with open(cellname_path) as f:
+#        content = f.read()
+#    
+#    return HttpResponse(json.dumps(content), content_type="application/json")
 
 @login_required(login_url='/login/hbp')
 def get_data(request, cellname=""):
@@ -249,7 +289,6 @@ def get_data(request, cellname=""):
         content = f.read()
     
     return HttpResponse(json.dumps(content), content_type="application/json")
-
 # handle select_traces template
 @login_required(login_url='/login/hbp')
 def select_traces(request):
@@ -373,10 +412,6 @@ def extract_features_rest(request):
     final_exclude = []
     for key in cell_dict:
         crr_el = cell_dict[key]
-        logger.info(crr_el['stim'])
-        logger.info('crr_stim_list')
-        logger.info('crr_stim_list')
-        logger.info('crr_stim_list')
         logger.info(str(crr_el['stim']))
 
         # new start
@@ -386,13 +421,6 @@ def extract_features_rest(request):
             crr_stim_val = [float(i) for i in crr_list]
             crr_exc.append(crr_stim_val)
         # new end
-
-
-        logger.info('crr_exc')
-        logger.info('crr_exc')
-        logger.info('crr_exc')
-        logger.info('crr_exc')
-        logger.info(str(crr_exc))
         final_cell_dict[cell_dict[key]['cell_name']] = {'v_corr':False, 'ljp':0, 'experiments':{'step': {'location':'soma', 'files': [str(i) for i in crr_el['files']]}}, 'etype':'etype', 'exclude':crr_exc}
         
     # build configuration dictionary
@@ -572,9 +600,11 @@ def upload_files(request):
 
     #for root, dirs, files in os.walk(full_crr_uploaded_folder):
     for name in names_full_path:
-        outfilename = '_'.join(manage_json.getCellInfo(name, upload_flag = True)) + '.json'
+        #outfilename = '_'.join(manage_json.getCellInfo(name, upload_flag = True)) + '.json'
+        outfilename = '_'.join(manage_json.get_cell_info(name, upload_flag = True)) + '.json'
         outfilepath = os.path.join(full_user_uploaded_folder, outfilename)
-        data = manage_json.genDataStruct(name, upload_flag = True)
+        #data = manage_json.genDataStruct(name, upload_flag = True)
+        data = manage_json.gen_data_struct(name, "",  upload_flag = True)
         if os.path.isfile(outfilepath):
             os.remove(outfilepath)        
         with open(outfilepath, 'w') as f:
@@ -635,7 +665,6 @@ def create_session_var(request):
         
         # extract collab storage root path
         storage_root = doc_client.get_path_by_id(project["_uuid"])
-        
         
         # create session variables for folders handling in request.session
         request.session['storage_root'] = storage_root

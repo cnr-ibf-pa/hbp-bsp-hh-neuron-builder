@@ -7,9 +7,11 @@ import json
 import hashlib
 import numpy as np
 import logging
+from . import stimulus_extraction
 
 logger = logging.getLogger(__name__)
 
+# generate hash md5 code for the filename passed as parameter
 def md5(filename):
     hash_md5 = hashlib.md5()
     
@@ -18,92 +20,10 @@ def md5(filename):
             hash_md5.update(chunk)
     return hash_md5.hexdigest()
 
-
-def getCellInfo(filename, upload_flag=False):
-    regex = '.*/(.+?)/(.+?)/(.+?)/(.+?)/(.+?)/(.+?)/(.+?)\.abf'
-    pathanalyse = re.compile(regex)
-    result = pathanalyse.match(filename)
-
-    bn_ext = os.path.basename(filename)
-    bn = os.path.splitext(bn_ext)[0]
-    if upload_flag is True:
-        c_species = 'udSp' 
-        c_area = 'udSt'
-        c_region = 'udRe'
-        c_type = 'udTy'
-        c_etype = 'udEt'
-        c_name = 'udNm'
-        c_sample = bn 
-        return (c_species, c_area, c_region, c_type, c_etype, c_name, c_sample) 
-
-    elif (result):
-        c_species = result.group(1)
-        c_area = result.group(2)
-        c_region = result.group(3)
-        c_type = result.group(4)
-        c_etype = result.group(5)
-        c_name = result.group(6).replace('_', '-')
-        c_sample = result.group(7).replace('_', '-')
-    
-        return (c_species, c_area, c_region, c_type, c_etype, c_name, c_sample) 
-    else:
-        return ['' for i in range(6)]
-            
-def processSignal(signal):
-    voltage = np.array(signal.analogsignals[0]).astype(np.float64)
-    current = np.array(signal.analogsignals[1]).astype(np.float64)
-    
-    # when does voltage change
-    c_changes = np.where( abs(np.gradient(current, 1.)) > 0.0 )[0]
-    # detect on and off of current
-    c_changes2 = np.where( abs(np.gradient(c_changes, 1.)) > 10.0 )[0]
-    
-    ion = c_changes[c_changes2[0]]
-    ioff = c_changes[-1]
-    
-    # estimate hyperpolarization current
-    hypamp = np.mean( current[0:ion] )
-    
-    # 10% distance to measure step current
-    iborder = int((ioff-ion)*0.1)
-    
-    # depolarization amplitude
-    amp = np.mean( current[ion+iborder:ioff-iborder] )
-    
-    # downsampling of the signal
-    voltage = voltage[::3]
-    
-    return (amp, voltage.tolist())
-
-
-def getTracesInfo(filename):
-    data = neo.io.AxonIO(filename)
-    segments = data.read_block(lazy=False, cascade=True).segments
-    
-    volt_unit = segments[0].analogsignals[0].units
-    volt_unit = str(volt_unit.dimensionality)
-    
-    amp_unit = segments[0].analogsignals[1].units
-    amp_unit = str(amp_unit.dimensionality)
-    
-    traces = {}
-    for signals in segments:
-        stimulus, trace = processSignal(signals)
-        label = "{0:.2f}".format(np.around(stimulus, decimals=3))
-        traces.update({label: trace})
-        
-    return (traces, volt_unit, amp_unit)
-    
-def genDataStruct(filename, upload_flag = False):
-    logger.info("generating data struct with " + filename)
-    if upload_flag:
-        c_species, c_area, c_region, c_type, c_etype, c_name, c_sample = getCellInfo(filename, upload_flag)
-        
-    else:
-        c_species, c_area, c_region, c_type, c_etype, c_name, c_sample = getCellInfo(filename)
-    
-    logger.info('gettracesinfofilename ' + filename)
-    traces, volt_unit, amp_unit = getTracesInfo(filename)
+# generate data strcuture containing data and metadata
+def gen_data_struct(filename, filename_meta, upload_flag = False):
+    c_species, c_area, c_region, c_type, c_etype, c_name, c_sample = get_cell_info(filename_meta, upload_flag)
+    traces, volt_unit, amp_unit = get_traces_info(filename, upload_flag)
     
     obj = {
         'abfpath': filename,
@@ -122,3 +42,103 @@ def genDataStruct(filename, upload_flag = False):
     
     return obj
 
+# extract cell info from the metadata file
+def get_cell_info(filename, upload_flag=False):
+    if upload_flag:
+        c_species = "_species_"
+        c_area = "_area_"
+        c_region = "_region_"
+        c_type = "_type_"
+        c_etype = "_etype_"
+        c_name = "_name_"
+        c_sample = filename 
+    else:
+        with open(filename) as f:
+            data = json.load(f)
+        if "animal_species" not in data or "animal_species" is None:
+            c_species = "unknown"
+        else:
+            c_species = data["animal_species"]
+            c_species = c_species.replace(" ", "-")
+
+        if "brain_structure" not in data or "brain_structure" is None:
+            c_area = "unknown"
+        else:
+            c_area = data["brain_structure"]
+            c_area = c_area.replace(" ", "-")
+
+        if "cell_soma_location" not in data or "cell_soma_location" is None:
+            c_region = "unknown"
+        else:
+            c_region = data["cell_soma_location"]
+            c_region = c_region.replace(" ", "-")
+
+        if "cell_type" not in data or "cell_type" is None:
+            c_type = "unknown"
+        else:
+            c_type = data["cell_type"]
+            c_type = c_type.replace(" ", "-")
+
+        if "etype" not in data or "etype" is None:
+            c_etype = "unknown"
+        else:
+            c_etype = data["etype"]
+            c_etype = c_etype.replace(" ", "-")
+
+        if "cell_id" not in data or "cell_id" is None:
+            c_name = "unknown"
+        else:
+            c_name = data["cell_id"]
+            c_name = c_name.replace(" ", "-")
+
+        if "filename" not in data or "filename" is None: 
+            c_sample = "unknown"
+        else:
+            c_sample = data["filename"]
+            c_sample = os.path.splitext(c_sample)[0]
+            c_sample = c_sample.replace(" ", "-")
+
+    return (c_species, c_area, c_region, c_type, c_etype, c_name, c_sample) 
+
+# extract data info (i.e. voltage trace, stimulus and stimulus unit) from experimental and metadata files
+def get_traces_info(filename, upload_flag = False):
+    
+    #
+    data = neo.io.AxonIO(filename)
+    segments = data.read_block(lazy=False, cascade=True).segments
+
+    volt_unit = segments[0].analogsignals[0].units
+    volt_unit = str(volt_unit.dimensionality)
+
+    if not upload_flag:
+        crr_dict = get_metadata(filename)
+        stim_res = stimulus_extraction.stim_feats_from_meta(crr_dict, len(segments))
+        stim = stim_res[1]
+    else:
+        stim_res = stimulus_extraction.stim_feats_from_header(data.read_header())
+        stim = stim_res[1]
+    
+    #amp_unit = str(crr_dict['stimulus_unit'])
+    amp_unit = stim[0][-1]
+
+    traces = {}
+    for i, signal in enumerate(segments):
+        voltage = np.array(signal.analogsignals[0]).astype(np.float64)
+        voltage = voltage[::3]
+        stimulus = stim[i][3]
+        label = "{0:.2f}".format(np.around(stimulus, decimals=3))
+        traces.update({label: voltage.tolist()})
+        
+    return (traces, volt_unit, amp_unit)
+
+
+# read metadata file into a json dictionary
+def get_metadata(filename):
+    filepath, name = os.path.split(filename)
+    name_no_ext, extension = os.path.splitext(name)
+    metadata_file = os.path.join(filepath, name_no_ext + '_metadata.json')
+
+    with open(metadata_file) as f:
+        data = json.load(f)
+
+    return data
