@@ -4,15 +4,23 @@ import os
 
 if 'HBPDEV' not in os.environ:
     from django.contrib.auth.decorators import login_required
+    from django.contrib.auth import logout as auth_logout
+    from hbp_app_python_auth.auth import get_access_token, get_token_type, get_auth_header
+    from bbp_client.oidc.client import BBPOIDCClient
+    from bbp_client.document_service.client import Client as DocClient
+    import bbp_client
+    from bbp_client.client import *
+    import bbp_services.client as bsc
 else:
     def login_required(login_url=None):
         def decorator(f):
             return f
         return decorator
         
+from tools import manage_json
+from tools import resources
+from tools import manage_collab_storage
 import urllib
-if 'HBPDEV' not in os.environ:
-    from django.contrib.auth import logout as auth_logout
 from django.shortcuts import render_to_response, render, redirect
 from django.core.urlresolvers import reverse
 from django.conf import settings
@@ -21,10 +29,9 @@ from django.views.decorators.csrf import csrf_exempt
 from django.core.files.base import ContentFile
 from django import forms
 from django.http import HttpResponse
-#from django.core.context_processors import csrf
 from uuid import UUID
 from markdown import markdown
-import time, sys, datetime,bleach, shutil, zipfile, zlib, pprint, inspect
+import time, sys, datetime, bleach, shutil, zipfile, zlib, pprint, inspect
 from math import trunc
 import numpy, efel, neo
 import matplotlib
@@ -33,24 +40,12 @@ import requests
 requests.packages.urllib3.disable_warnings()
 import json
 import re
-from . import manage_json
-from . import resources
-
-sys.path.append(os.path.join(settings.BASE_DIR, 'BluePyExtract'))
-if 'HBPDEV' not in os.environ:
-    from . import manage_collab_storage
-    from hbp_app_python_auth.auth import get_access_token, get_token_type, get_auth_header
-    from bbp_client.oidc.client import BBPOIDCClient
-    from bbp_client.document_service.client import Client as DocClient
-    import bbp_client
-    from bbp_client.client import *
-    import bbp_services.client as bsc
-    
 import bluepyextract as bpext
 import logging
 logging.basicConfig(stream=sys.stdout)
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
+
 # create logger
 if 'HBPDEV' not in os.environ:
     accesslogger = logging.getLogger('efelg_access.log')
@@ -603,6 +598,23 @@ def upload_files(request):
         #outfilename = '_'.join(manage_json.getCellInfo(name, upload_flag = True)) + '.json'
         outfilename = '_'.join(manage_json.get_cell_info(name, upload_flag = True)) + '.json'
         outfilepath = os.path.join(full_user_uploaded_folder, outfilename)
+        logger.info('outfilename')
+        logger.info(outfilename)
+        logger.info(outfilename)
+        logger.info(outfilename)
+        logger.info(outfilename)
+        logger.info(outfilename)
+        logger.info(outfilename)
+        logger.info(outfilename)
+        logger.info('outfilepath')
+        logger.info(outfilepath)
+        logger.info(outfilepath)
+        logger.info(outfilepath)
+        logger.info(outfilepath)
+        logger.info(outfilepath)
+        logger.info(outfilepath)
+        logger.info(outfilepath)
+        logger.info(outfilepath)
         #data = manage_json.genDataStruct(name, upload_flag = True)
         data = manage_json.gen_data_struct(name, "",  upload_flag = True)
         if os.path.isfile(outfilepath):
