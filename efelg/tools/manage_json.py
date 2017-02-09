@@ -45,12 +45,12 @@ def gen_data_struct(filename, filename_meta, upload_flag = False):
 # extract cell info from the metadata file
 def get_cell_info(filename, upload_flag=False):
     if upload_flag:
-        c_species = "species"
-        c_area = "area"
-        c_region = "region"
-        c_type = "type"
-        c_etype = "etype"
-        c_name = "name"
+        c_species = "cellSpecies"
+        c_area = "cellArea"
+        c_region = "cellRegion"
+        c_type = "cellType"
+        c_etype = "cellEtype"
+        c_name = "cellName"
         c_sample = os.path.splitext(os.path.basename(filename))[0]
     else:
         with open(filename) as f:

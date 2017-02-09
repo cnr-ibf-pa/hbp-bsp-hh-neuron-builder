@@ -188,7 +188,7 @@ BOWER_INSTALLED_APPS = (
     'hbp-collaboratory-theme',
 )
 
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_ROOT = os.path.join("/app", 'media')
 MEDIA_URL = '/media/'
 
 #CSRF_COOKIE_SECURE = True

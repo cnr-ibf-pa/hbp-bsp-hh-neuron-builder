@@ -80,9 +80,12 @@ def overview(request):
         logger.info("access token")
         logger.info(get_access_token(request.user.social_auth.get()))
 
-    data_dir_abf = os.path.join(settings.BASE_DIR, 'media', 'efel_data', 'app_data', 'abf')
-    data_dir = os.path.join(settings.BASE_DIR, 'media', 'efel_data', 'app_data')
-    json_dir = os.path.join(settings.BASE_DIR, 'media', 'efel_data', 'json_data')
+    #data_dir_abf = os.path.join(settings.BASE_DIR, 'media', 'efel_data', 'app_data', 'abf')
+    data_dir_abf = os.path.join(settings.MEDIA_ROOT, 'efel_data', 'app_data', 'abf')
+    #data_dir = os.path.join(settings.BASE_DIR, 'media', 'efel_data', 'app_data')
+    data_dir = os.path.join(settings.MEDIA_ROOT, 'efel_data', 'app_data')
+    #json_dir = os.path.join(settings.BASE_DIR, 'media', 'efel_data', 'json_data')
+    json_dir = os.path.join(settings.MEDIA_ROOT, 'efel_data', 'json_data')
     
     request.session['data_dir_abf'] = data_dir_abf
     request.session['data_dir'] = data_dir
@@ -146,8 +149,10 @@ def overview(request):
     # build local folder paths
     rel_result_folder = os.path.join('efel_gui', 'results')
     rel_uploaded_folder = os.path.join('efel_gui', 'uploaded')
-    full_result_folder = os.path.join(settings.BASE_DIR, 'media', 'efel_data', rel_result_folder)
-    full_uploaded_folder = os.path.join(settings.BASE_DIR, 'media', 'efel_data', rel_uploaded_folder)
+    #full_result_folder = os.path.join(settings.BASE_DIR, 'media', 'efel_data', rel_result_folder)
+    full_result_folder = os.path.join(settings.MEDIA_ROOT, 'efel_data', rel_result_folder)
+    #full_uploaded_folder = os.path.join(settings.BASE_DIR, 'media', 'efel_data', rel_uploaded_folder)
+    full_uploaded_folder = os.path.join(settings.MEDIA_ROOT, 'efel_data', rel_uploaded_folder)
     
     # build local folder complete paths
     rel_user_crr_results_folder = os.path.join(username, time_info)
@@ -598,23 +603,6 @@ def upload_files(request):
         #outfilename = '_'.join(manage_json.getCellInfo(name, upload_flag = True)) + '.json'
         outfilename = '_'.join(manage_json.get_cell_info(name, upload_flag = True)) + '.json'
         outfilepath = os.path.join(full_user_uploaded_folder, outfilename)
-        logger.info('outfilename')
-        logger.info(outfilename)
-        logger.info(outfilename)
-        logger.info(outfilename)
-        logger.info(outfilename)
-        logger.info(outfilename)
-        logger.info(outfilename)
-        logger.info(outfilename)
-        logger.info('outfilepath')
-        logger.info(outfilepath)
-        logger.info(outfilepath)
-        logger.info(outfilepath)
-        logger.info(outfilepath)
-        logger.info(outfilepath)
-        logger.info(outfilepath)
-        logger.info(outfilepath)
-        logger.info(outfilepath)
         #data = manage_json.genDataStruct(name, upload_flag = True)
         data = manage_json.gen_data_struct(name, "",  upload_flag = True)
         if os.path.isfile(outfilepath):
@@ -642,7 +630,8 @@ def get_directory_structure(request):
     """ 
     Creates a nested dictionary that represents the folder structure of rootdir
     """
-    rootdir = os.path.join(settings.BASE_DIR, 'media', 'efel_data', 'app_data')
+    #rootdir = os.path.join(settings.BASE_DIR, 'media', 'efel_data', 'app_data')
+    rootdir = os.path.join(settings.MEDIA_ROOT, 'efel_data', 'app_data')
     media_dir_dict = {}
     rootdir = rootdir.rstrip(os.sep)
     start = rootdir.rfind(os.sep) + 1 
