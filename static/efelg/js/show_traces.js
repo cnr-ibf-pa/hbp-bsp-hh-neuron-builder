@@ -316,7 +316,7 @@ $(document).ready(function(){
                         var cell_name = name_split[0] + ' > ' + name_split[1] + ' > ' + name_split[2] + ' >     ' + name_split[3] + ' > ' + name_split[4] + ' > ' + name_split[5]
 		            	var cell_container = $('<div class="cell panel panel-default" />')
 		            	cell_container.append('<div class="panel-heading cell-heading"> \
-		            		<a href="#">Cell samples: ' + cell_name + '</a>	\
+		            		<a href="#">Cell: ' + cell_name + '</a>	\
                             <br><br> \
 		            		<button class="cell_selall btn-link pull-left cell-button">Select all traces</button> \
 		            		<button class="cell_dselall btn-link pull-left cell-button">Deselect all traces</button> \
