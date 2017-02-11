@@ -1,8 +1,32 @@
 '''Views'''
-from django.http import JsonResponse
 import os
+import urllib
+from uuid import UUID
+import sys, datetime, shutil, zipfile, pprint
+import numpy, efel, neo
+import matplotlib
+matplotlib.use('Agg')
+import requests
+#requests.packages.urllib3.disable_warnings()
+import json
+import re
+import logging
+import bluepyextract as bpext
 
-if 'HBPDEV' not in os.environ:
+# import django libs
+from django.http import JsonResponse
+from django.shortcuts import render_to_response, render, redirect
+from django.core.urlresolvers import reverse
+from django.conf import settings
+from django.template.context import RequestContext
+from django.views.decorators.csrf import csrf_exempt
+from django.http import HttpResponse
+from tools import manage_json
+from tools import resources
+from tools import manage_collab_storage
+
+# if not in DEBUG mode
+if not settings.DEBUG:
     from django.contrib.auth.decorators import login_required
     from django.contrib.auth import logout as auth_logout
     from hbp_app_python_auth.auth import get_access_token, get_token_type, get_auth_header
@@ -16,56 +40,26 @@ else:
         def decorator(f):
             return f
         return decorator
-        
-from tools import manage_json
-from tools import resources
-from tools import manage_collab_storage
-import urllib
-from django.shortcuts import render_to_response, render, redirect
-from django.core.urlresolvers import reverse
-from django.conf import settings
-from django.template.context import RequestContext
-from django.views.decorators.csrf import csrf_exempt
-from django.core.files.base import ContentFile
-from django import forms
-from django.http import HttpResponse
-from uuid import UUID
-from markdown import markdown
-import time, sys, datetime, bleach, shutil, zipfile, zlib, pprint, inspect
-from math import trunc
-import numpy, efel, neo
-import matplotlib
-matplotlib.use('Agg')
-import requests
-requests.packages.urllib3.disable_warnings()
-import json
-import re
-import bluepyextract as bpext
-import logging
+
+# set logging up
 logging.basicConfig(stream=sys.stdout)
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 
-# create logger
-if 'HBPDEV' not in os.environ:
+# create logger if not in DEBUG mode
+if not settings.DEBUG:
     accesslogger = logging.getLogger('efelg_access.log')
     accesslogger.addHandler(logging.FileHandler('./efelg_access.log'))
     accesslogger.setLevel(logging.DEBUG)
 
 
+##### serve overview.html
 @login_required(login_url='/login/hbp')
 @csrf_exempt
 def overview(request):
-    logger.info("logging information")
-    logger.info(request.user)
-    logger.info(request)
     context = RequestContext(request, {'request':request, 'user':request.user})
-    logger.info("printing context")
-    pprint.pprint(context)
-    logger.info("is authenticated???")
-    logger.info(request.user.is_authenticated)
-
-    if 'HBPDEV' not in os.environ:
+    # if not in DEBUG mode
+    if not settings.DEBUG:
         if 'collab_id' in request.session.keys():
             context = request.GET.get('ctx')
             auth_logout(request)
@@ -76,24 +70,16 @@ def overview(request):
         headers = {'Authorization': get_auth_header(request.user.social_auth.get())}
         
         res = requests.get(my_url, headers = headers)
-        pprint.pprint(res.json())
-        logger.info("access token")
-        logger.info(get_access_token(request.user.social_auth.get()))
 
-    #data_dir_abf = os.path.join(settings.BASE_DIR, 'media', 'efel_data', 'app_data', 'abf')
-    data_dir_abf = os.path.join(settings.MEDIA_ROOT, 'efel_data', 'app_data', 'abf')
-    #data_dir = os.path.join(settings.BASE_DIR, 'media', 'efel_data', 'app_data')
-    data_dir = os.path.join(settings.MEDIA_ROOT, 'efel_data', 'app_data')
-    #json_dir = os.path.join(settings.BASE_DIR, 'media', 'efel_data', 'json_data')
+    data_dir = os.path.join(settings.MEDIA_ROOT, 'efel_data', 'app_data', 'rawdata')
     json_dir = os.path.join(settings.MEDIA_ROOT, 'efel_data', 'json_data')
     
-    request.session['data_dir_abf'] = data_dir_abf
     request.session['data_dir'] = data_dir
     request.session['json_dir'] = json_dir
 
     # create folder for global data and json files if not existing
-    if not os.path.exists(data_dir_abf):
-        os.makedirs(data_dir_abf)
+    if not os.path.exists(data_dir):
+        os.makedirs(data_dir)
 
     if not os.path.exists(data_dir):
         os.makedirs(data_dir)
@@ -101,7 +87,8 @@ def overview(request):
     if not os.path.exists(json_dir):
         os.makedirs(json_dir)
 
-    if 'HBPDEV' not in os.environ:
+    # if not in DEBUG mode
+    if not settings.DEBUG:
         # get username from request
         username = request.user.username
 
@@ -149,9 +136,7 @@ def overview(request):
     # build local folder paths
     rel_result_folder = os.path.join('efel_gui', 'results')
     rel_uploaded_folder = os.path.join('efel_gui', 'uploaded')
-    #full_result_folder = os.path.join(settings.BASE_DIR, 'media', 'efel_data', rel_result_folder)
     full_result_folder = os.path.join(settings.MEDIA_ROOT, 'efel_data', rel_result_folder)
-    #full_uploaded_folder = os.path.join(settings.BASE_DIR, 'media', 'efel_data', rel_uploaded_folder)
     full_uploaded_folder = os.path.join(settings.MEDIA_ROOT, 'efel_data', rel_uploaded_folder)
     
     # build local folder complete paths
@@ -169,6 +154,7 @@ def overview(request):
     st_rel_user_results_folder = os.path.join(rel_result_folder, rel_user_crr_results_folder)
     st_rel_user_uploaded_folder = os.path.join(rel_uploaded_folder, username)
     
+    # store paths in request.session
     request.session['media_rel_crr_user_res'] = media_rel_crr_user_res 
     request.session['st_rel_user_results_folder'] = st_rel_user_results_folder
     request.session['st_rel_user_uploaded_folder'] = st_rel_user_uploaded_folder
@@ -179,13 +165,15 @@ def overview(request):
     request.session['full_user_crr_res_data_folder'] = full_user_crr_res_data_folder
     request.session['full_user_uploaded_folder'] = full_user_uploaded_folder
     
-    if 'HBPDEV' not in os.environ:
+    # if not in DEBUG mode
+    if not settings.DEBUG:
         accesslogger.info(resources.string_for_log('overview', request))
 
     # render to html 
     return render(request, 'efelg/overview.html')
 
     
+##### serve select_features
 @csrf_exempt
 def select_features(request):
     with open(os.path.join(settings.BASE_DIR, 'static', 'efelg', 'efel_features_final.json')) as json_file:
@@ -195,40 +183,17 @@ def select_features(request):
     selected_traces_rest_json = json.loads(selected_traces_rest)
     request.session['selected_traces_rest_json'] = selected_traces_rest_json
 
-    if 'HBPDEV' not in os.environ:
+    # if not in DEBUG mode
+    if not settings.DEBUG:
         accesslogger.info(resources.string_for_log('select_features', request, page_spec_string = selected_traces_rest))
     
-    return render(request, 'efelg/select_features.html', {'feature_names': feature_names, 'features_dict': features_dict})
+    return render(request, 'efelg/select_features.html')
 
 
+# build .json files containing data and metadata
 @login_required(login_url='/login/hbp')
-@csrf_exempt
-def upload_files_page(request):
-    return render(request, 'upload_files_page.html')
-
-@login_required(login_url='/login/hbp')
-def select_files_tree_orig(request):
+def generate_json_data(request):
     data_dir = request.session['data_dir']
-    json_dir = request.session['json_dir']
-    for root, dirs, files in os.walk(data_dir):
-        for name in files:
-            if name.endswith('.abf'):
-                infilepath = os.path.join(root, name)
-                outfilename = '_'.join(manage_json.getCellInfo(infilepath)) + '.json'
-                outfilepath = os.path.join(json_dir, outfilename)
-                
-                if not os.path.isfile(outfilepath):
-                    data = manage_json.genDataStruct(infilepath)
-
-                    with open(outfilepath, 'w') as f:
-                        json.dump(data, f)
-    return HttpResponse("")
-
-
-
-@login_required(login_url='/login/hbp')
-def select_files_tree(request):
-    data_dir = request.session['data_dir_abf']
     json_dir = request.session['json_dir']
     all_files = os.listdir(data_dir)
     for name in all_files:
@@ -248,11 +213,13 @@ def select_files_tree(request):
     return HttpResponse("")
 
 
+#####
 @login_required(login_url='/login/hbp')
 def show_traces(request):
     return render_to_response('efelg/show_traces.html')
-#test
 
+
+#####
 @login_required(login_url='/login/hbp')
 def get_list(request):
     json_dir = request.session['json_dir']
@@ -260,21 +227,8 @@ def get_list(request):
     
     return HttpResponse(json.dumps(allfiles), content_type="application/json")
 
-#@login_required(login_url='/login/hbp')
-#def get_data(request, cellname=""):
-#    json_dir = request.session['json_dir']
-#    full_user_uploaded_folder = request.session['full_user_uploaded_folder']
-#
-#    if os.path.isfile(os.path.join(json_dir, cellname) + '.json'):
-#        cellname_path = os.path.join(json_dir, cellname) + '.json'
-#    elif os.path.isfile(os.path.join(full_user_uploaded_folder, cellname) + '.json'):
-#        cellname_path = os.path.join(full_user_uploaded_folder, cellname) + '.json'
-#
-#    with open(cellname_path) as f:
-#        content = f.read()
-#    
-#    return HttpResponse(json.dumps(content), content_type="application/json")
 
+#####
 @login_required(login_url='/login/hbp')
 def get_data(request, cellname=""):
     json_dir = request.session['json_dir']
@@ -289,63 +243,9 @@ def get_data(request, cellname=""):
         content = f.read()
     
     return HttpResponse(json.dumps(content), content_type="application/json")
-# handle select_traces template
-@login_required(login_url='/login/hbp')
-def select_traces(request):
-    
-    temp = []
-    all_trace_dict = {}
-    all_trace_plt = {}
-    etype = request.session.get('etype')
-    all_post = request.POST.getlist('check_files')
-    all_name_list = request.session.get('all_name_list', False)
-    data_dir = request.session.get('data_dir', False)
-    for crr_file in all_post:
-        all_stim = []
-        crr_file_full = join(data_dir, crr_file)
-        crr_etype = [i for i in etype if crr_file_full.find(i)]
-        if not os.path.isfile(crr_file_full):
-            continue
-        r = neo.io.AxonIO(crr_file_full)
-        bl = r.read_block(lazy = False, cascade = True)
-        all_trace_dict[crr_file] = []
 
-        # extract current amplitudes from files
-        for i_seg, seg in enumerate(bl.segments):
-            voltage = numpy.array(seg.analogsignals[0]).astype(numpy.float64)
-            current = numpy.array(seg.analogsignals[1]).astype(numpy.float64)
-            dt = 1./int(seg.analogsignals[0].sampling_rate) * 1e3
-            t = numpy.arange(len(voltage)) * dt
-            # when does voltage change
-            c_changes = numpy.where( abs(numpy.gradient(current, 1.)) > 0.0 )[0]
-            # detect on and off of current
-            c_changes2 = numpy.where( abs(numpy.gradient(c_changes, 1.)) > 10.0 )[0]
-            ion = c_changes[c_changes2[0]]
-            ioff = c_changes[-1]
-            ton = ion * dt
-            toff = ioff * dt
-            # estimate hyperpolarization current
-            hypamp = numpy.mean( current[0:ion] )
-            # 10% distance to measure step current
-            iborder = int((ioff-ion)*0.1)
-            # depolarization amplitude
-            amp = numpy.mean( current[ion+iborder:ioff-iborder] )
-            #
-            amp_round = numpy.around(amp, decimals=3)
-            #
-            amp_form = "{0:.2f}".format(amp_round)
-            # extract current amplitude from file - end
-            all_trace_dict[crr_file].append(amp_form)
-            #
-            all_trace_plt[crr_file+'_'+amp_form] = []
-            all_trace_plt[crr_file+'_'+amp_form].append(voltage.tolist())
-    #
-    request.session['all_trace_dict'] = all_trace_dict
-    # create dictionary for all cell type
-    all_trace_plt = json.dumps(all_trace_plt)
 
-    return render_to_response('select_traces.html', {'all_trace_dict': all_trace_dict, 'all_trace_plt': all_trace_plt, 'temp_var': all_post})
-
+#####
 @login_required(login_url='/login/hbp')
 @csrf_exempt
 def extract_features_rest(request):
@@ -367,6 +267,7 @@ def extract_features_rest(request):
     selected_traces_rest = []
     
     for k in selected_traces_rest_json:
+        crr_vcorr = selected_traces_rest_json[k]['vcorr']
         crr_file_rest_name = k + '.json'
         crr_name_split = k.split('_')
         crr_cell_name = crr_name_split[5]
@@ -386,8 +287,6 @@ def extract_features_rest(request):
         crr_file_all_stim = crr_file_dict['traces'].keys()
         crr_file_sel_stim = selected_traces_rest_json[k]['stim']
         crr_abf_file_path = crr_file_dict['abfpath']
-        logger.info('crr_abf_file_path')
-        logger.info(crr_abf_file_path)
         crr_abf_name_ext = os.path.basename(crr_abf_file_path)
 
         crr_cell_data_folder = os.path.join(full_crr_data_folder, crr_cell_name)
@@ -401,28 +300,29 @@ def extract_features_rest(request):
         if crr_key in cell_dict:
             cell_dict[crr_key]['stim'].append(crr_file_sel_stim)
             cell_dict[crr_key]['files'].append(crr_sample_name)
+            cell_dict[crr_key]['vcorr'].append(float(crr_vcorr))
         else:
             cell_dict[crr_key] = {}
             cell_dict[crr_key]['stim'] = [crr_file_sel_stim]
             cell_dict[crr_key]['files'] = [crr_sample_name]
             cell_dict[crr_key]['cell_name'] = crr_cell_name
             cell_dict[crr_key]['all_stim'] = crr_file_all_stim
-   
+            cell_dict[crr_key]['vcorr'] = [float(crr_vcorr)]
+    
+    target = []
     final_cell_dict = {}  
     final_exclude = []
     for key in cell_dict:
         crr_el = cell_dict[key]
-        logger.info(str(crr_el['stim']))
-
-        # new start
+        v_corr = crr_el['vcorr']
+        for c_stim_el in crr_el['stim']:
+            [target.append(float(i)) for i in c_stim_el if float(i) not in target]
         exc_stim_lists = [list(set(crr_el['all_stim']) - set(sublist)) for sublist in crr_el['stim']]
         crr_exc = []
         for crr_list in exc_stim_lists:
             crr_stim_val = [float(i) for i in crr_list]
             crr_exc.append(crr_stim_val)
-        # new end
-        final_cell_dict[cell_dict[key]['cell_name']] = {'v_corr':False, 'ljp':0, 'experiments':{'step': {'location':'soma', 'files': [str(i) for i in crr_el['files']]}}, 'etype':'etype', 'exclude':crr_exc}
-        
+        final_cell_dict[cell_dict[key]['cell_name']] = {'v_corr':v_corr, 'ljp':0, 'experiments':{'step': {'location':'soma', 'files': [str(i) for i in crr_el['files']]}}, 'etype':'etype', 'exclude':crr_exc}
     # build configuration dictionary
     config = {}
     config['features'] = {'step':[str(i) for i in check_features]}
@@ -430,7 +330,7 @@ def extract_features_rest(request):
     config['format'] = 'axon'
     config['comment'] = []
     config['cells'] = final_cell_dict
-    config['options'] = {'relative': False, 'tolerance': 0.02, 'target': [-1.0, -0.8, -0.6, -0.4, -0.2, 0.2, 0.4, 0.6, 0.8, 1.0], 'delay': 500, 'nanmean': False}
+    config['options'] = {'relative': False, 'tolerance': 0.02, 'target': target, 'delay': 500, 'nanmean': False}
 
     extractor = bpext.Extractor(full_crr_result_folder, config)
     extractor.create_dataset()
@@ -471,7 +371,8 @@ def extract_features_rest(request):
     finally:
         zip_file.close()
 
-    if 'HBPDEV' not in os.environ:
+    # if not in DEBUG mode
+    if not settings.DEBUG:
         # save files in the collab storage
         st_rel_user_results_folder = request.session['st_rel_user_results_folder']
         st_rel_user_uploaded_folder = request.session['st_rel_user_uploaded_folder']
@@ -479,9 +380,9 @@ def extract_features_rest(request):
         access_token = request.session['access_token']
         doc_client = manage_collab_storage.create_doc_client(access_token)
         crr_collab_storage_folder = os.path.join(storage_root, st_rel_user_results_folder)
-        logger.info("starting manipulating collab storage")
         if not doc_client.exists(crr_collab_storage_folder):
             doc_client.makedirs(crr_collab_storage_folder)
+
         # final zip collab storage path
         zip_collab_storage_path = os.path.join(crr_collab_storage_folder, crr_user_folder + '_results.zip')
         if not doc_client.exists(zip_collab_storage_path):
@@ -490,9 +391,11 @@ def extract_features_rest(request):
     return render(request, 'efelg/extract_features_rest.html') 
 
 
+#####
 @login_required(login_url='/login/hbp')
 def download_zip(request):
-    if 'HBPDEV' not in os.environ:
+    # if not in DEBUG mode
+    if not settings.DEBUG:
         accesslogger.info(resources.string_for_log('download_zip', request))
     result_file_zip = request.session['result_file_zip']
     result_file_zip_name = request.session['result_file_zip_name']
@@ -501,6 +404,8 @@ def download_zip(request):
     response['Content-Disposition'] = 'attachment; filename="%s"' % result_file_zip_name
     return response
 
+
+#####
 @login_required(login_url='/login/hbp')
 def features_dict(request):
     '''Render the feature dictionary containing all feature names, grouped by feature type'''
@@ -509,18 +414,14 @@ def features_dict(request):
     return HttpResponse(json.dumps(features_dict))
 
 
+#####
 @login_required(login_url='/login/hbp')
 def _reverse_url(view_name, context_uuid):
     """generate an URL for a view including the ctx query param"""
     return '%s?ctx=%s' % (reverse(view_name), context_uuid)
 
-@login_required(login_url='/login/hbp')
-def select_all_features(request):
-    '''Render the feature dictionary containing all feature names, grouped by feature type'''
-    with open(os.path.join(settings.BASE_DIR, 'static', 'efel_features_final.json')) as json_file:
-        features_dict = json.load(json_file) 
-    return features_dict
 
+#####
 @login_required(login_url='/login/hbp')
 def features_json(request):
     full_user_crr_res_res_folder = request.session['full_user_crr_res_res_folder']
@@ -528,24 +429,32 @@ def features_json(request):
         features_json = json.load(json_file) 
     return HttpResponse(json.dumps(features_json))
 
+
+#####
 @login_required(login_url='/login/hbp')
-def features_json_address(request):
+def features_json_path(request):
     rel_url = request.session['media_rel_crr_user_res']
     full_feature_json_file = os.path.join(rel_url, 'features.json')
     return HttpResponse(json.dumps({'path' : os.path.join(os.sep, full_feature_json_file)}))
 
+
+#####
 @login_required(login_url='/login/hbp')
-def protocols_json_address(request):
+def protocols_json_path(request):
     rel_url = request.session['media_rel_crr_user_res']
     full_feature_json_file = os.path.join(rel_url, 'protocols.json')
     return HttpResponse(json.dumps({'path' : os.path.join(os.sep, full_feature_json_file)}))
 
+
+#####
 @login_required(login_url='/login/hbp')
-def pdf_path(request):
+def features_pdf_path(request):
     rel_url = request.session['media_rel_crr_user_res']
     full_feature_json_file = os.path.join(rel_url, 'features_step.pdf')
     return HttpResponse(json.dumps({'path' : os.path.join(os.sep, full_feature_json_file)}))
 
+
+#####
 @login_required(login_url='/login/hbp')
 @csrf_exempt
 def upload_files(request):
@@ -612,7 +521,8 @@ def upload_files(request):
         if outfilename[:-5] not in data_name_dict['all_json_names']:
             data_name_dict['all_json_names'].append(outfilename[:-5])
 
-    if 'HBPDEV' not in os.environ:
+    # if not in DEBUG mode
+    if not settings.DEBUG:
         access_token = request.session['access_token']
         storage_root = request.session['storage_root']
         doc_client = manage_collab_storage.create_doc_client(access_token)
@@ -625,12 +535,12 @@ def upload_files(request):
 
 @login_required(login_url='/login/hbp')
 def get_directory_structure(request):
-    if 'HBPDEV' not in os.environ:
-        accesslogger.info(resources.string_for_log('get_directory_structure', request))
     """ 
     Creates a nested dictionary that represents the folder structure of rootdir
     """
-    #rootdir = os.path.join(settings.BASE_DIR, 'media', 'efel_data', 'app_data')
+    # if not in DEBUG mode
+    if not settings.DEBUG:
+        accesslogger.info(resources.string_for_log('get_directory_structure', request))
     rootdir = os.path.join(settings.MEDIA_ROOT, 'efel_data', 'app_data')
     media_dir_dict = {}
     rootdir = rootdir.rstrip(os.sep)
@@ -647,7 +557,8 @@ def get_directory_structure(request):
 @login_required(login_url='/login/hbp')
 @csrf_exempt
 def create_session_var(request):
-    if 'HBPDEV' not in os.environ:
+    # if not in DEBUG mode
+    if not settings.DEBUG:
         logger.info("entering create_session_var")
         logger.info(datetime.datetime.now().strftime('%Y%m%d%H%M%S'))
         headers = request.session['headers']
@@ -675,10 +586,3 @@ def create_session_var(request):
 
     # render to html page
     return HttpResponse("") 
-
-
-@login_required(login_url='/login/hbp')
-@csrf_exempt
-def onunload_last(request):
-    logger.info("loggin out")
-

@@ -46,7 +46,7 @@ function TracePlot(container_id, cell_obj) {
 
         // Populates the boxes
 
-        self.infobox.append('<span></span>').text('Cell properties: ' + self.cellinfo.join(' -> '))
+        self.infobox.append('<span class="single-cell"></span>').text('Cell properties: ' + self.cellinfo.join(' > '))
         self.infobox.append('<br><br>')
         self.infobox.append('<button class="selall btn btn-link btn-default">Select all</button>')
         self.infobox.append('<button class="dselall btn btn-link btn-default">Deselect all</button>')
@@ -311,13 +311,16 @@ $(document).ready(function(){
 		            $(el).prop("disabled", true)
 
 		            $.each(tree[ev.target.value], function(index, elem) {
-		            	var cell_name = elem[0].replace('_', ' -> ')
+		            	//var cell_name = elem[0].replace('_', ' -> ')
+                        var name_split = splitFilename(elem[0]);
+                        var cell_name = name_split[0] + ' > ' + name_split[1] + ' > ' + name_split[2] + ' >     ' + name_split[3] + ' > ' + name_split[4] + ' > ' + name_split[5]
 		            	var cell_container = $('<div class="cell panel panel-default" />')
-		            	cell_container.append('<div class="panel-heading"> \
+		            	cell_container.append('<div class="panel-heading cell-heading"> \
 		            		<a href="#">Cell samples: ' + cell_name + '</a>	\
-		            		<button class="cell_invsel btn-link pull-right">Invert selection</button> \
-		            		<button class="cell_dselall btn-link pull-right">Deselect all traces</button> \
-		            		<button class="cell_selall btn-link pull-right">Select all traces</button> \
+                            <br><br> \
+		            		<button class="cell_selall btn-link pull-left cell-button">Select all traces</button> \
+		            		<button class="cell_dselall btn-link pull-left cell-button">Deselect all traces</button> \
+		            		<button class="cell_invsel btn-link pull-left cell-button">Invert selection</button> \
 		            		</div>')
 		            	cell_container.append('<div id="' + index + '"></div>')
 		                $('#charts').append(cell_container)

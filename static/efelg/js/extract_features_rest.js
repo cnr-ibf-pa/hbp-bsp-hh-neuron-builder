@@ -1,12 +1,12 @@
 $(".div-toggle").toggle();
 $(document).ready(function(){
-    $.getJSON('/efelg/features_json_address', function(data){
+    $.getJSON('/efelg/features_json_path', function(data){
         document.getElementById('iframe-features').setAttribute('src', data['path']);
     });
-    $.getJSON('/efelg/protocols_json_address', function(data2){
+    $.getJSON('/efelg/protocols_json_path', function(data2){
         document.getElementById('iframe-protocols').setAttribute('src', data2['path']);
     });
-    $.getJSON('/efelg/pdf_path', function(data3){
+    $.getJSON('/efelg/features_pdf_path', function(data3){
         document.getElementById('iframe-pdf').setAttribute('src', data3['path']);
     });
     $(".toggle-text").on("click", function(){

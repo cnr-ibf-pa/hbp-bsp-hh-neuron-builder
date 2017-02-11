@@ -17,7 +17,22 @@ max-height: 1200px;
 
 .cell {
     margin: 2em 0;
+    font-size: 18px;
 }   
+
+.single-cell {
+    font-size: 20px;
+}
+
+.cell-button{
+    font-size: 14px;
+}
+
+.cell-heading {
+    overflow: hidden;
+    min-height: 1px;
+}
+
 
 .ctrl_box {
     font-family: sans-serif;

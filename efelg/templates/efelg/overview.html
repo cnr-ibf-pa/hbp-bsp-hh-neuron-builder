@@ -3,6 +3,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+<script type="text/javascript" src="{% static 'bspganalytics.js' %}"></script>
 <title>Feature extraction GUI overview</title>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width">
@@ -72,10 +73,10 @@ A feature.json and protocol.json files are generated for both individual cells a
 
 
 <script type="text/javascript">
-$(document).ready(function(){
-$.get( "/efelg/select_files_tree" )
-$.get( "/efelg/create_session_var" )
-});
+	$(document).ready(function(){
+	$.get( "/efelg/generate_json_data" )
+	$.get( "/efelg/create_session_var" )
+	});
 </script>
 </body>
 </html>
