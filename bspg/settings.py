@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/1.10/ref/settings/
 """
 
 import os
+import shutil
 from . import debug
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -25,6 +26,7 @@ DEV = debug.DEV
 DEBUG = debug.DEBUG 
 
 if DEV:
+    shutil.copy('./static/ibf_bspg_analytics.js', './static/bspganalytics.js')
     from .dev_config import *
     from .dev_app_key import *
     if not DEBUG:
