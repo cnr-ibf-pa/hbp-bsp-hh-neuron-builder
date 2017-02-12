@@ -11,22 +11,29 @@ https://docs.djangoproject.com/en/1.10/ref/settings/
 """
 
 import os
-from . import config
-from .config import *
+from . import debug
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = config.SECRET_KEY
 
 # SECURITY WARNING: don't run with debug turned on in production!
-#DEBUG = True
-DEBUG = config.DEBUG 
+DEV = debug.DEV
+DEBUG = debug.DEBUG 
+
+if DEV:
+    from .dev_config import *
+    from .dev_app_key import *
+    if not DEBUG:
+        from .dev_auth_key import *
+else:
+    from .prod_config import *
+    from .prod_app_key import *
+    if not DEBUG:
+        from .prod_auth_key import*
 
 ALLOWED_HOSTS = [
         '*',
@@ -36,10 +43,6 @@ HBP_COLLAB_SERVICE_URL = 'https://services.humanbrainproject.eu/collab/v0/'
 HBP_ENV_URL = 'https://collab.humanbrainproject.eu/config.json'
 HBP_IDENTITY_SERVICE_URL = 'https://services.humanbrainproject.eu/idm/v1/api'
 HBP_MY_USER_URL = 'https://services.humanbrainproject.eu/idm/v1/api/user/me'
-
-
-
-LOGIN_URL = 'https://bspg.pa.ibf.cnr.it/login/hbp/'
 
 USE_X_FORWARDED_HOST = True
 
@@ -188,8 +191,5 @@ BOWER_COMPONENTS_ROOT = BASE_DIR
 BOWER_INSTALLED_APPS = (
     'hbp-collaboratory-theme',
 )
-
-MEDIA_ROOT = os.path.join("/app", 'media')
-MEDIA_URL = '/media/'
 
 #CSRF_COOKIE_SECURE = True

@@ -500,7 +500,8 @@ def upload_files(request):
             final_file.write(k.read())
             final_file.close()
 
-        if resources.valid_abf_file(crr_local_filename):
+        #if resources.valid_abf_file(crr_local_filename):
+        if resources.check_file_validity(crr_local_filename):
             name_abf_list.append(crr_file_name) 
             names_full_path.append(crr_local_filename)
         else:

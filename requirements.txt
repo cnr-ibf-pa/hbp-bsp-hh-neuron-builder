@@ -1,6 +1,7 @@
 bbp-client==0.4.4
 bbp-services==0.0.15
 bleach==1.4.3
+BluePyExtract==0.1.dev0
 cycler==0.10.0
 defusedxml==0.4.1
 Django==1.10.3
@@ -29,7 +30,6 @@ quantities==0+unknown
 requests==2.11.1
 requests-oauthlib==0.7.0
 six==1.10.0
-social-auth-app-django==0.0.1
 social-auth-core==0.0.1
 task-types==0.0.10
 uWSGI==2.0.14

@@ -1,0 +1,2 @@
+DEV=True
+DEBUG=True

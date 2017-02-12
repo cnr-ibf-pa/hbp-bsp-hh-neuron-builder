@@ -1,13 +1,15 @@
-from datetime import datetime
+import os
 import json
 import collections
+import neo
+import pprint
+from datetime import datetime
+from . import stimulus_extraction
 # create logger
 
 
-
 def valid_abf_file(filepath):
-    import neo # to leave here or to move somewhere else
-
+    #
     try:
         data = neo.io.AxonIO(filepath)
         segments = data.read_block(lazy=False, cascade=True).segments
@@ -27,7 +29,28 @@ def valid_abf_file(filepath):
         return False
 
 
+##### check file validity
+def check_file_validity(filepath):
+    extension = os.path.splitext(os.path.basename(filepath))
+    extension = str(extension[1])
+    try:
+        if extension == '.abf':
+            data = neo.io.AxonIO(filepath)
+            segments = data.read_block(lazy=False, cascade=True).segments
 
+            volt_unit = segments[0].analogsignals[0].units
+            volt_unit = str(volt_unit.dimensionality)
+            assert volt_unit == 'mV'
+            
+            stim_res = stimulus_extraction.stim_feats_from_header(data.read_header()) 
+            assert stim_res[0]
+
+            return True
+    except:
+        return False
+
+
+##### create string to be printed to log files
 def string_for_log(page_name, request, page_spec_string = ''):
     RU = request.META['REQUEST_URI']
     #HXFF = request.META['HTTP_X_FORWARDED_FOR']
