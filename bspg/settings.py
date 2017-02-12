@@ -26,7 +26,6 @@ DEV = debug.DEV
 DEBUG = debug.DEBUG 
 
 if DEV:
-    shutil.copy('./static/ibf_bspg_analytics.js', './static/bspganalytics.js')
     from .dev_config import *
     from .dev_app_key import *
     if not DEBUG:
@@ -36,6 +35,11 @@ else:
     from .prod_app_key import *
     if not DEBUG:
         from .prod_auth_key import*
+
+if LOGIN_URL == 'https://bspg.pa.ibf.cnr.it/login/hbp/':
+    shutil.copy('./static/ibf_bspg_analytics.js', './static/bspganalytics.js')
+elif LOGIN_URL == 'https://bspg.humanbrainproject.eu/login/hbp/':
+    shutil.copy('./static/epfl_bspg_analytics.js', './static/bspganalytics.js')
 
 ALLOWED_HOSTS = [
         '*',
