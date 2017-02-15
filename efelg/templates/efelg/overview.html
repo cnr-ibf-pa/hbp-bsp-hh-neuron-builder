@@ -1,4 +1,5 @@
 {% load static %}
+{% load oidc_session %}
 
 <!DOCTYPE html>
 <html>
@@ -14,6 +15,7 @@
 </head>
 
 <body>
+{% hbp_oidc_session_handler request.user %}
 {% block content %}{% endblock %}
 <h3 id= "title">Feature extraction Graphical User Interface (GUI)</h3>
 <br>

@@ -1,2 +1,2 @@
 DEV=True
-DEBUG=True
+DEBUG=False

@@ -70,6 +70,7 @@ INSTALLED_APPS = [
     'djangobower',
     #'rest_framework',
     'social.apps.django_app.default',
+    'hbp_app_python_auth',
     ]
 
 MIDDLEWARE_CLASSES = [

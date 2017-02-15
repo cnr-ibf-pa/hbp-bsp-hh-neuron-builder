@@ -10,6 +10,7 @@ urlpatterns = [
     #url(r'^$', views.access),    
     url(r'^$', views.overview),    
     url('', include('social.apps.django_app.urls', namespace='social')),
+    url('', include('hbp_app_python_auth.urls', namespace='hbp-social')),
     url(r'^login/hbp', auth_views.login),
     url(r'^show_traces/$', views.show_traces),
     url(r'^generate_json_data$', views.generate_json_data),

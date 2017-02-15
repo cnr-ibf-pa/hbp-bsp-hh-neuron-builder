@@ -58,6 +58,11 @@ if not settings.DEBUG:
 @csrf_exempt
 def overview(request):
     context = RequestContext(request, {'request':request, 'user':request.user})
+    logger.info(request.user)
+    logger.info(request.user)
+    logger.info(request.user)
+    logger.info(request.user)
+    logger.info(request.user)
     # if not in DEBUG mode
     if not settings.DEBUG:
         if 'collab_id' in request.session.keys():
