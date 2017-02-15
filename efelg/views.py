@@ -54,7 +54,7 @@ if not settings.DEBUG:
 
 
 ##### serve overview.html
-@login_required(login_url='/login/hbp')
+@login_required(login_url='/login/hbp/')
 @csrf_exempt
 def overview(request):
     context = RequestContext(request, {'request':request, 'user':request.user})
@@ -65,11 +65,11 @@ def overview(request):
     logger.info(request.user)
     # if not in DEBUG mode
     if not settings.DEBUG:
-        if 'collab_id' in request.session.keys():
-            context = request.GET.get('ctx')
-            auth_logout(request)
-            nextUrl = urllib.quote('%s?ctx=%s' % (request.path, context))
-            return redirect('%s?next=%s' % (settings.LOGIN_URL, nextUrl))
+        #if 'collab_id' in request.session.keys():
+        #    context = request.GET.get('ctx')
+        #    auth_logout(request)
+        #    nextUrl = urllib.quote('%s?ctx=%s' % (request.path, context))
+        #    return redirect('%s?next=%s' % (settings.LOGIN_URL, nextUrl))
         
         my_url = 'https://services.humanbrainproject.eu/idm/v1/api/user/me'
         headers = {'Authorization': get_auth_header(request.user.social_auth.get())}
