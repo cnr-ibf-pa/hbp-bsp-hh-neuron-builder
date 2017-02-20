@@ -18,7 +18,7 @@ urlpatterns = [
     url(r'^get_list$', views.get_list),
     url(r'^get_data/(?P<cellname>[0-9a-zA-Z_-]+)$', views.get_data),
     url(r'^select_features/$', views.select_features),
-    url(r'^extract_features_rest/$', views.extract_features_rest),
+    url(r'^extract_features/$', views.extract_features),
     url(r'^download_zip', views.download_zip),
     url(r'^features_dict', views.features_dict),
     url(r'^features_json_path', views.features_json_path),

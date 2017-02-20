@@ -21,6 +21,8 @@ from django.conf import settings
 from django.template.context import RequestContext
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse
+
+# import local tools
 from tools import manage_json
 from tools import resources
 from tools import manage_collab_storage
@@ -49,7 +51,7 @@ logger.setLevel(logging.DEBUG)
 # create logger if not in DEBUG mode
 if not settings.DEBUG:
     accesslogger = logging.getLogger('efelg_access.log')
-    accesslogger.addHandler(logging.FileHandler('./efelg_access.log'))
+    accesslogger.addHandler(logging.FileHandler('/var/log/bspg/efelg_access.log'))
     accesslogger.setLevel(logging.DEBUG)
 
 
@@ -58,31 +60,53 @@ if not settings.DEBUG:
 @csrf_exempt
 def overview(request):
     context = RequestContext(request, {'request':request, 'user':request.user})
-    logger.info(request.user)
-    logger.info(request.user)
-    logger.info(request.user)
-    logger.info(request.user)
-    logger.info(request.user)
-    # if not in DEBUG mode
+
+    # if not in DEBUG mode check whether authentication token is valid
     if not settings.DEBUG:
-        #if 'collab_id' in request.session.keys():
-        #    context = request.GET.get('ctx')
-        #    auth_logout(request)
-        #    nextUrl = urllib.quote('%s?ctx=%s' % (request.path, context))
-        #    return redirect('%s?next=%s' % (settings.LOGIN_URL, nextUrl))
-        
+        #
+        context = request.GET.get('ctx')
         my_url = 'https://services.humanbrainproject.eu/idm/v1/api/user/me'
         headers = {'Authorization': get_auth_header(request.user.social_auth.get())}
-        
+         
         res = requests.get(my_url, headers = headers)
+        
+        if res.status_code !=200:
+            auth_logout(request)
+            nextUrl = urllib.quote('%s?ctx=%s' % (request.path, context))
+            return redirect('%s?next=%s' % (settings.LOGIN_URL, nextUrl))
 
+        # get username from request
+        username = request.user.username
+
+        # get context and context uuid
+        context_uuid = UUID(request.GET.get('ctx'))
+
+        # get headers
+        svc_url = settings.HBP_COLLAB_SERVICE_URL
+        url = '%scollab/context/%s/' % (svc_url, context)
+         
+        # get collab_id
+        res = requests.get(url, headers=headers)
+        if res.status_code !=200:
+            auth_logout(request)
+            nextUrl = urllib.quote('%s?ctx=%s' % (request.path, context))
+            return redirect('%s?next=%s' % (settings.LOGIN_URL, nextUrl))
+
+        collab_id = res.json()['collab']['id']
+    else:
+        username = 'test'
+        headers = {}
+        context = 'local'
+        collab_id = -1
+
+    # build data and json dir strings
     data_dir = os.path.join(settings.MEDIA_ROOT, 'efel_data', 'app_data', 'rawdata')
     json_dir = os.path.join(settings.MEDIA_ROOT, 'efel_data', 'json_data')
     
     request.session['data_dir'] = data_dir
     request.session['json_dir'] = json_dir
 
-    # create folder for global data and json files if not existing
+    # create folders for global data and json files if not existing
     if not os.path.exists(data_dir):
         os.makedirs(data_dir)
 
@@ -91,34 +115,6 @@ def overview(request):
 
     if not os.path.exists(json_dir):
         os.makedirs(json_dir)
-
-    # if not in DEBUG mode
-    if not settings.DEBUG:
-        # get username from request
-        username = request.user.username
-
-        # get context and context uuid
-        context_uuid = UUID(request.GET.get('ctx'))
-        context = request.GET.get('ctx')
-        
-        # get headers
-        svc_url = settings.HBP_COLLAB_SERVICE_URL
-        url = '%scollab/context/%s/' % (svc_url, context)
-        headers = {'Authorization': get_auth_header(request.user.social_auth.get())}
-        
-        # get collab_id
-        res = requests.get(url, headers=headers)
-        if res.status_code !=200:
-            context = request.GET.get('ctx')
-            auth_logout(request)
-            nextUrl = urllib.quote('%s?ctx=%s' % (request.path, context))
-            return redirect('%s?next=%s' % (settings.LOGIN_URL, nextUrl))
-        collab_id = res.json()['collab']['id']
-    else:
-        username = 'test'
-        headers = {}
-        context = 'local'
-        collab_id = 0
 
     # save parameters in request.session
     request.session['username'] = username
@@ -132,10 +128,8 @@ def overview(request):
     
     # parameters for folder creation
     time_info = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
-    etype = ['bAC','cAC','cNAC', 'udEt']
     
     # create global variables in request.session
-    request.session['etype'] = etype
     request.session['time_info'] = time_info
 
     # build local folder paths
@@ -253,7 +247,7 @@ def get_data(request, cellname=""):
 #####
 @login_required(login_url='/login/hbp')
 @csrf_exempt
-def extract_features_rest(request):
+def extract_features(request):
     data_dir = request.session['data_dir']
     json_dir = request.session['json_dir']
     selected_traces_rest_json = request.session['selected_traces_rest_json'] 
@@ -300,8 +294,7 @@ def extract_features_rest(request):
         if not os.path.isfile(os.path.join(crr_cell_data_folder, crr_abf_name_ext)):
             shutil.copy(crr_abf_file_path, crr_cell_data_folder)
         
-        logger.info(crr_file_sel_stim)
-
+        #
         if crr_key in cell_dict:
             cell_dict[crr_key]['stim'].append(crr_file_sel_stim)
             cell_dict[crr_key]['files'].append(crr_sample_name)
@@ -328,6 +321,7 @@ def extract_features_rest(request):
             crr_stim_val = [float(i) for i in crr_list]
             crr_exc.append(crr_stim_val)
         final_cell_dict[cell_dict[key]['cell_name']] = {'v_corr':v_corr, 'ljp':0, 'experiments':{'step': {'location':'soma', 'files': [str(i) for i in crr_el['files']]}}, 'etype':'etype', 'exclude':crr_exc}
+
     # build configuration dictionary
     config = {}
     config['features'] = {'step':[str(i) for i in check_features]}
@@ -392,8 +386,8 @@ def extract_features_rest(request):
         zip_collab_storage_path = os.path.join(crr_collab_storage_folder, crr_user_folder + '_results.zip')
         if not doc_client.exists(zip_collab_storage_path):
             doc_client.upload_file(output_path, zip_collab_storage_path) 
-        accesslogger.info(resources.string_for_log('extract_features_rest', request, page_spec_string = '___'.join(check_features)))
-    return render(request, 'efelg/extract_features_rest.html') 
+        accesslogger.info(resources.string_for_log('extract_features', request, page_spec_string = '___'.join(check_features)))
+    return render(request, 'efelg/extract_features.html') 
 
 
 #####
@@ -565,10 +559,9 @@ def get_directory_structure(request):
 def create_session_var(request):
     # if not in DEBUG mode
     if not settings.DEBUG:
-        logger.info("entering create_session_var")
-        logger.info(datetime.datetime.now().strftime('%Y%m%d%H%M%S'))
         headers = request.session['headers']
         collab_id = request.session['collab_id']
+
         # get services and access token    
         services = bsc.get_services()
         access_token = get_access_token(request.user.social_auth.get())
@@ -587,8 +580,6 @@ def create_session_var(request):
         # create session variables for folders handling in request.session
         request.session['storage_root'] = storage_root
         request.session['access_token'] = access_token
-        logger.info(datetime.datetime.now().strftime('%Y%m%d%H%M%S'))
-        logger.info("exiting create_session_var")
 
     # render to html page
     return HttpResponse("") 

@@ -2,58 +2,60 @@
 
 <!DOCTYPE html>
 <html>
-    <head>
-        <script type="text/javascript" src="{% static 'bspganalytics.js' %}"></script>
-        <title>Tutorial Application</title>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width">
+<head>
+<script type="text/javascript" src="{% static 'bspganalytics.js' %}"></script>
+<title>Feature extraction GUI</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width">
 
-        {# Bower Dependencies #}
-        <link rel="stylesheet" href="{% static 'hbp-collaboratory-theme/dist/css/bootstrap.css' %}">
-    </head>
-    <body>
-        <div style="text-align: center" class="alert alert-success">
-            Execution completed.<br><a href="/download_zip" class="alert-link">Download all results in .zip format</a>.
-        </div>
-        <br>
+{# Bower Dependencies #}
+<link rel="stylesheet" href="{% static 'hbp-collaboratory-theme/dist/css/bootstrap.css' %}">
+<link rel="stylesheet" href="{% static 'bspg.css' %}">
 
-        <div id="features-json">
-        </div>
+</head>
+<body>
+<!-- Execution completed div  -->
+<div style="text-align: center" class="alert alert-success">
+<h2>Execution completed<br><a href="/efelg/download_zip" class="alert-link">Download all results in .zip format</a></h2>
+</div>
 
-        <div id="protocol-json">
-        </div>
-        <div id='pdf-div' style="text-align: center">
-            Mean feature values snapshot
-            <br>
-            <div id="loading_message_id" style="text-align:center"><p>Loading image ...<p></div>
-            <object><iframe id="fred" style="border:1px solid #666CCC; max-width:800px;"  title="PDF in an i-Frame" src="{% static "features_step.pdf" %}" frameborder="1" scrolling="auto" height="1200" width="100%" onload="iframe_onload()" ></iframe></object>
-            <object><iframe id="fred" style="border:1px solid #666CCC; max-width:800px;"  title="PDF in an i-Frame" src="{% static "features_step.pdf" %}" frameborder="1" scrolling="auto" height="1200" width="100%" onload="iframe_onload()" ></iframe></object>
-            <object><iframe id="fred" style="border:1px solid #666CCC; max-width:800px;"  title="PDF in an i-Frame" src="{% static "features_step.pdf" %}" frameborder="1" scrolling="auto" height="1200" width="100%" onload="iframe_onload()" ></iframe></object>
-        </div>
+<!-- feature.json div  -->
+<div style="text-align: center" class="">
+<input type="button" class="btn btn-link toggle-text" value="'features.json' preview">
+<div id="" class="div-toggle">
+<!-- feature.json iframe  -->
+<object><iframe id="iframe-features" class="page-iframes" ></iframe></object>
+<br>
+</div>
+</div>
+<br>
 
-        {# Bower Dependencies #}
-    </script>        
-    <script type="text/javascript" src="{% static 'jquery/dist/jquery.min.js' %}"></script>
-    <script type="text/javascript" src="{% static 'lodash/dist/lodash.min.js' %}"></script>
-    <script type="text/javascript" src="{% static 'angular/angular.min.js' %}"></script>
-    <!--<script type="text/javascript" src="{% static 'angular-bootstrap/ui-bootstrap-tpls.min.js' %}"></script>-->
-    <script> function iframe_onload(){
-        document.getElementById("loading_message_id").style.display="none";
-    }
-</script>
+<!-- protocols.json div  -->
+<div style="text-align: center" class="">
+<input type="button" class="btn btn-link toggle-text" value="'protocols.json' preview">
+<div id="" class="div-toggle">
+<!-- protocols.json iframe  -->
+<object><iframe id="iframe-protocols" class="page-iframes"></iframe></object>
+<br>
+</div>
+</div>
+<br>
+
+<!-- pdf div  -->
+<div id='pdf-div' style="text-align: center">
+<input type="button" class="btn btn-link toggle-text" value="plots preview">
+<div class="div-toggle">
+<!-- pdf iframe  -->
+<object><iframe id="iframe-pdf" class="page-iframes"></iframe></object>
+<br>
+</div>
+</div>
+<br>
+
+{# Bower Dependencies #}
+<script type="text/javascript" src="{% static 'jquery/dist/jquery.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'efelg/js/extract_features_rest.js' %}"></script>
 <script>
-    $(document).ready(function(){
-        $.getJSON('/features_json', function(data) {
-            $('#feature-json').append(data);
-        });
-        $.getJSON('/protocol_json', function(data) {
-            $('#protocol-json').append(data);
-        });
-        $('#features-json').append("<p>prova paragrafo</p>");
-    });
-
-
-
 
 </script>
 </body>
