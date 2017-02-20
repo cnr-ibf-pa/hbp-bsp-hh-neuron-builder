@@ -377,7 +377,15 @@ def extract_features(request):
         st_rel_user_uploaded_folder = request.session['st_rel_user_uploaded_folder']
         storage_root = request.session['storage_root']
         access_token = request.session['access_token']
-        doc_client = manage_collab_storage.create_doc_client(access_token)
+
+	services = bsc.get_services()
+
+    	# get clients from bbp python packages
+    	oidc_client = BBPOIDCClient.bearer_auth(services['oidc_service']['prod']['url'], access_token)
+    	bearer_client = BBPOIDCClient.bearer_auth('prod', access_token)
+    	doc_client = DocClient(services['document_service']['prod']['url'], oidc_client)
+
+        #doc_client = manage_collab_storage.create_doc_client(access_token)
         crr_collab_storage_folder = os.path.join(storage_root, st_rel_user_results_folder)
         if not doc_client.exists(crr_collab_storage_folder):
             doc_client.makedirs(crr_collab_storage_folder)
@@ -527,7 +535,6 @@ def upload_files(request):
         storage_root = request.session['storage_root']
         doc_client = manage_collab_storage.create_doc_client(access_token)
 
-        #doc_client.mkdir(os.path.join(storage_root, 'temptestfolder'))
         accesslogger.info(resources.string_for_log('upload_files', request, page_spec_string = str(len(names_full_path))))
 
     return HttpResponse(json.dumps(data_name_dict), content_type="application/json") 
