@@ -260,7 +260,6 @@ def extract_features(request):
     full_crr_user_folder = request.session['full_user_crr_results_folder']
     
     check_features = request.POST.getlist('crr_feature_check_features')
-    etype = request.session['etype']
     request.session['selected_features'] = check_features 
     cell_dict = {}
     selected_traces_rest = []

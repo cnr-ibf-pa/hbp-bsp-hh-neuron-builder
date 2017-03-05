@@ -7,4 +7,5 @@ packages
 venvbspg
 letsencrypt
 media
+db.sqlite3
 
