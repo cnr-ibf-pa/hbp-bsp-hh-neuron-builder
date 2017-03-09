@@ -391,8 +391,9 @@ def extract_features(request):
 
         # final zip collab storage path
         zip_collab_storage_path = os.path.join(crr_collab_storage_folder, crr_user_folder + '_results.zip')
-        if not doc_client.exists(zip_collab_storage_path):
-            doc_client.upload_file(output_path, zip_collab_storage_path) 
+        # bypassing uploading data to collab storage
+        #if not doc_client.exists(zip_collab_storage_path):
+        #    doc_client.upload_file(output_path, zip_collab_storage_path) 
         accesslogger.info(resources.string_for_log('extract_features', request, page_spec_string = '___'.join(check_features)))
     return render(request, 'efelg/extract_features.html') 
 
