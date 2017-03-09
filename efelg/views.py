@@ -100,7 +100,7 @@ def overview(request):
         collab_id = -1
 
     # build data and json dir strings
-    data_dir = os.path.join(settings.MEDIA_ROOT, 'efel_data', 'app_data', 'rawdata')
+    data_dir = os.path.join(settings.MEDIA_ROOT, 'efel_data', 'app_data', 'efelg_rawdata')
     json_dir = os.path.join(settings.MEDIA_ROOT, 'efel_data', 'json_data')
     
     request.session['data_dir'] = data_dir
