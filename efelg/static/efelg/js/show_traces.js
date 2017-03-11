@@ -243,7 +243,7 @@ $(document).ready(function(){
                     var loaded_filenames = name_dict.all_json_names
                     var refused_filenames = []
                     loaded_filenames = loaded_filenames.map(function(item) {
-                        var splitted = item.split('_')
+                        var splitted = item.split('____')
                         return splitted[splitted.length - 1] + '.abf'
                     })
                     selected_files.forEach(function(elem) {
@@ -283,7 +283,7 @@ $(document).ready(function(){
             
         }
 		$.each(data, function(index, elem) {
-		    params = elem.split('_')
+		    params = elem.split('____')
 		    branch = cells_tree
 		    for (var i=0; i<6; i++) {
 		        if (!(params[i] in branch) && i == 5)
@@ -412,6 +412,6 @@ function serializeAll() {
 }
 
 function splitFilename(cellname){
-    var filenameTokens = cellname.split('_');
+    var filenameTokens = cellname.split('____');
     return filenameTokens
 }

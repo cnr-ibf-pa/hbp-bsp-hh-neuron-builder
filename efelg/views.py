@@ -206,7 +206,7 @@ def generate_json_data(request):
             if not os.path.isfile(metadata_file):
                 continue
             else:
-                outfilename = '_'.join(manage_json.get_cell_info(metadata_file)) + '.json'
+                outfilename = '____'.join(manage_json.get_cell_info(metadata_file)) + '.json'
                 outfilepath = os.path.join(json_dir, outfilename)
                 crr_file_auth_collab = manage_json.extract_authorized_collab(metadata_file)
                 if outfilepath not in files_authorization:
@@ -245,12 +245,11 @@ def get_list(request):
     file_auth_fullpath = os.path.join(app_data_dir, "files_authorization.json")
     with open(file_auth_fullpath) as f:
         files_auth = json.load(f)
-
     for i in os.listdir(json_dir):
         crr_file_path = os.path.join(json_dir, i)
         if crr_file_path in files_auth:
             crr_file_auth = files_auth[crr_file_path]
-            if any(j in crr_file_auth for j in crr_auth_data_list):
+            if any(j in crr_file_auth for j in crr_auth_data_list) or crr_file_auth[0]=="all":
                 allfiles.append(i[:-5])
     
     return HttpResponse(json.dumps(allfiles), content_type="application/json")
@@ -296,10 +295,10 @@ def extract_features(request):
     for k in selected_traces_rest_json:
         #crr_vcorr = selected_traces_rest_json[k]['vcorr']
         crr_file_rest_name = k + '.json'
-        crr_name_split = k.split('_')
+        crr_name_split = k.split('____')
         crr_cell_name = crr_name_split[5]
         crr_sample_name = crr_name_split[6]
-        crr_key = crr_name_split[0] + '_' + crr_name_split[1] + '_' + crr_name_split[2] + '_' + crr_name_split[3] + '_' + crr_name_split[4] +  '_' + crr_name_split[5]
+        crr_key = crr_name_split[0] + '____' + crr_name_split[1] + '____' + crr_name_split[2] + '____' + crr_name_split[3] + '____' + crr_name_split[4] +  '____' + crr_name_split[5]
         if os.path.isfile(os.path.join(json_dir, crr_file_rest_name)):
             crr_json_file = os.path.join(json_dir, crr_file_rest_name)
         elif os.path.isfile(os.path.join(full_crr_uploaded_folder, crr_file_rest_name)):
@@ -547,8 +546,7 @@ def upload_files(request):
 
     #for root, dirs, files in os.walk(full_crr_uploaded_folder):
     for name in names_full_path:
-        #outfilename = '_'.join(manage_json.getCellInfo(name, upload_flag = True)) + '.json'
-        outfilename = '_'.join(manage_json.get_cell_info(name, upload_flag = True)) + '.json'
+        outfilename = '____'.join(manage_json.get_cell_info(name, upload_flag = True)) + '.json'
         outfilepath = os.path.join(full_user_uploaded_folder, outfilename)
         #data = manage_json.genDataStruct(name, upload_flag = True)
         data = manage_json.gen_data_struct(name, "",  upload_flag = True)

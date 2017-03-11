@@ -60,36 +60,42 @@ def get_cell_info(filename, upload_flag=False):
         else:
             c_species = data["animal_species"]
             c_species = c_species.replace(" ", "-")
+            #c_species = c_species.replace("_", "-")
 
         if "brain_structure" not in data or "brain_structure" is None:
             c_area = "unknown"
         else:
             c_area = data["brain_structure"]
             c_area = c_area.replace(" ", "-")
+            #c_area = c_area.replace("_", "-")
 
         if "cell_soma_location" not in data or "cell_soma_location" is None:
             c_region = "unknown"
         else:
             c_region = data["cell_soma_location"]
             c_region = c_region.replace(" ", "-")
+            #c_region = c_region.replace("_", "-")
 
         if "cell_type" not in data or "cell_type" is None:
             c_type = "unknown"
         else:
             c_type = data["cell_type"]
             c_type = c_type.replace(" ", "-")
+            #c_type = c_type.replace("_", "-")
 
         if "etype" not in data or "etype" is None:
             c_etype = "unknown"
         else:
             c_etype = data["etype"]
             c_etype = c_etype.replace(" ", "-")
+            #c_etype = c_etype.replace("_", "-")
 
         if "cell_id" not in data or "cell_id" is None:
             c_name = "unknown"
         else:
             c_name = data["cell_id"]
             c_name = c_name.replace(" ", "-")
+            #c_name = c_name.replace("_", "-")
 
         if "filename" not in data or "filename" is None: 
             c_sample = "unknown"
@@ -97,6 +103,7 @@ def get_cell_info(filename, upload_flag=False):
             c_sample = data["filename"]
             c_sample = os.path.splitext(c_sample)[0]
             c_sample = c_sample.replace(" ", "-")
+            #c_sample = c_sample.replace("_", "-")
 
     return (c_species, c_area, c_region, c_type, c_etype, c_name, c_sample) 
 
