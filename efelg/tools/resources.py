@@ -5,6 +5,10 @@ import neo
 import pprint
 from datetime import datetime
 from . import stimulus_extraction
+import requests
+from django.conf import settings
+if not settings.DEBUG:
+    from hbp_app_python_auth.auth import get_auth_header
 # create logger
 
 
@@ -193,3 +197,18 @@ def stim_feats_from_header(self, header):
                     return (1, all_stim_info)
 
 
+def user_collab_list(url_all, my_collabs_url, social_auth):
+    auth_data_list = []
+    headers = {'Authorization': get_auth_header(social_auth)}
+    res_all = requests.get(url_all, headers = headers)
+    res_mine = requests.get(my_collabs_url, headers = headers)
+                   
+    resp = res_all.json()
+    resp_mine = res_mine.json()
+
+    for i in resp['results']:
+        auth_data_list.append(i['collab_id'])
+    for i in resp_mine['results']:
+        auth_data_list.append(i['id'])
+
+    return auth_data_list

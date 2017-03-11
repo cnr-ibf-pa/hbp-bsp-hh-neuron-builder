@@ -142,3 +142,11 @@ def get_metadata(filename):
         data = json.load(f)
 
     return data
+
+
+# extract authorized collab from metadata file
+def extract_authorized_collab(metadata_file):
+    with open(metadata_file) as meta:
+        all_meta = json.load(meta)
+    
+    return all_meta['authorized_collabs']

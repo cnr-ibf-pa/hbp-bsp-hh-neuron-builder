@@ -102,10 +102,11 @@ def overview(request):
     # build data and json dir strings
     data_dir = os.path.join(settings.MEDIA_ROOT, 'efel_data', 'app_data', 'efelg_rawdata')
     json_dir = os.path.join(settings.MEDIA_ROOT, 'efel_data', 'json_data')
-    
+    app_data_dir = os.path.join(settings.MEDIA_ROOT, 'efel_data', 'app_data')  
+
     request.session['data_dir'] = data_dir
     request.session['json_dir'] = json_dir
-
+    request.session['app_data_dir'] = app_data_dir
     # create folders for global data and json files if not existing
     if not os.path.exists(data_dir):
         os.makedirs(data_dir)
@@ -121,6 +122,7 @@ def overview(request):
     request.session['context'] = context
     request.session['headers'] = headers
     request.session['collab_id'] = collab_id
+    request.session['authorized_data_list'] = []
 
     # reading parameters from request.session
     username = request.session['username']
@@ -195,6 +197,8 @@ def generate_json_data(request):
     data_dir = request.session['data_dir']
     json_dir = request.session['json_dir']
     all_files = os.listdir(data_dir)
+    files_authorization = {}
+
     for name in all_files:
         if name.endswith('.abf'):
             fname = os.path.splitext(name)[0]
@@ -204,11 +208,21 @@ def generate_json_data(request):
             else:
                 outfilename = '_'.join(manage_json.get_cell_info(metadata_file)) + '.json'
                 outfilepath = os.path.join(json_dir, outfilename)
+                crr_file_auth_collab = manage_json.extract_authorized_collab(metadata_file)
+                if outfilepath not in files_authorization:
+                    files_authorization[outfilepath] = crr_file_auth_collab
+
+                # if the .json file has not been created
                 if not os.path.isfile(outfilepath):
                     data = manage_json.gen_data_struct(os.path.join(data_dir,name), metadata_file)
-
                     with open(outfilepath, 'w') as f:
                         json.dump(data, f)
+    #
+    app_data_dir = request.session['app_data_dir']
+    file_auth_fullpath = os.path.join(app_data_dir, "files_authorization.json")
+    with open(file_auth_fullpath, 'w') as fa:
+        json.dump(files_authorization, fa)
+
     return HttpResponse("")
 
 
@@ -218,11 +232,26 @@ def show_traces(request):
     return render_to_response('efelg/show_traces.html')
 
 
-#####
+##### retrieve the list of .json files to be displayed for trace selection
 @login_required(login_url='/login/hbp')
 def get_list(request):
     json_dir = request.session['json_dir']
-    allfiles = [f[:-5] for f in os.listdir(json_dir) if f.endswith('.json')]
+    allfiles = []
+    url = "https://services.humanbrainproject.eu/storage/v1/api/project/"
+    my_collabs_url = "https://services.humanbrainproject.eu/collab/v0/mycollabs/"
+    crr_auth_data_list = resources.user_collab_list(url, my_collabs_url, request.user.social_auth.get()) 
+
+    app_data_dir = request.session['app_data_dir']
+    file_auth_fullpath = os.path.join(app_data_dir, "files_authorization.json")
+    with open(file_auth_fullpath) as f:
+        files_auth = json.load(f)
+
+    for i in os.listdir(json_dir):
+        crr_file_path = os.path.join(json_dir, i)
+        if crr_file_path in files_auth:
+            crr_file_auth = files_auth[crr_file_path]
+            if any(j in crr_file_auth for j in crr_auth_data_list):
+                allfiles.append(i[:-5])
     
     return HttpResponse(json.dumps(allfiles), content_type="application/json")
 
@@ -265,7 +294,7 @@ def extract_features(request):
     selected_traces_rest = []
     
     for k in selected_traces_rest_json:
-        crr_vcorr = selected_traces_rest_json[k]['vcorr']
+        #crr_vcorr = selected_traces_rest_json[k]['vcorr']
         crr_file_rest_name = k + '.json'
         crr_name_split = k.split('_')
         crr_cell_name = crr_name_split[5]
@@ -297,21 +326,22 @@ def extract_features(request):
         if crr_key in cell_dict:
             cell_dict[crr_key]['stim'].append(crr_file_sel_stim)
             cell_dict[crr_key]['files'].append(crr_sample_name)
-            cell_dict[crr_key]['vcorr'].append(float(crr_vcorr))
+            #cell_dict[crr_key]['vcorr'].append(float(crr_vcorr))
         else:
             cell_dict[crr_key] = {}
             cell_dict[crr_key]['stim'] = [crr_file_sel_stim]
             cell_dict[crr_key]['files'] = [crr_sample_name]
             cell_dict[crr_key]['cell_name'] = crr_cell_name
             cell_dict[crr_key]['all_stim'] = crr_file_all_stim
-            cell_dict[crr_key]['vcorr'] = [float(crr_vcorr)]
+            #cell_dict[crr_key]['vcorr'] = [float(crr_vcorr)]
     
     target = []
     final_cell_dict = {}  
     final_exclude = []
     for key in cell_dict:
         crr_el = cell_dict[key]
-        v_corr = crr_el['vcorr']
+        #v_corr = crr_el['vcorr']
+        v_corr = 0
         for c_stim_el in crr_el['stim']:
             [target.append(float(i)) for i in c_stim_el if float(i) not in target]
         exc_stim_lists = [list(set(crr_el['all_stim']) - set(sublist)) for sublist in crr_el['stim']]
@@ -590,3 +620,4 @@ def create_session_var(request):
 
     # render to html page
     return HttpResponse("") 
+

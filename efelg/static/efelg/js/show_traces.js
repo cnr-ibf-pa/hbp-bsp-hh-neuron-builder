@@ -51,7 +51,7 @@ function TracePlot(container_id, cell_obj) {
         self.infobox.append('<button class="selall btn btn-link btn-default">Select all</button>')
         self.infobox.append('<button class="dselall btn btn-link btn-default">Deselect all</button>')
         self.infobox.append('<button class="invsel btn btn-default btn-link">Invert selection</button>')
-        self.infobox.append('<div class="input-group col-xs-3 pull-right"> <div class="input-group-addon input-sm">Voltage correction (mV)</div> <input type="number" class="form-control input-sm vcorr" step="0.5" value="0"> </div>')
+        //self.infobox.append('<div class="input-group col-xs-3 pull-right"> <div class="input-group-addon input-sm">Voltage correction (mV)</div> <input type="number" class="form-control input-sm vcorr" step="0.5" value="0"> </div>')
     }
 
 	function manageLegend() {
@@ -198,12 +198,11 @@ function TracePlot(container_id, cell_obj) {
 }
 
 
-
 $(document).ready(function(){
 
     var box_id = 'loadfile_box'
     var label_id = 'loadfile_info'
-    
+
     $('#loadfile_icon').hide()
     $('#' + box_id).hide()
     
@@ -278,8 +277,11 @@ $(document).ready(function(){
 
 	$('#charts').empty()
 
-	$.getJSON('/efelg/get_list', function(data) {
+	var jqxhr = $.getJSON('/efelg/get_list', function(data) {
 		cells_tree = {}
+        if (data.length == 0) {
+            
+        }
 		$.each(data, function(index, elem) {
 		    params = elem.split('_')
 		    branch = cells_tree
@@ -365,8 +367,13 @@ $(document).ready(function(){
 
 		enable_dropdown('#drop_species', cells_tree)
 	})
+    .done(function() {
+        $(".loader").fadeOut("fast");      
+    })
+})
 
-});
+
+
 
 
 function submitAll() {
@@ -395,7 +402,7 @@ function serializeAll() {
             var sampleObj = {}
             
             sampleObj['stim'] = traces
-            sampleObj['vcorr'] = $(infos[i]).find('.vcorr').val()
+            //sampleObj['vcorr'] = $(infos[i]).find('.vcorr').val()
             
             obj[cell_name] = sampleObj
         }
