@@ -1,21 +1,28 @@
 import os
 import numpy
+import logging
+logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)
+
 
 # author Luca Leonardo Bologna
 def stim_feats_from_meta(crr_dict, num_segments):
-    # read stimulus information
-    ty = str(crr_dict['stimulus_type'])
-    tu = crr_dict['stimulus_time_unit']
-    st = crr_dict['stimulus_start']
-    en = crr_dict['stimulus_end']
-    u = str(crr_dict['stimulus_unit'])
-    fa = float(format(crr_dict['stimulus_first_amplitude'], '.3f'))
-    inc = float(format(crr_dict['stimulus_increment'], '.3f'))
-    ru = crr_dict['sampling_rate_unit']
-    r = crr_dict['sampling_rate']
-    if tu == 's': 
-        st = st * 1e3
-        en = en * 1e3
+    try:
+        # read stimulus information
+        ty = str(crr_dict['stimulus_type'])
+        tu = crr_dict['stimulus_time_unit']
+        st = crr_dict['stimulus_start'][0]
+        en = crr_dict['stimulus_end'][0]
+        u = str(crr_dict['stimulus_unit'])
+        fa = float(format(crr_dict['stimulus_first_amplitude'][0], '.3f'))
+        inc = float(format(crr_dict['stimulus_increment'][0], '.3f'))
+        ru = crr_dict['sampling_rate_unit'][0]
+        r = crr_dict['sampling_rate'][0]
+        if tu == 's': 
+            st = st * 1e3
+            en = en * 1e3
+    except:
+        return (0, [])
 
     all_stim_feats = []
     # for every segment in the axon file
@@ -26,6 +33,10 @@ def stim_feats_from_meta(crr_dict, num_segments):
         crr_stim_feats = (ty, st, en, crr_val, u)
 	# store current tuple
         all_stim_feats.append(crr_stim_feats)
+
+    logger.info(num_segments)
+    logger.info(all_stim_feats)
+
     return (1, all_stim_feats)
 
 
@@ -90,5 +101,6 @@ def stim_feats_from_header(header):
                         st = 1/sampling_rate * st * 1e3
                         en = 1/sampling_rate * en * 1e3
                         all_stim_info.append((ty, st, en, crr_val, u))
+
                     return (1, all_stim_info)
 

@@ -1,4 +1,5 @@
 {% load static %}
+{% load oidc_session %}
 
 <!DOCTYPE html>
 <html>
@@ -14,12 +15,16 @@
         <script type="text/javascript" src="{% static 'efelg/js/select_features.js' %}"></script>
     </head>
     <body>
-        <div id="message_div" style="display:none; text-align:center">
-            <br><br>
-            <p style="font-size:25px">Please wait. This may take a few minutes  ...</p>
-            <span class="glyphicon glyphicon-refresh spinning lg"></span>
-            <br>
-        </div>
+	<!-- div for loading message start -->
+	<div id="load-message" class="loader" style="display:none">
+    	<div class="loader-obj-container" style="text-align:center">
+        	<div class="glyphicon glyphicon-refresh spinning lg" style="text-align:center"></div>
+    		<div>
+    		<p>Extracting features from traces. This may take a few minutes.</p>
+    		<p>Please wait ...</p>
+    		</div>
+    	</div>
+	</div>
         {% block content %}{% endblock %}
             <form id="select_feature_form" action="/efelg/extract_features/" method="post">
             <fieldset id="field_set">

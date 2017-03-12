@@ -120,6 +120,10 @@ def get_traces_info(filename, upload_flag = False):
     if not upload_flag:
         crr_dict = get_metadata(filename)
         stim_res = stimulus_extraction.stim_feats_from_meta(crr_dict, len(segments))
+        if not stim_res[0]:
+            stim_res = stimulus_extraction.stim_feats_from_header(data.read_header())
+        if not stim_res[0]:
+            return 0
         stim = stim_res[1]
     else:
         stim_res = stimulus_extraction.stim_feats_from_header(data.read_header())

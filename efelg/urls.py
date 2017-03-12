@@ -26,6 +26,7 @@ urlpatterns = [
     url(r'^features_pdf_path', views.features_pdf_path),
     url(r'^get_directory_structure', views.get_directory_structure),
     url(r'^upload_files', views.upload_files),
+    url(r'^upload_zip_file_to_storage', views.upload_zip_file_to_storage),
 ]
 
 if settings.DEBUG:

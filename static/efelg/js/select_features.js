@@ -1,8 +1,9 @@
             function submit_form(){
                 document.getElementById("select_feature_form").submit();
-                document.getElementById("message_div").style.display='block';
-                document.getElementById("message_div").scrollIntoView();
+                //document.getElementById("message_div").style.display='block';
+                //document.getElementById("message_div").scrollIntoView();
                 document.getElementById("field_set").style.display =  "none";
+                document.getElementById("load-message").style.display = "block";
             }
 
             $.getJSON('/efelg/features_dict', function(data) {

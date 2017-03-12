@@ -398,32 +398,7 @@ def extract_features(request):
     finally:
         zip_file.close()
 
-    # if not in DEBUG mode
-    if not settings.DEBUG:
-        # save files in the collab storage
-        st_rel_user_results_folder = request.session['st_rel_user_results_folder']
-        st_rel_user_uploaded_folder = request.session['st_rel_user_uploaded_folder']
-        storage_root = request.session['storage_root']
-        access_token = request.session['access_token']
-
-	services = bsc.get_services()
-
-    	# get clients from bbp python packages
-    	oidc_client = BBPOIDCClient.bearer_auth(services['oidc_service']['prod']['url'], access_token)
-    	bearer_client = BBPOIDCClient.bearer_auth('prod', access_token)
-    	doc_client = DocClient(services['document_service']['prod']['url'], oidc_client)
-
-        #doc_client = manage_collab_storage.create_doc_client(access_token)
-        crr_collab_storage_folder = os.path.join(storage_root, st_rel_user_results_folder)
-        if not doc_client.exists(crr_collab_storage_folder):
-            doc_client.makedirs(crr_collab_storage_folder)
-
-        # final zip collab storage path
-        zip_collab_storage_path = os.path.join(crr_collab_storage_folder, crr_user_folder + '_results.zip')
-        # bypassing uploading data to collab storage
-        #if not doc_client.exists(zip_collab_storage_path):
-        #    doc_client.upload_file(output_path, zip_collab_storage_path) 
-        accesslogger.info(resources.string_for_log('extract_features', request, page_spec_string = '___'.join(check_features)))
+    accesslogger.info(resources.string_for_log('extract_features', request, page_spec_string = '___'.join(check_features)))
     return render(request, 'efelg/extract_features.html') 
 
 
@@ -619,3 +594,36 @@ def create_session_var(request):
     # render to html page
     return HttpResponse("") 
 
+
+########### handle file upload to storage collab
+def upload_zip_file_to_storage(request):
+
+    # if not in DEBUG mode, save files in the collab storage
+    if not settings.DEBUG:
+        # retrieve data from request.session
+        st_rel_user_results_folder = request.session['st_rel_user_results_folder']
+        st_rel_user_uploaded_folder = request.session['st_rel_user_uploaded_folder']
+        storage_root = request.session['storage_root']
+        access_token = request.session['access_token']
+        crr_user_folder = request.session['time_info'] 
+        output_path = request.session['result_file_zip']
+
+	services = bsc.get_services()
+
+    	# get clients from bbp python packages
+    	oidc_client = BBPOIDCClient.bearer_auth(services['oidc_service']['prod']['url'], access_token)
+    	bearer_client = BBPOIDCClient.bearer_auth('prod', access_token)
+    	doc_client = DocClient(services['document_service']['prod']['url'], oidc_client)
+        crr_collab_storage_folder = os.path.join(storage_root, st_rel_user_results_folder)
+        if not doc_client.exists(crr_collab_storage_folder):
+            doc_client.makedirs(crr_collab_storage_folder)
+
+        # final zip collab storage path
+        zip_collab_storage_path = os.path.join(crr_collab_storage_folder, crr_user_folder + '_results.zip')
+
+        # bypassing uploading data to collab storage
+        if not doc_client.exists(zip_collab_storage_path):
+            doc_client.upload_file(output_path, zip_collab_storage_path) 
+
+    # render to html page
+    return HttpResponse("") 
