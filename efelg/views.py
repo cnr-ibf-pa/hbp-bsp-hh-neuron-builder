@@ -240,7 +240,6 @@ def get_list(request):
     url = "https://services.humanbrainproject.eu/storage/v1/api/project/"
     my_collabs_url = "https://services.humanbrainproject.eu/collab/v0/mycollabs/"
     crr_auth_data_list = resources.user_collab_list(url, my_collabs_url, request.user.social_auth.get()) 
-
     app_data_dir = request.session['app_data_dir']
     file_auth_fullpath = os.path.join(app_data_dir, "files_authorization.json")
     with open(file_auth_fullpath) as f:
