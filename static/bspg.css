@@ -6,14 +6,18 @@
     height: 100%;
     z-index: 9999;
     background: rgb(255, 255, 255);
-    display: table;
     text-align: center;
+    vertical-align: middle;
+    margin: 0 auto;
+    display: table;
 }
 
 .loader-obj-container {
-    display: table-cell;
+    width: 100%;
+    margin: 0 auto;
     vertical-align: middle;
     text-align: center;
+    display: table-cell;
 }
 
 
