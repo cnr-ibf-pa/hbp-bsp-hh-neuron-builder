@@ -87,12 +87,13 @@ def overview(request):
          
         # get collab_id
         res = requests.get(url, headers=headers)
-        if res.status_code !=200:
+        if res.status_code != 200:
             auth_logout(request)
             nextUrl = urllib.quote('%s?ctx=%s' % (request.path, context))
             return redirect('%s?next=%s' % (settings.LOGIN_URL, nextUrl))
 
         collab_id = res.json()['collab']['id']
+        request.session['context'] = context
     else:
         username = 'test'
         headers = {}
@@ -123,6 +124,7 @@ def overview(request):
     request.session['headers'] = headers
     request.session['collab_id'] = collab_id
     request.session['authorized_data_list'] = []
+    request.session["current_authorized_files"] = []
 
     # reading parameters from request.session
     username = request.session['username']
@@ -235,22 +237,33 @@ def show_traces(request):
 ##### retrieve the list of .json files to be displayed for trace selection
 @login_required(login_url='/login/hbp')
 def get_list(request):
-    json_dir = request.session['json_dir']
+    
+    # final list of authorized files
     allfiles = []
-    url = "https://services.humanbrainproject.eu/storage/v1/api/project/"
+
+    #retrieve data from session variables
+    json_dir = request.session['json_dir']
+    
+    # extract the list of the collabs the current user belongs to
     my_collabs_url = "https://services.humanbrainproject.eu/collab/v0/mycollabs/"
-    crr_auth_data_list = resources.user_collab_list(url, my_collabs_url, request.user.social_auth.get()) 
+    crr_auth_data_list = resources.user_collab_list(my_collabs_url, request.user.social_auth.get()) 
+
+    # retrieve the file containing the authorizations for each data file
     app_data_dir = request.session['app_data_dir']
     file_auth_fullpath = os.path.join(app_data_dir, "files_authorization.json")
     with open(file_auth_fullpath) as f:
         files_auth = json.load(f)
+
+    # for 
     for i in os.listdir(json_dir):
         crr_file_path = os.path.join(json_dir, i)
         if crr_file_path in files_auth:
             crr_file_auth = files_auth[crr_file_path]
             if any(j in crr_file_auth for j in crr_auth_data_list) or crr_file_auth[0]=="all":
                 allfiles.append(i[:-5])
-    
+
+    request.session["current_authorized_files"] = allfiles 
+
     return HttpResponse(json.dumps(allfiles), content_type="application/json")
 
 
@@ -259,9 +272,14 @@ def get_list(request):
 def get_data(request, cellname=""):
     json_dir = request.session['json_dir']
     full_user_uploaded_folder = request.session['full_user_uploaded_folder']
+    current_authorized_files = request.session["current_authorized_files"]
 
+    if cellname not in current_authorized_files:
+        return HttpResponse("")
+    
     if os.path.isfile(os.path.join(json_dir, cellname) + '.json'):
         cellname_path = os.path.join(json_dir, cellname) + '.json'
+        
     elif os.path.isfile(os.path.join(full_user_uploaded_folder, cellname) + '.json'):
         cellname_path = os.path.join(full_user_uploaded_folder, cellname) + '.json'
 
@@ -476,11 +494,11 @@ def upload_files(request):
         os.makedirs(full_user_uploaded_folder)
     
     user_files = request.FILES.getlist('user_files')
-    
+
     # list of modified names of uploaded files
     name_abf_list = []
     
-    # list of uploaded files json file names
+    # list of uploaded json file names
     name_json_list = []
     
     # list of uploaded files full paths
@@ -510,7 +528,7 @@ def upload_files(request):
             final_file.write(k.read())
             final_file.close()
 
-        #if resources.valid_abf_file(crr_local_filename):
+        # 
         if resources.check_file_validity(crr_local_filename):
             name_abf_list.append(crr_file_name) 
             names_full_path.append(crr_local_filename)
@@ -518,11 +536,12 @@ def upload_files(request):
             os.remove(crr_local_filename)
             
 
-    #for root, dirs, files in os.walk(full_crr_uploaded_folder):
+    #  
+    all_authorized_files = request.session["current_authorized_files"]
     for name in names_full_path:
         outfilename = '____'.join(manage_json.get_cell_info(name, upload_flag = True)) + '.json'
         outfilepath = os.path.join(full_user_uploaded_folder, outfilename)
-        #data = manage_json.genDataStruct(name, upload_flag = True)
+
         data = manage_json.gen_data_struct(name, "",  upload_flag = True)
         if os.path.isfile(outfilepath):
             os.remove(outfilepath)        
@@ -530,14 +549,11 @@ def upload_files(request):
             json.dump(data, f)
         if outfilename[:-5] not in data_name_dict['all_json_names']:
             data_name_dict['all_json_names'].append(outfilename[:-5])
+            all_authorized_files.append(outfilename[:-5])
+    
+    request.session["current_authorized_files"] = all_authorized_files
 
-    # if not in DEBUG mode
-    if not settings.DEBUG:
-        access_token = request.session['access_token']
-        storage_root = request.session['storage_root']
-        doc_client = manage_collab_storage.create_doc_client(access_token)
-
-        accesslogger.info(resources.string_for_log('upload_files', request, page_spec_string = str(len(names_full_path))))
+    accesslogger.info(resources.string_for_log('upload_files', request, page_spec_string = str(len(names_full_path))))
 
     return HttpResponse(json.dumps(data_name_dict), content_type="application/json") 
 
@@ -563,35 +579,7 @@ def get_directory_structure(request):
         features_dict = json.load(json_file) 
     return HttpResponse(json.dumps(features_dict))
 
-@login_required(login_url='/login/hbp')
-@csrf_exempt
-def create_session_var(request):
-    # if not in DEBUG mode
-    if not settings.DEBUG:
-        headers = request.session['headers']
-        collab_id = request.session['collab_id']
 
-        # get services and access token    
-        services = bsc.get_services()
-        access_token = get_access_token(request.user.social_auth.get())
-
-        # get clients from bbp python packages
-        oidc_client = BBPOIDCClient.bearer_auth(services['oidc_service']['prod']['url'], access_token)
-        bearer_client = BBPOIDCClient.bearer_auth('prod', access_token)
-        doc_client = DocClient(services['document_service']['prod']['url'], oidc_client)
-
-        # extract project from collab_id
-        project = doc_client.get_project_by_collab_id(collab_id)
-        
-        # extract collab storage root path
-        storage_root = doc_client.get_path_by_id(project["_uuid"])
-        
-        # create session variables for folders handling in request.session
-        request.session['storage_root'] = storage_root
-        request.session['access_token'] = access_token
-
-    # render to html page
-    return HttpResponse("") 
 
 
 ########### handle file upload to storage collab
@@ -599,20 +587,39 @@ def upload_zip_file_to_storage(request):
 
     # if not in DEBUG mode, save files in the collab storage
     if not settings.DEBUG:
+        access_token = get_access_token(request.user.social_auth.get())
         # retrieve data from request.session
+        headers = request.session['headers']
+        collab_id = request.session['collab_id']
+
         st_rel_user_results_folder = request.session['st_rel_user_results_folder']
         st_rel_user_uploaded_folder = request.session['st_rel_user_uploaded_folder']
         storage_root = request.session['storage_root']
         access_token = request.session['access_token']
         crr_user_folder = request.session['time_info'] 
         output_path = request.session['result_file_zip']
+        context = request.session['context']
 
 	services = bsc.get_services()
-
+    
     	# get clients from bbp python packages
     	oidc_client = BBPOIDCClient.bearer_auth(services['oidc_service']['prod']['url'], access_token)
     	bearer_client = BBPOIDCClient.bearer_auth('prod', access_token)
     	doc_client = DocClient(services['document_service']['prod']['url'], oidc_client)
+
+
+        context = request.session['context']
+        auth_logout(request)
+        nextUrl = urllib.quote('%s?ctx=%s' % (request.path, context))
+        #return redirect('%s?next=%s' % (settings.LOGIN_URL, nextUrl))
+
+
+
+        # extract project from collab_id
+        project = doc_client.get_project_by_collab_id(collab_id)
+        
+        # extract collab storage root path
+        storage_root = doc_client.get_path_by_id(project["_uuid"])
         crr_collab_storage_folder = os.path.join(storage_root, st_rel_user_results_folder)
         if not doc_client.exists(crr_collab_storage_folder):
             doc_client.makedirs(crr_collab_storage_folder)

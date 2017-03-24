@@ -23,7 +23,7 @@ def md5(filename):
 # generate data strcuture containing data and metadata
 def gen_data_struct(filename, filename_meta, upload_flag = False):
     c_species, c_area, c_region, c_type, c_etype, c_name, c_sample = get_cell_info(filename_meta, upload_flag)
-    traces, volt_unit, amp_unit = get_traces_info(filename, upload_flag)
+    sampling_rate, tonoff, traces, volt_unit, amp_unit = get_traces_info(filename, upload_flag)
     
     obj = {
         'abfpath': filename,
@@ -37,7 +37,9 @@ def gen_data_struct(filename, filename_meta, upload_flag = False):
         'sample': c_sample,
         'volt_unit': volt_unit,
         'amp_unit': amp_unit,
-        'traces': traces
+        'traces': traces,
+        'tonoff': tonoff,
+        'sampling_rate': sampling_rate
     }
     
     return obj
@@ -113,6 +115,8 @@ def get_traces_info(filename, upload_flag = False):
     #
     data = neo.io.AxonIO(filename)
     segments = data.read_block(lazy=False, cascade=True).segments
+    header = data.read_header() # read file header
+    sampling_rate = 1.e6 / header['protocol']['fADCSequenceInterval'] # read sampling rate
 
     volt_unit = segments[0].analogsignals[0].units
     volt_unit = str(volt_unit.dimensionality)
@@ -131,16 +135,18 @@ def get_traces_info(filename, upload_flag = False):
     
     #amp_unit = str(crr_dict['stimulus_unit'])
     amp_unit = stim[0][-1]
-
+   
     traces = {}
+    tonoff = {}
     for i, signal in enumerate(segments):
         voltage = np.array(signal.analogsignals[0]).astype(np.float64)
-        voltage = voltage[::3]
+        #voltage = voltage[::3]
         stimulus = stim[i][3]
         label = "{0:.2f}".format(np.around(stimulus, decimals=3))
         traces.update({label: voltage.tolist()})
-        
-    return (traces, volt_unit, amp_unit)
+        tonoff.update({label: {'ton': [stim[i][1]], 'toff': [stim[i][2]]}})
+
+    return (sampling_rate, tonoff, traces, volt_unit, amp_unit)
 
 
 # read metadata file into a json dictionary

@@ -199,7 +199,6 @@ function TracePlot(container_id, cell_obj) {
 
 
 $(document).ready(function(){
-
     var box_id = 'loadfile_box'
     var label_id = 'loadfile_info'
 

@@ -14,7 +14,7 @@ urlpatterns = [
     url(r'^login/hbp', auth_views.login),
     url(r'^show_traces/$', views.show_traces),
     url(r'^generate_json_data$', views.generate_json_data),
-    url(r'^create_session_var$', views.create_session_var),
+    #url(r'^create_session_var$', views.create_session_var),
     url(r'^get_list$', views.get_list),
     url(r'^get_data/(?P<cellname>[0-9a-zA-Z_-]+)$', views.get_data),
     url(r'^select_features/$', views.select_features),
