@@ -140,7 +140,6 @@ def get_traces_info(filename, upload_flag = False):
     tonoff = {}
     for i, signal in enumerate(segments):
         voltage = np.array(signal.analogsignals[0]).astype(np.float64)
-        #voltage = voltage[::3]
         stimulus = stim[i][3]
         label = "{0:.2f}".format(np.around(stimulus, decimals=3))
         traces.update({label: voltage.tolist()})
