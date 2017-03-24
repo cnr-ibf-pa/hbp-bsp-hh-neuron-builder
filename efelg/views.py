@@ -290,6 +290,185 @@ def get_data(request, cellname=""):
 
 
 #####
+#@login_required(login_url='/login/hbp')
+#@csrf_exempt
+#def extract_features(request):
+#    data_dir = request.session['data_dir']
+#    json_dir = request.session['json_dir']
+#    selected_traces_rest_json = request.session['selected_traces_rest_json'] 
+#    allfeaturesnames = efel.getFeatureNames()
+#    
+#    crr_user_folder = request.session['time_info'] 
+#    full_crr_result_folder = request.session['full_user_crr_res_res_folder']
+#    full_crr_uploaded_folder = request.session['full_user_uploaded_folder']
+#    full_crr_data_folder = request.session['full_user_crr_res_data_folder']
+#    full_crr_user_folder = request.session['full_user_crr_results_folder']
+#    
+#    check_features = request.POST.getlist('crr_feature_check_features')
+#    request.session['selected_features'] = check_features 
+#    cell_dict = {}
+#    selected_traces_rest = []
+#    
+#    for k in selected_traces_rest_json:
+#        #crr_vcorr = selected_traces_rest_json[k]['vcorr']
+#        crr_file_rest_name = k + '.json'
+#        crr_name_split = k.split('____')
+#        crr_cell_name = crr_name_split[5]
+#        crr_sample_name = crr_name_split[6]
+#        crr_key = crr_name_split[0] + '____' + crr_name_split[1] + '____' + crr_name_split[2] + '____' + crr_name_split[3] + '____' + crr_name_split[4] +  '____' + crr_name_split[5]
+#        if os.path.isfile(os.path.join(json_dir, crr_file_rest_name)):
+#            crr_json_file = os.path.join(json_dir, crr_file_rest_name)
+#        elif os.path.isfile(os.path.join(full_crr_uploaded_folder, crr_file_rest_name)):
+#            crr_json_file = os.path.join(full_crr_uploaded_folder, crr_file_rest_name)
+#        else:
+#            continue
+#
+#        with open(crr_json_file) as f:
+#            crr_file_dict_read = f.read()
+#
+#        crr_file_dict = json.loads(crr_file_dict_read)
+#        crr_file_all_stim = crr_file_dict['traces'].keys()
+#        crr_file_sel_stim = selected_traces_rest_json[k]['stim']
+#        crr_abf_file_path = crr_file_dict['abfpath']
+#        crr_abf_name_ext = os.path.basename(crr_abf_file_path)
+#
+#        crr_cell_data_folder = os.path.join(full_crr_data_folder, crr_cell_name)
+#        if not os.path.exists(crr_cell_data_folder):
+#            os.makedirs(crr_cell_data_folder)
+#        if not os.path.isfile(os.path.join(crr_cell_data_folder, crr_abf_name_ext)):
+#            shutil.copy(crr_abf_file_path, crr_cell_data_folder)
+#        
+#        #
+#        if crr_key in cell_dict:
+#            cell_dict[crr_key]['stim'].append(crr_file_sel_stim)
+#            cell_dict[crr_key]['files'].append(crr_sample_name)
+#            #cell_dict[crr_key]['vcorr'].append(float(crr_vcorr))
+#        else:
+#            cell_dict[crr_key] = {}
+#            cell_dict[crr_key]['stim'] = [crr_file_sel_stim]
+#            cell_dict[crr_key]['files'] = [crr_sample_name]
+#            cell_dict[crr_key]['cell_name'] = crr_cell_name
+#            cell_dict[crr_key]['all_stim'] = crr_file_all_stim
+#            #cell_dict[crr_key]['vcorr'] = [float(crr_vcorr)]
+#    
+#    target = []
+#    final_cell_dict = {}  
+#    final_exclude = []
+#    for key in cell_dict:
+#        crr_el = cell_dict[key]
+#        #v_corr = crr_el['vcorr']
+#        v_corr = 0
+#        for c_stim_el in crr_el['stim']:
+#            [target.append(float(i)) for i in c_stim_el if float(i) not in target]
+#        exc_stim_lists = [list(set(crr_el['all_stim']) - set(sublist)) for sublist in crr_el['stim']]
+#        crr_exc = []
+#        for crr_list in exc_stim_lists:
+#            crr_stim_val = [float(i) for i in crr_list]
+#            crr_exc.append(crr_stim_val)
+#        final_cell_dict[cell_dict[key]['cell_name']] = {'v_corr':v_corr, 'ljp':0, 'experiments':{'step': {'location':'soma', 'files': [str(i) for i in crr_el['files']]}}, 'etype':'etype', 'exclude':crr_exc}
+#
+#    # build configuration dictionary
+#    config = {}
+#    config['features'] = {'step':[str(i) for i in check_features]}
+#    config['path'] = full_crr_data_folder + os.sep
+#    config['format'] = 'axon'
+#    config['comment'] = []
+#    config['cells'] = final_cell_dict
+#    config['options'] = {'relative': False, 'tolerance': 0.02, 'target': target, 'delay': 500, 'nanmean': False}
+#
+#    extractor = bpext.Extractor(full_crr_result_folder, config)
+#    extractor.create_dataset()
+#    extractor.plt_traces()
+#    extractor.extract_features()
+#    extractor.mean_features()
+#    extractor.plt_features()
+#    extractor.feature_config_cells()
+#    extractor.feature_config_all()
+#
+#    crr_result_folder = request.session['time_info']
+#    output_path = os.path.join(full_crr_user_folder, crr_user_folder + '_results.zip')
+#    request.session['result_file_zip'] = output_path
+#    request.session['result_file_zip_name'] = crr_user_folder + '_results.zip'
+#    parent_folder = os.path.dirname(full_crr_result_folder)
+#    contents = os.walk(full_crr_result_folder)
+#    try:
+#        zip_file = zipfile.ZipFile(output_path, 'w', zipfile.ZIP_DEFLATED)
+#        for root, folders, files in contents:
+#            # Include all subfolders, including empty ones.
+#            for folder_name in folders:
+#                absolute_path = os.path.join(root, folder_name)
+#                relative_path = absolute_path.replace(parent_folder + os.sep, '')
+#                zip_file.write(absolute_path, relative_path)
+#            for file_name in files:
+#                absolute_path = os.path.join(root, file_name)
+#                relative_path = absolute_path.replace(parent_folder + os.sep, '')
+#                zip_file.write(absolute_path, relative_path)
+#    except IOError as message:
+#        print(message)
+#        sys.exit(1)
+#    except OSError as message:
+#        print(message)
+#        sys.exit(1)
+#    except zip_file.BadZipfile as message:
+#        print(message)
+#        sys.exit(1)
+#    finally:
+#        zip_file.close()
+#
+#    accesslogger.info(resources.string_for_log('extract_features', request, page_spec_string = '___'.join(check_features)))
+#    return render(request, 'efelg/extract_features.html') 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#####
 @login_required(login_url='/login/hbp')
 @csrf_exempt
 def extract_features(request):
@@ -329,24 +508,16 @@ def extract_features(request):
         crr_file_dict = json.loads(crr_file_dict_read)
         crr_file_all_stim = crr_file_dict['traces'].keys()
         crr_file_sel_stim = selected_traces_rest_json[k]['stim']
-        crr_abf_file_path = crr_file_dict['abfpath']
-        crr_abf_name_ext = os.path.basename(crr_abf_file_path)
-
-        crr_cell_data_folder = os.path.join(full_crr_data_folder, crr_cell_name)
-        if not os.path.exists(crr_cell_data_folder):
-            os.makedirs(crr_cell_data_folder)
-        if not os.path.isfile(os.path.join(crr_cell_data_folder, crr_abf_name_ext)):
-            shutil.copy(crr_abf_file_path, crr_cell_data_folder)
         
         #
         if crr_key in cell_dict:
             cell_dict[crr_key]['stim'].append(crr_file_sel_stim)
-            cell_dict[crr_key]['files'].append(crr_sample_name)
+            cell_dict[crr_key]['files'].append(k)
             #cell_dict[crr_key]['vcorr'].append(float(crr_vcorr))
         else:
             cell_dict[crr_key] = {}
             cell_dict[crr_key]['stim'] = [crr_file_sel_stim]
-            cell_dict[crr_key]['files'] = [crr_sample_name]
+            cell_dict[crr_key]['files'] = [k]
             cell_dict[crr_key]['cell_name'] = crr_cell_name
             cell_dict[crr_key]['all_stim'] = crr_file_all_stim
             #cell_dict[crr_key]['vcorr'] = [float(crr_vcorr)]
@@ -370,8 +541,8 @@ def extract_features(request):
     # build configuration dictionary
     config = {}
     config['features'] = {'step':[str(i) for i in check_features]}
-    config['path'] = full_crr_data_folder + os.sep
-    config['format'] = 'axon'
+    config['path'] = json_dir + os.sep
+    config['format'] = 'ibf_json'
     config['comment'] = []
     config['cells'] = final_cell_dict
     config['options'] = {'relative': False, 'tolerance': 0.02, 'target': target, 'delay': 500, 'nanmean': False}
@@ -394,7 +565,6 @@ def extract_features(request):
     try:
         zip_file = zipfile.ZipFile(output_path, 'w', zipfile.ZIP_DEFLATED)
         for root, folders, files in contents:
-            # Include all subfolders, including empty ones.
             for folder_name in folders:
                 absolute_path = os.path.join(root, folder_name)
                 relative_path = absolute_path.replace(parent_folder + os.sep, '')
