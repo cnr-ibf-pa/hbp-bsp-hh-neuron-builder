@@ -9,6 +9,7 @@ from . import views
 urlpatterns = [
     #url(r'^$', views.access),    
     url(r'^$', views.overview),    
+    #url(r'^overview/$', views.overview),    
     url('', include('social.apps.django_app.urls', namespace='social')),
     url('', include('hbp_app_python_auth.urls', namespace='hbp-social')),
     url(r'^login/hbp', auth_views.login),
