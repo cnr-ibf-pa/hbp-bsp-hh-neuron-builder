@@ -11,7 +11,8 @@ $(document).ready(function(){
 });
 
 function displayTermsConditions() {
-    document.getElementById('termsConditions').style.display = "block";
+    //document.getElementById('termsConditions').style.display = "block";
+    $("#termsConditions").fadeIn("slow");
 }
 
 

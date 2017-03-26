@@ -18,7 +18,7 @@
 	<body>
 		{% hbp_oidc_session_handler request.user %}
 		{% block content %}{% endblock %}
-		<h3 id= "title">Feature extraction Graphical User Interface (GUI)</h3>
+		<h1 id= "title">Feature extraction Graphical User Interface</h1>
 		<br>
 		<p>The feature extraction GUI allows users to select data from an HBP dataset and/or upload their own, and extract electrophysiological features of interest.<br>
 		The application leverages the Python Electrophys Feature Extract Library (<a href="https://github.com/BlueBrain/eFEL" target=_blank>eFEL</a>) and provides a friendly interface to select both individual voltage traces (based on the stimulus current applied) and features to be extracted.</p>
@@ -78,21 +78,25 @@
 
 		<!-- div for loading message start -->
 		<div id="termsConditions" class="loader" style="display: None">
-			<div class="terms-obj-container">
+			<div id="termsContainer" class="terms-obj-container">
 				<h1>Terms & Conditions</h1>
 				<br>
-				By clicking the <b>Accept</b> button below, you accept to <b>cite the contributors</b> of the data you will visualize and/or use for analysis in this application, be these data and/or the analysis results relevant for you in <b>any future scientific production of any type</b>.
+				By clicking the <b>Accept</b> button below, you accept to <b>CITE THE CONTRIBUTORS</b> of the data you will make use of in this application, be these data and/or the analysis results relevant for you in <b>ANY FUTURE SCIENTIFIC PUBLICATION OF ANY TYPE</b>.
 				<br><br>
+                
+                Any other use of the data is not allowed without consent.
 
-				The citation format relative to each cell data, will be printed in the <b>HOWTOCITE.txt</b> file you will be able to download at the of the Feature Extraction process, together with the Feature Extraction results.
+                <br><br>
+
+				The citation format relative to each cell data selected from the database, will be printed in the <b>HOWTOCITE.txt</b> file you will be able to download at the end of the Feature Extraction process, together with the Feature Extraction results.
 
 				<br><br>
-				The server will keep track of your decision.
+				This server will keep track of your decision.
 				<br><br><br>
 
+				<input id='accept_btn' class="btn" type="submit" value="Accept">
+				<input id='decline_btn' class="btn" type="submit" value="Decline">
 			</div>
-			<input id='accept_btn' class="btn" type="submit" value="Accept">
-			<input id='decline_btn' class="btn" type="submit" value="Decline">
 		</div>
 		<!-- div for loading message end -->
 

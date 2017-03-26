@@ -39,7 +39,7 @@
     width: 100%;
     margin: 0 auto;
     vertical-align: middle;
-    text-align: left;
+    text-align: center; 
     display: table-cell;
     font-size: 20px;
 }

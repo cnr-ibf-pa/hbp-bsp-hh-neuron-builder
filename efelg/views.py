@@ -104,7 +104,9 @@ def overview(request):
     data_dir = os.path.join(settings.MEDIA_ROOT, 'efel_data', 'app_data', 'efelg_rawdata')
     json_dir = os.path.join(settings.MEDIA_ROOT, 'efel_data', 'json_data')
     app_data_dir = os.path.join(settings.MEDIA_ROOT, 'efel_data', 'app_data')  
+    conf_dir = os.path.join(json_dir, 'conf_json')
 
+    request.session['conf_dir'] = conf_dir
     request.session['data_dir'] = data_dir
     request.session['json_dir'] = json_dir
     request.session['app_data_dir'] = app_data_dir
@@ -250,21 +252,18 @@ def get_list(request):
     crr_auth_data_list = resources.user_collab_list(my_collabs_url, request.user.social_auth.get()) 
 
     # retrieve the file containing the authorizations for each data file
-    app_data_dir = request.session['app_data_dir']
-    file_auth_fullpath = os.path.join(app_data_dir, "files_authorization.json")
+    conf_dir = request.session['conf_dir']
+    file_auth_fullpath = os.path.join(conf_dir, "files_authorization.json")
     with open(file_auth_fullpath) as f:
         files_auth = json.load(f)
-
-    # for 
+    
+    #  
     for i in os.listdir(json_dir):
         crr_file_path = os.path.join(json_dir, i)
-        logger.info(i)
         #if crr_file_path in files_auth:
-        logger.info(files_auth.keys())
         if i in files_auth:
             #crr_file_auth = files_auth[crr_file_path]
             crr_file_auth = files_auth[i]
-            logger.info(crr_file_auth)
             if any(j in crr_file_auth for j in crr_auth_data_list) or crr_file_auth[0]=="all":
                 allfiles.append(i[:-5])
 
@@ -314,7 +313,7 @@ def extract_features(request):
     request.session['selected_features'] = check_features 
     cell_dict = {}
     selected_traces_rest = []
-    
+
     for k in selected_traces_rest_json:
         #crr_vcorr = selected_traces_rest_json[k]['vcorr']
         crr_file_rest_name = k + '.json'
@@ -383,6 +382,13 @@ def extract_features(request):
     extractor.feature_config_cells()
     extractor.feature_config_all()
 
+
+    conf_dir = request.session['conf_dir']
+    conf_cit = os.path.join(conf_dir, 'citation_list.json')
+    final_cit_file = os.path.join(full_crr_result_folder, 'HOWTOCITE.txt')
+    resources.print_citations(selected_traces_rest_json, conf_cit, final_cit_file)   
+
+
     crr_result_folder = request.session['time_info']
     output_path = os.path.join(full_crr_user_folder, crr_user_folder + '_results.zip')
     request.session['result_file_zip'] = output_path
@@ -411,6 +417,7 @@ def extract_features(request):
         sys.exit(1)
     finally:
         zip_file.close()
+
 
     accesslogger.info(resources.string_for_log('extract_features', request, page_spec_string = '___'.join(check_features)))
     return render(request, 'efelg/extract_features.html') 

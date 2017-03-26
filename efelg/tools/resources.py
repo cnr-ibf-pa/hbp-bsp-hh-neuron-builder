@@ -1,4 +1,5 @@
 import os
+import sys
 import json
 import collections
 import neo
@@ -10,7 +11,12 @@ from django.conf import settings
 if not settings.DEBUG:
     from hbp_app_python_auth.auth import get_auth_header
 # create logger
+import logging
 
+# set logging up
+logging.basicConfig(stream=sys.stdout)
+logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)
 
 def valid_abf_file(filepath):
     #
@@ -207,3 +213,36 @@ def user_collab_list(my_collabs_url, social_auth):
         auth_data_list.append(i['id'])
 
     return auth_data_list
+
+
+def print_citations(json_file_list, conf_file, final_file):
+    final_citations = {}
+    with open(conf_file) as f:
+        all_citations = json.load(f)
+
+    for i in json_file_list:
+        fin_key = i + '.json'
+        crr_ref = all_citations[fin_key]
+        crr_cit = crr_ref.keys()[0]
+        if crr_cit not in final_citations:
+            final_citations[crr_cit] = []
+            final_citations[crr_cit].append(i)
+        else:
+            final_citations[crr_cit].append(i)
+
+    with open(final_file, 'w') as tf:
+        for key, val in final_citations.iteritems():
+            tf.write("For the following data:\n")
+            for i in val:
+                tf.write(i + "\n")
+            tf.write("\n")
+            tf.write("Use the following reference:\n\n")
+            tf.write(key + "\n\n")
+            tf.write("===========\n\n")
+
+
+
+
+
+
+
