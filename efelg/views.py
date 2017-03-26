@@ -212,7 +212,8 @@ def generate_json_data(request):
                 outfilepath = os.path.join(json_dir, outfilename)
                 crr_file_auth_collab = manage_json.extract_authorized_collab(metadata_file)
                 if outfilepath not in files_authorization:
-                    files_authorization[outfilepath] = crr_file_auth_collab
+                    #files_authorization[outfilepath] = crr_file_auth_collab
+                    files_authorization[outfilename] = crr_file_auth_collab
 
                 # if the .json file has not been created
                 if not os.path.isfile(outfilepath):
@@ -257,8 +258,13 @@ def get_list(request):
     # for 
     for i in os.listdir(json_dir):
         crr_file_path = os.path.join(json_dir, i)
-        if crr_file_path in files_auth:
-            crr_file_auth = files_auth[crr_file_path]
+        logger.info(i)
+        #if crr_file_path in files_auth:
+        logger.info(files_auth.keys())
+        if i in files_auth:
+            #crr_file_auth = files_auth[crr_file_path]
+            crr_file_auth = files_auth[i]
+            logger.info(crr_file_auth)
             if any(j in crr_file_auth for j in crr_auth_data_list) or crr_file_auth[0]=="all":
                 allfiles.append(i[:-5])
 
