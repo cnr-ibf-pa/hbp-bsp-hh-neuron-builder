@@ -102,9 +102,12 @@ def overview(request):
 
     # build data and json dir strings
     data_dir = os.path.join(settings.MEDIA_ROOT, 'efel_data', 'app_data', 'efelg_rawdata')
-    json_dir = os.path.join(settings.MEDIA_ROOT, 'efel_data', 'json_data')
+    main_json_dir = os.path.join(settings.MEDIA_ROOT, 'efel_data', 'eg_json_data')
     app_data_dir = os.path.join(settings.MEDIA_ROOT, 'efel_data', 'app_data')  
-    conf_dir = os.path.join(json_dir, 'conf_json')
+
+    json_dir = os.path.join(main_json_dir, 'traces')
+    conf_dir = os.path.join(main_json_dir, 'conf_json')
+    metadata_dir = os.path.join(main_json_dir, 'metadata')
 
     request.session['conf_dir'] = conf_dir
     request.session['data_dir'] = data_dir
@@ -261,6 +264,7 @@ def get_list(request):
     for i in os.listdir(json_dir):
         crr_file_path = os.path.join(json_dir, i)
         #if crr_file_path in files_auth:
+
         if i in files_auth:
             #crr_file_auth = files_auth[crr_file_path]
             crr_file_auth = files_auth[i]

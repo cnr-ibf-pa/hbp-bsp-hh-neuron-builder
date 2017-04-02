@@ -24,7 +24,7 @@ function TracePlot(container_id, cell_obj) {
                          self.cell_obj['region'], self.cell_obj['type'],
                          self.cell_obj['etype'], self.cell_obj['name'],
                          self.cell_obj['sample']]
-    
+        self.contributors = self.cell_obj['contributors']['message'] 
         // Erase everything
         self.container.empty()
         
@@ -46,8 +46,8 @@ function TracePlot(container_id, cell_obj) {
 
         // Populates the boxes
 
-        self.infobox.append('<span class="single-cell"></span>').text('Cell properties: ' + self.cellinfo.join(' > '))
-        self.infobox.append('<br><br>')
+        self.infobox.append('<span class="single-cell" style="font-size:8px"></span>').text('Cell properties: ' + self.cellinfo.join(' > ') + '   [' + self.contributors + ']')
+        self.infobox.append('<br>')
         self.infobox.append('<button class="selall btn btn-link btn-default">Select all</button>')
         self.infobox.append('<button class="dselall btn btn-link btn-default">Deselect all</button>')
         self.infobox.append('<button class="invsel btn btn-default btn-link">Invert selection</button>')
@@ -111,9 +111,10 @@ function TracePlot(container_id, cell_obj) {
                 name: key + ' ' + self.cell_obj['amp_unit'],
                 mode: 'lines',
                 hoverinfo: 'none',
-                opacity: SHOW_FADED
+                opacity: SHOW_FADED,
             }
             plotdata.push(newTrace)
+            console.log(newTrace.name)
         })
 
         // Sorts the traces names (mathematical order)
@@ -134,9 +135,10 @@ function TracePlot(container_id, cell_obj) {
             legend: {
                 orientation: "h",
                 x: 0,
-                y: 1.2,
+                y: 1.1,
             },
-            margin: {l: 40, b: 60, t: 0} 
+            showlegend: true,
+            margin: {l: 40, b: 5, t: 0} 
         }
 
         Plotly.newPlot(self.plotbox.attr('id'), plotdata, layout, {displayModeBar: false}).then(manageLegend)

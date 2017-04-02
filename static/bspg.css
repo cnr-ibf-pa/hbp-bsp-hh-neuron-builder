@@ -20,6 +20,19 @@
     display: table-cell;
 }
 
+.accept-btn {
+    background-color: rgb(100, 200, 120);
+    color: black;
+    border-radius: 5px;
+}
+
+.decline-btn {
+    background-color: rgb(255, 100, 100);
+    color: black;
+    border-radius: 5px;
+}
+
+
 .terms {
     position: fixed;
     left: 0px;
@@ -32,16 +45,22 @@
     vertical-align: middle;
     margin: 0 auto;
     display: table;
-    box-shadow: 30px 30px 10px #888888;
+    vertical-align: middle;
+    overflow: hidden;
 }
 
 .terms-obj-container {
-    width: 100%;
-    margin: 0 auto;
+    margin: 5%  auto 10% auto;
     vertical-align: middle;
     text-align: center; 
-    display: table-cell;
-    font-size: 20px;
+    /*display: table-cell;*/
+    font-size: 18px;
+    background: rgb(240, 240, 240);
+    width: 90%;
+    height: 90%;
+    box-shadow: 10px 10px 5px #888888;
+    padding: 30px 60px 70px 60px;
+    overflow: hidden;
 }
 
 .page-iframes {
@@ -58,7 +77,7 @@ max-height: 1200px;
 
 
 .fn-container {
-    font-size: 20px;
+    font-size: 16px;
 }   
 
 .cell {
@@ -67,7 +86,7 @@ max-height: 1200px;
 }   
 
 .single-cell {
-    font-size: 20px;
+    font-size: 12px;
 }
 
 .cell-button{
