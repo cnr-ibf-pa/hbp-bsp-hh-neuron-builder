@@ -283,7 +283,7 @@ def get_data(request, cellname=""):
     full_user_uploaded_folder = request.session['full_user_uploaded_folder']
     current_authorized_files = request.session["current_authorized_files"]
 
-    if cellname not in current_authorized_files:
+    if cellname not in current_authorized_files and not os.path.isfile(os.path.join(full_user_uploaded_folder, cellname)):
         return HttpResponse("")
     
     if os.path.isfile(os.path.join(json_dir, cellname) + '.json'):
@@ -339,6 +339,18 @@ def extract_features(request):
         crr_file_all_stim = crr_file_dict['traces'].keys()
         crr_file_sel_stim = selected_traces_rest_json[k]['stim']
         
+
+
+        crr_cell_data_folder = os.path.join(full_crr_data_folder, crr_cell_name)
+        crr_cell_data_folder = full_crr_data_folder
+        if not os.path.exists(crr_cell_data_folder):
+            os.makedirs(crr_cell_data_folder)
+        #if not os.path.isfile(os.path.join(crr_cell_data_folder, crr_json_file)):
+        shutil.copy2(crr_json_file, crr_cell_data_folder)
+
+
+
+
         #
         if crr_key in cell_dict:
             cell_dict[crr_key]['stim'].append(crr_file_sel_stim)
@@ -371,7 +383,8 @@ def extract_features(request):
     # build configuration dictionary
     config = {}
     config['features'] = {'step':[str(i) for i in check_features]}
-    config['path'] = json_dir + os.sep
+    # config['path'] = json_dir + os.sep
+    config['path'] = crr_cell_data_folder
     config['format'] = 'ibf_json'
     config['comment'] = []
     config['cells'] = final_cell_dict

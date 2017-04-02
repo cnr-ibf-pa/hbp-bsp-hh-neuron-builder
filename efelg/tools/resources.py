@@ -222,6 +222,8 @@ def print_citations(json_file_list, conf_file, final_file):
 
     for i in json_file_list:
         fin_key = i + '.json'
+        if not fin_key in all_citations:
+            continue
         crr_ref = all_citations[fin_key]
         crr_cit = crr_ref.keys()[0]
         if crr_cit not in final_citations:

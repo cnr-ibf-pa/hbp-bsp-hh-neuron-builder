@@ -39,7 +39,8 @@ def gen_data_struct(filename, filename_meta, upload_flag = False):
         'amp_unit': amp_unit,
         'traces': traces,
         'tonoff': tonoff,
-        'sampling_rate': sampling_rate
+        'sampling_rate': sampling_rate,
+        'contributors': {'name':"", 'message':""}
     }
     
     return obj
