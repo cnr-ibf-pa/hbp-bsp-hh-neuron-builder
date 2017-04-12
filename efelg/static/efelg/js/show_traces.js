@@ -138,7 +138,7 @@ function TracePlot(container_id, cell_obj) {
                 y: 1.1,
             },
             showlegend: true,
-            margin: {l: 40, b: 5, t: 0} 
+            margin: {l: 40, b: 25, t: 0} 
         }
 
         Plotly.newPlot(self.plotbox.attr('id'), plotdata, layout, {displayModeBar: false}).then(manageLegend)

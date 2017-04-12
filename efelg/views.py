@@ -615,8 +615,8 @@ def upload_zip_file_to_storage(request):
 
         st_rel_user_results_folder = request.session['st_rel_user_results_folder']
         st_rel_user_uploaded_folder = request.session['st_rel_user_uploaded_folder']
-        storage_root = request.session['storage_root']
-        access_token = request.session['access_token']
+        #storage_root = request.session['storage_root']
+        #access_token = request.session['access_token']
         crr_user_folder = request.session['time_info'] 
         output_path = request.session['result_file_zip']
         context = request.session['context']
