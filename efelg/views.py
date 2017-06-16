@@ -58,7 +58,6 @@ if not settings.DEBUG:
 
 ##### serve overview.html
 @login_required(login_url='/login/hbp/')
-#@csrf_exempt
 def overview(request):
     context = RequestContext(request, {'request':request, 'user':request.user})
 
@@ -114,6 +113,7 @@ def overview(request):
     request.session['data_dir'] = data_dir
     request.session['json_dir'] = json_dir
     request.session['app_data_dir'] = app_data_dir
+
     # create folders for global data and json files if not existing
     if not os.path.exists(data_dir):
         os.makedirs(data_dir)
@@ -189,11 +189,6 @@ def select_features(request):
         features_dict = json.load(json_file) 
     feature_names = efel.getFeatureNames()
     selected_traces_rest = request.POST.get('csrfmiddlewaretoken')
-    print(request.POST)
-    print(request.POST)
-    print(request.POST)
-    print(request.POST)
-    print(request.POST)
     selected_traces_rest_json = json.loads(selected_traces_rest)
     request.session['selected_traces_rest_json'] = selected_traces_rest_json
 
@@ -223,7 +218,6 @@ def generate_json_data(request):
                 outfilepath = os.path.join(json_dir, outfilename)
                 crr_file_auth_collab = manage_json.extract_authorized_collab(metadata_file)
                 if outfilepath not in files_authorization:
-                    #files_authorization[outfilepath] = crr_file_auth_collab
                     files_authorization[outfilename] = crr_file_auth_collab
 
                 # if the .json file has not been created
@@ -241,14 +235,18 @@ def generate_json_data(request):
 
 
 #####
+'''
+Render the efel/show_traces.html page
+'''
 @login_required(login_url='/login/hbp')
 def show_traces(request):
-    #return render_to_response('efelg/show_traces.html')
-    #return render('efelg/show_traces.html', context=RequestContext(request))
     return render(request, 'efelg/show_traces.html')
 
 
-##### retrieve the list of .json files to be displayed for trace selection
+##### 
+'''
+Retrieve the list of .json files to be displayed for trace selection
+'''
 @login_required(login_url='/login/hbp')
 def get_list(request):
     
@@ -398,20 +396,7 @@ def extract_features(request):
     config['cells'] = final_cell_dict
     config['options'] = {'relative': False, 'tolerance': 0.02, 'target': target, 'delay': 500, 'nanmean': False}
 
-    pprint.pprint(config)
-    pprint.pprint(config)
-    pprint.pprint(config)
-
     #extractor = bpext.Extractor(full_crr_result_folder, config)
-    print("##############bpefe##############")
-    print("##############bpefe##############")
-    print("##############bpefe##############")
-    print("##############bpefe##############")
-    print("##############bpefe##############")
-    print("##############bpefe##############")
-    print("##############bpefe##############")
-    print("##############bpefe##############")
-    print("##############bpefe##############")
     extractor = bpefe.Extractor(full_crr_result_folder, config)
     extractor.create_dataset()
     extractor.plt_traces()
