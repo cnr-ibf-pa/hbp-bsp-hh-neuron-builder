@@ -114,7 +114,6 @@ function TracePlot(container_id, cell_obj) {
                 opacity: SHOW_FADED,
             }
             plotdata.push(newTrace)
-            console.log(newTrace.name)
         })
 
         // Sorts the traces names (mathematical order)
@@ -406,6 +405,7 @@ function serializeAll() {
             //sampleObj['vcorr'] = $(infos[i]).find('.vcorr').val()
             
             obj[cell_name] = sampleObj
+            console.log(cell_name)
         }
     }
 

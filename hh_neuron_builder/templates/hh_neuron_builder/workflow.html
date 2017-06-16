@@ -1,0 +1,51 @@
+{% extends 'hh_neuron_builder/home_layout.html' %}
+{% load static  %}
+
+{% block content  %}
+<script type="text/javascript" src="{% static 'hh_neuron_builder/js/workflow.js' %}"></script>
+
+<div class=center-div-container>
+    <div id=feat-ext class="workflow-page-button-div">
+        <div class=center-text-inside-div>
+                    <div><br/></div>
+            Feature Extraction
+                    <div><br/></div>
+                    <div >
+            <span><button id="feat-efel-btn" class="workflow-btn workflow-btn-half" type="button">Extract features from electrophysiological data</button></span>
+            <span> <button id="feat-up-btn" disabled class="workflow-btn workflow-btn-half" type="button">Load your own features.json and protocol.json files</button> </span>
+            </div>
+            <div><br/></div>
+        </div>
+    </div>
+
+    <div class="workflow-page-button-div">
+        <div id=cell-optimization class=center-text-inside-div>
+                    <div><br/></div>
+
+           Cell Optimization
+                    <div><br/></div>
+            <span><button id="opt-hpc-btn" class="workflow-btn workflow-btn-third" type="button">Launch the optimization on HPC systems
+                </button></span>
+                <span> <button id="opt-up-btn" disabled class="workflow-btn workflow-btn-third" type="button">Upload your own optimized parameter files
+                    </button> </span>
+                    <span> <button id="opt-fetch-btn" disabled class="workflow-btn workflow-btn-third" type="button">Fetch Optimization results from HPC system</button> </span>
+                    <div><br/></div>
+        </div>
+    </div>
+
+
+
+    <div class="workflow-page-button-div">
+        <div id=simulation-run class=center-text-inside-div>
+                    <div><br/></div>
+            Single Cell Simulation Run
+                    <div><br/></div>
+                    <span> <button id="in-silico-exp" class="workflow-btn workflow-btn-third" type="button">Single cell in silico exeriments <br> (under current/voltage clamp)</button> </span>
+        </div>
+    </div>
+
+</div>
+
+
+{% endblock  %}
+

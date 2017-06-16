@@ -12,6 +12,7 @@ import json
 import re
 import logging
 import bluepyextract as bpext
+import bluepyefe as bpefe
 
 # import django libs
 from django.http import JsonResponse
@@ -57,7 +58,7 @@ if not settings.DEBUG:
 
 ##### serve overview.html
 @login_required(login_url='/login/hbp/')
-@csrf_exempt
+#@csrf_exempt
 def overview(request):
     context = RequestContext(request, {'request':request, 'user':request.user})
 
@@ -187,7 +188,12 @@ def select_features(request):
     with open(os.path.join(settings.BASE_DIR, 'static', 'efelg', 'efel_features_final.json')) as json_file:
         features_dict = json.load(json_file) 
     feature_names = efel.getFeatureNames()
-    selected_traces_rest = request.POST.get('data')
+    selected_traces_rest = request.POST.get('csrfmiddlewaretoken')
+    print(request.POST)
+    print(request.POST)
+    print(request.POST)
+    print(request.POST)
+    print(request.POST)
     selected_traces_rest_json = json.loads(selected_traces_rest)
     request.session['selected_traces_rest_json'] = selected_traces_rest_json
 
@@ -237,7 +243,9 @@ def generate_json_data(request):
 #####
 @login_required(login_url='/login/hbp')
 def show_traces(request):
-    return render_to_response('efelg/show_traces.html')
+    #return render_to_response('efelg/show_traces.html')
+    #return render('efelg/show_traces.html', context=RequestContext(request))
+    return render(request, 'efelg/show_traces.html')
 
 
 ##### retrieve the list of .json files to be displayed for trace selection
@@ -390,7 +398,12 @@ def extract_features(request):
     config['cells'] = final_cell_dict
     config['options'] = {'relative': False, 'tolerance': 0.02, 'target': target, 'delay': 500, 'nanmean': False}
 
+    pprint.pprint(config)
+    pprint.pprint(config)
+    pprint.pprint(config)
+
     extractor = bpext.Extractor(full_crr_result_folder, config)
+    extractor = bpefe.Extractor(full_crr_result_folder, config)
     extractor.create_dataset()
     extractor.plt_traces()
     extractor.extract_features()
@@ -628,13 +641,10 @@ def upload_zip_file_to_storage(request):
     	bearer_client = BBPOIDCClient.bearer_auth('prod', access_token)
     	doc_client = DocClient(services['document_service']['prod']['url'], oidc_client)
 
-
         context = request.session['context']
         auth_logout(request)
         nextUrl = urllib.quote('%s?ctx=%s' % (request.path, context))
         #return redirect('%s?next=%s' % (settings.LOGIN_URL, nextUrl))
-
-
 
         # extract project from collab_id
         project = doc_client.get_project_by_collab_id(collab_id)

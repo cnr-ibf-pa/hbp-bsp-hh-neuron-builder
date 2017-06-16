@@ -26,18 +26,12 @@ def sitemap(request):
     logger.info(hdr)
     logger.info(crr_user)
     logger.info(permissions)
-    if not doc_client:
-        auth_logout(request)
-        return redirect('%s?next=%s' % (settings.LOGIN_URL, nextUrl))
     request.session['nextUrl'] = nextUrl
     request.session['this_ctx'] = context
     hdr =  auth.get_authorization_header(request)
     crr_user = auth.get_user(request)
     permissions = auth.get_permissions(request, context)
     logger.info(crr_user)
-    if not bool(hdr) or not bool(crr_user) or not bool(permissions):
-        auth_logout(request)
-        return redirect('%s?next=%s' % (settings.LOGIN_URL, nextUrl))
     
     # get headers
     svc_url = settings.HBP_COLLAB_SERVICE_URL
@@ -45,11 +39,6 @@ def sitemap(request):
 
     # get collab_id
     res = requests.get(url, headers=hdr)
-    if res.status_code !=200:
-        context = request.GET.get('ctx')
-        auth_logout(request)
-        nextUrl = urllib.quote('%s?ctx=%s' % (request.path, context))
-        return redirect('%s?next=%s' % (settings.LOGIN_URL, nextUrl))
 
     return render(request, 'sitemap/sitemap.html')
 

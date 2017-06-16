@@ -1,3 +1,158 @@
+.input-span {
+    margin-left: 20px;
+    margin-right: 20px;
+    font-size: 20px;
+}
+.sub-title-div {
+    font-size: 22px;
+    background: rgb(177, 103, 109, 0.99);
+    background: rgb(194,214,214, 0.5);
+    min-height: 50px;
+    margin: 20px;
+    box-shadow: 0px 9px 3px -3px #bbbbbb;
+    text-align: center;
+    vertical-align: middle;
+    padding: 10px;
+}
+
+.model-info-div {
+    font-size: 16px;
+    min-height: 80px;
+    margin: 20px;
+    box-shadow: 3px 3px 3px 3px #bbbbbb;
+}
+
+.model-info-div:hover {
+    box-shadow: 8px 8px 8px 8px #bbbbbb;
+}
+
+.model-info-div-title {
+    font-size: 22px;
+    background: rgb(194,214,214, 0.5);
+    padding: 8px;
+}
+
+.fixed-page-title {
+    position: fixed;
+    left: 0px;
+    top: 3px;
+    width: 100%;
+    background-color: rgba(83, 140, 198,0.9);
+    box-shadow: 0px 12px 4px -4px #bbbbbb;
+    padding: 3px 3px 6px 3px;
+    overflow: hidden;
+    text-align: center;
+    vertical-align: middle;
+    color: rgba(255,255,255,0.99);
+
+}
+
+.workflow-page-button-div {
+    margin-top: 20px;
+    margin-bottom: 20px;
+    margin-left: auto;
+    margin-right: auto;
+    height: 140px;
+    box-shadow: 3px 3px 3px 3px #bbbbbb;
+    font-size: 24px;
+    display: table;
+    width: 97%;
+    background: rgb(194,214,214, 0.5);
+    border-radius: 10px;
+}
+
+.workflow-btn {
+    border: 0;
+    border-radius: 0;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    font-size: 20px;
+    min-height: 35px;
+    background: rgb(0, 74, 0, 0.55);
+    color: white;
+    font-size: 20px;
+    border-radius: 2px;
+    display: table-cell;
+}
+
+.workflow-btn:hover:enabled {
+    background: rgb(0, 170, 0, 0.5);
+}
+
+.workflow-btn:disabled {
+    background: rgb(0, 74, 0, 0.2);
+}
+.workflow-btn-title {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    padding: 30px;
+}
+
+.workflow-btn-half {
+    width: 35%;
+    min-height: 70px;
+}
+
+.workflow-btn-third {
+    width: 35%;
+    min-height: 70px;
+}
+
+.top-spacing-div {
+    margin-top: 100px;
+}
+
+.center-div-container {
+    text-align: center;
+}
+
+.main-page-button-div {
+    margin-top: 20px;
+    margin-bottom: 20px;
+    margin-left: auto;
+    margin-right: auto;
+    height: 130px;
+    box-shadow: 3px 3px 3px 3px #bbbbbb;
+    font-size: 24px;
+    display: table;
+    width: 97%;
+    background: rgb(194,214,214, 0.5);
+    border-radius: 10px;
+}
+
+.main-page-button-div:hover {
+    box-shadow: 6px 6px 9px 5px #bbbbbb;
+    background: rgb(194,214,214, 0.9);
+}
+
+.launch-optimization-div {
+    margin-top: 20px;
+    margin-bottom: 20px;
+    margin-left: auto;
+    margin-right: auto;
+    height: 130px;
+    box-shadow: 3px 3px 3px 3px #bbbbbb;
+    font-size: 24px;
+    display: table;
+    width: 97%;
+    background: rgb(194,214,214, 0.5);
+    border-radius: 10px;
+}
+
+.center-text-inside-div {
+    text-align: center;
+    vertical-align: middle;
+    display: table-cell;
+}
+
+.object-frame {
+    margin-top: 65px;
+    position: fixed;
+    height: 70%;
+    width: 100%;
+    /*overflow: hidden;*/
+}
+
 .loader {
     position: fixed;
     left: 0px;
@@ -42,16 +197,15 @@
     z-index: 9999;
     background: rgb(255, 255, 255);
     text-align: center;
-    vertical-align: middle;
+    vertical-align: top;
     margin: 0 auto;
     display: table;
-    vertical-align: middle;
-    overflow: hidden;
+    /*overflow: hidden;*/
 }
 
 .terms-obj-container {
     margin: 5%  auto 10% auto;
-    vertical-align: middle;
+    vertical-align: top;
     text-align: center; 
     /*display: table-cell;*/
     font-size: 18px;
@@ -60,7 +214,7 @@
     height: 90%;
     box-shadow: 10px 10px 5px #888888;
     padding: 30px 60px 70px 60px;
-    overflow: hidden;
+    /*overflow: hidden;*/
 }
 
 .page-iframes {

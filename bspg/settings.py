@@ -52,6 +52,8 @@ HBP_MY_USER_URL = 'https://services.humanbrainproject.eu/idm/v1/api/user/me'
 
 USE_X_FORWARDED_HOST = True
 
+#CSRF_COOKIE_HTTPONLY = False
+
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # Application definition
@@ -67,38 +69,38 @@ INSTALLED_APPS = [
     'bspg',
     'efelg',
     'sitemap',
+    'hh_neuron_builder',
     'djangobower',
     #'rest_framework',
     'social.apps.django_app.default',
     'hbp_app_python_auth',
     ]
 
-MIDDLEWARE_CLASSES = [
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.security.SecurityMiddleware',
+#MIDDLEWARE_CLASSES = [
+#    'django.contrib.sessions.middleware.SessionMiddleware',
+#    'django.middleware.common.CommonMiddleware',
+#    'django.contrib.auth.middleware.AuthenticationMiddleware',
+#    'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
+#    'django.contrib.messages.middleware.MessageMiddleware',
+#    'django.middleware.security.SecurityMiddleware',
     #'social.apps.django_app.middleware.SocialAuthExceptionMiddleware',
-]
+#]
 
 
-MIDDLEWARE_CLASSES = [
-    #'django.utils.deprecation.MiddlewareMixin'
-    'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
+MIDDLEWARE = [
+    #'django.utils.deprecation.MiddlewareMixin',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
+    'django.middleware.security.SecurityMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
+    #'social.apps.django_app.middleware.SocialAuthExceptionMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.locale.LocaleMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
     #'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'django.middleware.security.SecurityMiddleware',
-    'social.apps.django_app.middleware.SocialAuthExceptionMiddleware',
 ]
+
 
 AUTHENTICATION_BACKENDS = (
     'hbp_app_python_auth.auth.HbpAuth',

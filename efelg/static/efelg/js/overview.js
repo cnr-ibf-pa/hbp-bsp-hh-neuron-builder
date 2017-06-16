@@ -23,5 +23,4 @@ function userAccepted() {
 
 function userDeclined() {
     window.location.href = "";
-
 }
