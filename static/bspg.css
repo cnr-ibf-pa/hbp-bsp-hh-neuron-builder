@@ -220,6 +220,7 @@
 .object-iframe {
     margin-top: 65px;
     width: 98%;
+    min-height: 500px;
     /*overflow: hidden;*/
 }
 
