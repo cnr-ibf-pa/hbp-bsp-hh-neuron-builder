@@ -12,10 +12,10 @@ $(document).ready(function(){
     $.getJSON('/efelg/features_json_path', function(data){
         
         console.log(data['path'])
-            function myFunction (
-        document.getElementById("hiddendiv").className = data['path'];
-        )
-            myFunction()
+                var btn = document.createElement("BUTTON");
+            var t = document.createTextNode("CLICK ME");
+                btn.appendChild(t);
+                    document.body.appendChild(btn);
         $.get('/hh-neuron-builder/set-feature-folder/' + data['path']);
     });
     //$(".toggle-text").on("click", function(){
