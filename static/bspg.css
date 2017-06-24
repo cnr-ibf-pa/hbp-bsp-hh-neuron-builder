@@ -217,11 +217,10 @@
     display: table-cell;
 }
 
-.object-frame {
+.object-iframe {
     margin-top: 65px;
-    position: fixed;
-    height: 70%;
-    width: 100%;
+    width: 98%;
+    min-height: 700px;
     /*overflow: hidden;*/
 }
 
@@ -276,6 +275,8 @@
 }
 
 .terms-obj-container {
+    left: 0px;
+    top: 0px;
     margin: 5%  auto 10% auto;
     vertical-align: top;
     text-align: center; 

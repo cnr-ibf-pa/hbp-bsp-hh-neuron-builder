@@ -3,10 +3,15 @@
 
 {% block content  %}
 
-<button type="button" id="back-to-workflow" style="float:right;" class="workflow-btn">Back to workflow</button>
 <div id="efelgui-frame-div">
-<object style="border-style: solid;" id="efelgui-frame" class="object-frame" type="text/html" data="/efelg/"></object>
-<iframe style="border-style: solid;" id="efelgui-frame" class="object-frame" type="text/html" src="/efelg/"></object>
+<iframe style="border-style: solid;" id="efelgui-frame" class="object-iframe" type="text/html" src="/efelg/"></object>
 </div>
+<button type="button" id="back-to-workflow" style="float:right;" class="workflow-btn">Back to workflow</button>
+
+
+
+
+
+
 <script type="text/javascript" src="{% static 'hh_neuron_builder/js/embedded_efel_gui.js' %}"></script>
 {% endblock  %}
