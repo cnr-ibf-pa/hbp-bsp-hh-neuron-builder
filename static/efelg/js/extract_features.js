@@ -12,7 +12,7 @@ $(document).ready(function(){
     $.getJSON('/efelg/features_json_path', function(data){
 
         console.log(data['path'])
-        document.getElementById("hidden-div").className = data['path'];
+        document.getElementById("hiddendiv").className = data['path'];
 
         $.get('/hh-neuron-builder/set-feature-folder/' + data['path']);
     });
