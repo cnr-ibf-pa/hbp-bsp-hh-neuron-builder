@@ -47,14 +47,13 @@
     background: rgba(0, 74, 0, 0.55);
     color: white;
     min-height: 50px;
-    font-size: 18px;
     border-radius: 5px;
     margin-left: 5px;
     margin-right: 5px;
 }
 
 .main-panel-btn:hover:enabled {
-    background: rgba(0, 170, 0, 0.4);
+    background: rgba(0, 74, 0, 0.3);
 }
 
 .main-panel-btn:disabled {
