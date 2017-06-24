@@ -54,41 +54,41 @@ accesslogger.setLevel(logging.DEBUG)
 ##### serve overview.html
 @login_required(login_url='/login/hbp/')
 def overview(request):
-    context = RequestContext(request, {'request':request, 'user':request.user})
+    #context = RequestContext(request, {'request':request, 'user':request.user})
 
     # if not in DEBUG mode check whether authentication token is valid
     if not settings.DEBUG:
         #
-        context = request.GET.get('ctx')
+        #context = request.GET.get('ctx')
         my_url = 'https://services.humanbrainproject.eu/idm/v1/api/user/me'
         headers = {'Authorization': get_auth_header(request.user.social_auth.get())}
          
         res = requests.get(my_url, headers = headers)
         
-        if res.status_code !=200:
-            auth_logout(request)
-            nextUrl = urllib.quote('%s?ctx=%s' % (request.path, context))
-            return redirect('%s?next=%s' % (settings.LOGIN_URL, nextUrl))
+        #if res.status_code !=200:
+        #    auth_logout(request)
+        #    nextUrl = urllib.quote('%s?ctx=%s' % (request.path, context))
+        #    return redirect('%s?next=%s' % (settings.LOGIN_URL, nextUrl))
 
         # get username from request
         username = request.user.username
 
         # get context and context uuid
-        context_uuid = UUID(request.GET.get('ctx'))
+        #context_uuid = UUID(request.GET.get('ctx'))
 
         # get headers
         svc_url = settings.HBP_COLLAB_SERVICE_URL
-        url = '%scollab/context/%s/' % (svc_url, context)
+        #url = '%scollab/context/%s/' % (svc_url, context)
          
         # get collab_id
-        res = requests.get(url, headers=headers)
-        if res.status_code != 200:
-            auth_logout(request)
-            nextUrl = urllib.quote('%s?ctx=%s' % (request.path, context))
-            return redirect('%s?next=%s' % (settings.LOGIN_URL, nextUrl))
+        #res = requests.get(url, headers=headers)
+        #if res.status_code != 200:
+        #    auth_logout(request)
+        #    nextUrl = urllib.quote('%s?ctx=%s' % (request.path, context))
+        #    return redirect('%s?next=%s' % (settings.LOGIN_URL, nextUrl))
 
-        collab_id = res.json()['collab']['id']
-        request.session['context'] = context
+        #collab_id = res.json()['collab']['id']
+        #request.session['context'] = context
     else:
         username = 'test'
         headers = {}
@@ -121,15 +121,15 @@ def overview(request):
 
     # save parameters in request.session
     request.session['username'] = username
-    request.session['context'] = context
+    #request.session['context'] = context
     request.session['headers'] = headers
-    request.session['collab_id'] = collab_id
+    #request.session['collab_id'] = collab_id
     request.session['authorized_data_list'] = []
     request.session["current_authorized_files"] = []
 
     # reading parameters from request.session
     username = request.session['username']
-    context = request.session['context']
+    #context = request.session['context']
     
     # parameters for folder creation
     time_info = datetime.datetime.now().strftime('%Y%m%d%H%M%S')

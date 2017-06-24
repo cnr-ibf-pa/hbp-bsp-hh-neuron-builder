@@ -62,8 +62,8 @@
                 <h3>Feature extraction</h3> 
             </div>
             <div class="center-container">
-                <button type="button">Extract features</button>
-                <button type="button">Load feature files</button>
+                <button type="button" id="feat-efel-btn">Extract features</button>
+                <button type="button" id="feat-up-btn">Load feature files</button>
             </div>
             <div class="center-container">
                 <button type="button" class="btn btn-link" disabled>Edit features files</button>
@@ -76,8 +76,8 @@
                 <h3>Optimization settings</h3> 
             </div>
             <div class="center-container">
-                <button type="button">Fetch optimization settings</button>
-                <button type="button">Upload optimization files</button>
+                <button type="button" id="opt-fetch-btn">Fetch optimization settings</button>
+                <button type="button" id="opt-up-btn">Upload optimization files</button>
             </div>
             <div class="center-container">
                 <button type="button" class="btn btn-link" disabled>Edit optimization files</button>
@@ -86,7 +86,7 @@
         </div>
     </div>
     <div class="center-container">
-        <button type="button" class="main-panel-btn all-width">Launch optimization</button>
+        <button type="button" id="opt-hpc-btn" class="main-panel-btn all-width">Launch optimization</button>
     </div>
 </div>
 
@@ -96,21 +96,21 @@
         <h2>Single cell simulation run</h2>
     </div>
 
-        <div class="step-panel" style="width:65%">
-            <div class="center-container">
-                <h3>Optimization results</h3> 
-            </div>
-            <div class="center-container">
-                <button type="button">Fetch optimization results</button>
-                <button type="button">Upload optimization results</button>
-            </div>
-            <div class="center-container">
-                <button type="button" class="btn btn-link" disabled>Edit optimization results</button>
-                <button type="button" class="btn btn-link" disabled>Delete optimization reults</button>
-            </div>
+    <div class="step-panel" style="width:65%">
+        <div class="center-container">
+            <h3>Optimization results</h3> 
         </div>
+        <div class="center-container">
+            <button type="button">Fetch optimization results</button>
+            <button type="button">Upload optimization results</button>
+        </div>
+        <div class="center-container">
+            <button type="button" class="btn btn-link" disabled>Edit optimization results</button>
+            <button type="button" class="btn btn-link" disabled>Delete optimization reults</button>
+        </div>
+    </div>
     <div class="center-container">
-        <button type="button" class="main-panel-btn all-width">Run simulation</button>
+        <button type="button" id="in-silico-exp" class="main-panel-btn all-width">Run simulation</button>
     </div>
 </div>
 {% endblock  %}
