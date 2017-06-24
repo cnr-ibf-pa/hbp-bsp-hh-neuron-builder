@@ -16,7 +16,8 @@ var check_last_page = function(iframe){
     var innerDiv = iframe.contentDocument || iframe.contentWindow.document;
     var test = innerDiv.getElementById("hiddendiv");
     if(test != undefined) {
-        console.log("NOPENOPENOPE");
+
+        console.log(test.className);
     }else{
     console.log("YEPYEPYEP");
     }
