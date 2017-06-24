@@ -9,60 +9,22 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width">
 
-        {# Bower Dependencies #}
         <link rel="stylesheet" href="{% static 'hbp-collaboratory-theme/dist/css/bootstrap.css' %}">
         <link rel="stylesheet" href="{% static 'bspg.css' %}">
 
     </head>
     <body>
 
-        <div class="hiddendiv">test</div>
         <!-- Execution completed div  -->
+        <div id=hiddendiv style="display:none;"></div>
         <div style="text-align: center" class="alert alert-success">
             <h2>Execution completed<br><a href="/efelg/download_zip" class="alert-link">Download all results in .zip format</a></h2>
         </div>
-        <!-- feature.json div and frame
-            <div style="text-align: center" class="">
-            <input type="button" class="btn btn-link toggle-text" value="'features.json' preview">
-            <div id="" class="div-toggle">
-            <object><iframe id="iframe-features" class="page-iframes" ></iframe></object>
-            <br>
-            </div>
-            </div>
-            <br>
-        -->
 
-        <!-- protocols.json div and frame
-            <div style="text-align: center" class="">
-            <input type="button" class="btn btn-link toggle-text" value="'protocols.json' preview">
-            <div id="" class="div-toggle">
-            <object><iframe id="iframe-protocols" class="page-iframes"></iframe></object>
-            <br>
-            </div>
-            </div>
-            <br>
-        -->
-
-        <!-- pdf div and frame 
-            <div id='pdf-div' style="text-align: center">
-            <input type="button" class="btn btn-link toggle-text" value="plots preview">
-            <div class="div-toggle">
-            <object><iframe id="iframe-pdf" class="page-iframes"></iframe></object>
-            <br>
-            </div>
-            </div>
-            <br>
-        -->
-
-        {# Bower Dependencies #}
         <script type="text/javascript" src="{% static 'jquery/dist/jquery.min.js' %}"></script>
         <script type="text/javascript" src="{% static 'efelg/js/extract_features.js' %}"></script>
-        <!--
-            -->
-            <script>
-$.get( "/efelg/upload_zip_file_to_storage" )
-            -->
+        <script>
 
 
-    </body>
+</body>
 </html>
