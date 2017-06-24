@@ -52,12 +52,12 @@
 
 -->
 
-<div class="center-container column-center-container main-page-panel bottom-margin-20">
-    <div>
+<div class="center-container column-center-container main-page-panel">
+    <div style="background: rgb(230,230,230);">
         <h2>Cell Optimization</h2>
     </div>
     <div class="center-container row-center-container">
-        <div class="step-panel" style="width:45%;">
+        <div class="step-panel">
             <div class="center-container">
                 <h3>Feature extraction</h3> 
             </div>
@@ -71,7 +71,7 @@
             </div>
         </div>
 
-        <div class="step-panel" style="width:45%;">
+        <div class="step-panel">
             <div class="center-container">
                 <h3>Optimization settings</h3> 
             </div>
@@ -85,33 +85,7 @@
             </div>
         </div>
     </div>
-    <div class="center-container">
-        <button type="button" class="main-panel-btn all-width">Launch optimization</button>
-    </div>
-</div>
 
 
-<div class="center-container column-center-container main-page-panel">
-    <div>
-        <h2>Single cell simulation run</h2>
-    </div>
-
-        <div class="step-panel" style="width:65%">
-            <div class="center-container">
-                <h3>Optimization results</h3> 
-            </div>
-            <div class="center-container">
-                <button type="button">Fetch optimization results</button>
-                <button type="button">Upload optimization results</button>
-            </div>
-            <div class="center-container">
-                <button type="button" class="btn btn-link" disabled>Edit optimization results</button>
-                <button type="button" class="btn btn-link" disabled>Delete optimization reults</button>
-            </div>
-        </div>
-    <div class="center-container">
-        <button type="button" class="main-panel-btn all-width">Run simulation</button>
-    </div>
-</div>
-{% endblock  %}
+    {% endblock  %}
 

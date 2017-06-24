@@ -1,18 +1,9 @@
 {% extends 'hh_neuron_builder/home_layout.html' %}
 
 {% block content %}
-<div class=center-div-container>
-<div id=new-wf-button onclick="location.href='workflow/';" class="main-page-button-div">
-    <div class=center-text-inside-div>
-    Initiate a new Neuron Builder Workflow
+    <div class="center-container row-center-container main-page-panel min-height-600">
+            <button type="button" class="main-panel-btn width-400" onclick="location.href='workflow/';">Initiate a new workflow</button>
+            <button type="button" class="main-panel-btn width-400" disabled>Select a completed/ongoing workflow</button>
     </div>
-</div>
-
-<div class="main-page-button-div">
-    <div id=old-wf-button class=center-text-inside-div>
-        Select a completed/ongoing workflow from your repository
-    </div>
-</div>
-<div>
 {% endblock %}
 

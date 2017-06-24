@@ -20,7 +20,6 @@ from django.conf.urls import include, url
 from django.contrib import admin
 from efelg import views
 urlpatterns = [
-    #url(r'^$', views.ibf),
     url('', include('social.apps.django_app.urls', namespace='social')),
     url(r'^efelg/', include('efelg.urls'), name='efelg'),
     url(r'^hh-neuron-builder/', include('hh_neuron_builder.urls'), name='hh_neuron_builder'),

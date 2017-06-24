@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
@@ -9,7 +10,22 @@ from tools import manage_nsg
 import datetime
 import requests
 
+if not settings.DEBUG:
+    from django.contrib.auth.decorators import login_required
+    from django.contrib.auth import logout as auth_logout
+    from hbp_app_python_auth.auth import get_access_token, get_token_type, get_auth_header
+    from bbp_client.oidc.client import BBPOIDCClient
+    from bbp_client.document_service.client import Client as DocClient
+    import bbp_client
+    from bbp_client.client import *
+    import bbp_services.client as bsc
+else:
+    def login_required(login_url=None):
+        def decorator(f):
+            return f
+        return decorator
 # Create your views here.
+@login_required(login_url="/login/hbp/")
 def home(request):
     request.session["singlecellmodeling_structure_path"] = "/app/media/hh_neuron_builder/bsp_data_repository/singlecellmodeling_structure.json"
     request.session["optimization_model_path"] = "/app/media/hh_neuron_builder/bsp_data_repository/optimizations"

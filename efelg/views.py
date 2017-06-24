@@ -23,26 +23,22 @@ from django.template.context import RequestContext
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse
 
+
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth import logout as auth_logout
+
+# import hbp/bbp modules
+from hbp_app_python_auth.auth import get_access_token, get_token_type, get_auth_header
+from bbp_client.oidc.client import BBPOIDCClient
+from bbp_client.document_service.client import Client as DocClient
+import bbp_client
+from bbp_client.client import *
+import bbp_services.client as bsc
+
 # import local tools
 from tools import manage_json
 from tools import resources
 from tools import manage_collab_storage
-
-# if not in DEBUG mode
-if not settings.DEBUG:
-    from django.contrib.auth.decorators import login_required
-    from django.contrib.auth import logout as auth_logout
-    from hbp_app_python_auth.auth import get_access_token, get_token_type, get_auth_header
-    from bbp_client.oidc.client import BBPOIDCClient
-    from bbp_client.document_service.client import Client as DocClient
-    import bbp_client
-    from bbp_client.client import *
-    import bbp_services.client as bsc
-else:
-    def login_required(login_url=None):
-        def decorator(f):
-            return f
-        return decorator
 
 # set logging up
 logging.basicConfig(stream=sys.stdout)
@@ -50,10 +46,9 @@ logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 
 # create logger if not in DEBUG mode
-if not settings.DEBUG:
-    accesslogger = logging.getLogger('efelg_access.log')
-    accesslogger.addHandler(logging.FileHandler('/var/log/bspg/efelg_access.log'))
-    accesslogger.setLevel(logging.DEBUG)
+accesslogger = logging.getLogger('efelg_access.log')
+accesslogger.addHandler(logging.FileHandler('/var/log/bspg/efelg_access.log'))
+accesslogger.setLevel(logging.DEBUG)
 
 
 ##### serve overview.html
@@ -174,9 +169,7 @@ def overview(request):
     request.session['full_user_crr_res_data_folder'] = full_user_crr_res_data_folder
     request.session['full_user_uploaded_folder'] = full_user_uploaded_folder
     
-    # if not in DEBUG mode
-    if not settings.DEBUG:
-        accesslogger.info(resources.string_for_log('overview', request))
+    accesslogger.info(resources.string_for_log('overview', request))
 
     # render to html 
     return render(request, 'efelg/overview.html')
@@ -192,9 +185,7 @@ def select_features(request):
     selected_traces_rest_json = json.loads(selected_traces_rest)
     request.session['selected_traces_rest_json'] = selected_traces_rest_json
 
-    # if not in DEBUG mode
-    if not settings.DEBUG:
-        accesslogger.info(resources.string_for_log('select_features', request, page_spec_string = selected_traces_rest))
+    accesslogger.info(resources.string_for_log('select_features', request, page_spec_string = selected_traces_rest))
     
     return render(request, 'efelg/select_features.html')
 
@@ -450,9 +441,7 @@ def extract_features(request):
 #####
 @login_required(login_url='/login/hbp')
 def download_zip(request):
-    # if not in DEBUG mode
-    if not settings.DEBUG:
-        accesslogger.info(resources.string_for_log('download_zip', request))
+    accesslogger.info(resources.string_for_log('download_zip', request))
     result_file_zip = request.session['result_file_zip']
     result_file_zip_name = request.session['result_file_zip_name']
     zip_file = open(result_file_zip, 'rb')
@@ -591,9 +580,7 @@ def get_directory_structure(request):
     """ 
     Creates a nested dictionary that represents the folder structure of rootdir
     """
-    # if not in DEBUG mode
-    if not settings.DEBUG:
-        accesslogger.info(resources.string_for_log('get_directory_structure', request))
+    accesslogger.info(resources.string_for_log('get_directory_structure', request))
     rootdir = os.path.join(settings.MEDIA_ROOT, 'efel_data', 'app_data')
     media_dir_dict = {}
     rootdir = rootdir.rstrip(os.sep)
@@ -613,48 +600,44 @@ def get_directory_structure(request):
 ########### handle file upload to storage collab
 def upload_zip_file_to_storage(request):
 
-    # if not in DEBUG mode, save files in the collab storage
-    if not settings.DEBUG:
-        access_token = get_access_token(request.user.social_auth.get())
-        # retrieve data from request.session
-        headers = request.session['headers']
-        collab_id = request.session['collab_id']
-
-        st_rel_user_results_folder = request.session['st_rel_user_results_folder']
-        st_rel_user_uploaded_folder = request.session['st_rel_user_uploaded_folder']
-        #storage_root = request.session['storage_root']
-        #access_token = request.session['access_token']
-        crr_user_folder = request.session['time_info'] 
-        output_path = request.session['result_file_zip']
-        context = request.session['context']
-
-	services = bsc.get_services()
+    access_token = get_access_token(request.user.social_auth.get())
+    # retrieve data from request.session
+    headers = request.session['headers']
+    collab_id = request.session['collab_id']
+    st_rel_user_results_folder = request.session['st_rel_user_results_folder']
+    st_rel_user_uploaded_folder = request.session['st_rel_user_uploaded_folder']
+    #storage_root = request.session['storage_root']
+    #access_token = request.session['access_token']
+    crr_user_folder = request.session['time_info'] 
+    output_path = request.session['result_file_zip']
+    context = request.session['context']
+    services = bsc.get_services()
     
-    	# get clients from bbp python packages
-    	oidc_client = BBPOIDCClient.bearer_auth(services['oidc_service']['prod']['url'], access_token)
-    	bearer_client = BBPOIDCClient.bearer_auth('prod', access_token)
-    	doc_client = DocClient(services['document_service']['prod']['url'], oidc_client)
+    # get clients from bbp python packages
+    oidc_client = BBPOIDCClient.bearer_auth(services['oidc_service']['prod']['url'], access_token)
+    bearer_client = BBPOIDCClient.bearer_auth('prod', access_token)
+    doc_client = DocClient(services['document_service']['prod']['url'], oidc_client)
 
-        context = request.session['context']
-        auth_logout(request)
-        nextUrl = urllib.quote('%s?ctx=%s' % (request.path, context))
-        #return redirect('%s?next=%s' % (settings.LOGIN_URL, nextUrl))
+    context = request.session['context']
+    auth_logout(request)
+    nextUrl = urllib.quote('%s?ctx=%s' % (request.path, context))
+    #return redirect('%s?next=%s' % (settings.LOGIN_URL, nextUrl))
 
-        # extract project from collab_id
-        project = doc_client.get_project_by_collab_id(collab_id)
+    # extract project from collab_id
+    project = doc_client.get_project_by_collab_id(collab_id)
         
-        # extract collab storage root path
-        storage_root = doc_client.get_path_by_id(project["_uuid"])
-        crr_collab_storage_folder = os.path.join(storage_root, st_rel_user_results_folder)
-        if not doc_client.exists(crr_collab_storage_folder):
-            doc_client.makedirs(crr_collab_storage_folder)
+    # extract collab storage root path
+    storage_root = doc_client.get_path_by_id(project["_uuid"])
+    crr_collab_storage_folder = os.path.join(storage_root, st_rel_user_results_folder)
+    if not doc_client.exists(crr_collab_storage_folder):
+        doc_client.makedirs(crr_collab_storage_folder)
 
-        # final zip collab storage path
-        zip_collab_storage_path = os.path.join(crr_collab_storage_folder, crr_user_folder + '_results.zip')
+    # final zip collab storage path
+    zip_collab_storage_path = os.path.join(crr_collab_storage_folder, crr_user_folder + '_results.zip')
 
-        # bypassing uploading data to collab storage
-        if not doc_client.exists(zip_collab_storage_path):
-            doc_client.upload_file(output_path, zip_collab_storage_path) 
+    # bypassing uploading data to collab storage
+    if not doc_client.exists(zip_collab_storage_path):
+        doc_client.upload_file(output_path, zip_collab_storage_path) 
 
     # render to html page
     return HttpResponse("") 
