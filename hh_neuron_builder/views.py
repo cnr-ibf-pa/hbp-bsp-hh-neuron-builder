@@ -92,6 +92,9 @@ def set_feature_folder(request, featurefolder=""):
     feat_path = os.path.split(featurefolder)[0]
     request.session['efel_feature_folder'] = feat_path
     print(request.session['efel_feature_folder'])
+    print(request.session['efel_feature_folder'])
+    print(request.session['efel_feature_folder'])
+    print(request.session['efel_feature_folder'])
     #return HttpResponse(request.session['featurefolder'])
     return HttpResponse("")
 

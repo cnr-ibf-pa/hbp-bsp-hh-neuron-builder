@@ -17,8 +17,10 @@
     var innerDiv = iframe.contentDocument || iframe.contentWindow.document;
     var test = innerDiv.getElementById("hiddendiv");
     if(test != undefined) {
+        var featureFolder = test.className;
+        $.get('/hh-neuron-builder/set-feature-folder/' + featureFolder, function(data) {
         document.getElementById("save-feature-files").style.display = "block";
-        $get();
+        });
     }else{
     console.log("UNDEFINED hidden div");
     }
