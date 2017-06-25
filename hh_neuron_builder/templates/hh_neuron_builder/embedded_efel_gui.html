@@ -4,7 +4,7 @@
 {% block content  %}
 
 <div id="efelgui-frame-div">
-    <iframe onready="check_last_page(this)" frameborder="0" style="border-style: solid;" id="efelgui-frame" class="object-iframe" type="text/html" src="/efelg/"  onload="this.style.height=this.contentDocument.body.scrollHeight +'px';"></iframe>
+    <iframe frameborder="1" style="border-style: solid;" id="efelgui-frame" class="object-iframe" type="text/html" src="/efelg/"  onload="this.style.height=this.contentDocument.body.scrollHeight +'px';"></iframe>
 </div>
 <button type="button" id="back-to-workflow" style="float:right;" class="workflow-btn">Cancel</button>
 <button type="button" id="save-feature-files" style="float:right;display:none" class="workflow-btn">Save to workflow</button>
@@ -13,18 +13,37 @@
 
 
 <script>
-var check_last_page = function(iframe){
-    var innerDiv = iframe.contentDocument || iframe.contentWindow.document;
-    var test = innerDiv.getElementById("hiddendiv");
-    if(test != undefined) {
-        console.log(innerDiv.getElementById("hiddendiv").classList); 
-        $.getJSON('/hh-neuron-builder/set-feature-folder/' + test, function(data) {
-            document.getElementById("save-feature-files").style.display = "block";
-        });
-    }else{
-        console.log("UNDEFINED hidden div");
+/*
+$.getJSON('/hh-neuron-builder/set-feature-folder/' + test, function(data) {
+});
+*/
+
+
+
+$(document).ready(function(){
+    document.getElementById("save-feature-files").onclick = setFeatureFolder;
+    document.getElementById("efelgui-frame").onload = checkHiddenDiv;
+
+    function setFeatureFolder(){
+    
     }
-}
+    function checkHiddenDiv(this){
+    var innerDiv = this.contentDocument || iframe.contentWindow.document;
+    var test = innerDiv.getElementById("hiddendiv");
+    if(test != undefined){
+        document.getElementById("save-feature-files").style.display = "block";
+    }else{
+        console.log("parapappappa")
+    }
+    }
+});
+
+
+
+
+
+
+
 </script>
 
 <script type="text/javascript" src="{% static 'hh_neuron_builder/js/embedded_efel_gui.js' %}"></script>
