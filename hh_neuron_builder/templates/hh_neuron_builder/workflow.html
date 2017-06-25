@@ -66,8 +66,8 @@
                 <button type="button" id="feat-up-btn">Load feature files</button>
             </div>
             <div class="center-container">
-                <button type="button" class="btn btn-link" disabled>Edit features files</button>
-                <button type="button" class="btn btn-link" disabled>Delete feature files</button>
+                <button id="edit-feat" type="button" class="btn btn-link" disabled>Edit features files</button>
+                <button id="del-feat" type="button" class="btn btn-link" disabled>Delete feature files</button>
             </div>
         </div>
 
@@ -80,8 +80,8 @@
                 <button type="button" id="opt-up-btn">Upload optimization files</button>
             </div>
             <div class="center-container">
-                <button type="button" class="btn btn-link" disabled>Edit optimization files</button>
-                <button type="button" class="btn btn-link" disabled>Delete optimization files</button>
+                <button id="edit-opt" type="button" class="btn btn-link" disabled>Edit optimization files</button>
+                <button id="del-opt" type="button" class="btn btn-link" disabled>Delete optimization files</button>
             </div>
         </div>
     </div>
@@ -101,13 +101,15 @@
             <h3>Optimization results</h3> 
         </div>
         <div class="center-container">
-            <button type="button">Fetch optimization results</button>
+            <button id="opt-fetch-btn" type="button">Fetch optimization results</button>
             <button type="button">Upload optimization results</button>
         </div>
+        <!--
         <div class="center-container">
             <button type="button" class="btn btn-link" disabled>Edit optimization results</button>
             <button type="button" class="btn btn-link" disabled>Delete optimization reults</button>
         </div>
+        -->
     </div>
     <div class="center-container">
         <button type="button" id="in-silico-exp" class="main-panel-btn btn btn-lg btn-block">Run simulation</button>
