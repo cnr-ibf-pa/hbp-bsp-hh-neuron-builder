@@ -13,13 +13,12 @@
 
 
 <script>
-var check_last_page = function(iframe){
+    var check_last_page = function(iframe){
     var innerDiv = iframe.contentDocument || iframe.contentWindow.document;
     var test = innerDiv.getElementById("hiddendiv");
     if(test != undefined) {
         document.getElementById("save-feature-files").style.display = "block";
-
-        console.log(test.className);
+        $get();
     }else{
     console.log("UNDEFINED hidden div");
     }

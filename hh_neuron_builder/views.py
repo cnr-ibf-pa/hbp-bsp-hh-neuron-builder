@@ -90,8 +90,8 @@ def set_optimization_parameters(request):
 # 
 def set_feature_folder(request, featurefolder=""):
     feat_path = os.path.split(featurefolder)[0]
-    request.session['feature_folder'] = os.path.join("/app/", feat_path)
-    print(request.session['feature_folder'])
+    request.session['efel_feature_folder'] = feat_path
+    print(request.session['efel_feature_folder'])
     #return HttpResponse(request.session['featurefolder'])
     return HttpResponse("")
 

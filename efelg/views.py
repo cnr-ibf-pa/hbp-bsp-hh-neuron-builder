@@ -481,6 +481,11 @@ def features_json_path(request):
     full_feature_json_file = os.path.join(rel_url, 'features.json')
     return HttpResponse(json.dumps({'path' : os.path.join(os.sep, full_feature_json_file)}))
 
+#####
+@login_required(login_url='/login/hbp')
+def features_json_files_path(request):
+    rel_url = request.session['media_rel_crr_user_res']
+    return HttpResponse(json.dumps({'path' : os.path.join(rel_url)}))
 
 #####
 @login_required(login_url='/login/hbp')
