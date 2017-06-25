@@ -64,7 +64,6 @@ def overview(request):
         headers = {'Authorization': get_auth_header(request.user.social_auth.get())}
          
         res = requests.get(my_url, headers = headers)
-        
         #if res.status_code !=200:
         #    auth_logout(request)
         #    nextUrl = urllib.quote('%s?ctx=%s' % (request.path, context))
