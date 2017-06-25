@@ -22,19 +22,17 @@ $.getJSON('/hh-neuron-builder/set-feature-folder/' + test, function(data) {
 
 $(document).ready(function(){
     document.getElementById("save-feature-files").onclick = setFeatureFolder;
-    checkHiddenDiv;
 
     function setFeatureFolder(){
     
     }
-    function checkHiddenDiv(this){
-    var innerDiv = this.contentDocument || iframe.contentWindow.document;
+    var innerDiv = document.getElementById("efelgui-frame").contentDocument || document.getElementById("efelgui-frame").contentWindow.document;
     var test = innerDiv.getElementById("hiddendiv");
     if(test != undefined){
+        console.log("yesyesyes")
         document.getElementById("save-feature-files").style.display = "block";
     }else{
         console.log("parapappappa")
-    }
     }
 });
 
