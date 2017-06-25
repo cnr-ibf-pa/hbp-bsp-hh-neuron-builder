@@ -4,7 +4,7 @@
 {% block content  %}
 
 <div id="efelgui-frame-div">
-<iframe onload="check_last_page(this)" frameborder="0" style="border-style: solid;" id="efelgui-frame" class="object-iframe" type="text/html" src="/efelg/"  onload="this.style.height=this.contentDocument.body.scrollHeight +'px';"></iframe>
+    <iframe onload="check_last_page(this)" frameborder="0" style="border-style: solid;" id="efelgui-frame" class="object-iframe" type="text/html" src="/efelg/"  onload="this.style.height=this.contentDocument.body.scrollHeight +'px';"></iframe>
 </div>
 <button type="button" id="back-to-workflow" style="float:right;" class="workflow-btn">Cancel</button>
 <button type="button" id="save-feature-files" style="float:right;display:none" class="workflow-btn">Save to workflow</button>
@@ -13,18 +13,16 @@
 
 
 <script>
-    var check_last_page = function(iframe){
+var check_last_page = function(iframe){
     var innerDiv = iframe.contentDocument || iframe.contentWindow.document;
     var test = innerDiv.getElementById("hiddendiv");
-    console.log(test.className);
     if(test != undefined) {
-        var featureFolder = test.className;
         console.log(featureFolder);
-        $.get('/hh-neuron-builder/set-feature-folder/' + featureFolder, function(data) {
-        document.getElementById("save-feature-files").style.display = "block";
+        $.getJSON('/hh-neuron-builder/set-feature-folder/' + featureFolder, function(data) {
+            document.getElementById("save-feature-files").style.display = "block";
         });
     }else{
-    console.log("UNDEFINED hidden div");
+        console.log("UNDEFINED hidden div");
     }
 }
 </script>

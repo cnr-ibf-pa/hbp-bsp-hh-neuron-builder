@@ -96,7 +96,7 @@ def set_feature_folder(request, featurefolder=""):
     print(request.session['efel_feature_folder'])
     print(request.session['efel_feature_folder'])
     #return HttpResponse(request.session['featurefolder'])
-    return HttpResponse("")
+    return HttpResponse(json.dumps({"response":featurefolder}), content_type="application/json")
 
 def set_optimization_name(request, optimizationname=""):
     request.session['optimization_name'] = optimizationname
