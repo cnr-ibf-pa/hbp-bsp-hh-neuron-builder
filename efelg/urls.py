@@ -23,6 +23,7 @@ urlpatterns = [
     url(r'^download_zip', views.download_zip),
     url(r'^features_dict', views.features_dict),
     url(r'^features_json_path', views.features_json_path),
+    url(r'^features_json_files_path', views.features_json_files_path),
     url(r'^protocols_json_path', views.protocols_json_path),
     url(r'^features_pdf_path', views.features_pdf_path),
     url(r'^get_directory_structure', views.get_directory_structure),
