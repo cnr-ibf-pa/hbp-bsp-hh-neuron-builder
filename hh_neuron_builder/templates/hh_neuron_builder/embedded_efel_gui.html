@@ -16,6 +16,8 @@
 var check_last_page = function(iframe){
     var innerDiv = iframe.contentDocument || iframe.contentWindow.document;
     var test = innerDiv.getElementById("hiddendiv");
+    var testclass = test.classList[0];
+    console.log(testclass);
     if(test != undefined) {
         console.log(test.classList[0]);
         $.getJSON('/hh-neuron-builder/set-feature-folder/' + test.classList[0], function(data) {
