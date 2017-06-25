@@ -16,9 +16,10 @@
     var check_last_page = function(iframe){
     var innerDiv = iframe.contentDocument || iframe.contentWindow.document;
     var test = innerDiv.getElementById("hiddendiv");
+    console.log(test.className);
     if(test != undefined) {
         var featureFolder = test.className;
-        console.log(featureFolder)
+        console.log(featureFolder);
         $.get('/hh-neuron-builder/set-feature-folder/' + featureFolder, function(data) {
         document.getElementById("save-feature-files").style.display = "block";
         });
