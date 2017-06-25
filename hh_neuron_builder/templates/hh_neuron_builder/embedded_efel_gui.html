@@ -18,6 +18,7 @@
     var test = innerDiv.getElementById("hiddendiv");
     if(test != undefined) {
         var featureFolder = test.className;
+        console.log(featureFolder)
         $.get('/hh-neuron-builder/set-feature-folder/' + featureFolder, function(data) {
         document.getElementById("save-feature-files").style.display = "block";
         });
