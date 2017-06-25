@@ -18,9 +18,7 @@ var check_last_page = function(iframe){
     var test = innerDiv.getElementById("hiddendiv");
     console.log(testclass);
     if(test != undefined) {
-        var testclass = innerDiv.getElementById("hiddendiv").classList[0];
-        console.log(testclass);
-        $.getJSON('/hh-neuron-builder/set-feature-folder/' + testclass, function(data) {
+        $.getJSON('/hh-neuron-builder/set-feature-folder/' + test, function(data) {
             document.getElementById("save-feature-files").style.display = "block";
         });
     }else{
