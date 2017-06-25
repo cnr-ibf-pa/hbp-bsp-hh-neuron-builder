@@ -4,7 +4,7 @@
 {% block content  %}
 
 <div id="efelgui-frame-div">
-    <iframe frameborder="1" style="border-style: solid;" id="efelgui-frame" class="object-iframe" type="text/html" src="/efelg/"  onload="this.style.height=this.contentDocument.body.scrollHeight +'px';"></iframe>
+    <iframe onload="check_last_page(this)" frameborder="0" style="border-style: solid;" id="efelgui-frame" class="object-iframe" type="text/html" src="/efelg/"  onload="this.style.height=this.contentDocument.body.scrollHeight +'px';"></iframe>
 </div>
 <button type="button" id="back-to-workflow" style="float:right;" class="workflow-btn">Cancel</button>
 <button type="button" id="save-feature-files" style="float:right;display:none" class="workflow-btn">Save to workflow</button>
@@ -13,29 +13,42 @@
 
 
 <script>
-/*
-$.getJSON('/hh-neuron-builder/set-feature-folder/' + test, function(data) {
-});
-*/
-
-
-
-$(document).ready(function(){
-    document.getElementById("save-feature-files").onclick = setFeatureFolder;
-
-    function setFeatureFolder(){
-    
-    }
-    var innerDiv = document.getElementById("efelgui-frame").contentDocument || document.getElementById("efelgui-frame").contentWindow.document;
+    var check_last_page = function(iframe){
+    var innerDiv = iframe.contentDocument || iframe.contentWindow.document;
     var test = innerDiv.getElementById("hiddendiv");
-    if(test != undefined){
-        console.log("yesyesyes")
+    if(test != undefined) {
         document.getElementById("save-feature-files").style.display = "block";
     }else{
-        console.log("parapappappa")
+        console.log("UNDEFINED hidden div");
     }
+console.log(test.classList[0])
+console.log(test.classList[0])
+console.log(test.classList[0])
+console.log(test.classList[0])
+console.log(test.classList[0])
+console.log(test.classList[0])
+console.log(test.classList[0])
+console.log(test.classList[0])
+console.log(test.classList[0])
+console.log(test.classList[0])
+console.log(test.classList[0])
+console.log(test.classList[0])
+console.log(test.classList[0])
+console.log(test.classList[0])
+console.log(test.classList[0])
+console.log(test.classList[0])
+console.log(test.classList[0])
+console.log(test.classList[0])
+console.log(test.classList[0])
+console.log(test.classList[0])
+console.log(test.classList[0])
+console.log(test.classList[0])
+}
+    /*
+    $.getJSON('/hh-neuron-builder/set-feature-folder/' + test, function(data) {
 });
 
+*/
 
 
 
