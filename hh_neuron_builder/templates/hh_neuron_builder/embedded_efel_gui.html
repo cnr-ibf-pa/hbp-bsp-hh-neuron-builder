@@ -14,6 +14,8 @@
 
 <script>
 
+document.getElementById("save-feature-files").onclick = save_features;
+
 var check_last_page = function(iframe){
     var innerDiv = iframe.contentDocument || iframe.contentWindow.document;
     var test = innerDiv.getElementById("hiddendiv");
@@ -24,7 +26,6 @@ var check_last_page = function(iframe){
     }
 };
 
-document.getElementById("save-feature-files").onclick = save_features;
 
 function save_features(){
 
