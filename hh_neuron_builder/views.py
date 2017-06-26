@@ -88,15 +88,13 @@ def set_optimization_parameters(request):
     return render(request, 'hh_neuron_builder/set_optimization_parameters.html')
 
 # 
-def set_feature_folder(request, featurefolder=""):
-    feat_path = os.path.split(featurefolder)[0]
+def copy_feature_files(request, featurefile=""):
+    feat_path = os.path.split(featurefiles)[0]
     request.session['efel_feature_folder'] = feat_path
-    print(request.session['efel_feature_folder'])
-    print(request.session['efel_feature_folder'])
-    print(request.session['efel_feature_folder'])
-    print(request.session['efel_feature_folder'])
     #return HttpResponse(request.session['featurefolder'])
-    return HttpResponse(json.dumps({"response":featurefolder}), content_type="application/json")
+    return HttpResponse(json.dumps({"response":featurefile}), content_type="application/json")
+
+
 
 def set_optimization_name(request, optimizationname=""):
     request.session['optimization_name'] = optimizationname
