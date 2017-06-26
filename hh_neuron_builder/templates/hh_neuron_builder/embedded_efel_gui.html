@@ -27,7 +27,7 @@ document.getElementById("save-feature-files").onclick = save_features;
 
 function save_features(){
 
-    var innerDiv = getElementById("efelgui-frame").contentDocument || getElementById("efelgui-frame").contentWindow.document;
+    var innerDiv = document.getElementById("efelgui-frame").contentDocument || getElementById("efelgui-frame").contentWindow.document;
     console.log(innerDiv.getElementById("hiddendiv").classList[0]);    
 }
     /*
