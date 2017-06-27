@@ -31,7 +31,7 @@ function save_features(){
 
     var innerDiv = document.getElementById("efelgui-frame").contentDocument || getElementById("efelgui-frame").contentWindow.document;
     var folderName = innerDiv.getElementById("hiddendiv").classList[0];
-    $.getJSON('/hh-neuron-builder/copy_feature_files/' + folderName, function(data){
+    $.getJSON('/hh-neuron-builder/copy-feature-files/' + folderName, function(data){
         console.log(folderName)
     });    
 }

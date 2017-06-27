@@ -6,6 +6,7 @@ from django.http import JsonResponse
 import pprint
 import json
 import os
+import shutil
 from tools import manage_nsg 
 import datetime
 import requests
@@ -88,10 +89,9 @@ def set_optimization_parameters(request):
     return render(request, 'hh_neuron_builder/set_optimization_parameters.html')
 
 # 
-def copy_feature_files(request, featurefile=""):
-    feat_path = os.path.split(featurefiles)[0]
-    request.session['efel_feature_folder'] = feat_path
-    #return HttpResponse(request.session['featurefolder'])
+def copy_feature_files(request, featurefolder=""):
+    shutil.copy(os.path.join(featurefolder, 'features.json'), request.session['user_dir_data_feat'])
+    shutil.copy(os.path.join(featurefolder, 'protocols.json'), request.session['user_dir_data_feat'])
     return HttpResponse(json.dumps({"response":featurefile}), content_type="application/json")
 
 
