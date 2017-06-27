@@ -152,6 +152,7 @@ def overview(request):
     
     # build media relative result path
     media_rel_crr_user_res = os.path.join('media', 'efel_data', rel_result_folder, username, time_info, 'u_res')
+    media_abs_crr_user_res = os.path.join(settings.MEDIA_ROOT, 'efel_data', rel_result_folder, username, time_info, 'u_res')
 
     # storage relative path folder
     st_rel_user_results_folder = os.path.join(rel_result_folder, rel_user_crr_results_folder)
@@ -159,6 +160,7 @@ def overview(request):
     
     # store paths in request.session
     request.session['media_rel_crr_user_res'] = media_rel_crr_user_res 
+    request.session['media_abs_crr_user_res'] = media_abs_crr_user_res 
     request.session['st_rel_user_results_folder'] = st_rel_user_results_folder
     request.session['st_rel_user_uploaded_folder'] = st_rel_user_uploaded_folder
     request.session['full_user_crr_results_folder'] = full_user_crr_results_folder
@@ -477,15 +479,15 @@ def features_json(request):
 #####
 @login_required(login_url='/login/hbp')
 def features_json_path(request):
-    rel_url = request.session['media_rel_crr_user_res']
-    full_feature_json_file = os.path.join(rel_url, 'features.json')
+    abs_url = request.session['media_abs_crr_user_res']
+    full_feature_json_file = os.path.join(abs_url, 'features.json')
     return HttpResponse(json.dumps({'path' : os.path.join(os.sep, full_feature_json_file)}))
 
 #####
 @login_required(login_url='/login/hbp')
 def features_json_files_path(request):
-    rel_url = request.session['media_rel_crr_user_res']
-    return HttpResponse(json.dumps({'path' : os.path.join(os.sep, rel_url)}))
+    abs_url = request.session['media_abs_crr_user_res']
+    return HttpResponse(json.dumps({'path' : os.path.join(os.sep, abs_url)}))
 
 #####
 @login_required(login_url='/login/hbp')
