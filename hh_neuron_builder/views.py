@@ -90,12 +90,11 @@ def set_optimization_parameters(request):
 
 # 
 def copy_feature_files(request, featurefolder=""):
-    shutil.copy(os.path.join(featurefolder, 'features.json'), request.session['user_dir_data_feat'])
-    shutil.copy(os.path.join(featurefolder, 'protocols.json'), request.session['user_dir_data_feat'])
+    shutil.copy(os.path.join(os.sep, featurefolder, 'features.json'), request.session['user_dir_data_feat'])
+    shutil.copy(os.path.join(os.sep, featurefolder, 'protocols.json'), request.session['user_dir_data_feat'])
     return HttpResponse(json.dumps({"response":featurefile}), content_type="application/json")
 
-
-
+#
 def set_optimization_name(request, optimizationname=""):
     request.session['optimization_name'] = optimizationname
     #return HttpResponse(request.session['featurefolder'])
