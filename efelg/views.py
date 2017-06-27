@@ -485,7 +485,7 @@ def features_json_path(request):
 @login_required(login_url='/login/hbp')
 def features_json_files_path(request):
     rel_url = request.session['media_rel_crr_user_res']
-    return HttpResponse(json.dumps({'path' : os.path.join(rel_url)}))
+    return HttpResponse(json.dumps({'path' : os.path.join(os.sep, rel_url)}))
 
 #####
 @login_required(login_url='/login/hbp')
