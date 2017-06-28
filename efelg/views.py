@@ -389,14 +389,14 @@ def extract_features(request):
     config['options'] = {'relative': False, 'tolerance': 0.02, 'target': target, 'delay': 500, 'nanmean': False}
 
     #extractor = bpext.Extractor(full_crr_result_folder, config)
-    extractor = bpefe.Extractor(full_crr_result_folder, config)
+    extractor = bpefe.Extractor(full_crr_result_folder, config, use_git=False)
     extractor.create_dataset()
     extractor.plt_traces()
     extractor.extract_features()
     extractor.mean_features()
     extractor.plt_features()
-    extractor.feature_config_cells()
-    extractor.feature_config_all()
+    extractor.feature_config_cells(version="legacy")
+    extractor.feature_config_all(version="legacy")
 
 
     conf_dir = request.session['conf_dir']
