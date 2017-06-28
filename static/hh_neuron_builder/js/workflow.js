@@ -2,7 +2,7 @@ $(document).ready(function(){
     document.getElementById("in-silico-exp").onclick = inSilicoPage;
     document.getElementById("feat-efel-btn").onclick = efelPage;
     document.getElementById("feat-up-btn").onclick = reloadCurrentPage;
-    document.getElementById("opt-hpc-btn").onclick = launchOptimizationHPC;
+    document.getElementById("launch-opt-btn").onclick = launchOptimization;
     document.getElementById("opt-up-btn").onclick = reloadCurrentPage;
     document.getElementById("opt-fetch-btn").onclick = reloadCurrentPage;
 });
@@ -24,7 +24,7 @@ function inSilicoPage() {
     //window.location.href = "/hh-neuron-builder/embedded-efel-gui/";
 }
 
-function launchOptimizationHPC() {
+function launchOptimization() {
     window.location.href = "/hh-neuron-builder/choose-opt-model"; 
 }
 

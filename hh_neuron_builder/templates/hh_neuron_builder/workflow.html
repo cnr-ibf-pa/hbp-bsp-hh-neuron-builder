@@ -70,14 +70,16 @@
                 <button id="del-feat" type="button" class="btn btn-link" disabled>Delete feature files</button>
             </div>
         </div>
+        </div>
 
+    <div class="center-container row-center-container">
         <div class="step-panel" style="width:45%;">
             <div class="center-container">
-                <h3>Optimization settings</h3> 
+                <h3>Optimization files</h3> 
             </div>
             <div class="center-container">
-                <button type="button" id="opt-hpc-btn" title="Use settings of an optimization from the database">Choose from database</button>
-                <button type="button" id="opt-up-btn">Upload optimization files</button>
+                <button type="button" id="opt-hpc-btn" title="Use optimization files from the database">Choose from database</button>
+                <button type="button" id="opt-up-btn">Upload</button>
             </div>
             <div class="center-container">
                 <button id="edit-opt" type="button" class="btn btn-link" disabled>Edit optimization files</button>
@@ -85,8 +87,18 @@
             </div>
         </div>
     </div>
+    <div class="center-container row-center-container">
+        <div class="step-panel" style="width:45%;">
+            <div class="center-container">
+                <h3>Optimization settings</h3> 
+            </div>
+            <div class="center-container">
+                <button type="button" id="opt-set-btn" title="Set Optimization parameters">Set parameters/Choose HPC</button>
+            </div>
+        </div>
+    </div>
     <div class="center-container">
-        <button type="button" id="opt-hpc-btn" class="main-panel-btn btn btn-lg btn-block">Launch optimization</button>
+        <button type="button" id="launch-opt-btn" class="main-panel-btn btn btn-lg">Launch optimization</button>
     </div>
 </div>
 
@@ -96,7 +108,7 @@
         <h2>Single cell simulation run</h2>
     </div>
 
-    <div class="step-panel" style="width:65%">
+    <div class="step-panel" style="width:45%">
         <div class="center-container">
             <h3>Optimization results</h3> 
         </div>
@@ -104,16 +116,37 @@
             <button id="opt-fetch-btn" type="button">Fetch optimization results</button>
             <button type="button">Upload optimization results</button>
         </div>
-        <!--
-        <div class="center-container">
-            <button type="button" class="btn btn-link" disabled>Edit optimization results</button>
-            <button type="button" class="btn btn-link" disabled>Delete optimization reults</button>
-        </div>
-        -->
     </div>
     <div class="center-container">
-        <button type="button" id="in-silico-exp" class="main-panel-btn btn btn-lg btn-block">Run simulation</button>
+        <button type="button" id="in-silico-exp" class="main-panel-btn btn btn-lg">Run simulation</button>
     </div>
 </div>
-{% endblock  %}
 
+<!-- section containing divs for user insertions -->
+
+<div id="opt-settings-div" class="opt-settings">
+    Algorithm parameters
+    <label for="gen-max"></label>
+    <input type="number" name="gen-max" id="gen-max" value="2" step="1" min="1" max="1000"><br>
+    <label for=""></label>
+    <input type="number" name="" id="" value="" step="" min="" max=""><br>
+    Run parameters
+
+    <label for=""></label>
+    <label for=""></label>
+    <label for=""></label>
+    <input type="number" name="" id="" value="" step="" min="" max=""><br>
+    <input type="number" name="" id="" value="" step="" min="" max=""><br>
+    <input type="number" name="" id="" value="" step="" min="" max=""><br>
+    HPC system
+    <label for=""></label>
+    <label for=""></label>
+    <label for=""></label>
+    <input type="number" name="" id="" value="" step="" min="" max=""><br>
+    <input type="number" name="" id="" value="" step="" min="" max=""><br>
+    <input type="number" name="" id="" value="" step="" min="" max=""><br>
+
+    </div>
+
+
+{% endblock  %}
