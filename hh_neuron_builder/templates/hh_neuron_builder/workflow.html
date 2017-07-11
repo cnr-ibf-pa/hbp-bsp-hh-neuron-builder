@@ -2,151 +2,169 @@
 {% load static  %}
 
 {% block content  %}
-<script type="text/javascript" src="{% static 'hh_neuron_builder/js/workflow.js' %}"></script>
 
-<!-- 
-    <div class=center-div-container>
-    <div id=feat-ext class="workflow-page-button-div">
-    <div class=center-text-inside-div>
-    <div><br/></div>
-    Feature Extraction
-    <div><br/></div>
-    <div >
-    <span><button id="feat-efel-btn" class="workflow-btn workflow-btn-half" type="button">Extract features from electrophysiological data</button></span>
-    <span> <button id="feat-up-btn" disabled class="workflow-btn workflow-btn-half" type="button">Load your own features.json and protocol.json files</button> </span>
-    </div>
-    <div><br/></div>
-    </div>
-    </div>
-
-    <div class="workflow-page-button-div">
-    <div id=cell-optimization class=center-text-inside-div>
-    <div><br/></div>
-
-    Cell Optimization
-    <div><br/></div>
-    <span><button id="opt-hpc-btn" class="workflow-btn workflow-btn-third" type="button">Launch the optimization on HPC systems
-    </button></span>
-    <span> <button id="opt-up-btn" disabled class="workflow-btn workflow-btn-third" type="button">Upload your own optimized parameter files
-    </button> </span>
-    <span> <button id="opt-fetch-btn" disabled class="workflow-btn workflow-btn-third" type="button">Fetch Optimization results from HPC system</button> </span>
-    <div><br/></div>
-    </div>
-    </div>
-
-
-
-    <div class="workflow-page-button-div">
-    <div id=simulation-run class=center-text-inside-div>
-    <div><br/></div>
-    Single Cell Simulation Run
-    <div><br/></div>
-    <span> <button id="in-silico-exp" class="workflow-btn workflow-btn-third" type="button">Single cell in silico exeriments <br> (under current/voltage clamp)</button> </span>
-    </div>
-    </div>
-
-    </div>
-
-
-
-
--->
-
-<div class="center-container column-center-container main-page-panel bottom-margin-20">
-    <div>
-        <h2>Cell Optimization</h2>
-    </div>
-    <div class="center-container row-center-container">
-        <div class="step-panel" style="width:45%;">
-            <div class="center-container">
-                <h3>Feature extraction</h3> 
-            </div>
-            <div class="center-container">
-                <button type="button" id="feat-efel-btn">Extract features</button>
-                <button type="button" id="feat-up-btn">Load feature files</button>
-            </div>
-            <div class="center-container">
-                <button id="edit-feat" type="button" class="btn btn-link" disabled>Edit features files</button>
-                <button id="del-feat" type="button" class="btn btn-link" disabled>Delete feature files</button>
+<div id="mainDiv" class="center-container row-center-container">
+    <div id="cell-opt-div" class="center-container wf-page-panel">
+        <div>
+            <h2>Cell Optimization</h2>
+        </div>
+        <div class="center-container row-center-container">
+            <div class="step-panel">
+                <div class="center-container">
+                    <h3>Feature extraction</h3> 
+                </div>
+                <div class="center-container">
+                    <button type="button" id="feat-efel-btn" class="btn btn-default" >Extract features</button>
+                    <button type="button" id="feat-up-btn" class="btn btn-default" disabled>Load feature files</button>
+                </div>
+                <div class="center-container">
+                    <button id="edit-feat" type="button" class="btn btn-link" disabled>Edit features files</button>
+                    <button id="del-feat" type="button" class="btn btn-link" disabled>Delete feature files</button>
+                </div>
+                <div id="feat-bar" class="status-bar center-container">
+                </div>
             </div>
         </div>
+
+
+        <div class="center-container row-center-container">
+            <div class="step-panel">
+                <div class="center-container">
+                    <h3>Optimization files</h3> 
+                </div>
+                <div class="center-container">
+                    <button type="button" id="opt-db-hpc-btn" title="Use optimization files from the database" class="btn btn-default" >Choose from database</button>
+                    <button type="button" id="opt-up-btn" class="btn btn-default" disabled>Upload</button>
+                </div>
+                <div class="center-container">
+                    <button id="edit-opt" type="button" class="btn btn-link" disabled>Edit optimization files</button>
+                    <button id="del-opt" type="button" class="btn btn-link" disabled>Delete optimization files</button>
+                </div>
+                <div id="opt-files-bar" class="center-container status-bar">
+                </div>
+            </div>
         </div>
 
-    <div class="center-container row-center-container">
-        <div class="step-panel" style="width:45%;">
-            <div class="center-container">
-                <h3>Optimization files</h3> 
-            </div>
-            <div class="center-container">
-                <button type="button" id="opt-hpc-btn" title="Use optimization files from the database">Choose from database</button>
-                <button type="button" id="opt-up-btn">Upload</button>
-            </div>
-            <div class="center-container">
-                <button id="edit-opt" type="button" class="btn btn-link" disabled>Edit optimization files</button>
-                <button id="del-opt" type="button" class="btn btn-link" disabled>Delete optimization files</button>
-            </div>
-        </div>
-    </div>
-    <div class="center-container row-center-container">
-        <div class="step-panel" style="width:45%;">
-            <div class="center-container">
-                <h3>Optimization settings</h3> 
-            </div>
-            <div class="center-container">
-                <button type="button" id="opt-set-btn" title="Set Optimization parameters">Set parameters/Choose HPC</button>
+
+        <div class="center-container row-center-container">
+            <div class="step-panel">
+                <div class="center-container">
+                    <h3>Optimization settings</h3> 
+                </div>
+                <div class="center-container">
+                    <button type="button" id="opt-set-btn" class="btn btn-default"  title="Set Optimization parameters" onclick="openSideDiv()">Set parameters/Choose HPC</button>
+                </div>
+                <div id="opt-param-bar" class="status-bar center-container">
+                </div>
             </div>
         </div>
+
+
+        <div class="center-container">
+            <button type="button" id="launch-opt-btn" class="width-step-div main-panel-btn btn btn-lg" disabled>Launch optimization</button>
+        </div>
     </div>
-    <div class="center-container">
-        <button type="button" id="launch-opt-btn" class="main-panel-btn btn btn-lg">Launch optimization</button>
+
+
+    <div id="run-sim-div" class="center-container  wf-page-panel">
+        <div>
+            <h2>Single cell simulation run</h2>
+        </div>
+
+        <div class="center-container row-center-container">
+            <div class="step-panel">
+                <div class="center-container">
+                    <h3>Optimization results</h3> 
+                </div>
+                <div class="center-container">
+                    <button id="opt-fetch-btn" type="button" class="btn btn-default" disabled>Fetch optimization results</button>
+                </div>
+                <div class="center-container">
+                    <form id="uploadForm" action="/hh-neuron-builder/upload-run-model/" method="POST" enctype="multipart/form-data">{% csrf_token %}
+                        <!--
+                            <button id="up-sim-model" type="button">Upload model (.zip)</button>
+                        -->
+                        <label class="btn btn-default">
+                            Browse files...
+                            <input type="file" name="opt-run-file" id="opt-run-file" accept=".zip" style="display:none"/>
+                            <span class="custom-file-control"></span>
+                        </label>
+
+                        <input type="submit" id="upload_button" name="upload_button_name" class="btn btn-default" value="Upload" />
+                    </form>
+                    <div class = "center-container">
+                        <div id="res-upload-info-div" style="font-size:16px">
+                        </div>
+                    </div>
+                </div>
+                <div id="opt-res-bar" class="status-bar center-container">
+                </div>
+            </div>
+        </div>
+
+        <div class="center-container">
+            <button type="button" id="run-sim-btn" class="width-step-div main-panel-btn btn btn-lg" disabled>Run simulation</button>
+        </div>
     </div>
 </div>
 
 
-<div class="center-container column-center-container main-page-panel">
-    <div>
-        <h2>Single cell simulation run</h2>
-    </div>
 
-    <div class="step-panel" style="width:45%">
-        <div class="center-container">
-            <h3>Optimization results</h3> 
-        </div>
-        <div class="center-container">
-            <button id="opt-fetch-btn" type="button">Fetch optimization results</button>
-            <button type="button">Upload optimization results</button>
-        </div>
-    </div>
-    <div class="center-container">
-        <button type="button" id="in-silico-exp" class="main-panel-btn btn btn-lg">Run simulation</button>
-    </div>
-</div>
 
 <!-- section containing divs for user insertions -->
+<form id='submitRunParam' method='POST' action='/hh-neuron-builder/submit-run-param/'>{% csrf_token %}
 
-<div id="opt-settings-div" class="opt-settings">
-    Algorithm parameters
-    <label for="gen-max"></label>
-    <input type="number" name="gen-max" id="gen-max" value="2" step="1" min="1" max="1000"><br>
-    <label for=""></label>
-    <input type="number" name="" id="" value="" step="" min="" max=""><br>
-    Run parameters
-
-    <label for=""></label>
-    <label for=""></label>
-    <label for=""></label>
-    <input type="number" name="" id="" value="" step="" min="" max=""><br>
-    <input type="number" name="" id="" value="" step="" min="" max=""><br>
-    <input type="number" name="" id="" value="" step="" min="" max=""><br>
-    HPC system
-    <label for=""></label>
-    <label for=""></label>
-    <label for=""></label>
-    <input type="number" name="" id="" value="" step="" min="" max=""><br>
-    <input type="number" name="" id="" value="" step="" min="" max=""><br>
-    <input type="number" name="" id="" value="" step="" min="" max=""><br>
-
+    <div style="position:fixed;" id="optSideDiv" class="sidediv">
+        <a href="javascript:void(0)" class="closebtn" onclick="closeSideDiv()">&times;</a>
+        <strong>Algorithm Parameters</strong>
+        <br>
+        <br>
+        <label for="gen-max">Number of generation (max)</label>
+        <br>
+        <input class="num-edit" type="number" name="gen-max" id="gen-max" value="2" step="1" min="1"><br>
+        <label for="offspring">Offspring size</label>
+        <br>
+        <input class="num-edit" type="number" name="offspring" id="offspring" value="10" step="1" min="1"><br>
+        <br>
+        <br>
+        <strong>Optimization Run Parameters</strong>
+        <br>
+        <br>
+        <label for="node-num">Number of nodes</label>
+        <br>
+        <input type="number" name="node-num" id="node-num" value="2"><br>
+        <label for="core-num">Number of cores</label>
+        <br>
+        <input type="number" name="core-num" id="core-num" value="1"><br>
+        <label for="runtime">Runtime</label>
+        <br>
+        <input type="number" name="runtime" id="runtime" value="0.5"><br>
+        <br>
+        <br>
+        <strong>HPC system</strong>
+        <br>
+        <br>
+        <input type="radio" name="marconi" disabled>
+        <label for="marconi">MARCONI</label>
+        <br>
+        <input type="radio" name="jureca" disabled>
+        <label for="jureca">JURECA</label>
+        <br>
+        <input type="radio" name="nsg" checked>
+        <label for="nsg">NeuroScience Gateway (NSG)</label>
+        <label for="username">Username</label>
+        <br>
+        <input id="username" size=15px required type="text" name="username">
+        <br>
+        <label for="password">Password</label>
+        <br>
+        <input id="password" size=15px required type="password" name="password">
+        <br>
+        <br>
+        <button id="apply-param" class="btn btn-primary">Apply</button>
     </div>
+</form>
 
 
+<script type="text/javascript" src="{% static 'hh_neuron_builder/js/workflow.js' %}"></script>
 {% endblock  %}

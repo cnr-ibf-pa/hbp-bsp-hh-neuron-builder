@@ -6,8 +6,8 @@
 <div id="efelgui-frame-div">
     <iframe onload="check_last_page(this)" frameborder="0" style="border-style: solid;" id="efelgui-frame" class="object-iframe" type="text/html" src="/efelg/"  onload="this.style.height=this.contentDocument.body.scrollHeight +'px';"></iframe>
 </div>
-<button type="button" id="back-to-workflow" style="float:right;" class="workflow-btn">Cancel</button>
-<button type="button" id="save-feature-files" style="float:right;display:none" class="workflow-btn">Save to workflow</button>
+<button type="button" id="back-to-workflow" style="float:right;" class="workflow-btn btn btn-default">Cancel</button>
+<button type="button" id="save-feature-files" style="float:right;display:none" class="workflow-btn btn btn-default">Save to workflow</button>
 
 
 
@@ -28,18 +28,12 @@ var check_last_page = function(iframe){
 
 
 function save_features(){
-
     var innerDiv = document.getElementById("efelgui-frame").contentDocument || getElementById("efelgui-frame").contentWindow.document;
     var folderName = innerDiv.getElementById("hiddendiv").classList[0];
     $.getJSON('/hh-neuron-builder/copy-feature-files/' + folderName, function(data){
-        console.log(folderName)
+    window.location.href = "/hh-neuron-builder/workflow";
     });    
 }
-/*
-   $.getJSON('/hh-neuron-builder/set-feature-folder/' + test, function(data) {
-   });
-
- */
 
 
 

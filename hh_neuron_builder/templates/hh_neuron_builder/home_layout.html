@@ -9,7 +9,9 @@
         <title>Hodgkin-Huxley Neuron Builder</title>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width">
-
+<!--
+        <link rel="stylesheet" type="text/css" href="{% static 'hbp-collaboratory-theme/dist/css/bootstrap.css' %}">
+-->
         <link rel="stylesheet" type="text/css" href="{% static 'hbp-collaboratory-theme/dist/css/bootstrap.css' %}">
         <script type="text/javascript" src="{% static 'jquery/dist/jquery.min.js' %}"></script>
     </head>
@@ -17,7 +19,7 @@
     <body>
         {% hbp_oidc_session_handler request.user %}
         <div onclick="titleOnClick();" id="title-div" class=fixed-page-title>
-            <h1 id= "title">Hodgkin-Huxley Neuron Builder</h1>
+            <h1 id="title">Hodgkin-Huxley Neuron Builder</h1>
         </div>
         <div class=top-spacing-div></div>
         {% block content %}{% endblock %}

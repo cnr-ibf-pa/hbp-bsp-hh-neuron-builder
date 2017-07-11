@@ -30,7 +30,6 @@ def home(request):
     res_dict = res.json()
     username = res_dict['username']
     userid = res_dict['id']
-    time_info = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
     workflows_dir = os.path.join(settings.MEDIA_ROOT, 'hhnb', 'workflows')
     scm_structure_path = os.path.join(settings.MEDIA_ROOT, 'hhnb', 'bsp_data_repository', 'singlecellmodeling_structure.json')
     opt_model_path = os.path.join(settings.MEDIA_ROOT, 'hhnb', 'bsp_data_repository', 'optimizations')
@@ -41,19 +40,33 @@ def home(request):
     request.session['headers'] = headers
     request.session["singlecellmodeling_structure_path"] = scm_structure_path 
     request.session["optimization_model_path"] = opt_model_path
-    request.session['time_info'] = time_info
     request.session['workflows_dir'] = workflows_dir
-    
 
+    request.session.pop('gennum', None)
+    request.session.pop('offsize', None)
+    request.session.pop('nodenum', None)
+    request.session.pop('corenum', None)
+    request.session.pop('runtime', None)
+    request.session.pop('username', None)
+    request.session.pop('password', None)
+
+    return render(request, 'hh_neuron_builder/home.html')
+
+
+# create folders for current workflow
+def create_wf_folders(request, wf_type="new"):
+    time_info = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
+    workflows_dir = request.session['workflows_dir']
+    userid = request.session['userid']
 
     # user specific dir
+    request.session['time_info'] = time_info
     request.session['user_dir'] = os.path.join(workflows_dir, userid, time_info)
     request.session['user_dir_data'] = os.path.join(workflows_dir, userid, time_info, 'data')
     request.session['user_dir_data_feat'] = os.path.join(workflows_dir, userid, time_info, 'data', 'features')
     request.session['user_dir_data_opt'] = os.path.join(workflows_dir, userid, time_info, 'data', 'opt_settings')
     request.session['user_dir_results'] = os.path.join(workflows_dir, userid, time_info, 'results')
     request.session['user_dir_results_opt'] = os.path.join(workflows_dir, userid, time_info, 'results', 'opt')
-
 
     # create folders for global data and json files if not existing
     if not os.path.exists(request.session['user_dir_data_feat']):
@@ -63,14 +76,15 @@ def home(request):
     if not os.path.exists(request.session['user_dir_results_opt']):
         os.makedirs(request.session['user_dir_results_opt'])
 
-    return render(request, 'hh_neuron_builder/home.html')
+    return HttpResponse(json.dumps({"response":"OK"}), content_type="application/json")
+    
 
 # serving page for rendering embedded efel gui page
 def embedded_efel_gui(request):
     return render(request, 'hh_neuron_builder/embedded_efel_gui.html')
 
 # serving page for rendering workflow page
-def workflow(request):
+def workflow(request, wf="new"):
     return render(request, 'hh_neuron_builder/workflow.html')
 
 # serving page for rendering choose optimization model page
@@ -95,53 +109,13 @@ def copy_feature_files(request, featurefolder=""):
     return HttpResponse(json.dumps({"response":featurefolder}), content_type="application/json")
 
 #
-def set_optimization_name(request, optimizationname=""):
+def fetch_opt_set_file(request, optimizationname=""):
     request.session['optimization_name'] = optimizationname
-    #return HttpResponse(request.session['featurefolder'])
-    print(request.session['optimization_name'])
+    opt_model_path = request.session['optimization_model_path']
+    user_dir_data_opt = request.session['user_dir_data_opt']
+    shutil.copy(os.path.join(opt_model_path, optimizationname, optimizationname + '.zip'), user_dir_data_opt)
     return HttpResponse("")
 
-# set generation number
-def set_gen_num(request, gennum=""):
-    print(gennum)
-    request.session['gennum'] = float(gennum)
-    return HttpResponse("")
-
-# set offspring size
-def set_off_size(request, offsize=""):
-    print(offsize)
-    request.session['offsize'] = float(offsize)
-    return HttpResponse("")
-
-# set node number
-def set_node_num(request, nodenum=""):
-    print(nodenum)
-    request.session['nodenum'] = float(nodenum)
-    return HttpResponse("")
-
-# set core number
-def set_core_num(request, corenum=""):
-    print(corenum)
-    request.session['corenum'] = float(corenum) 
-    return HttpResponse("")
-
-# set run time
-def set_run_time(request, runtime=""):
-    print(runtime)
-    request.session['runtime'] = float(runtime)
-    return HttpResponse("")
-
-# set username
-def set_username(request, username):
-    print(username)
-    request.session['username'] = username
-    return HttpResponse("")
-
-# set password
-def set_password(request, password):
-    print(password)
-    request.session['password'] = password
-    return HttpResponse("")
 
 # run remote optimization
 def run_optimization(request):
@@ -150,15 +124,15 @@ def run_optimization(request):
     core_num = request.session['corenum']
     node_num = request.session['nodenum']
     runtime = request.session['runtime']
+    gennum = request.session['gennum']
+    offsize = request.session['offsize']
     res_folder = request.session["result_folder"]
     optimization_name = request.session['optimization_name']
-    gennum = request.session['gennum']
-    utils_dir = "/app/media/hh_neuron_builder/workflows/utils/"
+    utils_dir = os.path.join(settings.MEDIA_ROOT, '/hh_neuron_builder/workflows/utils/')
     opt_folder = os.path.join(request.session["optimization_model_path"], optimization_name)
     time_folder = request.session["wf_dir"]
     dest_folder = os.path.join(res_folder, time_folder, optimization_name)
     zfName = request.session['optimization_name'] + '.zip'
-    offsize = request.session['offsize']
     manage_nsg.copy_orig_opt_folder(opt_folder, dest_folder)    
 
     feature_folder = request.session['feature_folder']
@@ -176,12 +150,12 @@ def run_optimization(request):
 # def runNSG(username, password, core_num, node_num, runtime, zfName):
 
 def model_loaded_flag(request):
-    if 'optimization_name' in request.session:
-        return HttpResponse(json.dumps({"response": request.session['optimization_name']}), content_type="application/json")
+    if 'res_file_name' in request.session:
+        return HttpResponse(json.dumps({"response": request.session['res_file_name']}), content_type="application/json")
     else:
         return HttpResponse(json.dumps({"response": "nothing"}), content_type="application/json")
 
- 
+
 
 
 # render page with embedded "neuron as a service" app
@@ -212,11 +186,82 @@ def get_nsg_job_list(request):
     return HttpResponse("")
 
 def upload_to_naas(request):
-    optimization_model_path = request.session["optimization_model_path"]
-    optimizationname = request.session['optimization_name']
-    final_path = os.path.join(optimization_model_path, optimizationname, optimizationname + '.zip')
-    r = requests.post("https://blue-naas-svc.humanbrainproject.eu/upload", files={"file": open(final_path, "rb")});
-    print(file_path)
-    print("uploading to naas")
+    res_folder = request.session['user_dir_results_opt']
+    res_folder_ls = os.listdir(res_folder) 
+    request.session['res_file_name'] = os.path.splitext(res_folder_ls[0])[0]
+    abs_res_file = os.path.join(res_folder, res_folder_ls[0])
+
+    #optimization_model_path = request.session["optimization_model_path"]
+    #optimizationname = request.session['optimization_name']
+    #final_path = os.path.join(optimization_model_path, optimizationname, optimizationname + '.zip')
+    #r = requests.post("https://blue-naas-svc.humanbrainproject.eu/upload", files={"file": open(final_path, "rb")});
+    r = requests.post("https://blue-naas-svc.humanbrainproject.eu/upload", files={"file": open(abs_res_file, "rb")});
     return HttpResponse(json.dumps({"response": "nothing"}), content_type="application/json")
 
+def submit_run_param(request):
+    #selected_traces_rest = request.POST.get('csrfmiddlewaretoken')
+    form_data = request.POST
+    request.session['gennum'] = int(form_data['gen-max'])
+    request.session['offsize'] = int(form_data['offspring'])
+    request.session['nodenum'] = int(form_data['node-num']) 
+    request.session['corenum'] = int(form_data['core-num'])  
+    request.session['runtime'] = float(form_data['runtime'])
+    request.session['username'] = form_data['username']
+    request.session['password'] = form_data['password']
+
+    return HttpResponse(json.dumps({"response": "nothing"}), content_type="application/json")
+
+# check if conditions for performing steps are in present
+def check_cond_exist(request):
+    response = {"feat":False, "opt_files":False, "opt_set":False, "run_sim":False}
+    data_feat = request.session['user_dir_data_feat']
+    data_opt = request.session['user_dir_data_opt']
+    result_opt = request.session['user_dir_results_opt']
+    if not os.listdir(data_feat) == []:
+        response['feat'] = True
+    if not os.listdir(data_opt) == []:
+        response['opt_files'] = True
+    if not os.listdir(result_opt) == []:
+        response['run_sim'] = True
+    if ('gennum' and 'offsize' and 'nodenum' and 'corenum' and 'runtime' and 'username' and 'password') in request.session:
+        response['opt_set'] = True
+    return HttpResponse(json.dumps(response), content_type="application/json")
+
+# upload .zip file for model upload
+def upload_run_model(request):
+    filename_list = request.FILES.getlist('opt-run-file')
+    if not filename_list:
+        return HttpResponse(json.dumps({"resp":False}), content_type="application/json") 
+
+    firstfile = filename_list[0]
+    filename = filename_list[0].name
+    final_res_folder = request.session['user_dir_results_opt']
+    if os.listdir(final_res_folder):
+        shutil.rmtree(final_res_folder)
+        os.makedirs(final_res_folder)
+    final_res_file_name = os.path.join(final_res_folder, filename)
+    final_res_file = open(final_res_file_name, 'w')
+    if firstfile.multiple_chunks():
+        for chunk in firstfile.chunks():
+            final_res_file.write(chunk)
+        final_res_file.close()
+    else:
+        final_res_file.write(firstfile.read())
+        final_res_file.close()
+
+    return HttpResponse(json.dumps({"resp":"response"}), content_type="application/json") 
+
+
+# delete feature files
+def delete_feature_files(request):
+    feat_folder = request.session['user_dir_data_feat']
+    shutil.rmtree(feat_folder)
+    os.makedirs(feat_folder)
+    return HttpResponse(json.dumps({"resp":True}), content_type="application/json")
+    
+
+def delete_opt_files(request):
+    opt_folder = request.session['user_dir_data_opt']
+    shutil.rmtree(opt_folder)
+    os.makedirs(opt_folder)
+    return HttpResponse(json.dumps({"resp":True}), content_type="application/json")

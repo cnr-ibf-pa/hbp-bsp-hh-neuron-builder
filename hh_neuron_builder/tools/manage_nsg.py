@@ -27,7 +27,7 @@ def runNSG(username, password, core_num, node_num, runtime, zfName, dest_dir):
     r = requests.post('{}/job/{}'.format(URL, CRA_USER), auth=(CRA_USER, PASSWORD), data=payload, headers=headers, files=files)
     
     root = xml.etree.ElementTree.fromstring(r.text)
-
+    # status dopo avere lanciato il job
     global outputuri, selfuri
     for child in root:
         if child.tag == 'resultsUri':
@@ -45,18 +45,18 @@ def runNSG(username, password, core_num, node_num, runtime, zfName, dest_dir):
 def createzip(foldernameOPTstring, utils_dir, gennum, offsize, optimization_name):
     os.chdir(foldernameOPTstring)
 
-    shutil.copytree(os.path.join(utils_dir,'model'), '.'+os.path.sep+ optimization_name +os.path.sep+'model')
+    #shutil.copytree(os.path.join(utils_dir,'model'), '.'+os.path.sep+ optimization_name +os.path.sep+'model')
 
-    shutil.copy(os.path.join(utils_dir,'analysis.py'), '.'+os.path.sep+ optimization_name +os.path.sep+'analysis.py')
-
-
-    shutil.copy(os.path.join(utils_dir,'evaluator.py'), '.'+os.path.sep+ optimization_name +os.path.sep+'evaluator.py')
+    #shutil.copy(os.path.join(utils_dir,'analysis.py'), '.'+os.path.sep+ optimization_name +os.path.sep+'analysis.py')
 
 
-    shutil.copy(os.path.join(utils_dir,'opt_neuron.py'), '.'+os.path.sep+ optimization_name +os.path.sep+'opt_neuron.py')
+    #shutil.copy(os.path.join(utils_dir,'evaluator.py'), '.'+os.path.sep+ optimization_name +os.path.sep+'evaluator.py')
 
 
-    shutil.copy(os.path.join(utils_dir,'template.py'), '.'+os.path.sep+ optimization_name+os.path.sep+'template.py')
+    #shutil.copy(os.path.join(utils_dir,'opt_neuron.py'), '.'+os.path.sep+ optimization_name +os.path.sep+'opt_neuron.py')
+
+
+    #shutil.copy(os.path.join(utils_dir,'template.py'), '.'+os.path.sep+ optimization_name+os.path.sep+'template.py')
 
 
     dirloc=os.getcwd()
