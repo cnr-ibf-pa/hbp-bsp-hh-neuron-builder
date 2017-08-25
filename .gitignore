@@ -1,6 +1,7 @@
 *.log
 *.pyc
 *.swp
+*.swo
 
 BluePyExtract
 packages

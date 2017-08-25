@@ -8,13 +8,44 @@
     padding: 5px;
 }
 
+.overlay-wrapper {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.75);
+    text-align: center;
+    z-index: 1000;
+    overflow-y: scroll;
+}
+
+.overlay-content {
+    position: relative;
+    margin: 0 auto;
+    top: 10px;
+    max-width: 500px;
+    box-shadow: 13px 13px 10px -13px #444;
+    background-color: rgba(255,255,255,0.99);
+    overflow-y: scroll;
+    padding: 10px;
+    text-align: center;
+}
+
+
+.param-title-div {
+    background-color: rgba(210, 210, 210, 0.8);
+    font-size: 16px;
+    padding: 5px;
+}
+
 .status-bar {
     background: white;
     -webkit-transition: all 1.5s ease;
     -moz-transition: all 1.5s ease;
     transition: all 1.5s ease;
 }
-
 
 .container-shadow {
     box-shadow: 2px 9px 3px 4px #bbbbbb;
@@ -43,6 +74,7 @@
     margin: 25px;
     width: 98%;
 }
+
 .wrapper {
     display: flex;
     flex-direction: row;
@@ -61,6 +93,14 @@
     margin-right: 10px;
     margin-top: 20px;
     margin-bottom: 20px;
+}
+
+.please-wait-panel {
+    position: fixed;
+    height: 90%;
+    width: 40%;
+    transition: 0.5s;   
+    background-color: rgba(240,240,240, 1);
 }
 
 /**************/
@@ -88,6 +128,10 @@
     background: rgba(30, 30, 30, 0.1);
 }
 
+.ok-ko-btn {
+    width: 20px;
+    margin-right: 10px;
+}
 /***********/
 
 /* global */
@@ -95,10 +139,12 @@
     width: 100%;
 }
 
+.pos-fix {
+    position: fixed;
+}
 .width-400 {
     width: 400px;
 }
-
 
 .top-margin-20 {
     margin-top: 20px;
@@ -107,6 +153,15 @@
 .bottom-margin-20 {
     margin-bottom: 20px;
 }
+/***********/
+
+/* text */
+
+.please-wait-text {
+    font-size: 16px;
+
+}
+
 /***********/
 
 .input-span {
@@ -358,11 +413,6 @@
     display: inline;
 }       
 
-
-
-
-
-
 .span-check{
     padding: 6px;
     border-radius: 10px;
@@ -405,59 +455,48 @@ div.justify-class:after {
 }
 
 .spinning {
-    font-size: 1.5em;
-    width: 1.5em;
-    height: 1.5em;
-    line-height: 1.5em;
     -webkit-animation: spin .8s infinite linear;
     -moz-animation: spin .8s infinite linear;
     -o-animation: spin .8s infinite linear;
     animation: spin .8s infinite linear;
-    -webkit-transform-origin: 50% 50%;
-    transform-origin: 50% 50%;
-    -ms-transform-origin:50% 50%; /* IE 9 */
 }
 
 @-moz-keyframes spin {
-    from {
+    0% {
         -moz-transform: rotate(0deg);
-    }
-    to {
-        -moz-transform: rotate(359deg);
-    }
-}
-
-@-webkit-keyframes spin {
-    from {
-        -webkit-transform: rotate(0deg);
-    }
-    to {
-        -webkit-transform: rotate(359deg);
-    }
-}
-
-@keyframes spin {
-    from {
         transform: rotate(0deg);
     }
-    to {
+    100% {
+        -moz-transform: rotate(359deg);
         transform: rotate(359deg);
     }
 }
 
-.glyphicon.lg {
-    font-size: 1.6em;
+@-webkit-keyframes spin {
+    0% {
+        -webkit-transform: rotate(0deg);
+        transform: rotate(0deg);
+    }
+    100% {
+        -webkit-transform: rotate(359deg);
+        transform: rotate(359deg);
+    }
 }
 
-
-
-
-
-
-
-
-
-
+@keyframes spin {
+    0% {
+        -webkit-transform: rotate(0deg);
+        transform: rotate(0deg);
+    }
+    100% {
+        -webkit-transform: rotate(359deg);
+        transform: rotate(359deg);
+    }
+}
+.glyphicon.lg {
+    font-size: 2.0em;
+    padding: 15px;
+}
 
 .popup {
     position: relative;
@@ -513,44 +552,6 @@ div.justify-class:after {
 @keyframes fadeIn {
     from {opacity: 0;}
     to {opacity:1 ;}
-}
-
-
-
-/* Settings for sidediv */
-.sidediv {
-    position: fixed;
-    height: 100%;
-    width: 0;
-    z-index: 1;
-    top: 1px;
-    left: 1px;
-    background-color: rgba(240,240,240, 1);
-    overflow-x: hidden;
-    transition: 0.5s;
-    padding-top: 40px;
-    padding-left: 20px;
-}
-
-.sidediv a {
-    padding: 8px 8px 8px 32px;
-    text-decoration: none;
-    font-size: 25px;
-    color: #818181;
-    display: block;
-    transition: 0.3s;
-}
-
-.sidediv a:hover, .offcanvas a:focus{
-    color: #a1a1a1;
-}
-
-.sidediv .closebtn {
-    position: absolute;
-    top: 0;
-    right: 25px;
-    font-size: 36px;
-    margin-left: 50px;
 }
 
 #mainDiv {

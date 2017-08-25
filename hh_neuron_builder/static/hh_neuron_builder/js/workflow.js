@@ -6,7 +6,7 @@ $(document).ready(function(){
     var $form = $('#submitRunParam');
     $form.submit(function(){
         $.post($(this).attr('action'), $(this).serialize(), function(response){
-            closeSideDiv();
+            closeParameterDiv();
             checkConditions();
             //window.location.href = "/hh-neuron-builder/workflow"
         },'json');
@@ -33,7 +33,12 @@ $(document).ready(function(){
         e.preventDefault();
     });
 
+    
     // assign functions to buttons' click
+    //
+    document.getElementById("test-button").onclick = displayPleaseWaitDiv;
+    document.getElementById("test-back-button").onclick = displayOpEndDiv;
+    document.getElementById("opt-set-btn").onclick = openParameterDiv;
     document.getElementById("run-sim-btn").onclick = inSilicoPage;
     document.getElementById("feat-efel-btn").onclick = efelPage;
     document.getElementById("feat-up-btn").onclick = reloadCurrentPage;
@@ -42,7 +47,9 @@ $(document).ready(function(){
     document.getElementById("opt-fetch-btn").onclick = reloadCurrentPage;
     document.getElementById("del-feat").onclick = deleteFeatureFiles;
     document.getElementById("del-opt").onclick = deleteOptFiles;
+    document.getElementById("launch-opt-btn").onclick = runOptimization;
 });
+
 
 // serve embedded-efel-gui page
 function efelPage() {
@@ -77,24 +84,21 @@ function reloadCurrentPage() {
 }
 
 // open side div for optimization run parameter settings
-function openSideDiv() {
-    document.getElementById("optSideDiv").style.width = "250px";
-    document.getElementById("mainDiv").style.marginLeft = "250px";
+function openParameterDiv() {
+    document.getElementById("overlaywrapper").style.display = "block";
     document.getElementById("mainDiv").style.pointerEvents = "none";
-    document.getElementById("title").style.marginLeft = "250px";
+    document.body.style.overflow = "hidden";
 }
 
 // close side div for optimization run parameter settings
-function closeSideDiv() {
-    document.getElementById("optSideDiv").style.width = "0";
-    document.getElementById("mainDiv").style.marginLeft= "0";
-    document.getElementById("title").style.marginLeft = "0";
+function closeParameterDiv() {
+    document.getElementById("overlaywrapper").style.display = "none";
     document.getElementById("mainDiv").style.pointerEvents = "auto";
-    document.body.style.backgroundColor = "white";
+    document.body.style.overflow = "auto";
 } 
 
+//
 function checkConditions(){
-
     $.getJSON('/hh-neuron-builder/check-cond-exist', function(data){
         if (data['feat']){
             document.getElementById('feat-bar').style.background = "green";
@@ -118,12 +122,21 @@ function checkConditions(){
             document.getElementById('opt-param-bar').style.background = "red";
         };
 
-        if (data['feat'] & data['opt_files'] & data['opt_set']){
-            document.getElementById("launch-opt-btn").disabled = false;  
+
+        if (data['opt_flag']){
+            document.getElementById("optlaunchimg").src = "/static/images/ok_red.png";
+            document.getElementById("optlaunchtextspan").innerHTML = "Optimization job submitted";
             document.getElementById("cell-opt-div").style.backgroundColor='rgba(0, 110, 0, 0.08)';
         } else {
-            document.getElementById("launch-opt-btn").disabled = true;  
+            document.getElementById("optlaunchimg").src = "/static/images/ko_red.png";
+            document.getElementById("optlaunchtextspan").innerHTML = "No job submitted";
             document.getElementById("cell-opt-div").style.backgroundColor='rgba(255, 255, 255,0.0)';
+        }
+
+        if (data['feat'] & data['opt_files'] & data['opt_set']){
+            document.getElementById("launch-opt-btn").disabled = false;  
+        } else {
+            document.getElementById("launch-opt-btn").disabled = true;  
         };
 
         // Simulation panel
@@ -140,7 +153,7 @@ function checkConditions(){
     });
 }
 
-
+// Delete features.json and protocol.json files from containing folder
 function deleteFeatureFiles() {
     var resp = confirm("Are you sure you want to delete current feature files?");
     if (resp) {
@@ -150,6 +163,7 @@ function deleteFeatureFiles() {
     }
 }
 
+// Delete source optimization files from folder
 function deleteOptFiles() {
     var resp = confirm("Are you sure you want to delete current optimization files?");
     if (resp) {
@@ -157,4 +171,58 @@ function deleteOptFiles() {
             checkConditions();
         });
     }
+}
+
+// Run optimization on hpc system 
+function runOptimization() {
+    displayPleaseWaitDiv();
+    document.getElementById("waitdynamictext").innerHTML = "Launching the optimization";
+    $.getJSON("/hh-neuron-builder/run-optimization", function(data){
+        checkConditions();
+        /*
+         * var status_code = data['status_code'];
+        if (status_code != 200) {
+            document.getElementById("optlaunchimg").src = "/static/images/ko_red.png";
+            document.getElementById("optlaunchtextspan").innerHTML = "Job not submitted with error: ".concat(status_code.toString());
+        } else {
+            document.getElementById("optlaunchimg").src = "/static/images/ok_red.png";
+            document.getElementById("optlaunchtextspan").innerHTML = "Job successfully submitted";
+        }
+        */
+    });
+    hidePleaseWaitDiv();
+}
+
+
+// Display please wait div
+function displayPleaseWaitDiv() {
+    document.getElementById("overlaywrapperwait").style.display = "block";
+    document.getElementById("mainDiv").style.pointerEvents = "none";
+    document.body.style.overflow = "hidden";
+}
+
+// Hide please wait message div
+function hidePleaseWaitDiv() {
+    document.getElementById("overlaywrapperwait").style.display = "none";
+    document.getElementById("mainDiv").style.pointerEvents = "auto";
+    document.body.style.overflow = "auto";
+}
+
+// Display operation ended message div
+function displayOpEndDiv() {
+    document.getElementById("overlaywrapperop").style.display = "block";
+    document.getElementById("mainDiv").style.pointerEvents = "none";
+    document.body.style.overflow = "hidden";
+}
+
+// Hide please wait message div
+function hideOpEndDiv() {
+    document.getElementById("overlaywrapperop").style.display = "none";
+    document.getElementById("mainDiv").style.pointerEvents = "auto";
+    document.body.style.overflow = "auto";
+}
+
+// Update please wait div message
+function updatePleaseWaitDivMessage() {
+
 }

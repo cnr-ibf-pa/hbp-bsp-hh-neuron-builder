@@ -52,20 +52,24 @@
                     <h3>Optimization settings</h3> 
                 </div>
                 <div class="center-container">
-                    <button type="button" id="opt-set-btn" class="btn btn-default"  title="Set Optimization parameters" onclick="openSideDiv()">Set parameters/Choose HPC</button>
+                    <button type="button" id="opt-set-btn" class="btn btn-default"  title="Set Optimization parameters">Set parameters/Choose HPC</button>
                 </div>
                 <div id="opt-param-bar" class="status-bar center-container">
                 </div>
             </div>
         </div>
 
-
         <div class="center-container">
             <button type="button" id="launch-opt-btn" class="width-step-div main-panel-btn btn btn-lg" disabled>Launch optimization</button>
         </div>
+
+        <div id="optlaunchmessagediv" class="center-container row-center-container">
+            <img id="optlaunchimg" src="{% static "images/ko_red.png" %}" class="ok-ko-btn">
+            <span id="optlaunchtextspan">No optimization launched</span>
+        </div>
     </div>
 
-
+    <!-- Single cell simulation run panel -->
     <div id="run-sim-div" class="center-container  wf-page-panel">
         <div>
             <h2>Single cell simulation run</h2>
@@ -106,65 +110,90 @@
             <button type="button" id="run-sim-btn" class="width-step-div main-panel-btn btn btn-lg" disabled>Run simulation</button>
         </div>
     </div>
+
+</div>
+<button id="test-button">Test</button>
+<button id="test-back-button">Test-back</button>
+<!-- section containing divs for user insertions -->
+<div id="overlaywrapper" class="overlay-wrapper">
+    <div id="overlayparam" class="overlay-content">
+        <form id='submitRunParam' method='POST' action='/hh-neuron-builder/submit-run-param/'>{% csrf_token %}
+            <div class="param-title-div">
+                <strong>Algorithm Parameters</strong>
+            </div>
+            <br>
+            <label for="gen-max">Number of generation (max)</label>
+            <br>
+            <input class="num-edit" type="number" name="gen-max" id="gen-max" value="2" step="1" min="1"><br>
+            <br>
+            <label for="offspring">Offspring size</label>
+            <br>
+            <input class="num-edit" type="number" name="offspring" id="offspring" value="10" step="1" min="1"><br>
+            <br>
+            <br>
+            <div class="param-title-div">
+                <strong>Optimization Run Parameters</strong>
+            </div>
+            <br>
+            <label for="node-num">Number of nodes</label>
+            <br>
+            <input type="number" name="node-num" id="node-num" value="2"><br>
+            <br>
+            <label for="core-num">Number of cores</label>
+            <br>
+            <input type="number" name="core-num" id="core-num" value="1"><br>
+            <br>
+            <label for="runtime">Runtime</label>
+            <br>
+            <input type="number" name="runtime" id="runtime" value="0.5"><br>
+            <br>
+            <br>
+            <br>
+            <div class="param-title-div">
+                <strong>HPC system</strong>
+            </div>
+            <br>
+            <input type="radio" name="hpc_sys" value="marconi" disabled>
+            <label for="marconi">MARCONI</label>
+            <br>
+            <br>
+            <input type="radio" name="hpc_sys" value="jureca" disabled>
+            <label for="jureca">JURECA</label>
+            <br>
+            <br>
+            <input type="radio" name="hpc_sys" value="nsg" checked>
+            <label for="nsg">NeuroScience Gateway (NSG)</label>
+            <br>
+            <label for="username">Username</label>
+            <input id="username" required type="text" name="username">
+            <br>
+            <label for="password">Password</label>
+            <input id="password" required type="password" name="password">
+            <br>
+            <br>
+            <button class="btn btn-primary closebtn" onclick="closeParameterDiv()">Cancel</button>
+            <button id="apply-param" class="btn btn-primary">Apply</button>
+        </form>
+    </div>
 </div>
 
-
-
-
-<!-- section containing divs for user insertions -->
-<form id='submitRunParam' method='POST' action='/hh-neuron-builder/submit-run-param/'>{% csrf_token %}
-
-    <div style="position:fixed;" id="optSideDiv" class="sidediv">
-        <a href="javascript:void(0)" class="closebtn" onclick="closeSideDiv()">&times;</a>
-        <strong>Algorithm Parameters</strong>
-        <br>
-        <br>
-        <label for="gen-max">Number of generation (max)</label>
-        <br>
-        <input class="num-edit" type="number" name="gen-max" id="gen-max" value="2" step="1" min="1"><br>
-        <label for="offspring">Offspring size</label>
-        <br>
-        <input class="num-edit" type="number" name="offspring" id="offspring" value="10" step="1" min="1"><br>
-        <br>
-        <br>
-        <strong>Optimization Run Parameters</strong>
-        <br>
-        <br>
-        <label for="node-num">Number of nodes</label>
-        <br>
-        <input type="number" name="node-num" id="node-num" value="2"><br>
-        <label for="core-num">Number of cores</label>
-        <br>
-        <input type="number" name="core-num" id="core-num" value="1"><br>
-        <label for="runtime">Runtime</label>
-        <br>
-        <input type="number" name="runtime" id="runtime" value="0.5"><br>
-        <br>
-        <br>
-        <strong>HPC system</strong>
-        <br>
-        <br>
-        <input type="radio" name="marconi" disabled>
-        <label for="marconi">MARCONI</label>
-        <br>
-        <input type="radio" name="jureca" disabled>
-        <label for="jureca">JURECA</label>
-        <br>
-        <input type="radio" name="nsg" checked>
-        <label for="nsg">NeuroScience Gateway (NSG)</label>
-        <label for="username">Username</label>
-        <br>
-        <input id="username" size=15px required type="text" name="username">
-        <br>
-        <label for="password">Password</label>
-        <br>
-        <input id="password" size=15px required type="password" name="password">
-        <br>
-        <br>
-        <button id="apply-param" class="btn btn-primary">Apply</button>
+<!-- -->
+<div id="overlaywrapperwait" class="overlay-wrapper">
+    <div id="overlaywait" class="overlay-content" style="top:40%">
+        <i class="glyphicon glyphicon-refresh spinning lg"></i>
+        <div id="waitdynamictext" class="please-wait-text">Dynamic text</div>
+        <div class="please-wait-text">Please wait ...</div>
     </div>
-</form>
+</div>
 
-
+<!-- -->
+<div id="overlaywrapperop" class="overlay-wrapper">
+    <div id="overlayop" class="overlay-content" style="top:40%">
+        <div id="opdynamictext" class="please-wait-text">Message</div>
+    </div>
+</div>
+<!-- Please wait div -->
+<div id="overlaywrapper" class="overlay-wrapper">
+</div>
 <script type="text/javascript" src="{% static 'hh_neuron_builder/js/workflow.js' %}"></script>
 {% endblock  %}

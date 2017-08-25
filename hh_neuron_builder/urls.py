@@ -27,10 +27,11 @@ urlpatterns = [
     url(r'^get-nsg-job-list$', views.get_nsg_job_list),    
     url(r'^upload-to-naas$', views.upload_to_naas),    
     url(r'^copy-feature-files/(?P<featurefolder>.*)/$', views.copy_feature_files),
-    url(r'^fetch-opt-set-file/(?P<optimizationname>[_a-zA-Z0-9.]*)/$', views.fetch_opt_set_file),
+    url(r'^fetch-opt-set-file/(?P<source_opt_name>[_a-zA-Z0-9.]*)/$', views.fetch_opt_set_file),
     url(r'^model-loaded-flag$', views.model_loaded_flag),
     url(r'^delete-feature-files$', views.delete_feature_files),
     url(r'^delete-opt-files$', views.delete_opt_files),
+    url(r'^launch-optimization$', views.launch_optimization),
 ]
 
 if settings.DEBUG:
