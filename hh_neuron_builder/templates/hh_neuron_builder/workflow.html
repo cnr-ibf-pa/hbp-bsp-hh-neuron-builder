@@ -196,7 +196,7 @@
 
 <!-- "Please wait" message div -->
 <div id="overlaywrapperwait" class="overlay-wrapper">
-    <div id="overlaywait" class="overlay-content">
+    <div id="overlaywait" style="top:35%;" class="overlay-content">
         <i class="glyphicon glyphicon-refresh spinning lg"></i>
         <div id="waitdynamictext" class="please-wait-text"></div>
         <div class="please-wait-text">Please wait ...</div>
@@ -216,7 +216,7 @@
 
 <!-- Upload div -->
 <div id="overlaywrapperoptres" class="overlay-wrapper">
-    <div id="overlayoptres" class="overlay-content" >
+    <div id="overlayoptres" style="top:35%;" class="overlay-content" >
         <form id="uploadFileForm" action="" method="POST" enctype="multipart/form-data">{% csrf_token %}
             <div id="uploadTitleDiv" class="param-title-div">
             </div>
@@ -227,7 +227,7 @@
         </label>
         <br>
         <button type="button" id="cancel-upload-file-btn" class="btn btn-primary">Cancel</button>
-        <input type="submit" id="uploadOptResButton" name="upload_opt_res_button" class="btn btn-primary" value="Upload" />
+        <input type="submit" id="upload-opt-res-btn" name="upload_opt_res_button" class="btn btn-primary" value="Upload" />
         </form>
     </div>
 </div>

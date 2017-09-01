@@ -366,7 +366,7 @@ def upload_files(request, filetype = ""):
 
 
 def get_nsg_job_list(request):
-    return HttpResponse(json.dumps({"safa":"fff", "sadfsadfadasdfaasdfasdf":"fff"}), content_type="application/json") 
+    #return HttpResponse(json.dumps({"safa":"fff", "sadfsadfadasdfaasdfasdf":"fff"}), content_type="application/json") 
     hpc_sys_fetch = request.session['hpc_sys_fetch'] 
     if hpc_sys_fetch == "nsg":
         username_fetch = request.session['username_fetch']
@@ -381,7 +381,7 @@ def get_nsg_job_list(request):
     return HttpResponse(json.dumps(resp), content_type="application/json") 
 
 def get_nsg_job_details(request, jobid=""):
-    return HttpResponse(json.dumps({"job_id": jobid, "job_date_submitted":"2017-07-24T16:40:21-07:00", "job_stage":"COMPLETED"}), content_type="application/json") 
+    #return HttpResponse(json.dumps({"job_id": jobid, "job_date_submitted":"2017-07-24T16:40:21-07:00", "job_stage":"COMPLETED"}), content_type="application/json") 
 
     hpc_sys_fetch = request.session['hpc_sys_fetch'] 
     if hpc_sys_fetch == "nsg":

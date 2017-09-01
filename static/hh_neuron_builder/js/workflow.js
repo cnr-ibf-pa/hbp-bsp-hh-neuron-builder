@@ -25,7 +25,9 @@ $(document).ready(function(){
     // manage form to upload simulation zip file 
     var $uploadFileForm = $('#uploadFileForm');
     $uploadFileForm.submit(function(e){
+        closeUploadDiv();
         displayPleaseWaitDiv();
+        changeMsgPleaseWaitDiv("Uploading file to the server");
         var uploadFormData = new FormData($(this)[0]);
         $.ajax({
             url: $(this).attr("action"),
@@ -33,12 +35,12 @@ $(document).ready(function(){
             type: 'POST',
             contentType: false,
             processData: false,
+            async: false,
             success: function(resp){
                 checkConditions();
             },  
         });
         e.preventDefault();
-        closeUploadDiv();
         closePleaseWaitDiv();
     });
 
@@ -49,6 +51,7 @@ $(document).ready(function(){
     // manage optimization settings buttons action
     document.getElementById("opt-set-btn").onclick = openParameterDiv;
     document.getElementById("cancel-param-btn").onclick = closeParameterDiv;
+
 
     // manage simulation run button
     document.getElementById("run-sim-btn").onclick = inSilicoPage;
@@ -63,9 +66,9 @@ $(document).ready(function(){
     document.getElementById("opt-db-hpc-btn").onclick = chooseOptModel;
 
     // manage upload optimization settings button
-    document.getElementById("opt-up-btn").onclick = displayUploadOptSet;
+    document.getElementById("opt-up-btn").onclick = displayOptSetUploadDiv;
     document.getElementById("cancel-upload-file-btn").onclick = closeUploadDiv;
-    
+
     // manage buttons for insertion of fetch parameters
     document.getElementById("opt-fetch-btn").onclick = displayFetchParamDiv;
     document.getElementById("cancel-param-fetch-btn").onclick = closeFetchParamDiv;
@@ -78,7 +81,7 @@ $(document).ready(function(){
 
     // manage button for deleting optimization setting files
     document.getElementById("del-opt").onclick = deleteOptFiles;
-    
+
     // manage button for running optimization
     document.getElementById("launch-opt-btn").onclick = runOptimization;
 });
@@ -261,7 +264,7 @@ function featUploadButton() {
     document.getElementById("opt-res-file").accept = ".json";
     var type = "feat";
     var msg = 'Upload features files ("features.json" and "protocols.json")';
-    displayUploadOptSet(type, msg);
+    openUploadDiv(type, msg);
 }
 
 // Manage optimization result upload button
@@ -270,11 +273,22 @@ function displayOptResUploadDiv() {
     document.getElementById("opt-res-file").accept = ".zip";
     var type = "optrun";
     var msg = 'Upload optimization results (".zip")';
-    displayUploadOptSet(type, msg);
+    openUploadDiv(type, msg);
 }
 
+
+// Manage optimization result upload button
+function displayOptSetUploadDiv() {
+    document.getElementById("opt-res-file").multiple = false;
+    document.getElementById("opt-res-file").accept = ".zip";
+    var type = "optset";
+    var msg = 'Upload optimization settings (".zip")';
+    openUploadDiv(type, msg);
+}
+
+
 //
-function displayUploadOptSet(type, msg) {
+function openUploadDiv(type, msg) {
     var uploadForm = document.getElementById("uploadFileForm");
     uploadForm.setAttribute("action","/hh-neuron-builder/upload-files/" + type + "/");
 
@@ -332,7 +346,7 @@ function displayJobInfo() {
                     job_id_span.className = "simple-span w-30pc center-container row-center-container";
                     var textnode = document.createTextNode(crr_job_json['job_id']); 
                     job_id_span.appendChild(textnode)
-                    crr_div.appendChild(job_id_span);
+                        crr_div.appendChild(job_id_span);
                     //
                     var job_date_span = document.createElement("SPAN");
                     job_date_span.className = "simple-span w-20pc center-container row-center-container";
@@ -345,14 +359,14 @@ function displayJobInfo() {
                     var job_status = document.createTextNode(crr_job_json['job_stage']); 
                     job_status_span.appendChild(job_status);
                     crr_div.appendChild(job_status_span)
-                    // 
-                    if (crr_job_json['job_stage'] == "COMPLETED") {
-                        job_status_span.style.backgroundColor = 'green';
-                        var job_download_button = document.createElement("button");
-                        job_download_button.innerHTML = "Download";
-                        job_download_button.className = "btn btn-default";
-                        crr_div.appendChild(job_download_button);
-                    }
+                        // 
+                        if (crr_job_json['job_stage'] == "COMPLETED") {
+                            job_status_span.style.backgroundColor = 'green';
+                            var job_download_button = document.createElement("button");
+                            job_download_button.innerHTML = "Download";
+                            job_download_button.className = "btn btn-default";
+                            crr_div.appendChild(job_download_button);
+                        }
 
                     document.getElementById("job-list-div").appendChild(crr_div)
                         if (cnrt == job_list_len - 1) {
