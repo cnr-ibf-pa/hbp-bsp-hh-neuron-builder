@@ -34,7 +34,7 @@
                 </div>
                 <div class="center-container">
                     <button type="button" id="opt-db-hpc-btn" title="Use optimization files from the database" class="btn btn-default" >Choose from database</button>
-                    <button type="button" id="opt-up-btn" class="btn btn-default" disabled>Upload files</button>
+                    <button type="button" id="opt-up-btn" class="btn btn-default">Upload file</button>
                 </div>
                 <div class="center-container">
                     <button id="edit-opt" type="button" class="btn btn-link" disabled>Edit optimization files</button>
@@ -82,7 +82,7 @@
                 </div>
                 <div class="center-container">
                     <button id="opt-fetch-btn" type="button" class="btn btn-default" disabled>Fetch results</button>
-                    <button id="opt-res-up-btn" type="button" class="btn btn-default">Upload files</button>
+                    <button id="opt-res-up-btn" type="button" class="btn btn-default">Upload file</button>
                 </div>
                 <div id="opt-res-bar" class="status-bar center-container">
                 </div>
@@ -206,54 +206,32 @@
 <!-- Fetched jobs div -->
 <div id="overlaywrapperjobs" class="overlay-wrapper">
     <div id="overlayjobs" class="overlay-content width-80p">
-        <div id="job-list-div">
+        <div id="job-list-div" class="center-container row-center-container">
+            <div id="fetch-job-title" class="param-title-div">
+                <strong>Download job results</strong>
+            </div>
         </div>
     </div>
 </div>
 
-<!-- Upload feature files div -->
-
-<div id="overlaywrapperfeature" class="overlay-wrapper">
-    <div id="overlayfeature" class="overlay-content" >
-        <form id="uploadFeatForm" action="/hh-neuron-builder/upload-files/feat/" method="POST" enctype="multipart/form-data">{% csrf_token %}
-            <div class="param-title-div">
-                <strong>
-                    Upload feature files "features.json" and "protocols.json"
-                </strong>
-            </div>
-            <br>
-            <label for="feat-files">
-                <input type="file" name="feat-files" id="feat-files" class="btn btn-default" accept=".json" multiple/>
-                <span class="custom-file-control"></span>
-            </label>
-            <br>
-            <button id="cancel-feature-btn" class="btn btn-primary closebtn">Cancel</button>
-            <input type="submit" id="uploadFeatButton" name="upload_feat_button" class="btn btn-primary" value="Upload" />
-        </form>
-    </div>
-</div>
-
-
-
+<!-- Upload div -->
 <div id="overlaywrapperoptres" class="overlay-wrapper">
     <div id="overlayoptres" class="overlay-content" >
-        <form id="uploadOptResForm" action="/hh-neuron-builder/upload-files/optrun/" method="POST" enctype="multipart/form-data">{% csrf_token %}
-            <div class="param-title-div">
-                <strong>
-                    Upload optimization results (.zip)"
-                </strong>
+        <form id="uploadFileForm" action="" method="POST" enctype="multipart/form-data">{% csrf_token %}
+            <div id="uploadTitleDiv" class="param-title-div">
             </div>
-            <br>
-            <label for="opt-res-file">
-                <input type="file" name="opt-res-file" id="opt-res-file" class="btn btn-default" accept=".zip"/>
-                <span class="custom-file-control"></span>
-            </label>
-            <br>
-            <button id="cancel-opt-res-btn" class="btn btn-primary closebtn">Cancel</button>
-            <input type="submit" id="uploadOptResButton" name="upload_opt_res_button" class="btn btn-primary" value="Upload" />
+        <br>
+        <label for="opt-res-file">
+            <input type="file" name="opt-res-file" id="opt-res-file" class="btn btn-default" accept=".zip"/>
+            <span class="custom-file-control"></span>
+        </label>
+        <br>
+        <button type="button" id="cancel-upload-file-btn" class="btn btn-primary">Cancel</button>
+        <input type="submit" id="uploadOptResButton" name="upload_opt_res_button" class="btn btn-primary" value="Upload" />
         </form>
     </div>
 </div>
+
 
 <script type="text/javascript" src="{% static 'hh_neuron_builder/js/workflow.js' %}"></script>
 {% endblock  %}

@@ -3,8 +3,8 @@ $(document).ready(function(){
     checkConditions();
 
     // manage form for submitting run parameters
-    var $form = $('#submitRunParam');
-    $form.submit(function(){
+    var $formrunparam = $('#submitRunParam');
+    $formrunparam.submit(function(){
         $.post($(this).attr('action'), $(this).serialize(), function(response){
             closeParameterDiv();
             checkConditions();
@@ -13,8 +13,8 @@ $(document).ready(function(){
     });
 
     // manage form for submitting fetch parameters
-    var $form = $('#submitFetchParam');
-    $form.submit(function(){
+    var $formfetchparam = $('#submitFetchParam');
+    $formfetchparam.submit(function(){
         $.post($(this).attr('action'), $(this).serialize(), function(response){
             closeFetchParamDiv();
             checkConditions();
@@ -23,8 +23,8 @@ $(document).ready(function(){
     });
 
     // manage form to upload simulation zip file 
-    var $uploadForm = $('#uploadOptResForm');
-    $uploadForm.submit(function(e){
+    var $uploadFileForm = $('#uploadFileForm');
+    $uploadFileForm.submit(function(e){
         displayPleaseWaitDiv();
         var uploadFormData = new FormData($(this)[0]);
         $.ajax({
@@ -38,45 +38,48 @@ $(document).ready(function(){
             },  
         });
         e.preventDefault();
-        closeOptResUploadDiv();
+        closeUploadDiv();
         closePleaseWaitDiv();
-    });
-
-
-    // manage form to upload feature files (i.e. features.json, protocols.json)
-    var $uploadFeatForm = $('#uploadFeatForm');
-    $uploadFeatForm.submit(function(e){
-        var uploadFeatFormData = new FormData($(this)[0]);
-        $.ajax({
-            url: $(this).attr("action"),
-            data:uploadFeatFormData,
-            type: 'POST',
-            contentType: false,
-            processData: false,
-            success: function(resp){
-                checkConditions();
-            },  
-        });
-        e.preventDefault();
-        closeFeatureUploadDiv() 
     });
 
     // assign functions to buttons' click
     document.getElementById("test-button").onclick = displayFetchParamDiv;
     document.getElementById("test-back-button").onclick = displayJobInfoDiv;
+
+    // manage optimization settings buttons action
     document.getElementById("opt-set-btn").onclick = openParameterDiv;
     document.getElementById("cancel-param-btn").onclick = closeParameterDiv;
+
+    // manage simulation run button
     document.getElementById("run-sim-btn").onclick = inSilicoPage;
+
+    // manage extract features button
     document.getElementById("feat-efel-btn").onclick = efelPage;
-    document.getElementById("feat-up-btn").onclick = displayFeatUploadDiv;
-    document.getElementById("cancel-feature-btn").onclick = closeFeatureUploadDiv;
+
+    // manage feature upload buttons
+    document.getElementById("feat-up-btn").onclick = featUploadButton;
+
+    // manage choose optimization settings button
     document.getElementById("opt-db-hpc-btn").onclick = chooseOptModel;
-    document.getElementById("opt-up-btn").onclick = reloadCurrentPage;
+
+    // manage upload optimization settings button
+    document.getElementById("opt-up-btn").onclick = displayUploadOptSet;
+    document.getElementById("cancel-upload-file-btn").onclick = closeUploadDiv;
+    
+    // manage buttons for insertion of fetch parameters
     document.getElementById("opt-fetch-btn").onclick = displayFetchParamDiv;
     document.getElementById("cancel-param-fetch-btn").onclick = closeFetchParamDiv;
+
+    // manage optimization results upload button
     document.getElementById("opt-res-up-btn").onclick = displayOptResUploadDiv;
+
+    // manage button for deleting features
     document.getElementById("del-feat").onclick = deleteFeatureFiles;
+
+    // manage button for deleting optimization setting files
     document.getElementById("del-opt").onclick = deleteOptFiles;
+    
+    // manage button for running optimization
     document.getElementById("launch-opt-btn").onclick = runOptimization;
 });
 
@@ -253,28 +256,38 @@ function hideOpEndDiv() {
 }
 
 // Manage feature files upload button
-function displayFeatUploadDiv() {
-    document.getElementById("overlaywrapperfeature").style.display = "block";
-    document.getElementById("mainDiv").style.pointerEvents = "none";
-    document.body.style.overflow = "hidden";
-}
-
-// Manage feature files upload button
-function closeFeatureUploadDiv() {
-    document.getElementById("overlaywrapperfeature").style.display = "none";
-    document.getElementById("mainDiv").style.pointerEvents = "auto";
-    document.body.style.overflow = "auto";
+function featUploadButton() {
+    document.getElementById("opt-res-file").multiple = true;
+    document.getElementById("opt-res-file").accept = ".json";
+    var type = "feat";
+    var msg = 'Upload features files ("features.json" and "protocols.json")';
+    displayUploadOptSet(type, msg);
 }
 
 // Manage optimization result upload button
 function displayOptResUploadDiv() {
+    document.getElementById("opt-res-file").multiple = false;
+    document.getElementById("opt-res-file").accept = ".zip";
+    var type = "optrun";
+    var msg = 'Upload optimization results (".zip")';
+    displayUploadOptSet(type, msg);
+}
+
+//
+function displayUploadOptSet(type, msg) {
+    var uploadForm = document.getElementById("uploadFileForm");
+    uploadForm.setAttribute("action","/hh-neuron-builder/upload-files/" + type + "/");
+
+    var uploadTitleDiv = document.getElementById("uploadTitleDiv");
+    uploadTitleDiv.innerHTML = "<strong>" + msg + "</strong>";
+
     document.getElementById("overlaywrapperoptres").style.display = "block";
     document.getElementById("mainDiv").style.pointerEvents = "none";
     document.body.style.overflow = "hidden";
 }
 
 // Manage feature files upload button
-function closeOptResUploadDiv() {
+function closeUploadDiv() {
     document.getElementById("overlaywrapperoptres").style.display = "none";
     document.getElementById("mainDiv").style.pointerEvents = "auto";
     document.body.style.overflow = "auto";
@@ -313,29 +326,31 @@ function displayJobInfo() {
                     var crr_job_json = job_details;
                     //
                     var crr_div = document.createElement("DIV");
+                    crr_div.className = "center-container row-center-container";
+                    //
                     var job_id_span = document.createElement("SPAN");
-                    job_id_span.className = "simple-span";
+                    job_id_span.className = "simple-span w-30pc center-container row-center-container";
                     var textnode = document.createTextNode(crr_job_json['job_id']); 
                     job_id_span.appendChild(textnode)
                     crr_div.appendChild(job_id_span);
                     //
                     var job_date_span = document.createElement("SPAN");
-                    job_date_span.className = "simple-span";
+                    job_date_span.className = "simple-span w-20pc center-container row-center-container";
                     var job_date = document.createTextNode(crr_job_json['job_date_submitted']);
                     job_date_span.appendChild(job_date);
                     crr_div.appendChild(job_date_span);
                     //
                     var job_status_span = document.createElement("SPAN");
-                    job_status_span.className = "simple-span";
+                    job_status_span.className = "simple-span w-15pc center-container row-center-container";
                     var job_status = document.createTextNode(crr_job_json['job_stage']); 
                     job_status_span.appendChild(job_status);
                     crr_div.appendChild(job_status_span)
                     // 
                     if (crr_job_json['job_stage'] == "COMPLETED") {
                         job_status_span.style.backgroundColor = 'green';
-                        var job_download_button = document.createElement("BUTTON");
-                        job_download_button.setAttribute('content', 'Download');
-                        job_download_button.setAttribute('class', 'btn btn-link');
+                        var job_download_button = document.createElement("button");
+                        job_download_button.innerHTML = "Download";
+                        job_download_button.className = "btn btn-default";
                         crr_div.appendChild(job_download_button);
                     }
 
@@ -352,3 +367,4 @@ function displayJobInfo() {
     });
     return true;
 }
+

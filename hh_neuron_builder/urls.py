@@ -33,7 +33,7 @@ urlpatterns = [
     url(r'^delete-feature-files$', views.delete_feature_files),
     url(r'^delete-opt-files$', views.delete_opt_files),
     url(r'^launch-optimization$', views.launch_optimization),
-    url(r'^upload-files/(?P<filetype>feat|optrun|optsetmod)/$', views.upload_files),
+    url(r'^upload-files/(?P<filetype>feat|optrun|optset)/$', views.upload_files),
     #url(r'^upload-files$', views.upload_files),
 ]
 

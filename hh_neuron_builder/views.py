@@ -326,13 +326,17 @@ def launch_optimization(request):
 
 
 def upload_files(request, filetype = ""):
+    filename_list = request.FILES.getlist('opt-res-file')
+
     if filetype == "feat":
-        filename_list = request.FILES.getlist('feat-files')
         final_res_folder = request.session['user_dir_data_feat']
         ext = '.json'
 
+    elif filetype == "optset":
+        final_res_folder = request.session['user_dir_data_opt_set']
+        ext = '.zip'
+
     elif filetype == "optrun":
-        filename_list = request.FILES.getlist('opt-res-file')
         final_res_folder = request.session['user_dir_results_opt']
         ext = '.zip'
 
@@ -362,6 +366,7 @@ def upload_files(request, filetype = ""):
 
 
 def get_nsg_job_list(request):
+    return HttpResponse(json.dumps({"safa":"fff", "sadfsadfadasdfaasdfasdf":"fff"}), content_type="application/json") 
     hpc_sys_fetch = request.session['hpc_sys_fetch'] 
     if hpc_sys_fetch == "nsg":
         username_fetch = request.session['username_fetch']
@@ -376,6 +381,7 @@ def get_nsg_job_list(request):
     return HttpResponse(json.dumps(resp), content_type="application/json") 
 
 def get_nsg_job_details(request, jobid=""):
+    return HttpResponse(json.dumps({"job_id": jobid, "job_date_submitted":"2017-07-24T16:40:21-07:00", "job_stage":"COMPLETED"}), content_type="application/json") 
 
     hpc_sys_fetch = request.session['hpc_sys_fetch'] 
     if hpc_sys_fetch == "nsg":
