@@ -33,18 +33,27 @@
     text-align: center;
 }
 
+.overlay-content.width-80p {
+    max-width: 80%;
+    text-align: left;
+}
 
 .param-title-div {
     background-color: rgba(210, 210, 210, 0.8);
     font-size: 16px;
     padding: 5px;
+    margin: 3px;
 }
 
 .status-bar {
     background: white;
+    color: white;
     -webkit-transition: all 1.5s ease;
     -moz-transition: all 1.5s ease;
     transition: all 1.5s ease;
+    height: 20px;
+    padding: 1.5px;
+    margin-top: 10px;
 }
 
 .container-shadow {
@@ -103,6 +112,11 @@
     background-color: rgba(240,240,240, 1);
 }
 
+.simple-span {
+    margin: 20px;
+    padding: 4px;
+}
+
 /**************/
 
 /* buttons */
@@ -158,6 +172,7 @@
 /* text */
 
 .please-wait-text {
+    margin: 6px;
     font-size: 16px;
 
 }

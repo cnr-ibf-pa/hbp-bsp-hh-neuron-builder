@@ -54,6 +54,9 @@ def home(request):
     request.session.pop('username', None)
     request.session.pop('password', None)
     request.session.pop('hpc_sys', None)
+    request.session.pop('username_fetch', None)
+    request.session.pop('password_fetch', None)
+    request.session.pop('hpc_sys_fetch', None)
 
     return render(request, 'hh_neuron_builder/home.html')
 
@@ -173,15 +176,16 @@ def run_optimization(request):
     source_opt_zip = request.session['source_opt_zip']
     hpc_sys = request.session['hpc_sys']
     source_feat = request.session['user_dir_data_feat']
+    opt_res_dir = request.session['user_dir_results_opt']
 
     # build new optimization name
     idx = source_opt_name.rfind('_')
     opt_name = source_opt_name[:idx] + "_" + time_info
 
     if hpc_sys == "nsg":
-        nsg_obj = hpc_job_manager.Nsg(username, password, core_num, node_num, \
-                runtime, gennum, offsize, dest_dir, source_opt_zip, opt_name, \
-                source_feat)
+        nsg_obj = hpc_job_manager.Nsg(username=username, password=password, core_num=core_num, node_num=node_num, \
+                runtime=runtime, gennum=gennum, offsize=offsize, dest_dir=dest_dir, source_opt_zip=source_opt_zip, opt_name=opt_name, \
+                source_feat=source_feat, opt_res_dir=opt_res_dir)
         nsg_obj.createzip()
         resp = nsg_obj.runNSG()
         if resp['status_code'] == 200:
@@ -230,8 +234,6 @@ def get_local_optimization_list(request):
     return HttpResponse(json.dumps(final_local_opt_list), content_type="application/json")
 
 
-def get_nsg_job_list(request):
-    return HttpResponse("")
 
 def upload_to_naas(request):
     res_folder = request.session['user_dir_results_opt']
@@ -265,6 +267,18 @@ def submit_run_param(request):
     return HttpResponse(json.dumps({"response": "nothing"}), content_type="application/json")
 
 
+def submit_fetch_param(request):
+    """
+    Save user's optimization parameters
+    """
+    #selected_traces_rest = request.POST.get('csrfmiddlewaretoken')
+    form_data = request.POST
+    request.session['username_fetch'] = form_data['username_fetch']
+    request.session['password_fetch'] = form_data['password_fetch']
+    request.session['hpc_sys_fetch'] = form_data['hpc_sys_fetch']
+
+    return HttpResponse(json.dumps({"response": "nothing"}), content_type="application/json")
+
 def check_cond_exist(request):
     """
     Check if conditions for performing steps are present.
@@ -276,7 +290,8 @@ def check_cond_exist(request):
     data_feat = request.session['user_dir_data_feat']
     data_opt = request.session['user_dir_data_opt_set']
     result_opt = request.session['user_dir_results_opt']
-    if not os.listdir(data_feat) == []:
+    if os.path.isfile(os.path.join(data_feat, "features.json")) and \
+        os.path.isfile(os.path.join(data_feat, "protocols.json")):
         response['feat'] = True
     if not os.listdir(data_opt) == []:
         response['opt_files'] = True
@@ -290,29 +305,6 @@ def check_cond_exist(request):
 
     return HttpResponse(json.dumps(response), content_type="application/json")
 
-# upload .zip file for model upload
-def upload_run_model(request):
-    filename_list = request.FILES.getlist('opt-run-file')
-    if not filename_list:
-        return HttpResponse(json.dumps({"resp":False}), content_type="application/json") 
-
-    firstfile = filename_list[0]
-    filename = filename_list[0].name
-    final_res_folder = request.session['user_dir_results_opt']
-    if os.listdir(final_res_folder):
-        shutil.rmtree(final_res_folder)
-        os.makedirs(final_res_folder)
-    final_res_file_name = os.path.join(final_res_folder, filename)
-    final_res_file = open(final_res_file_name, 'w')
-    if firstfile.multiple_chunks():
-        for chunk in firstfile.chunks():
-            final_res_file.write(chunk)
-        final_res_file.close()
-    else:
-        final_res_file.write(firstfile.read())
-        final_res_file.close()
-
-    return HttpResponse(json.dumps({"resp":"response"}), content_type="application/json") 
 
 
 # delete feature files
@@ -331,3 +323,69 @@ def delete_opt_files(request):
 
 def launch_optimization(request):
     pass
+
+
+def upload_files(request, filetype = ""):
+    if filetype == "feat":
+        filename_list = request.FILES.getlist('feat-files')
+        final_res_folder = request.session['user_dir_data_feat']
+        ext = '.json'
+
+    elif filetype == "optrun":
+        filename_list = request.FILES.getlist('opt-res-file')
+        final_res_folder = request.session['user_dir_results_opt']
+        ext = '.zip'
+
+    if not filename_list:
+        return HttpResponse(json.dumps({"resp":False}), content_type="application/json") 
+
+    #if os.listdir(final_res_folder):
+    #    shutil.rmtree(final_res_folder)
+    #    os.makedirs(final_res_folder)
+
+    for k in filename_list:
+        filename = k.name
+        if not filename.endswith(ext):
+            continue
+        final_res_file = os.path.join(final_res_folder, filename)
+        final_file = open(final_res_file, 'w')
+        if k.multiple_chunks():
+            for chunk in k.chunks():
+                final_file.write(chunk)
+            final_file.close()
+        else:
+            final_file.write(k.read())
+            final_file.close()
+
+    return HttpResponse(json.dumps({"resp":"Success"}), content_type="application/json") 
+
+
+
+def get_nsg_job_list(request):
+    hpc_sys_fetch = request.session['hpc_sys_fetch'] 
+    if hpc_sys_fetch == "nsg":
+        username_fetch = request.session['username_fetch']
+        password_fetch = request.session['password_fetch']
+        opt_res_dir = request.session['user_dir_results_opt']
+
+        nsg_obj = hpc_job_manager.Nsg(username_fetch=username_fetch, password_fetch=password_fetch, \
+               opt_res_dir=opt_res_dir) 
+
+        resp = nsg_obj.fetch_job_list()
+
+    return HttpResponse(json.dumps(resp), content_type="application/json") 
+
+def get_nsg_job_details(request, jobid=""):
+
+    hpc_sys_fetch = request.session['hpc_sys_fetch'] 
+    if hpc_sys_fetch == "nsg":
+        username_fetch = request.session['username_fetch']
+        password_fetch = request.session['password_fetch']
+        opt_res_dir = request.session['user_dir_results_opt']
+
+        nsg_obj = hpc_job_manager.Nsg(username_fetch=username_fetch, password_fetch=password_fetch, \
+               opt_res_dir=opt_res_dir) 
+
+        resp = nsg_obj.fetch_job_details(jobid)
+    pprint.pprint(resp)
+    return HttpResponse(json.dumps(resp), content_type="application/json") 

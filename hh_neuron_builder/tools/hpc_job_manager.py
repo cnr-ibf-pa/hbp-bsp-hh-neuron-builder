@@ -13,12 +13,14 @@ import collections
 import re
 
 class Nsg:
-    def __init__(self, username, password, core_num, node_num, runtime, gennum, offsize, dest_dir, source_opt_zip, opt_name, source_feat):
+    def __init__(self, username="", password="", core_num=0, node_num=0, runtime=0, gennum=0, offsize=0, dest_dir="", source_opt_zip="", opt_name="", source_feat="", username_fetch="", password_fetch="", opt_res_dir=""):
         """
         Initialization function
         """
         self.username = username
         self.password = password
+        self.username_fetch = username_fetch
+        self.password_fetch = password_fetch
         self.core_num = core_num
         self.node_num = node_num
         self.runtime = runtime
@@ -33,6 +35,19 @@ class Nsg:
         self.key = 'Application_Fitting-DA5A3D2F8B9B4A5D964D4D2285A49C57'
         self.url = 'https://nsgr.sdsc.edu:8443/cipresrest/v1'
         self.tool = 'BLUEPYOPT_TG'
+
+    def setFetchUsername(self, username_fetch):
+        """
+        Set username to fetch jobs from hpc systems
+        """
+        self.username_fetch = username_fetch
+    
+
+    def setFetchPassword(self, password_fetch):
+        """
+        Set password to fetch jobs from hpc systems
+        """
+        self.password_fetch = password_fetch
 
 
     def runNSG(self):
@@ -88,8 +103,8 @@ class Nsg:
         # read/set NSG connection parameters
         KEY = self.key
         URL = self.url
-        CRA_USER = self.username
-        PASSWORD = self.password
+        CRA_USER = self.username_fetch
+        PASSWORD = self.password_fetch
         headers = {'cipres-appkey' : KEY}
 
         # 
@@ -107,7 +122,7 @@ class Nsg:
         return job_list_dict
 
 
-    def fetch_job_details(self, job_id, job_list_dict):
+    def fetch_job_details(self, job_id):
         """
         Retrieve details from individual jobs from the job list given as argument
         Current status, current status timestamp and submission timestamp are fetched for every job
@@ -116,8 +131,8 @@ class Nsg:
         # read/set NSG connection parameters
         KEY = self.key
         URL = self.url
-        CRA_USER = self.username
-        PASSWORD = self.password
+        CRA_USER = self.username_fetch
+        PASSWORD = self.password_fetch
         headers = {'cipres-appkey' : KEY}
 
         r_job = requests.get(URL + "/job/" + CRA_USER + '/' + job_id, auth=(CRA_USER, PASSWORD), headers=headers)
@@ -129,12 +144,14 @@ class Nsg:
         job_stage = job_messages[-1].find('stage').text
         job_stage_ts = job_messages[-1].find('timestamp').text
             
-        job_list_dict[job_id]['job_date_submitted'] = job_date_submitted
-        job_list_dict[job_id]['job_res_url'] = job_res_url
-        job_list_dict[job_id]['job_stage'] = job_stage
-        job_list_dict[job_id]['job_stage_ts'] = job_stage_ts
+        job_info_dict = collections.OrderedDict()
+        job_info_dict["job_id"] = job_id 
+        job_info_dict["job_date_submitted"] = job_date_submitted
+        job_info_dict["job_res_url"] = job_res_url
+        job_info_dict["job_stage"] = job_stage
+        job_info_dict["job_stage_ts"] = job_stage_ts
             
-        return "" 
+        return job_info_dict 
 
 
     def fetch_job_results(self, job_res_url, dest_dir = ""):
@@ -175,21 +192,26 @@ class Nsg:
         """
         Create zip file to be submitted to NSG 
         """
+
         # folder named as the optimization
         if not os.path.exists(self.fin_opt_folder):
             os.makedirs(self.fin_opt_folder)
         else:
             shutil.rmtree(self.fin_opt_folder)
-
+            os.makedirs(self.fin_opt_folder)
+        
+        # unzip source optimization file 
         z = zipfile.ZipFile(self.source_opt_zip, 'r')
         z.extractall(path = self.fin_opt_folder)
         z.close()
         
+        # change name to the optimization folder
         source_opt_name = os.path.basename(self.source_opt_zip)[:-4]
         crr_dest_dir = os.path.join(self.fin_opt_folder, source_opt_name)
         fin_dest_dir = os.path.join(self.fin_opt_folder, self.opt_name)
         shutil.move(crr_dest_dir, fin_dest_dir)
 
+        # copy feature files to the optimization folder
         features_file = os.path.join(self.source_feat, 'features.json')
         protocols_file = os.path.join(self.source_feat, 'protocols.json') 
         fin_feat_path = os.path.join(fin_dest_dir, 'config', 'features.json')
@@ -198,11 +220,43 @@ class Nsg:
             os.remove(fin_feat_path)
         if os.path.exists(fin_prot_path):
             os.remove(fin_prot_path)
-
-        #
         shutil.copy(features_file, os.path.join(fin_dest_dir, 'config'))
         shutil.copy(protocols_file, os.path.join(fin_dest_dir, 'config'))
         
+        # change feature files primary keys
+        fin_morph_path = os.path.join(fin_dest_dir, 'config', 'morph.json')
+        with open(fin_morph_path, 'r') as morph_file:
+            morph_json = json.load(morph_file)
+            morph_file.close()
+        with open(fin_feat_path, 'r') as feat_file:
+            feat_json = json.load(feat_file)
+            feat_file.close()
+        with open(fin_prot_path, 'r') as prot_file:
+            prot_json = json.load(prot_file)
+            prot_file.close()
+            
+        os.remove(fin_feat_path)
+        os.remove(fin_prot_path)
+
+        fin_key = morph_json.keys()[0]
+        feat_key = feat_json.keys()[0]
+        prot_key = prot_json.keys()[0]
+        
+        feat_json[fin_key] = feat_json.pop(feat_key)
+        prot_json[fin_key] = prot_json.pop(prot_key)
+
+        # save feature files with changed keys
+        with open(fin_feat_path, 'w') as feat_file:
+            feat_file.write(json.dumps(feat_json, indent=2))
+            feat_file.close()
+
+        # save protocol files with changed keys
+        with open(fin_prot_path, 'w') as prot_file:
+            prot_file.write(json.dumps(prot_json, indent=2))
+            prot_file.close()
+
+
+        # remove unwanted files from the folder to be zipped
         for item in os.listdir(fin_dest_dir):
             if item.startswith('init') or item.endswith('.zip') \
             or item.startswith('__MACOSX'):
@@ -216,9 +270,26 @@ class Nsg:
         f.close()
 
         os.chdir(self.fin_opt_folder)
+
+        # build optimization folder name
+        crr_dir_opt = os.path.join('.', self.opt_name)
+
         foo = zipfile.ZipFile(self.zfName, 'w', zipfile.ZIP_DEFLATED)
 
-        crr_dir_opt = os.path.join('.', self.opt_name)
+        checkpoints_dir = os.path.join(crr_dir_opt, 'checkpoints')
+        figures_dir = os.path.join(crr_dir_opt, 'figures')
+        r_0_dir = os.path.join(crr_dir_opt, 'r_0')
+
+
+        if os.path.exists(checkpoints_dir):
+            shutil.rmtree(checkpoints_dir)
+            os.makedirs(checkpoints_dir)
+        if os.path.exists(figures_dir):
+            shutil.rmtree(figures_dir)
+            os.makedirs(figures_dir)
+        if os.path.exists(r_0_dir):
+            shutil.rmtree(r_0_dir)
+
         for root, dirs, files in os.walk('.'):
             if (root == os.path.join(crr_dir_opt, 'morphology')) or \
             (root == os.path.join(crr_dir_opt, 'config')) or \

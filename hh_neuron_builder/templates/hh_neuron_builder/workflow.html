@@ -15,13 +15,13 @@
                 </div>
                 <div class="center-container">
                     <button type="button" id="feat-efel-btn" class="btn btn-default" >Extract features</button>
-                    <button type="button" id="feat-up-btn" class="btn btn-default" disabled>Load feature files</button>
+                    <button type="button" id="feat-up-btn" class="btn btn-default">Upload files</button>
                 </div>
                 <div class="center-container">
                     <button id="edit-feat" type="button" class="btn btn-link" disabled>Edit features files</button>
                     <button id="del-feat" type="button" class="btn btn-link" disabled>Delete feature files</button>
                 </div>
-                <div id="feat-bar" class="status-bar center-container">
+                <div id="feat-bar" class="status-bar center-container row-center-container">
                 </div>
             </div>
         </div>
@@ -34,7 +34,7 @@
                 </div>
                 <div class="center-container">
                     <button type="button" id="opt-db-hpc-btn" title="Use optimization files from the database" class="btn btn-default" >Choose from database</button>
-                    <button type="button" id="opt-up-btn" class="btn btn-default" disabled>Upload</button>
+                    <button type="button" id="opt-up-btn" class="btn btn-default" disabled>Upload files</button>
                 </div>
                 <div class="center-container">
                     <button id="edit-opt" type="button" class="btn btn-link" disabled>Edit optimization files</button>
@@ -59,14 +59,14 @@
             </div>
         </div>
 
-        <div class="center-container">
-            <button type="button" id="launch-opt-btn" class="width-step-div main-panel-btn btn btn-lg" disabled>Launch optimization</button>
-        </div>
-
         <div id="optlaunchmessagediv" class="center-container row-center-container">
             <img id="optlaunchimg" src="{% static "images/ko_red.png" %}" class="ok-ko-btn">
             <span id="optlaunchtextspan">No optimization launched</span>
         </div>
+        <div class="center-container">
+            <button type="button" id="launch-opt-btn" class="width-step-div main-panel-btn btn btn-lg" disabled>Launch optimization</button>
+        </div>
+
     </div>
 
     <!-- Single cell simulation run panel -->
@@ -81,25 +81,8 @@
                     <h3>Optimization results</h3> 
                 </div>
                 <div class="center-container">
-                    <button id="opt-fetch-btn" type="button" class="btn btn-default" disabled>Fetch optimization results</button>
-                </div>
-                <div class="center-container">
-                    <form id="uploadForm" action="/hh-neuron-builder/upload-run-model/" method="POST" enctype="multipart/form-data">{% csrf_token %}
-                        <!--
-                            <button id="up-sim-model" type="button">Upload model (.zip)</button>
-                        -->
-                        <label class="btn btn-default">
-                            Browse files...
-                            <input type="file" name="opt-run-file" id="opt-run-file" accept=".zip" style="display:none"/>
-                            <span class="custom-file-control"></span>
-                        </label>
-
-                        <input type="submit" id="upload_button" name="upload_button_name" class="btn btn-default" value="Upload" />
-                    </form>
-                    <div class = "center-container">
-                        <div id="res-upload-info-div" style="font-size:16px">
-                        </div>
-                    </div>
+                    <button id="opt-fetch-btn" type="button" class="btn btn-default" disabled>Fetch results</button>
+                    <button id="opt-res-up-btn" type="button" class="btn btn-default">Upload files</button>
                 </div>
                 <div id="opt-res-bar" class="status-bar center-container">
                 </div>
@@ -112,8 +95,10 @@
     </div>
 
 </div>
+
 <button id="test-button">Test</button>
 <button id="test-back-button">Test-back</button>
+
 <!-- section containing divs for user insertions -->
 <div id="overlaywrapper" class="overlay-wrapper">
     <div id="overlayparam" class="overlay-content">
@@ -171,29 +156,104 @@
             <input id="password" required type="password" name="password">
             <br>
             <br>
-            <button class="btn btn-primary closebtn" onclick="closeParameterDiv()">Cancel</button>
+            <button id="cancel-param-btn" class="btn btn-primary closebtn">Cancel</button>
             <button id="apply-param" class="btn btn-primary">Apply</button>
         </form>
     </div>
 </div>
 
-<!-- -->
+<!-- section containing divs for user fetch system insertions -->
+<div id="overlaywrapperfetch" class="overlay-wrapper">
+    <div id="overlayparamfetch" class="overlay-content">
+        <form id='submitFetchParam' method='POST' action='/hh-neuron-builder/submit-fetch-param/'>{% csrf_token %}
+            <div class="param-title-div">
+                <strong>HPC system</strong>
+            </div>
+            <br>
+            <input type="radio" name="hpc_sys_fetch" value="marconi" disabled>
+            <label for="marconi">MARCONI</label>
+            <br>
+            <br>
+            <input type="radio" name="hpc_sys_fetch" value="jureca" disabled>
+            <label for="jureca">JURECA</label>
+            <br>
+            <br>
+            <input type="radio" name="hpc_sys_fetch" value="nsg" checked>
+            <label for="nsg">NeuroScience Gateway (NSG)</label>
+            <br>
+            <label for="username_fetch">Username</label>
+            <input id="username_fetch" required type="text" name="username_fetch">
+            <br>
+            <label for="password">Password</label>
+            <input id="password_fetch" required type="password" name="password_fetch">
+            <br>
+            <br>
+            <button id="cancel-param-fetch-btn" class="btn btn-primary closebtn">Cancel</button>
+            <button id="apply-param-fetch" class="btn btn-primary">Apply</button>
+        </form>
+    </div>
+</div>
+
+<!-- "Please wait" message div -->
 <div id="overlaywrapperwait" class="overlay-wrapper">
-    <div id="overlaywait" class="overlay-content" style="top:40%">
+    <div id="overlaywait" class="overlay-content">
         <i class="glyphicon glyphicon-refresh spinning lg"></i>
-        <div id="waitdynamictext" class="please-wait-text">Dynamic text</div>
+        <div id="waitdynamictext" class="please-wait-text"></div>
         <div class="please-wait-text">Please wait ...</div>
     </div>
 </div>
 
-<!-- -->
-<div id="overlaywrapperop" class="overlay-wrapper">
-    <div id="overlayop" class="overlay-content" style="top:40%">
-        <div id="opdynamictext" class="please-wait-text">Message</div>
+<!-- Fetched jobs div -->
+<div id="overlaywrapperjobs" class="overlay-wrapper">
+    <div id="overlayjobs" class="overlay-content width-80p">
+        <div id="job-list-div">
+        </div>
     </div>
 </div>
-<!-- Please wait div -->
-<div id="overlaywrapper" class="overlay-wrapper">
+
+<!-- Upload feature files div -->
+
+<div id="overlaywrapperfeature" class="overlay-wrapper">
+    <div id="overlayfeature" class="overlay-content" >
+        <form id="uploadFeatForm" action="/hh-neuron-builder/upload-files/feat/" method="POST" enctype="multipart/form-data">{% csrf_token %}
+            <div class="param-title-div">
+                <strong>
+                    Upload feature files "features.json" and "protocols.json"
+                </strong>
+            </div>
+            <br>
+            <label for="feat-files">
+                <input type="file" name="feat-files" id="feat-files" class="btn btn-default" accept=".json" multiple/>
+                <span class="custom-file-control"></span>
+            </label>
+            <br>
+            <button id="cancel-feature-btn" class="btn btn-primary closebtn">Cancel</button>
+            <input type="submit" id="uploadFeatButton" name="upload_feat_button" class="btn btn-primary" value="Upload" />
+        </form>
+    </div>
 </div>
+
+
+
+<div id="overlaywrapperoptres" class="overlay-wrapper">
+    <div id="overlayoptres" class="overlay-content" >
+        <form id="uploadOptResForm" action="/hh-neuron-builder/upload-files/optrun/" method="POST" enctype="multipart/form-data">{% csrf_token %}
+            <div class="param-title-div">
+                <strong>
+                    Upload optimization results (.zip)"
+                </strong>
+            </div>
+            <br>
+            <label for="opt-res-file">
+                <input type="file" name="opt-res-file" id="opt-res-file" class="btn btn-default" accept=".zip"/>
+                <span class="custom-file-control"></span>
+            </label>
+            <br>
+            <button id="cancel-opt-res-btn" class="btn btn-primary closebtn">Cancel</button>
+            <input type="submit" id="uploadOptResButton" name="upload_opt_res_button" class="btn btn-primary" value="Upload" />
+        </form>
+    </div>
+</div>
+
 <script type="text/javascript" src="{% static 'hh_neuron_builder/js/workflow.js' %}"></script>
 {% endblock  %}
