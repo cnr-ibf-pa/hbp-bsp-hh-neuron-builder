@@ -78,7 +78,8 @@
 
 
 .main-page-panel {
-    background: rgba(0, 60, 0, 0.2);
+    /*background: rgba(0, 60, 0, 0.2);
+     */
     box-shadow: 2px 3px 4px 4px #bbbbbb;
     padding: 20px;
     min-height: 600px;
@@ -146,11 +147,11 @@
 }
 
 .main-panel-btn:hover:enabled {
-    background: rgba(0, 74, 0, 0.3);
+    background: rgba(0, 74, 0, 0.4);
 }
 
 .main-panel-btn:disabled {
-    background: rgba(30, 30, 30, 0.1);
+    background: rgba(30, 30, 30, 0.5);
 }
 
 .ok-ko-btn {

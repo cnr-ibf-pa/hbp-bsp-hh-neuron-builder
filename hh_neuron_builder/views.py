@@ -531,7 +531,7 @@ def modify_analysis_py(request):
         if os.path.isdir('r_0')==True:
             shutil.rmtree('r_0')
         os.mkdir('r_0')
-        os.system(". /web/bspg/venvbspg/bin/activate; python opt_neuron.py --analyse --checkpoint ./checkpoints/checkpoint.pkl")
+        os.system(". /web/bspg/venvbspg/bin/activate; python opt_neuron.py --analyse --checkpoint ./checkpoints/checkpoint.pkl > /dev/null 2>&1")
 
     
     return HttpResponse(json.dumps({"response":"OK"}), content_type="application/json")
