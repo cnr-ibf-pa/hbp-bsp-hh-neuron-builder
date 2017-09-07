@@ -18,7 +18,7 @@
 
 $.getJSON("/hh-neuron-builder/model-loaded-flag", function(data){
     var o = data["response"];
-    if (o == "nothing"){
+    if (o == "ERROR"){
         window.location.href = "";
     } else {
         document.getElementById("naas-frame").setAttribute("src","https://blue-naas.humanbrainproject.eu/#/model/" + o)

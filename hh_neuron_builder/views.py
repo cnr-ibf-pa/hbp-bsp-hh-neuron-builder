@@ -6,7 +6,10 @@ from django.http import JsonResponse
 import pprint
 import json
 import os
+import zipfile
+from subprocess import call
 import shutil
+import tarfile
 from tools import hpc_job_manager
 import datetime
 import requests
@@ -68,30 +71,35 @@ def create_wf_folders(request, wf_type="new"):
     time_info = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
     workflows_dir = request.session['workflows_dir']
     userid = request.session['userid']
+    wf_id = time_info + '_' + userid
 
     # user specific dir
     request.session['time_info'] = time_info
-    request.session['user_dir'] = os.path.join(workflows_dir, userid, time_info)
-    request.session['user_dir_data'] = os.path.join(workflows_dir, userid, time_info, 'data')
-    request.session['user_dir_data_feat'] = os.path.join(workflows_dir, userid, time_info, 'data', 'features')
-    request.session['user_dir_data_opt_set'] = os.path.join(workflows_dir, userid, time_info, 'data', 'opt_settings')
-    request.session['user_dir_data_opt_launch'] = os.path.join(workflows_dir, userid, time_info, 'data', 'opt_launch')
-    request.session['user_dir_results'] = os.path.join(workflows_dir, userid, time_info, 'results')
-    request.session['user_dir_results_opt'] = os.path.join(workflows_dir, userid, time_info, 'results', 'opt')
+    request.session['wf_id'] = wf_id
+    request.session['user_dir'] = os.path.join(workflows_dir, userid, wf_id)
+    request.session['user_dir_data'] = os.path.join(workflows_dir, userid, wf_id, 'data')
+    request.session['user_dir_data_feat'] = os.path.join(workflows_dir, userid, wf_id, 'data', 'features')
+    request.session['user_dir_data_opt_set'] = os.path.join(workflows_dir, userid, wf_id, 'data', 'opt_settings')
+    request.session['user_dir_data_opt_launch'] = os.path.join(workflows_dir, userid, wf_id, 'data', 'opt_launch')
+    request.session['user_dir_results'] = os.path.join(workflows_dir, userid, wf_id, 'results')
+    request.session['user_dir_results_opt'] = os.path.join(workflows_dir, userid, wf_id, 'results', 'opt')
+    request.session['user_dir_sim_run'] = os.path.join(workflows_dir, userid, wf_id, 'sim')
 
     # create folders for global data and json files if not existing
     if not os.path.exists(request.session['user_dir_data_feat']):
-        os.makedirs(request.session['user_dir_data_feat'])
+	os.makedirs(request.session['user_dir_data_feat'])
     if not os.path.exists(request.session['user_dir_data_opt_set']):
-        os.makedirs(request.session['user_dir_data_opt_set'])
+	os.makedirs(request.session['user_dir_data_opt_set'])
     if not os.path.exists(request.session['user_dir_data_opt_launch']):
-        os.makedirs(request.session['user_dir_data_opt_launch'])
+	os.makedirs(request.session['user_dir_data_opt_launch'])
     if not os.path.exists(request.session['user_dir_results_opt']):
-        os.makedirs(request.session['user_dir_results_opt'])
+	os.makedirs(request.session['user_dir_results_opt'])
+    if not os.path.exists(request.session['user_dir_sim_run']):
+	os.makedirs(request.session['user_dir_sim_run'])
 
     return HttpResponse(json.dumps({"response":"OK"}), content_type="application/json")
 
-    
+
 def embedded_efel_gui(request):
     """
     Serving page for rendering embedded efel gui page
@@ -122,7 +130,7 @@ def get_model_list(request):
     """
     model_file = request.session["singlecellmodeling_structure_path"]
     with open(model_file) as json_file:
-        model_file_dict = json.load(json_file)
+	model_file_dict = json.load(json_file)
 
     return HttpResponse(json.dumps(model_file_dict), content_type="application/json")
 
@@ -160,7 +168,7 @@ def run_optimization(request):
     """
     Run optimization on remote systems
     """
-    
+
     # fetch information from the session variable
     username = request.session['username']
     password = request.session['password']
@@ -183,26 +191,26 @@ def run_optimization(request):
     opt_name = source_opt_name[:idx] + "_" + time_info
 
     if hpc_sys == "nsg":
-        nsg_obj = hpc_job_manager.Nsg(username=username, password=password, core_num=core_num, node_num=node_num, \
-                runtime=runtime, gennum=gennum, offsize=offsize, dest_dir=dest_dir, source_opt_zip=source_opt_zip, opt_name=opt_name, \
-                source_feat=source_feat, opt_res_dir=opt_res_dir)
-        nsg_obj.createzip()
-        resp = nsg_obj.runNSG()
-        if resp['status_code'] == 200:
-            request.session['opt_flag'] = True
-        else:
-            request.session['opt_flag'] = False
+	nsg_obj = hpc_job_manager.Nsg(username=username, password=password, core_num=core_num, node_num=node_num, \
+		runtime=runtime, gennum=gennum, offsize=offsize, dest_dir=dest_dir, source_opt_zip=source_opt_zip, opt_name=opt_name, \
+		source_feat=source_feat, opt_res_dir=opt_res_dir)
+	nsg_obj.createzip()
+	resp = nsg_obj.runNSG()
+	if resp['status_code'] == 200:
+	    request.session['opt_flag'] = True
+	else:
+	    request.session['opt_flag'] = False
 
-    
+
     return HttpResponse(json.dumps(resp))
 
 
 
 def model_loaded_flag(request):
     if 'res_file_name' in request.session:
-        return HttpResponse(json.dumps({"response": request.session['res_file_name']}), content_type="application/json")
+	return HttpResponse(json.dumps({"response": request.session['res_file_name']}), content_type="application/json")
     else:
-        return HttpResponse(json.dumps({"response": "nothing"}), content_type="application/json")
+	return HttpResponse(json.dumps({"response": "ERROR"}), content_type="application/json")
 
 
 def embedded_naas(request):
@@ -228,25 +236,28 @@ def get_local_optimization_list(request):
     opt_list = os.listdir("/app/media/hh_neuron_builder/bsp_data_repository/optimizations/")
     final_local_opt_list = {}
     for i in opt_list:
-        if "README" in i:
-            continue
-        final_local_opt_list[i] = i
+	if "README" in i:
+	    continue
+	final_local_opt_list[i] = i
     return HttpResponse(json.dumps(final_local_opt_list), content_type="application/json")
 
 
 
 def upload_to_naas(request):
-    res_folder = request.session['user_dir_results_opt']
+    res_folder = request.session['user_dir_sim_run']
     res_folder_ls = os.listdir(res_folder) 
-    request.session['res_file_name'] = os.path.splitext(res_folder_ls[0])[0]
-    abs_res_file = os.path.join(res_folder, res_folder_ls[0])
+    for filename in res_folder_ls:
+        if filename.endswith(".zip"):
+            abs_res_file = os.path.join(res_folder, filename)
+    request.session['res_file_name'] = os.path.splitext(filename)[0]
 
     #optimization_model_path = request.session["optimization_model_path"]
     #source_opt_name = request.session['source_opt_name']
     #final_path = os.path.join(optimization_model_path, source_opt_name, source_opt_name + '.zip')
     #r = requests.post("https://blue-naas-svc.humanbrainproject.eu/upload", files={"file": open(final_path, "rb")});
     r = requests.post("https://blue-naas-svc.humanbrainproject.eu/upload", files={"file": open(abs_res_file, "rb")});
-    return HttpResponse(json.dumps({"response": "nothing"}), content_type="application/json")
+    pprint.pprint(r.__dict__)
+    return HttpResponse(json.dumps({"response": "ERROR"}), content_type="application/json")
 
 
 def submit_run_param(request):
@@ -289,19 +300,21 @@ def check_cond_exist(request):
     response = {"feat":False, "opt_files":False, "opt_set":False, "run_sim":False, "opt_flag":False}
     data_feat = request.session['user_dir_data_feat']
     data_opt = request.session['user_dir_data_opt_set']
-    result_opt = request.session['user_dir_results_opt']
+    sim_zip = request.session['user_dir_sim_run']
     if os.path.isfile(os.path.join(data_feat, "features.json")) and \
-        os.path.isfile(os.path.join(data_feat, "protocols.json")):
-        response['feat'] = True
+	    os.path.isfile(os.path.join(data_feat, "protocols.json")):
+		response['feat'] = True
     if not os.listdir(data_opt) == []:
-        response['opt_files'] = True
-    if not os.listdir(result_opt) == []:
-        response['run_sim'] = True
+	response['opt_files'] = True
+    if not os.listdir(sim_zip) == []:
+	response['run_sim'] = True
     if ('gennum' and 'offsize' and 'nodenum' and 'corenum' and 'runtime' and 'username' and 'password') in request.session:
-        response['opt_set'] = True
+	response['opt_set'] = True
     if request.session['opt_flag']:
-        response['opt_flag'] = True
-   
+	response['opt_flag'] = True
+    if request.session['wf_id']:
+        response['wf_id'] = request.session['wf_id']
+
 
     return HttpResponse(json.dumps(response), content_type="application/json")
 
@@ -313,7 +326,7 @@ def delete_feature_files(request):
     shutil.rmtree(feat_folder)
     os.makedirs(feat_folder)
     return HttpResponse(json.dumps({"resp":True}), content_type="application/json")
-    
+
 
 def delete_opt_files(request):
     opt_folder = request.session['user_dir_data_opt_set']
@@ -329,69 +342,258 @@ def upload_files(request, filetype = ""):
     filename_list = request.FILES.getlist('opt-res-file')
 
     if filetype == "feat":
-        final_res_folder = request.session['user_dir_data_feat']
-        ext = '.json'
+	final_res_folder = request.session['user_dir_data_feat']
+	ext = '.json'
 
     elif filetype == "optset":
-        final_res_folder = request.session['user_dir_data_opt_set']
-        ext = '.zip'
+	final_res_folder = request.session['user_dir_data_opt_set']
+
+	# remove folder with current zip file
+	if os.listdir(final_res_folder):
+	    shutil.rmtree(final_res_folder)
+	    os.makedirs(final_res_folder)
+
+	ext = '.zip'
 
     elif filetype == "optrun":
-        final_res_folder = request.session['user_dir_results_opt']
-        ext = '.zip'
+	final_res_folder = request.session['user_dir_sim_run']
+
+	# remove folder with current zip file
+	if os.listdir(final_res_folder):
+	    shutil.rmtree(final_res_folder)
+	    os.makedirs(final_res_folder)
+
+	ext = '.zip'
 
     if not filename_list:
-        return HttpResponse(json.dumps({"resp":False}), content_type="application/json") 
+	return HttpResponse(json.dumps({"resp":False}), content_type="application/json") 
 
-    #if os.listdir(final_res_folder):
-    #    shutil.rmtree(final_res_folder)
-    #    os.makedirs(final_res_folder)
 
     for k in filename_list:
-        filename = k.name
-        if not filename.endswith(ext):
-            continue
-        final_res_file = os.path.join(final_res_folder, filename)
-        final_file = open(final_res_file, 'w')
-        if k.multiple_chunks():
-            for chunk in k.chunks():
-                final_file.write(chunk)
-            final_file.close()
-        else:
-            final_file.write(k.read())
-            final_file.close()
+	filename = k.name
+	if not filename.endswith(ext):
+	    continue
+	final_res_file = os.path.join(final_res_folder, filename)
+	final_file = open(final_res_file, 'w')
+	if k.multiple_chunks():
+	    for chunk in k.chunks():
+		final_file.write(chunk)
+	    final_file.close()
+	else:
+	    final_file.write(k.read())
+	    final_file.close()
 
     return HttpResponse(json.dumps({"resp":"Success"}), content_type="application/json") 
 
 
-
 def get_nsg_job_list(request):
     #return HttpResponse(json.dumps({"safa":"fff", "sadfsadfadasdfaasdfasdf":"fff"}), content_type="application/json") 
+    """
+    """
     hpc_sys_fetch = request.session['hpc_sys_fetch'] 
     if hpc_sys_fetch == "nsg":
-        username_fetch = request.session['username_fetch']
-        password_fetch = request.session['password_fetch']
-        opt_res_dir = request.session['user_dir_results_opt']
+	username_fetch = request.session['username_fetch']
+	password_fetch = request.session['password_fetch']
+	opt_res_dir = request.session['user_dir_results_opt']
 
-        nsg_obj = hpc_job_manager.Nsg(username_fetch=username_fetch, password_fetch=password_fetch, \
-               opt_res_dir=opt_res_dir) 
+	nsg_obj = hpc_job_manager.Nsg(username_fetch=username_fetch, password_fetch=password_fetch, \
+		opt_res_dir=opt_res_dir) 
 
-        resp = nsg_obj.fetch_job_list()
+	resp = nsg_obj.fetch_job_list()
 
     return HttpResponse(json.dumps(resp), content_type="application/json") 
 
+
 def get_nsg_job_details(request, jobid=""):
+    """
+    """
     #return HttpResponse(json.dumps({"job_id": jobid, "job_date_submitted":"2017-07-24T16:40:21-07:00", "job_stage":"COMPLETED"}), content_type="application/json") 
 
     hpc_sys_fetch = request.session['hpc_sys_fetch'] 
     if hpc_sys_fetch == "nsg":
-        username_fetch = request.session['username_fetch']
-        password_fetch = request.session['password_fetch']
-        opt_res_dir = request.session['user_dir_results_opt']
+	username_fetch = request.session['username_fetch']
+	password_fetch = request.session['password_fetch']
 
-        nsg_obj = hpc_job_manager.Nsg(username_fetch=username_fetch, password_fetch=password_fetch, \
-               opt_res_dir=opt_res_dir) 
+	nsg_obj = hpc_job_manager.Nsg(username_fetch=username_fetch, password_fetch=password_fetch) 
 
-        resp = nsg_obj.fetch_job_details(jobid)
-    pprint.pprint(resp)
+	resp = nsg_obj.fetch_job_details(jobid)
     return HttpResponse(json.dumps(resp), content_type="application/json") 
+
+
+def download_job(request, job_id=""): 
+    """
+    """
+
+    hpc_sys_fetch = request.session['hpc_sys_fetch'] 
+    if hpc_sys_fetch == "nsg":
+	username_fetch = request.session['username_fetch']
+	password_fetch = request.session['password_fetch']
+	opt_res_dir = request.session['user_dir_results_opt']
+
+	# remove folder with current zip file
+	if os.listdir(opt_res_dir):
+	    shutil.rmtree(opt_res_dir)
+	    os.makedirs(opt_res_dir)
+
+	nsg_obj = hpc_job_manager.Nsg(username_fetch=username_fetch, password_fetch=password_fetch, \
+		opt_res_dir=opt_res_dir) 
+
+	resp_job_details = nsg_obj.fetch_job_details(job_id)
+	job_res_url = resp_job_details['job_res_url']
+	resp = nsg_obj.fetch_job_results(job_res_url)
+
+    return HttpResponse(json.dumps(resp), content_type="application/json") 
+
+
+def modify_analysis_py(request):
+    opt_res_folder = request.session['user_dir_results_opt']
+    tar = tarfile.open(os.path.join(opt_res_folder, "output.tar.gz"))
+    tar.extractall(path=opt_res_folder)
+    tar.close()
+
+    analysis_file_list = []
+    for (dirpath, dirnames, filenames) in os.walk(opt_res_folder):
+	for filename in filenames:
+	    if filename == "analysis.py":
+		analysis_file_list.append(os.path.join(dirpath,filename))
+
+    if len(analysis_file_list) != 1:
+	resp = {"Status":"ERROR", "Message":"No (or multiple) analysis.py file(s) found"}
+	return HttpResponse(json.dumps(resp), content_type="application/json") 
+    else:
+	full_file_path = analysis_file_list[0]
+	file_path = os.path.split(full_file_path)[0]
+	up_folder = os.path.split(file_path)[0]
+
+	# modify analysis.py file
+        print(full_file_path)
+	f = open(full_file_path, 'r')
+
+	lines = f.readlines()
+	lines[228]='    traces=[]\n'
+	lines[238]='        traces.append(response.keys()[0])\n'
+	lines[242]='\n    stimord={} \n    for i in range(len(traces)): \n        stimord[i]=float(traces[i][traces[i].find(\'_\')+1:traces[i].find(\'.soma\')]) \n    import operator \n    sorted_stimord = sorted(stimord.items(), key=operator.itemgetter(1)) \n    traces2=[] \n    for i in range(len(sorted_stimord)): \n        traces2.append(traces[sorted_stimord[i][0]]) \n    traces=traces2 \n'
+	lines[243]='    plot_multiple_responses([responses], fig=model_fig, traces=traces)\n'
+	lines[366]="def plot_multiple_responses(responses, fig, traces):\n"
+	lines[369] = "\n"
+	lines[370] = "\n"
+	lines[371] = "\n"# n is the line number you want to edit; subtract 1 as indexing of list starts from 0
+	f.close()   # close the file and reopen in write mode to enable writing to file; you can also open in append mode and use "seek", but you will have some unwanted old data if the new data is shorter in length.
+
+	f = open(full_file_path, 'w')
+	f.writelines(lines)
+	f.close()
+
+	f = open(os.path.join(file_path, 'evaluator.py'), 'r')    # pass an appropriate path of the required file
+	lines = f.readlines()
+	lines[167]='    #print param_names\n'
+	f.close()   # close the file and reopen in write mode to enable writing to file; you can also open in append mode and use "seek", but you will have some unwanted old data if the new data is shorter in length.
+
+
+	f = open(os.path.join(file_path, 'evaluator.py'), 'w')    # pass an appropriate path of the required file
+	f.writelines(lines)
+	f.close()
+        os.chdir(up_folder)
+        import model
+	fig_folder = os.path.join(up_folder, 'figures')
+
+	if os.path.exists(fig_folder):
+	    shutil.rmtree(fig_folder)
+	os.makedirs(fig_folder)
+
+	checkpoints_folder = os.path.join(up_folder, 'checkpoints')
+	if 'checkpoint.pkl' not in os.listdir(checkpoints_folder):
+	    for files in os.listdir(checkpoints_folder):
+		if files.endswith('pkl'):
+		    shutil.copy(os.path.join(checkpoints_folder, files), \
+			    os.path.join(checkpoints_folder, 'checkpoint.pkl'))
+                    os.remove(os.path.join(up_folder, 'checkpoints', files))
+                else:
+                    if files.endswith('.hoc'):
+                        os.remove(os.path.join(up_folder, 'checkpoints', files))
+
+        f = open('opt_neuron.py', 'r')
+        lines = f.readlines()
+
+        new_line = ["import matplotlib \n"]
+        new_line.append("matplotlib.use('Agg') \n")
+        for i in lines:
+            new_line.append(i)
+
+        f.close()
+
+        f = open('opt_neuron.py', 'w')
+        f.writelines(new_line)
+        f.close()
+
+        os.system(". /web/bspg/venvbspg/bin/activate; nrnivmodl mechanisms")
+
+        if os.path.isdir('r_0')==True:
+            shutil.rmtree('r_0')
+        os.mkdir('r_0')
+        os.system(". /web/bspg/venvbspg/bin/activate; python opt_neuron.py --analyse --checkpoint ./checkpoints/checkpoint.pkl")
+
+    
+    return HttpResponse(json.dumps({"response":"OK"}), content_type="application/json")
+
+
+def zip_sim(request):
+    user_dir_res_opt = request.session['user_dir_results_opt']
+    user_dir_sim_run = request.session['user_dir_sim_run']
+
+    # folder named as the optimization
+    if os.path.exists(user_dir_sim_run):
+        shutil.rmtree(user_dir_sim_run)
+
+    os.makedirs(user_dir_sim_run)
+        
+    # extract the name of the model folder
+    mec_folder_path = []
+    config_folder_path = []
+
+    for root, dirs, files in os.walk(user_dir_res_opt):
+        if (root.endswith("mechanisms")):
+            mec_folder_path.append(root)
+        elif (root.endswith("config")):
+            config_folder_path.append(root)
+
+    if len(mec_folder_path) != 1 or len(config_folder_path) !=1:
+        return HttpResponse(json.dumps({"response":"ERROR", "message":"Optimization result folder is not consistent. Check your data."}), content_type="application/json")
+    
+    if os.path.split(mec_folder_path[0])[0] != os.path.split(config_folder_path[0])[0]:
+        return HttpResponse(json.dumps({"response":"ERROR", "message":"Optimization result folder is not consistent. Check your data."}), content_type="application/json")
+
+    else:
+        crr_opt_folder = os.path.split(mec_folder_path[0])[0]
+        crr_opt_name = os.path.split(crr_opt_folder)[1]
+        sim_mod_folder = os.path.join(user_dir_sim_run, crr_opt_name)
+        os.makedirs(sim_mod_folder)
+        for root, dirs, files in os.walk(user_dir_res_opt):
+            if (root.endswith("mechanisms") or root.endswith("morphology") or \
+                    root.endswith("checkpoints")):
+                crr_folder = os.path.split(root)[1]
+                dst = os.path.join(sim_mod_folder, crr_folder)
+                shutil.copytree(root,dst)
+    
+
+    for filename in os.listdir(os.path.join(sim_mod_folder, 'checkpoints')):
+        if filename.endswith(".hoc"):
+            os.rename(os.path.join(sim_mod_folder, "checkpoints", filename), \
+                    os.path.join(sim_mod_folder, "checkpoints", "cell.hoc"))
+    os.chdir(user_dir_sim_run)           
+    zipname = crr_opt_name + '.zip'
+
+    foo = zipfile.ZipFile(zipname, 'w', zipfile.ZIP_DEFLATED)
+
+    crr_dir_opt = os.path.join('.', crr_opt_name)
+    for root, dirs, files in os.walk('.'):
+        if (root == os.path.join(crr_dir_opt, 'morphology')) or \
+        (root == os.path.join(crr_dir_opt, 'checkpoints')) or \
+        (root == os.path.join(crr_dir_opt, 'mechanisms')):
+            for f in files:
+                foo.write(os.path.join(root, f))
+
+    foo.close()
+
+    return HttpResponse(json.dumps({"response":"OK"}), content_type="application/json")
+    

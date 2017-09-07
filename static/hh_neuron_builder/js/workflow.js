@@ -2,6 +2,12 @@ $(document).ready(function(){
     // check conditions on function activation
     checkConditions();
 
+    $('#job-list-div').on('click', '.down-job-btn', function(){
+        downloadJob(this.id);
+        console.log(this.id);
+    });
+
+    //
     // manage form for submitting run parameters
     var $formrunparam = $('#submitRunParam');
     $formrunparam.submit(function(){
@@ -17,6 +23,7 @@ $(document).ready(function(){
     $formfetchparam.submit(function(){
         $.post($(this).attr('action'), $(this).serialize(), function(response){
             closeFetchParamDiv();
+            displayJobInfoDiv();
             checkConditions();
         },'json');
         return false;
@@ -45,8 +52,8 @@ $(document).ready(function(){
     });
 
     // assign functions to buttons' click
-    document.getElementById("test-button").onclick = displayFetchParamDiv;
-    document.getElementById("test-back-button").onclick = displayJobInfoDiv;
+    //document.getElementById("test-button").onclick = displayFetchParamDiv;
+    //document.getElementById("test-back-button").onclick = displayJobInfoDiv;
 
     // manage optimization settings buttons action
     document.getElementById("opt-set-btn").onclick = openParameterDiv;
@@ -84,25 +91,28 @@ $(document).ready(function(){
 
     // manage button for running optimization
     document.getElementById("launch-opt-btn").onclick = runOptimization;
+
+    // manage buttons for downloading jobs
+    document.getElementById("cancel-job-list-btn").onclick = closeJobInfoDiv;
 });
 
 
 // serve embedded-efel-gui page
 function efelPage() {
     window.location.href = "/hh-neuron-builder/embedded-efel-gui/";
+
 }
 
 // serve embedded-naas page
 function inSilicoPage() {
-    document.getElementById("res-upload-info-div").innerHTML = "Uploading to <strong> Neuron As A Service </strong>. Please wait ...";
+    console.log("asdfasdf");
     $.getJSON("/hh-neuron-builder/upload-to-naas", function(uploaddata){
         $.getJSON("/hh-neuron-builder/model-loaded-flag", function(data){
             var o = data["response"];
-            if (o == "nothing"){
+            if (o == "ERROR"){
                 window.location.href = "";
             } else {
-                document.getElementById("res-upload-info-div").innerHTML = ""
-                    window.location.href = "/hh-neuron-builder/embedded-naas/";
+                window.location.href = "/hh-neuron-builder/embedded-naas/";
             } 
         });
 
@@ -136,6 +146,8 @@ function closeParameterDiv() {
 //
 function checkConditions(){
     $.getJSON('/hh-neuron-builder/check-cond-exist', function(data){
+        document.getElementById("wf-id").innerHTML = "Workflow id: " + data["wf_id"];
+
         if (data['feat']){
             document.getElementById('feat-bar').style.background = "green";
             document.getElementById('feat-bar').innerHTML = "";
@@ -168,7 +180,7 @@ function checkConditions(){
         if (data['opt_flag']){
             document.getElementById("optlaunchimg").src = "/static/images/ok_red.png";
             document.getElementById("optlaunchtextspan").innerHTML = "Optimization job submitted";
-            document.getElementById("cell-opt-div").style.backgroundColor='rgba(0, 110, 0, 0.08)';
+            //document.getElementById("cell-opt-div").style.backgroundColor='rgba(0, 110, 0, 0.08)';
         } else {
             document.getElementById("optlaunchimg").src = "/static/images/ko_red.png";
             document.getElementById("optlaunchtextspan").innerHTML = "No job submitted";
@@ -185,7 +197,7 @@ function checkConditions(){
         if (data['run_sim']){
             document.getElementById("opt-res-bar").style.background = "green";  
             document.getElementById("run-sim-btn").disabled = false;  
-            document.getElementById("run-sim-div").style.backgroundColor='rgba(0, 110, 0, 0.08)';
+            //document.getElementById("run-sim-div").style.backgroundColor='rgba(0, 110, 0, 0.08)';
         } else {
             document.getElementById("opt-res-bar").style.background = "red";  
             document.getElementById("run-sim-btn").disabled = true;  
@@ -260,6 +272,7 @@ function hideOpEndDiv() {
 
 // Manage feature files upload button
 function featUploadButton() {
+    document.getElementById("opt-res-file").value = "";
     document.getElementById("opt-res-file").multiple = true;
     document.getElementById("opt-res-file").accept = ".json";
     var type = "feat";
@@ -269,6 +282,7 @@ function featUploadButton() {
 
 // Manage optimization result upload button
 function displayOptResUploadDiv() {
+    document.getElementById("opt-res-file").value = "";
     document.getElementById("opt-res-file").multiple = false;
     document.getElementById("opt-res-file").accept = ".zip";
     var type = "optrun";
@@ -279,6 +293,7 @@ function displayOptResUploadDiv() {
 
 // Manage optimization result upload button
 function displayOptSetUploadDiv() {
+    document.getElementById("opt-res-file").value = "";
     document.getElementById("opt-res-file").multiple = false;
     document.getElementById("opt-res-file").accept = ".zip";
     var type = "optset";
@@ -356,25 +371,35 @@ function displayJobInfo() {
                     //
                     var job_status_span = document.createElement("SPAN");
                     job_status_span.className = "simple-span w-15pc center-container row-center-container";
+
                     var job_status = document.createTextNode(crr_job_json['job_stage']); 
                     job_status_span.appendChild(job_status);
-                    crr_div.appendChild(job_status_span)
-                        // 
-                        if (crr_job_json['job_stage'] == "COMPLETED") {
-                            job_status_span.style.backgroundColor = 'green';
-                            var job_download_button = document.createElement("button");
-                            job_download_button.innerHTML = "Download";
-                            job_download_button.className = "btn btn-default";
-                            crr_div.appendChild(job_download_button);
-                        }
 
-                    document.getElementById("job-list-div").appendChild(crr_div)
-                        if (cnrt == job_list_len - 1) {
-                            closePleaseWaitDiv();
-                            document.getElementById("overlaywrapperjobs").style.display = "block";
-                            document.getElementById("mainDiv").style.pointerEvents = "none";
-                            document.body.style.overflow = "hidden";
-                        }
+                    crr_div.appendChild(job_status_span);
+
+                    var job_download_button = document.createElement("button");
+                    job_download_button.id = crr_job_json['job_id'];
+                    job_download_button.innerHTML = "Download";
+                    job_download_button.className = "btn btn-default down-job-btn";
+                    job_download_button.disabled = true;
+                    crr_div.appendChild(job_download_button);
+
+                    // 
+                    if (crr_job_json['job_stage'] == "COMPLETED") {
+                        job_status_span.style.backgroundColor = 'green';
+                        job_download_button.disabled = false;
+                    } else {
+                        job_status_span.style.backgroundColor = 'rgb(255, 153, 102)';
+                    }
+
+                    document.getElementById("job-list-div").prepend(crr_div);
+                    document.getElementById("job-list-div").prepend(document.getElementById("fetch-job-title"));
+                    if (cnrt == job_list_len - 1) {
+                        closePleaseWaitDiv();
+                        document.getElementById("overlaywrapperjobs").style.display = "block";
+                        document.getElementById("mainDiv").style.pointerEvents = "none";
+                        document.body.style.overflow = "hidden";
+                    }
                 });
             })(i);
         }
@@ -382,3 +407,26 @@ function displayJobInfo() {
     return true;
 }
 
+
+//
+function closeJobInfoDiv() {
+    document.getElementById("overlaywrapperjobs").style.display = "none";
+    document.getElementById("mainDiv").style.pointerEvents = "auto";
+    document.body.style.overflow = "auto";
+}
+
+
+//
+function downloadJob(jobid) {
+    displayPleaseWaitDiv();
+    closeJobInfoDiv();
+    changeMsgPleaseWaitDiv("Downloading job and analysing data. This operation may take several minutes.");
+    $.getJSON('/hh-neuron-builder/download-job/' + jobid + '/', function(data){
+        $.getJSON('/hh-neuron-builder/modify-analysis-py', function(modifydata){
+            $.getJSON('/hh-neuron-builder/zip-sim', function(zip_data){
+                closePleaseWaitDiv();
+                checkConditions();
+            });
+        });
+    });
+}

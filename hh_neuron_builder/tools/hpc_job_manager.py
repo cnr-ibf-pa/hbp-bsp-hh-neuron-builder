@@ -13,7 +13,10 @@ import collections
 import re
 
 class Nsg:
-    def __init__(self, username="", password="", core_num=0, node_num=0, runtime=0, gennum=0, offsize=0, dest_dir="", source_opt_zip="", opt_name="", source_feat="", username_fetch="", password_fetch="", opt_res_dir=""):
+    def __init__(self, username="", password="", core_num=0, node_num=0, \
+            runtime=0, gennum=0, offsize=0, dest_dir="", source_opt_zip="", \
+            opt_name="", source_feat="", username_fetch="", password_fetch="", \
+            opt_res_dir=""):
         """
         Initialization function
         """
@@ -27,6 +30,7 @@ class Nsg:
         self.gennum = gennum
         self.offsize = offsize
         self.dest_dir = dest_dir
+        self.opt_res_dir = opt_res_dir
         self.source_opt_zip = source_opt_zip
         self.opt_name = opt_name
         self.source_feat = source_feat
@@ -105,10 +109,11 @@ class Nsg:
         URL = self.url
         CRA_USER = self.username_fetch
         PASSWORD = self.password_fetch
-        headers = {'cipres-appkey' : KEY}
+        headers = {'cipres-appkey' : KEY, 'expand': 'true'}
 
         # 
 	r_all = requests.get(URL + "/job/" + CRA_USER, auth=(CRA_USER, PASSWORD), headers=headers)
+        print(r_all.__dict__)
     	root_all = xml.etree.ElementTree.fromstring(r_all.text)
         job_list_dict = collections.OrderedDict()
         job_list = root_all.find('jobs')
@@ -136,7 +141,9 @@ class Nsg:
         headers = {'cipres-appkey' : KEY}
 
         r_job = requests.get(URL + "/job/" + CRA_USER + '/' + job_id, auth=(CRA_USER, PASSWORD), headers=headers)
+        #print(r_job.__dict__)
     	root_job = xml.etree.ElementTree.fromstring(r_job.text)
+        #print(root_job.__dict__)
             
         job_date_submitted = root_job.find('dateSubmitted').text
         job_res_url = root_job.find('resultsUri').find('url').text
@@ -154,16 +161,17 @@ class Nsg:
         return job_info_dict 
 
 
-    def fetch_job_results(self, job_res_url, dest_dir = ""):
+    def fetch_job_results(self, job_res_url):
         """
         Fetch job output files from NSG 
         """
         # read/set NSG connection parameters
         KEY = self.key
         URL = self.url
-        CRA_USER = self.username
-        PASSWORD = self.password
+        CRA_USER = self.username_fetch
+        PASSWORD = self.password_fetch
         headers = {'cipres-appkey' : KEY}
+        opt_res_dir = self.opt_res_dir
 
         # request all outpur file urls 
 	r_all = requests.get(job_res_url, auth=(CRA_USER, PASSWORD), headers=headers)
@@ -171,8 +179,8 @@ class Nsg:
         all_down_uri = root.find('jobfiles').findall('jobfile')
         
         # create destination dir if not existing
-        if not os.path.exists(dest_dir):
-            os.mkdir(dest_dir)
+        if not os.path.exists(opt_res_dir):
+            os.mkdir(opt_res_dir)
 
         # for every file download it to the destination dir
         for i in all_down_uri:
@@ -181,8 +189,8 @@ class Nsg:
             d = r.headers['content-disposition']
             filename_list = re.findall('filename=(.+)', d)
             for filename in filename_list:
-                with open(os.path.join(dest_dir,filename), 'wb') as fd:
-                    print("writing file " + os.path.join(dest_dir, filename)) 
+                with open(os.path.join(opt_res_dir,filename), 'wb') as fd:
+                    print("writing file " + os.path.join(opt_res_dir, filename)) 
                     for chunk in r.iter_content():
                         fd.write(chunk)
         return ""
@@ -279,7 +287,6 @@ class Nsg:
         checkpoints_dir = os.path.join(crr_dir_opt, 'checkpoints')
         figures_dir = os.path.join(crr_dir_opt, 'figures')
         r_0_dir = os.path.join(crr_dir_opt, 'r_0')
-
 
         if os.path.exists(checkpoints_dir):
             shutil.rmtree(checkpoints_dir)

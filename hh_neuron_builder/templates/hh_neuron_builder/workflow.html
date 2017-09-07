@@ -4,6 +4,7 @@
 {% block content  %}
 
 <div id="mainDiv" class="center-container row-center-container">
+    <div id="wf-id" class="param-title-div"></div>
     <div id="cell-opt-div" class="center-container wf-page-panel">
         <div>
             <h2>Cell Optimization</h2>
@@ -18,7 +19,9 @@
                     <button type="button" id="feat-up-btn" class="btn btn-default">Upload files</button>
                 </div>
                 <div class="center-container">
-                    <button id="edit-feat" type="button" class="btn btn-link" disabled>Edit features files</button>
+                    <!--
+                        <button id="edit-feat" type="button" class="btn btn-link" disabled>Edit features files</button>
+                    -->
                     <button id="del-feat" type="button" class="btn btn-link" disabled>Delete feature files</button>
                 </div>
                 <div id="feat-bar" class="status-bar center-container row-center-container">
@@ -37,7 +40,9 @@
                     <button type="button" id="opt-up-btn" class="btn btn-default">Upload file</button>
                 </div>
                 <div class="center-container">
-                    <button id="edit-opt" type="button" class="btn btn-link" disabled>Edit optimization files</button>
+                    <!--
+                        <button id="edit-opt" type="button" class="btn btn-link" disabled>Edit optimization files</button>
+                    -->
                     <button id="del-opt" type="button" class="btn btn-link" disabled>Delete optimization files</button>
                 </div>
                 <div id="opt-files-bar" class="center-container status-bar">
@@ -81,7 +86,7 @@
                     <h3>Optimization results</h3> 
                 </div>
                 <div class="center-container">
-                    <button id="opt-fetch-btn" type="button" class="btn btn-default" disabled>Fetch results</button>
+                    <button id="opt-fetch-btn" type="button" class="btn btn-default">Fetch results</button>
                     <button id="opt-res-up-btn" type="button" class="btn btn-default">Upload file</button>
                 </div>
                 <div id="opt-res-bar" class="status-bar center-container">
@@ -95,9 +100,10 @@
     </div>
 
 </div>
-
-<button id="test-button">Test</button>
-<button id="test-back-button">Test-back</button>
+<!--
+    <button id="test-button">Test</button>
+    <button id="test-back-button">Test-back</button>
+-->
 
 <!-- section containing divs for user insertions -->
 <div id="overlaywrapper" class="overlay-wrapper">
@@ -164,7 +170,7 @@
 
 <!-- section containing divs for user fetch system insertions -->
 <div id="overlaywrapperfetch" class="overlay-wrapper">
-    <div id="overlayparamfetch" class="overlay-content">
+    <div id="overlayparamfetch" style="top:30%;" class="overlay-content">
         <form id='submitFetchParam' method='POST' action='/hh-neuron-builder/submit-fetch-param/'>{% csrf_token %}
             <div class="param-title-div">
                 <strong>HPC system</strong>
@@ -205,11 +211,14 @@
 
 <!-- Fetched jobs div -->
 <div id="overlaywrapperjobs" class="overlay-wrapper">
-    <div id="overlayjobs" class="overlay-content width-80p">
-        <div id="job-list-div" class="center-container row-center-container">
-            <div id="fetch-job-title" class="param-title-div">
-                <strong>Download job results</strong>
-            </div>
+    <div id="overlayjobs" class="overlay-content width-80p height-90p">
+        <div id="fetch-job-title" class="param-title-div">
+            <strong>Download job results</strong>
+        </div>
+        <div id="job-list-div" class="center-container row-center-container" style="max-height:30%;">
+        </div>
+        <div class="center-container row-center-container">
+            <button id="cancel-job-list-btn" type="button" class="btn btn-default">Cancel</button>
         </div>
     </div>
 </div>
