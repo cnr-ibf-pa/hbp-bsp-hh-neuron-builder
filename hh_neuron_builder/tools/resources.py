@@ -5,7 +5,6 @@ import collections
 import neo
 import pprint
 from datetime import datetime
-from . import stimulus_extraction
 import requests
 from django.conf import settings
 if not settings.DEBUG:
@@ -17,48 +16,6 @@ import logging
 logging.basicConfig(stream=sys.stdout)
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
-
-def valid_abf_file(filepath):
-    #
-    try:
-        data = neo.io.AxonIO(filepath)
-        segments = data.read_block(lazy=False, cascade=True).segments
-       
-        assert len(segments[0].analogsignals) >= 2
-            
-        volt_unit = segments[0].analogsignals[0].units
-        volt_unit = str(volt_unit.dimensionality)
-        assert volt_unit == 'mV'
-        
-        amp_unit = segments[0].analogsignals[1].units
-        amp_unit = str(amp_unit.dimensionality)
-        assert amp_unit == 'nA'
-
-        return True
-    except:
-        return False
-
-
-##### check file validity
-def check_file_validity(filepath):
-    extension = os.path.splitext(os.path.basename(filepath))
-    extension = str(extension[1])
-    try:
-        if extension == '.abf':
-            data = neo.io.AxonIO(filepath)
-            segments = data.read_block(lazy=False, cascade=True).segments
-
-            volt_unit = segments[0].analogsignals[0].units
-            volt_unit = str(volt_unit.dimensionality)
-            assert volt_unit == 'mV'
-            
-            stim_res = stimulus_extraction.stim_feats_from_header(data.read_header()) 
-            assert stim_res[0]
-
-            return True
-    except:
-        return False
-
 
 ##### create string to be printed to log files
 def string_for_log(page_name, request, page_spec_string = ''):
@@ -207,38 +164,3 @@ def user_collab_list(my_collabs_url, social_auth):
         auth_data_list.append(i['id'])
 
     return auth_data_list
-
-
-def print_citations(json_file_list, conf_file, final_file):
-    final_citations = {}
-    with open(conf_file) as f:
-        all_citations = json.load(f)
-
-    for i in json_file_list:
-        fin_key = i + '.json'
-        if not fin_key in all_citations:
-            continue
-        crr_ref = all_citations[fin_key]
-        crr_cit = crr_ref.keys()[0]
-        if crr_cit not in final_citations:
-            final_citations[crr_cit] = []
-            final_citations[crr_cit].append(i)
-        else:
-            final_citations[crr_cit].append(i)
-
-    with open(final_file, 'w') as tf:
-        for key, val in final_citations.iteritems():
-            tf.write("For the following data:\n")
-            for i in val:
-                tf.write(i + "\n")
-            tf.write("\n")
-            tf.write("Use the following reference:\n\n")
-            tf.write(key + "\n\n")
-            tf.write("===========\n\n")
-
-
-
-
-
-
-

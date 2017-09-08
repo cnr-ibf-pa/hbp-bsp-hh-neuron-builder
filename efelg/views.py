@@ -22,8 +22,6 @@ from django.conf import settings
 from django.template.context import RequestContext
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse
-
-
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout as auth_logout
 
@@ -54,7 +52,6 @@ accesslogger.setLevel(logging.DEBUG)
 ##### serve overview.html
 @login_required(login_url='/login/hbp/')
 def overview(request):
-    #context = RequestContext(request, {'request':request, 'user':request.user})
 
     # if not in DEBUG mode check whether authentication token is valid
     if not settings.DEBUG:
@@ -64,13 +61,17 @@ def overview(request):
         headers = {'Authorization': get_auth_header(request.user.social_auth.get())}
          
         res = requests.get(my_url, headers = headers)
+        res_dict = res.json()
         #if res.status_code !=200:
         #    auth_logout(request)
         #    nextUrl = urllib.quote('%s?ctx=%s' % (request.path, context))
         #    return redirect('%s?next=%s' % (settings.LOGIN_URL, nextUrl))
 
         # get username from request
-        username = request.user.username
+        #username = request.user.username
+        username = res_dict['username']
+        userid = res_dict['id']
+        # collab_id = res_dict['collab']['id']
 
         # get context and context uuid
         #context_uuid = UUID(request.GET.get('ctx'))
@@ -79,15 +80,6 @@ def overview(request):
         svc_url = settings.HBP_COLLAB_SERVICE_URL
         #url = '%scollab/context/%s/' % (svc_url, context)
          
-        # get collab_id
-        #res = requests.get(url, headers=headers)
-        #if res.status_code != 200:
-        #    auth_logout(request)
-        #    nextUrl = urllib.quote('%s?ctx=%s' % (request.path, context))
-        #    return redirect('%s?next=%s' % (settings.LOGIN_URL, nextUrl))
-
-        #collab_id = res.json()['collab']['id']
-        #request.session['context'] = context
     else:
         username = 'test'
         headers = {}

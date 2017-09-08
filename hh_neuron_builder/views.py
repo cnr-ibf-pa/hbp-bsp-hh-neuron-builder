@@ -1,8 +1,6 @@
-from django.conf import settings
-from django.shortcuts import render
-from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse
-from django.http import JsonResponse
+""" Views"""
+
+import sys
 import pprint
 import json
 import os
@@ -10,18 +8,40 @@ import zipfile
 from subprocess import call
 import shutil
 import tarfile
-from tools import hpc_job_manager
 import datetime
 import requests
 
+# import django libs
+from django.conf import settings
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+from django.http import HttpResponse
+from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout as auth_logout
+
+# import hbp/bbp modules
 from hbp_app_python_auth.auth import get_access_token, get_token_type, get_auth_header
 from bbp_client.oidc.client import BBPOIDCClient
 from bbp_client.document_service.client import Client as DocClient
 import bbp_client
 from bbp_client.client import *
 import bbp_services.client as bsc
+
+# import local tools
+from tools import hpc_job_manager
+from tools import resources
+
+# set logging up
+logging.basicConfig(stream=sys.stdout)
+logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)
+
+# create logger if not in DEBUG mode
+accesslogger = logging.getLogger('hhnb_access.log')
+accesslogger.addHandler(logging.FileHandler('/var/log/bspg/hhnb_access.log'))
+accesslogger.setLevel(logging.DEBUG)
+
 
 @login_required(login_url="/login/hbp/")
 def home(request):
@@ -60,6 +80,8 @@ def home(request):
     request.session.pop('username_fetch', None)
     request.session.pop('password_fetch', None)
     request.session.pop('hpc_sys_fetch', None)
+
+    accesslogger.info(resources.string_for_log('home', request))
 
     return render(request, 'hh_neuron_builder/home.html')
 
@@ -105,6 +127,7 @@ def embedded_efel_gui(request):
     Serving page for rendering embedded efel gui page
     """
 
+    accesslogger.info(resources.string_for_log('embedded_efel_gui', request))
     return render(request, 'hh_neuron_builder/embedded_efel_gui.html')
 
 
@@ -121,6 +144,7 @@ def choose_opt_model(request):
     Serving page for rendering choose optimization model page
     """
 
+    accesslogger.info(resources.string_for_log('choose_opt_model', request))
     return render(request, 'hh_neuron_builder/choose_opt_model.html')
 
 
@@ -218,6 +242,7 @@ def embedded_naas(request):
     Render page with embedded "neuron as a service" app
     """
 
+    accesslogger.info(resources.string_for_log('embedded_naas', request))
     return render(request, 'hh_neuron_builder/embedded_naas.html')
 
 
@@ -256,7 +281,7 @@ def upload_to_naas(request):
     #final_path = os.path.join(optimization_model_path, source_opt_name, source_opt_name + '.zip')
     #r = requests.post("https://blue-naas-svc.humanbrainproject.eu/upload", files={"file": open(final_path, "rb")});
     r = requests.post("https://blue-naas-svc.humanbrainproject.eu/upload", files={"file": open(abs_res_file, "rb")});
-    pprint.pprint(r.__dict__)
+    
     return HttpResponse(json.dumps({"response": "ERROR"}), content_type="application/json")
 
 
@@ -321,21 +346,18 @@ def check_cond_exist(request):
 
 
 # delete feature files
-def delete_feature_files(request):
-    feat_folder = request.session['user_dir_data_feat']
-    shutil.rmtree(feat_folder)
-    os.makedirs(feat_folder)
+def delete_files(request, filetype=""):
+    if filetype == "feat":
+        folder = request.session['user_dir_data_feat']
+    elif filetype == "optset":
+        folder = request.session['user_dir_data_opt_set']
+    elif filetype == "modsim":
+        folder = request.session['user_dir_sim_run']
+
+    shutil.rmtree(folder)
+    os.makedirs(folder)
+
     return HttpResponse(json.dumps({"resp":True}), content_type="application/json")
-
-
-def delete_opt_files(request):
-    opt_folder = request.session['user_dir_data_opt_set']
-    shutil.rmtree(opt_folder)
-    os.makedirs(opt_folder)
-    return HttpResponse(json.dumps({"resp":True}), content_type="application/json")
-
-def launch_optimization(request):
-    pass
 
 
 def upload_files(request, filetype = ""):
@@ -355,7 +377,7 @@ def upload_files(request, filetype = ""):
 
 	ext = '.zip'
 
-    elif filetype == "optrun":
+    elif filetype == "modsim":
 	final_res_folder = request.session['user_dir_sim_run']
 
 	# remove folder with current zip file
@@ -597,3 +619,29 @@ def zip_sim(request):
 
     return HttpResponse(json.dumps({"response":"OK"}), content_type="application/json")
     
+
+def download_zip(request, filetype=""):
+    """
+    download files
+    """
+    if filetype == "feat":
+        pass
+    elif filetype == "optset":
+        fetch_folder = request.session['user_dir_data_opt_set']
+    elif filetype == "modsim":
+        fetch_folder = request.session['user_dir_sim_run']
+
+    zip_file_list = []
+    for i in os.listdir(fetch_folder):
+        if i.endswith(".zip"):
+            zip_file_list.append(i)
+    crr_file = zip_file_list[0]
+    full_file_path = os.path.join(fetch_folder, crr_file)
+    crr_file_full = open(full_file_path, "r")
+    response = HttpResponse(crr_file_full, content_type="application/zip")
+
+    response['Content-Disposition'] = 'attachment; filename="%s"' % crr_file
+
+    return response
+
+

@@ -1,4 +1,4 @@
-{% extends 'hh_neuron_builder/home_layout.html' %}
+m{% extends 'hh_neuron_builder/home_layout.html' %}
 {% load static  %}
 
 {% block content  %}
@@ -44,6 +44,7 @@
                         <button id="edit-opt" type="button" class="btn btn-link" disabled>Edit optimization files</button>
                     -->
                     <button id="del-opt" type="button" class="btn btn-link" disabled>Delete optimization files</button>
+                    <button id="down-opt-set-btn" type="button" class="btn btn-link">Download optimization file</button>
                 </div>
                 <div id="opt-files-bar" class="center-container status-bar">
                 </div>
@@ -88,6 +89,13 @@
                 <div class="center-container">
                     <button id="opt-fetch-btn" type="button" class="btn btn-default">Fetch results</button>
                     <button id="opt-res-up-btn" type="button" class="btn btn-default">Upload file</button>
+                </div>
+                <div class="center-container">
+                    <!--
+                        <button id="edit-sim" type="button" class="btn btn-link" disabled>Edit optimization files</button>
+                    -->
+                    <button id="del-sim-btn" type="button" class="btn btn-link" disabled>Delete simulation file</button>
+                    <button id="down-sim-btn" type="button" class="btn btn-link">Download simulation file</button>
                 </div>
                 <div id="opt-res-bar" class="status-bar center-container">
                 </div>

@@ -58,10 +58,12 @@ $(document).ready(function(){
     // manage optimization settings buttons action
     document.getElementById("opt-set-btn").onclick = openParameterDiv;
     document.getElementById("cancel-param-btn").onclick = closeParameterDiv;
+    document.getElementById("down-opt-set-btn").onclick = downloadLocalOptSet;
 
 
-    // manage simulation run button
+    // manage simulation run buttons
     document.getElementById("run-sim-btn").onclick = inSilicoPage;
+    document.getElementById("down-sim-btn").onclick = downloadLocalSim;
 
     // manage extract features button
     document.getElementById("feat-efel-btn").onclick = efelPage;
@@ -88,6 +90,9 @@ $(document).ready(function(){
 
     // manage button for deleting optimization setting files
     document.getElementById("del-opt").onclick = deleteOptFiles;
+
+    // manage button for deleting optimization setting files
+    document.getElementById("del-sim-btn").onclick = deleteSimFiles;
 
     // manage button for running optimization
     document.getElementById("launch-opt-btn").onclick = runOptimization;
@@ -161,10 +166,12 @@ function checkConditions(){
         if (data['opt_files']){
             document.getElementById('opt-files-bar').style.background = "green";
             document.getElementById('del-opt').disabled = false;
+            document.getElementById('down-opt-set-btn').disabled = false;
             document.getElementById('opt-files-bar').innerHTML = "";
         } else {
             document.getElementById('opt-files-bar').style.background = "red";
             document.getElementById('del-opt').disabled = true;
+            document.getElementById('down-opt-set-btn').disabled = true;
             document.getElementById('opt-files-bar').innerHTML = "Optimization files NOT present";
         };
 
@@ -175,7 +182,6 @@ function checkConditions(){
             document.getElementById('opt-param-bar').style.background = "red";
             document.getElementById('opt-param-bar').innerHTML = "Optimization parameters NOT set";
         };
-
 
         if (data['opt_flag']){
             document.getElementById("optlaunchimg").src = "/static/images/ok_red.png";
@@ -197,11 +203,15 @@ function checkConditions(){
         if (data['run_sim']){
             document.getElementById("opt-res-bar").style.background = "green";  
             document.getElementById("run-sim-btn").disabled = false;  
+            document.getElementById("down-sim-btn").disabled = false;  
+            document.getElementById("del-sim-btn").disabled = false;  
             //document.getElementById("run-sim-div").style.backgroundColor='rgba(0, 110, 0, 0.08)';
         } else {
             document.getElementById("opt-res-bar").style.background = "red";  
             document.getElementById("run-sim-btn").disabled = true;  
             document.getElementById("run-sim-div").style.backgroundColor='rgba(255, 255, 255, 0.06)';
+            document.getElementById("down-sim-btn").disabled = true;  
+            document.getElementById("del-sim-btn").disabled = true;  
         };
 
     });
@@ -211,7 +221,7 @@ function checkConditions(){
 function deleteFeatureFiles() {
     var resp = confirm("Are you sure you want to delete current feature files?");
     if (resp) {
-        $.getJSON("/hh-neuron-builder/delete-feature-files", function(data){
+        $.getJSON("/hh-neuron-builder/delete-files/feat/", function(data){
             checkConditions();
         });
     }
@@ -221,7 +231,17 @@ function deleteFeatureFiles() {
 function deleteOptFiles() {
     var resp = confirm("Are you sure you want to delete current optimization files?");
     if (resp) {
-        $.getJSON("/hh-neuron-builder/delete-opt-files", function(data){
+        $.getJSON("/hh-neuron-builder/delete-files/optset/", function(data){
+            checkConditions();
+        });
+    }
+}
+
+// Delete source optimization files from folder
+function deleteSimFiles() {
+    var resp = confirm("Are you sure you want to delete current optimization files?");
+    if (resp) {
+        $.getJSON("/hh-neuron-builder/delete-files/modsim/", function(data){
             checkConditions();
         });
     }
@@ -285,7 +305,7 @@ function displayOptResUploadDiv() {
     document.getElementById("opt-res-file").value = "";
     document.getElementById("opt-res-file").multiple = false;
     document.getElementById("opt-res-file").accept = ".zip";
-    var type = "optrun";
+    var type = "modsim";
     var msg = 'Upload optimization results (".zip")';
     openUploadDiv(type, msg);
 }
@@ -429,4 +449,25 @@ function downloadJob(jobid) {
             });
         });
     });
+}
+
+
+//
+function downloadLocalSim(){
+    downloadLocal("modsim");
+}
+
+
+//
+function downloadLocalOptSet(){
+    downloadLocal("optset");
+}
+
+//
+function downloadLocal(filetype) {
+    displayPleaseWaitDiv();
+    window.location.href = "/hh-neuron-builder/download-zip/" + filetype + "/";
+    //window.location.assign("/hh-neuron-builder/download-zip/" + filetype + "/");
+    closePleaseWaitDiv();
+    checkConditions();
 }
