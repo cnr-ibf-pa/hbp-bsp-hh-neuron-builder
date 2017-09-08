@@ -224,6 +224,10 @@ Render the efel/show_traces.html page
 '''
 @login_required(login_url='/login/hbp')
 def show_traces(request):
+    accesslogger.info(resources.string_for_log('show_traces', request))
+    time_info = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
+    username = request.session['username']
+    accesslogger.info(username + " has accepted terms and conditions and this time " + time_info)
     return render(request, 'efelg/show_traces.html')
 
 

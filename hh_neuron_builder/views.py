@@ -625,7 +625,7 @@ def download_zip(request, filetype=""):
     download files
     """
     if filetype == "feat":
-        pass
+        fetch_folder = request.session['user_dir_data_feat']
     elif filetype == "optset":
         fetch_folder = request.session['user_dir_data_opt_set']
     elif filetype == "modsim":
