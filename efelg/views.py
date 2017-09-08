@@ -112,6 +112,7 @@ def overview(request):
 
     # save parameters in request.session
     request.session['username'] = username
+    request.session['userid'] = userid
     #request.session['context'] = context
     request.session['headers'] = headers
     #request.session['collab_id'] = collab_id
@@ -227,7 +228,9 @@ def show_traces(request):
     accesslogger.info(resources.string_for_log('show_traces', request))
     time_info = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
     username = request.session['username']
-    accesslogger.info(username + " has accepted terms and conditions and this time " + time_info)
+    userid = request.session['userid']
+    accesslogger.info("user " + username + " has accepted terms and conditions at this time " + time_info)
+    accesslogger.info("user " + userid + " has accepted terms and conditions at this time " + time_info)
     return render(request, 'efelg/show_traces.html')
 
 
