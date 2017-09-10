@@ -203,6 +203,13 @@ function checkConditions(){
             document.getElementById("launch-opt-btn").disabled = false;  
         } else {
             document.getElementById("launch-opt-btn").disabled = true;  
+            document.getElementById("feat-efel-btn").disabled = true;
+            document.getElementById("feat-up-btn").disabled = true;
+            document.getElementById("del-feat").disabled = true;
+            document.getElementById("opt-db-hpc-btn").disabled = true;
+            document.getElementById("opt-up-btn").disabled = true;
+            document.getElementById("del-opt").disabled = true;
+            document.getElementById("opt-set-btn").disabled = true;
         };
 
         // Simulation panel
