@@ -1,10 +1,12 @@
+$(window).bind("pageshow", function() { 
+    checkConditions();
+});
 $(document).ready(function(){
     // check conditions on function activation
     checkConditions();
 
     $('#job-list-div').on('click', '.down-job-btn', function(){
         downloadJob(this.id);
-        console.log(this.id);
     });
 
     //
@@ -87,6 +89,7 @@ $(document).ready(function(){
 
     // manage button for deleting features
     document.getElementById("del-feat").onclick = deleteFeatureFiles;
+    document.getElementById("down-feat-btn").onclick = downloadLocalFeat;
 
     // manage button for deleting optimization setting files
     document.getElementById("del-opt").onclick = deleteOptFiles;
@@ -99,6 +102,7 @@ $(document).ready(function(){
 
     // manage buttons for downloading jobs
     document.getElementById("cancel-job-list-btn").onclick = closeJobInfoDiv;
+    //
 });
 
 
@@ -110,7 +114,6 @@ function efelPage() {
 
 // serve embedded-naas page
 function inSilicoPage() {
-    console.log("asdfasdf");
     $.getJSON("/hh-neuron-builder/upload-to-naas", function(uploaddata){
         $.getJSON("/hh-neuron-builder/model-loaded-flag", function(data){
             var o = data["response"];
@@ -151,16 +154,20 @@ function closeParameterDiv() {
 //
 function checkConditions(){
     $.getJSON('/hh-neuron-builder/check-cond-exist', function(data){
-        document.getElementById("wf-id").innerHTML = "Workflow id: " + data["wf_id"];
+        var textnode = document.createTextNode("Workflow id: " + data["wf_id"]); 
+        document.getElementById("wf-title").innerHTML = "";
+        document.getElementById("wf-title").appendChild(textnode);
 
         if (data['feat']){
             document.getElementById('feat-bar').style.background = "green";
             document.getElementById('feat-bar').innerHTML = "";
             document.getElementById('del-feat').disabled = false;
+            document.getElementById('down-feat-btn').disabled = false;
         } else {
             document.getElementById('feat-bar').style.background = "red";
             document.getElementById('feat-bar').innerHTML = '"features.json" and/or "protocols.json" NOT present';
             document.getElementById('del-feat').disabled = true;
+            document.getElementById('down-feat-btn').disabled = true;
         };
 
         if (data['opt_files']){
@@ -186,14 +193,13 @@ function checkConditions(){
         if (data['opt_flag']){
             document.getElementById("optlaunchimg").src = "/static/images/ok_red.png";
             document.getElementById("optlaunchtextspan").innerHTML = "Optimization job submitted";
-            //document.getElementById("cell-opt-div").style.backgroundColor='rgba(0, 110, 0, 0.08)';
         } else {
             document.getElementById("optlaunchimg").src = "/static/images/ko_red.png";
             document.getElementById("optlaunchtextspan").innerHTML = "No job submitted";
             document.getElementById("cell-opt-div").style.backgroundColor='rgba(255, 255, 255,0.0)';
         }
 
-        if (data['feat'] & data['opt_files'] & data['opt_set']){
+        if (data['feat'] & data['opt_files'] & data['opt_set'] & !data['opt_flag']){
             document.getElementById("launch-opt-btn").disabled = false;  
         } else {
             document.getElementById("launch-opt-btn").disabled = true;  
@@ -202,19 +208,24 @@ function checkConditions(){
         // Simulation panel
         if (data['run_sim']){
             document.getElementById("opt-res-bar").style.background = "green";  
-            document.getElementById("run-sim-btn").disabled = false;  
             document.getElementById("down-sim-btn").disabled = false;  
-            document.getElementById("del-sim-btn").disabled = false;  
-            //document.getElementById("run-sim-div").style.backgroundColor='rgba(0, 110, 0, 0.08)';
+            document.getElementById("run-sim-btn").disabled = false;  
+            if (data['sim_flag']){
+                document.getElementById("del-sim-btn").disabled = true;  
+                document.getElementById("opt-fetch-btn").disabled = true;  
+                document.getElementById("opt-res-up-btn").disabled = true;  
+            } else {
+                document.getElementById("del-sim-btn").disabled = false;  
+                document.getElementById("opt-fetch-btn").disabled = false;  
+                document.getElementById("opt-res-up-btn").disabled = false;  
+            } 
         } else {
             document.getElementById("opt-res-bar").style.background = "red";  
-            document.getElementById("run-sim-btn").disabled = true;  
             document.getElementById("run-sim-div").style.backgroundColor='rgba(255, 255, 255, 0.06)';
             document.getElementById("down-sim-btn").disabled = true;  
             document.getElementById("del-sim-btn").disabled = true;  
         };
-
-    });
+    })
 }
 
 // Delete features.json and protocol.json files from containing folder
@@ -267,6 +278,7 @@ function changeMsgPleaseWaitDiv(msg) {
 
 // Run optimization on hpc system 
 function runOptimization() {
+    document.getElementById("run-sim-btn").disabled = true;
     displayPleaseWaitDiv();
     changeMsgPleaseWaitDiv("Launching optimization on the hpc system");
     $.getJSON("/hh-neuron-builder/run-optimization", function(data){
@@ -463,6 +475,10 @@ function downloadLocalOptSet(){
     downloadLocal("optset");
 }
 
+//
+function downloadLocalFeat(){
+    downloadLocal("feat");
+}
 //
 function downloadLocal(filetype) {
     displayPleaseWaitDiv();

@@ -66,20 +66,8 @@ def home(request):
     request.session['singlecellmodeling_structure_path'] = scm_structure_path 
     request.session['optimization_model_path'] = opt_model_path
     request.session['workflows_dir'] = workflows_dir
-    request.session['opt_flag'] = False
 
-    # delete keys if present in request.session
-    request.session.pop('gennum', None)
-    request.session.pop('offsize', None)
-    request.session.pop('nodenum', None)
-    request.session.pop('corenum', None)
-    request.session.pop('runtime', None)
-    request.session.pop('username', None)
-    request.session.pop('password', None)
-    request.session.pop('hpc_sys', None)
-    request.session.pop('username_fetch', None)
-    request.session.pop('password_fetch', None)
-    request.session.pop('hpc_sys_fetch', None)
+
 
     accesslogger.info(resources.string_for_log('home', request))
 
@@ -94,6 +82,22 @@ def create_wf_folders(request, wf_type="new"):
     workflows_dir = request.session['workflows_dir']
     userid = request.session['userid']
     wf_id = time_info + '_' + userid
+
+    if wf_type=="new":
+        # delete keys if present in request.session
+        request.session.pop('gennum', None)
+        request.session.pop('offsize', None)
+        request.session.pop('nodenum', None)
+        request.session.pop('corenum', None)
+        request.session.pop('runtime', None)
+        request.session.pop('username', None)
+        request.session.pop('password', None)
+        request.session.pop('hpc_sys', None)
+        request.session.pop('username_fetch', None)
+        request.session.pop('password_fetch', None)
+        request.session.pop('hpc_sys_fetch', None)
+        request.session['opt_flag'] = False
+        request.session['sim_flag'] = False
 
     # user specific dir
     request.session['time_info'] = time_info
@@ -203,9 +207,9 @@ def run_optimization(request):
     time_info = request.session['time_info']
     offsize = request.session['offsize']
     source_opt_name = request.session['source_opt_name']
+    source_opt_zip = request.session['source_opt_zip']
     dest_dir = request.session['user_dir_data_opt_launch']
     user_dir_data_opt = request.session['user_dir_data_opt_set']
-    source_opt_zip = request.session['source_opt_zip']
     hpc_sys = request.session['hpc_sys']
     source_feat = request.session['user_dir_data_feat']
     opt_res_dir = request.session['user_dir_results_opt']
@@ -229,7 +233,6 @@ def run_optimization(request):
     return HttpResponse(json.dumps(resp))
 
 
-
 def model_loaded_flag(request):
     if 'res_file_name' in request.session:
 	return HttpResponse(json.dumps({"response": request.session['res_file_name']}), content_type="application/json")
@@ -243,6 +246,7 @@ def embedded_naas(request):
     """
 
     accesslogger.info(resources.string_for_log('embedded_naas', request))
+    request.session['sim_flag'] = True
     return render(request, 'hh_neuron_builder/embedded_naas.html')
 
 
@@ -333,10 +337,12 @@ def check_cond_exist(request):
 	response['opt_files'] = True
     if not os.listdir(sim_zip) == []:
 	response['run_sim'] = True
-    if ('gennum' and 'offsize' and 'nodenum' and 'corenum' and 'runtime' and 'username' and 'password') in request.session:
+    if ('gennum' and 'offsize' and 'nodenum' and 'corenum' and 'runtime' and 'username' and 'password' and 'hpc_sys') in request.session:
 	response['opt_set'] = True
     if request.session['opt_flag']:
 	response['opt_flag'] = True
+    if request.session['sim_flag']:
+	response['sim_flag'] = True
     if request.session['wf_id']:
         response['wf_id'] = request.session['wf_id']
 
@@ -405,6 +411,10 @@ def upload_files(request, filetype = ""):
 	    final_file.write(k.read())
 	    final_file.close()
 
+    if filetype == "optset":
+        request.session['source_opt_name'] = os.path.splitext(filename)[0]
+        request.session['source_opt_zip'] = final_res_file 
+    
     return HttpResponse(json.dumps({"resp":"Success"}), content_type="application/json") 
 
 
@@ -488,7 +498,6 @@ def modify_analysis_py(request):
 	up_folder = os.path.split(file_path)[0]
 
 	# modify analysis.py file
-        print(full_file_path)
 	f = open(full_file_path, 'r')
 
 	lines = f.readlines()
@@ -515,7 +524,9 @@ def modify_analysis_py(request):
 	f = open(os.path.join(file_path, 'evaluator.py'), 'w')    # pass an appropriate path of the required file
 	f.writelines(lines)
 	f.close()
+        current_working_dir = os.getcwd()
         os.chdir(up_folder)
+
         import model
 	fig_folder = os.path.join(up_folder, 'figures')
 
@@ -554,6 +565,8 @@ def modify_analysis_py(request):
             shutil.rmtree('r_0')
         os.mkdir('r_0')
         os.system(". /web/bspg/venvbspg/bin/activate; python opt_neuron.py --analyse --checkpoint ./checkpoints/checkpoint.pkl > /dev/null 2>&1")
+
+        os.chdir(current_working_dir)
 
     
     return HttpResponse(json.dumps({"response":"OK"}), content_type="application/json")
@@ -602,6 +615,8 @@ def zip_sim(request):
         if filename.endswith(".hoc"):
             os.rename(os.path.join(sim_mod_folder, "checkpoints", filename), \
                     os.path.join(sim_mod_folder, "checkpoints", "cell.hoc"))
+
+    current_working_dir = os.getcwd()
     os.chdir(user_dir_sim_run)           
     zipname = crr_opt_name + '.zip'
 
@@ -617,6 +632,8 @@ def zip_sim(request):
 
     foo.close()
 
+    os.chdir(current_working_dir)
+
     return HttpResponse(json.dumps({"response":"OK"}), content_type="application/json")
     
 
@@ -624,8 +641,15 @@ def download_zip(request, filetype=""):
     """
     download files
     """
+    current_working_dir = os.getcwd()
     if filetype == "feat":
         fetch_folder = request.session['user_dir_data_feat']
+        os.chdir(fetch_folder)
+        zipname = os.path.join(fetch_folder, "features.zip")
+        foo = zipfile.ZipFile(zipname, 'w', zipfile.ZIP_DEFLATED)
+        foo.write("features.json")
+        foo.write("protocols.json")
+        foo.close()
     elif filetype == "optset":
         fetch_folder = request.session['user_dir_data_opt_set']
     elif filetype == "modsim":
@@ -641,6 +665,7 @@ def download_zip(request, filetype=""):
     response = HttpResponse(crr_file_full, content_type="application/zip")
 
     response['Content-Disposition'] = 'attachment; filename="%s"' % crr_file
+    os.chdir(current_working_dir)
 
     return response
 

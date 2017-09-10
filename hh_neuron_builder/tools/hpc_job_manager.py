@@ -113,7 +113,6 @@ class Nsg:
 
         # 
 	r_all = requests.get(URL + "/job/" + CRA_USER, auth=(CRA_USER, PASSWORD), headers=headers)
-        print(r_all.__dict__)
     	root_all = xml.etree.ElementTree.fromstring(r_all.text)
         job_list_dict = collections.OrderedDict()
         job_list = root_all.find('jobs')
@@ -141,9 +140,7 @@ class Nsg:
         headers = {'cipres-appkey' : KEY}
 
         r_job = requests.get(URL + "/job/" + CRA_USER + '/' + job_id, auth=(CRA_USER, PASSWORD), headers=headers)
-        #print(r_job.__dict__)
     	root_job = xml.etree.ElementTree.fromstring(r_job.text)
-        #print(root_job.__dict__)
             
         job_date_submitted = root_job.find('dateSubmitted').text
         job_res_url = root_job.find('resultsUri').find('url').text
@@ -190,7 +187,6 @@ class Nsg:
             filename_list = re.findall('filename=(.+)', d)
             for filename in filename_list:
                 with open(os.path.join(opt_res_dir,filename), 'wb') as fd:
-                    print("writing file " + os.path.join(opt_res_dir, filename)) 
                     for chunk in r.iter_content():
                         fd.write(chunk)
         return ""
@@ -276,7 +272,7 @@ class Nsg:
             f.write('os.system(\'python opt_neuron.py --max_ngen=' + str(self.gennum) + ' --offspring_size=' + str(self.offsize) + ' --start --checkpoint ./checkpoints/checkpoint.pkl\')')
             f.write('\n')
         f.close()
-
+        current_working_dir = os.getcwd()
         os.chdir(self.fin_opt_folder)
 
         # build optimization folder name
@@ -315,6 +311,8 @@ class Nsg:
                     if f.endswith('.py'):
                         foo.write(os.path.join(root, f))                    
         foo.close()
+
+        os.chdir(current_working_dir)
 
 
 def replace_feature_files(source_dir, dest_dir):

@@ -1,10 +1,20 @@
-m{% extends 'hh_neuron_builder/home_layout.html' %}
+{% extends 'hh_neuron_builder/home_layout.html' %}
 {% load static  %}
 
 {% block content  %}
 
+<input type="hidden" id="refresh" value="no">
 <div id="mainDiv" class="center-container row-center-container">
-    <div id="wf-id" class="param-title-div"></div>
+    <div class="param-title-div center-container row-center-container">
+
+        <div id="wf-title" class="inline-div-50 align-left wf-title"></div>
+            <div class="inline-div-50 align-right">
+                <button id="wf-btn-home" class="btn home-title-btn" onclick="window.location.href='/hh-neuron-builder/'">Home</button>
+                <button id="wf-btn-new-wf" class="btn home-title-btn" onclick=initNewWorkflow();>New workflow</button>
+                <button id="wf-btn-clone-wf" class="btn home-title-btn" disabled>Clone workflow</button>
+                <button id="wf-btn-save" class="btn home-title-btn" disabled>Save to storage</button>
+            </div>
+    </div>
     <div id="cell-opt-div" class="center-container wf-page-panel">
         <div>
             <h2>Cell Optimization</h2>
@@ -23,6 +33,7 @@ m{% extends 'hh_neuron_builder/home_layout.html' %}
                         <button id="edit-feat" type="button" class="btn btn-link" disabled>Edit features files</button>
                     -->
                     <button id="del-feat" type="button" class="btn btn-link" disabled>Delete feature files</button>
+                    <button id="down-feat-btn" type="button" class="btn btn-link">Download feature files</button>
                 </div>
                 <div id="feat-bar" class="status-bar center-container row-center-container">
                 </div>
@@ -251,4 +262,5 @@ m{% extends 'hh_neuron_builder/home_layout.html' %}
 
 
 <script type="text/javascript" src="{% static 'hh_neuron_builder/js/workflow.js' %}"></script>
+<script type="text/javascript" src="{% static 'hh_neuron_builder/js/home.js' %}"></script>
 {% endblock  %}

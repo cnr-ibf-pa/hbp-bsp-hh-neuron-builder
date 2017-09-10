@@ -1,34 +1,11 @@
 {% extends 'hh_neuron_builder/home_layout.html' %}
+{% load static  %}
 
 {% block content %}
 <div class="center-container column-center-container main-page-panel">
-    <button id="new-wf" type="button" class="btn btn-lg main-panel-btn">Initiate a new workflow</button>
+    <button id="new-wf" type="button" class="btn btn-lg main-panel-btn" onclick=initNewWorkflow();>Initiate a new workflow</button>
     <button type="button" class="btn btn-lg main-panel-btn" disabled>Select a completed/ongoing workflow</button>
 </div>
 
-<script>
-$(document).ready(function(){
-    document.getElementById("new-wf").onclick = initNewWorkflow;
-});
-
-function initNewWorkflow() {
-    $.getJSON("/hh-neuron-builder/create-wf-folders/new/", function(data){
-        window.location.href = "/hh-neuron-builder/workflow/";
-    });
-};
-
-function chooseOptModel() {
-    window.location.href = "/hh-neuron-builder/choose-opt-model"; 
-}
-
-function reloadCurrentPage() {
-    window.location.href = "";
-}
-
-function colorBars() {
-    window.location.href = "";
-}
-
-</script>
-
+<script type="text/javascript" src="{% static 'hh_neuron_builder/js/home.js' %}"></script>
 {% endblock %}
