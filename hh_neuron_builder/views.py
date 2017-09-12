@@ -83,7 +83,12 @@ def create_wf_folders(request, wf_type="new"):
     userid = request.session['userid']
     wf_id = time_info + '_' + userid
 
-    if wf_type=="new":
+    request.session['time_info'] = time_info
+    request.session['wf_id'] = wf_id
+    request.session['opt_flag'] = False
+    request.session['sim_flag'] = False
+
+    if wf_type == "new":
         # delete keys if present in request.session
         request.session.pop('gennum', None)
         request.session.pop('offsize', None)
@@ -96,32 +101,44 @@ def create_wf_folders(request, wf_type="new"):
         request.session.pop('username_fetch', None)
         request.session.pop('password_fetch', None)
         request.session.pop('hpc_sys_fetch', None)
-        request.session['opt_flag'] = False
-        request.session['sim_flag'] = False
+        request.session['user_dir'] = os.path.join(workflows_dir, userid, wf_id)
+        request.session['user_dir_data'] = os.path.join(workflows_dir, userid, wf_id, 'data')
+        request.session['user_dir_data_feat'] = os.path.join(workflows_dir, userid, wf_id, 'data', 'features')
+        request.session['user_dir_data_opt_set'] = os.path.join(workflows_dir, userid, wf_id, 'data', 'opt_settings')
+        request.session['user_dir_data_opt_launch'] = os.path.join(workflows_dir, userid, wf_id, 'data', 'opt_launch')
+        request.session['user_dir_results'] = os.path.join(workflows_dir, userid, wf_id, 'results')
+        request.session['user_dir_results_opt'] = os.path.join(workflows_dir, userid, wf_id, 'results', 'opt')
+        request.session['user_dir_sim_run'] = os.path.join(workflows_dir, userid, wf_id, 'sim')
 
-    # user specific dir
-    request.session['time_info'] = time_info
-    request.session['wf_id'] = wf_id
-    request.session['user_dir'] = os.path.join(workflows_dir, userid, wf_id)
-    request.session['user_dir_data'] = os.path.join(workflows_dir, userid, wf_id, 'data')
-    request.session['user_dir_data_feat'] = os.path.join(workflows_dir, userid, wf_id, 'data', 'features')
-    request.session['user_dir_data_opt_set'] = os.path.join(workflows_dir, userid, wf_id, 'data', 'opt_settings')
-    request.session['user_dir_data_opt_launch'] = os.path.join(workflows_dir, userid, wf_id, 'data', 'opt_launch')
-    request.session['user_dir_results'] = os.path.join(workflows_dir, userid, wf_id, 'results')
-    request.session['user_dir_results_opt'] = os.path.join(workflows_dir, userid, wf_id, 'results', 'opt')
-    request.session['user_dir_sim_run'] = os.path.join(workflows_dir, userid, wf_id, 'sim')
+        # create folders for global data and json files if not existing
+        if not os.path.exists(request.session['user_dir_data_feat']):
+	    os.makedirs(request.session['user_dir_data_feat'])
+        if not os.path.exists(request.session['user_dir_data_opt_set']):
+	    os.makedirs(request.session['user_dir_data_opt_set'])
+        if not os.path.exists(request.session['user_dir_data_opt_launch']):
+	    os.makedirs(request.session['user_dir_data_opt_launch'])
+        if not os.path.exists(request.session['user_dir_results_opt']):
+	    os.makedirs(request.session['user_dir_results_opt'])
+        if not os.path.exists(request.session['user_dir_sim_run']):
+	    os.makedirs(request.session['user_dir_sim_run'])
 
-    # create folders for global data and json files if not existing
-    if not os.path.exists(request.session['user_dir_data_feat']):
-	os.makedirs(request.session['user_dir_data_feat'])
-    if not os.path.exists(request.session['user_dir_data_opt_set']):
-	os.makedirs(request.session['user_dir_data_opt_set'])
-    if not os.path.exists(request.session['user_dir_data_opt_launch']):
-	os.makedirs(request.session['user_dir_data_opt_launch'])
-    if not os.path.exists(request.session['user_dir_results_opt']):
-	os.makedirs(request.session['user_dir_results_opt'])
-    if not os.path.exists(request.session['user_dir_sim_run']):
-	os.makedirs(request.session['user_dir_sim_run'])
+    if wf_type == "cloned":
+        crr_user_dir = request.session['user_dir']
+        request.session['user_dir'] = os.path.join(workflows_dir, userid, wf_id)
+        shutil.copytree(crr_user_dir, request.session['user_dir'])
+        request.session['user_dir_data'] = os.path.join(workflows_dir, userid, wf_id, 'data')
+        request.session['user_dir_data_feat'] = os.path.join(workflows_dir, userid, wf_id, 'data', 'features')
+        request.session['user_dir_data_opt_set'] = os.path.join(workflows_dir, userid, wf_id, 'data', 'opt_settings')
+        request.session['user_dir_data_opt_launch'] = os.path.join(workflows_dir, userid, wf_id, 'data', 'opt_launch')
+        shutil.rmtree(request.session['user_dir_data_opt_launch'])
+        os.makedirs(request.session['user_dir_data_opt_launch'])
+        request.session['user_dir_results'] = os.path.join(workflows_dir, userid, wf_id, 'results')
+        request.session['user_dir_results_opt'] = os.path.join(workflows_dir, userid, wf_id, 'results', 'opt')
+        shutil.rmtree(request.session['user_dir_results_opt'])
+        os.makedirs(request.session['user_dir_results_opt'])
+        request.session['user_dir_sim_run'] = os.path.join(workflows_dir, userid, wf_id, 'sim')
+        shutil.rmtree(request.session['user_dir_sim_run'])
+        os.makedirs(request.session['user_dir_sim_run'])
 
     return HttpResponse(json.dumps({"response":"OK"}), content_type="application/json")
 
@@ -219,6 +236,7 @@ def run_optimization(request):
     opt_name = source_opt_name[:idx] + "_" + time_info
 
     if hpc_sys == "nsg":
+
 	nsg_obj = hpc_job_manager.Nsg(username=username, password=password, core_num=core_num, node_num=node_num, \
 		runtime=runtime, gennum=gennum, offsize=offsize, dest_dir=dest_dir, source_opt_zip=source_opt_zip, opt_name=opt_name, \
 		source_feat=source_feat, opt_res_dir=opt_res_dir)

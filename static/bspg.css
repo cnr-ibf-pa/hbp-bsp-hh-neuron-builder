@@ -53,7 +53,7 @@
 }
 
 .param-title-div {
-    background-color: rgba(230, 230, 230, 0.7);
+    background-color: rgba(200, 200, 200, 1);
     text-align: center;
     width: 100%;
     padding:0px;
@@ -165,6 +165,7 @@
 .home-title-btn {
     margin: 0px;
     padding:0px;
+    background-color: rgba(200, 200, 200, 1);
 }
 .home-title-btn:hover {
     background: rgba(20, 20, 20, 0.1);
@@ -273,7 +274,6 @@
     text-align: center;
     vertical-align: middle;
     color: rgba(255,255,255,0.99);
-
 }
 
 .workflow-page-button-div {
@@ -429,9 +429,10 @@
 }   
 
 .wf-title {
-   padding: 6px;
+    padding: 6px;
     font-size: 20px;
 }
+
 .cell {
     margin: 2em 0;
     font-size: 16px;

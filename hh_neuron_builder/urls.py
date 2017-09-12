@@ -17,7 +17,7 @@ urlpatterns = [
     url(r'^get_local_optimization_list$', views.get_local_optimization_list),
     url(r'^check-cond-exist$', views.check_cond_exist),
     url(r'^workflow/$', views.workflow),    
-    url(r'^create-wf-folders/(?P<wf_type>[a-z]+)/$', views.create_wf_folders),    
+    url(r'^create-wf-folders/(?P<wf_type>new|cloned)/$', views.create_wf_folders),    
     url(r'^choose-opt-model/$', views.choose_opt_model),    
     url(r'^submit-run-param/$', views.submit_run_param),    
     url(r'^submit-fetch-param/$', views.submit_fetch_param),    

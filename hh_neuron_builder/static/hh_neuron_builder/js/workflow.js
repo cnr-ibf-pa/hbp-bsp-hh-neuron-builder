@@ -62,6 +62,7 @@ $(document).ready(function(){
     document.getElementById("opt-set-btn").onclick = openParameterDiv;
     document.getElementById("cancel-param-btn").onclick = closeParameterDiv;
     document.getElementById("down-opt-set-btn").onclick = downloadLocalOptSet;
+    document.getElementById("wf-btn-clone-wf").onclick = cloneWorkflow;
 
 
     // manage simulation run buttons
@@ -207,6 +208,13 @@ function checkConditions(){
         if (data['feat'] & data['opt_files'] & data['opt_set']){
             if (!data['opt_flag']){
                 document.getElementById("launch-opt-btn").disabled = false;  
+                document.getElementById("feat-efel-btn").disabled = false;
+                document.getElementById("feat-up-btn").disabled = false;
+                document.getElementById("opt-db-hpc-btn").disabled = false;
+                document.getElementById("opt-up-btn").disabled = false;
+                document.getElementById("opt-set-btn").disabled = false;
+                document.getElementById("del-feat").disabled = false;
+                document.getElementById("del-opt").disabled = false;
             } else {
                 document.getElementById("launch-opt-btn").disabled = true;  
                 document.getElementById("feat-efel-btn").disabled = true;
@@ -217,6 +225,8 @@ function checkConditions(){
                 document.getElementById("del-opt").disabled = true;
                 document.getElementById("opt-set-btn").disabled = true;
             };
+        } else {
+            document.getElementById("launch-opt-btn").disabled = true;  
         }
 
         // Simulation panel
@@ -239,6 +249,7 @@ function checkConditions(){
             document.getElementById("run-sim-div").style.backgroundColor='rgba(255, 255, 255, 0.06)';
             document.getElementById("down-sim-btn").disabled = true;  
             document.getElementById("del-sim-btn").disabled = true;  
+            document.getElementById("run-sim-btn").disabled = true;  
         };
     })
 }
@@ -505,4 +516,12 @@ function downloadLocal(filetype) {
     //window.location.assign("/hh-neuron-builder/download-zip/" + filetype + "/");
     closePleaseWaitDiv();
     checkConditions();
+}
+
+function cloneWorkflow() {
+    displayPleaseWaitDiv();
+    $.getJSON('/hh-neuron-builder/create-wf-folders/cloned', function(zip_data){
+        closePleaseWaitDiv();
+        checkConditions();
+    });
 }
