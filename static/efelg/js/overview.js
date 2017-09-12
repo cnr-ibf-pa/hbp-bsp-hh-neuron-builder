@@ -11,16 +11,21 @@ $(document).ready(function(){
 });
 
 function displayTermsConditions() {
-    //document.getElementById('termsConditions').style.display = "block";
+    document.getElementById('efelg-overview-main-div').style.display = "none";
+    document.getElementById('termsConditions').style.display = "block";
     $("#termsConditions").fadeIn("slow");
 }
 
 
 function userAccepted() {
+    document.getElementById('efelg-overview-main-div').style.display = "block";
+    document.getElementById('termsConditions').style.display = "none";
     window.location.href = "show_traces/";
 
 }
 
 function userDeclined() {
+    document.getElementById('efelg-overview-main-div').style.display = "block";
+    document.getElementById('termsConditions').style.display = "none";
     window.location.href = "";
 }

@@ -18,68 +18,69 @@
     <body>
         {% hbp_oidc_session_handler request.user %}
         {% block content %}{% endblock %}
-        <h1 id= "title">Feature extraction Graphical User Interface</h1>
-        <br>
-        <p>The feature extraction GUI allows users to select data from an HBP dataset and/or upload their own, and extract electrophysiological features of interest.<br>
-        The application leverages the Python Electrophys Feature Extract Library (<a href="https://github.com/BlueBrain/eFEL" target=_blank>eFEL</a>) and provides a friendly interface to select both individual voltage traces (based on the stimulus current applied) and features to be extracted.</p>
-        Please find below a short tutorial on how to use the application, or refer to the complete guide at this (<a href="https://collab.humanbrainproject.eu/#/collab/1655/nav/18580" target=_blank>link</a>).
-        <br>
-        <p><b>Step 1 of 4</b>
-        <button class="skip-intro btn btn-link btn-default">[skip introduction]</button>
-        </p>
-        Select the data from a dataset, based on cell properties to be chosen from the filter dropdown menus. Additionally and/or alternatively upload your own data for processing (see Fig. 1). 
-        <br><br>
-        <figure>
+        <div id="efelg-overview-main-div">
+            <h1 id= "title">Feature extraction Graphical User Interface</h1>
             <br>
-            <img src="{% static "efelg/img/efelg_selection.png" %}" alt="efel_selection" style="width:100%;max-width:600px; border:2px solid #666"/><br><br>
-            <figcaption>Fig 1. - Selection/upload screen.</figcaption>
-        </figure>
-        <br>
-        The only file extension allowed at present is .abf (axon binary file) and the uploaded files must contain both the voltage and the stimulus signals. This is a mandatory condition for several features to be computed and for the feature extraction process to be completed successfully.
-        <br>
-        The analog voltage and stimulus signals are extracted through the <b>neo</b> python library, designed for representing different formats of intracellular and extracellular electrophysiological data (see <a href="https://pythonhosted.org/neo/index.html" target=_blank>neo</a> for a complete reference). 
-        <br><br>
-        <p><b>Step 2 of 4  </b>
-        <button class="skip-intro btn btn-link btn-default">[skip introduction]</button>
-        </p>
-        Once the filtering/upload done, individual traces are plotted and can be checked for selection. Traces represent the voltage membrane responses of the selected cell to the stimulus displayed in the legend. Highlight individual traces by hovering on the corresponding stimulus and select them by clicking on the same legend or through the selection buttons (see Fig. 2). When all the traces of interest have been selected, go the next page for feature selection.
-        <br><br>
-        <figure>
-            <img src="{% static "efelg/img/efelg_traces.png" %}" alt="efel_traces" style="width:100%;max-width:600px; border:2px solid #666"/><br>
-            <figcaption>Fig 2. - Voltage traces selection.</figcaption>
-        </figure>
-        <br>
-        <br><br>
-        <p><b>Step 3 of 4  </b>
-        <button class="skip-intro btn btn-link btn-default">[skip introduction]</button>
-        </p>
-        The feature selection page allows you to select the features to extract from the electrophysiological chosen signals. Features are grouped by type: 1) Spike event features - 2) Spike shape features and 3) Voltage features, and are selected by clicking on the corresponding box. When hovering on feature names a brief description is provided (see Fig. 3).
-        <br><br>
-        <figure>
-            <img src="{% static "efelg/img/efelg_features.png" %}" alt="efel_features" style="width:100%;max-width:600px; border:2px solid #666"/><br>
-            <figcaption>Fig 3. - Feature selection.</figcaption>
-        </figure>
-        <br>
-        Once the selection is completed, click on the Next button to launch the extraction process.
-        <br><br>
-        <p><b>Step 4 of 4  </b>
-        <button class="skip-intro btn btn-link btn-default">[skip introduction]</button>
-        </p>
-        The feature extraction process computes the means and standard deviations of the selected features for individual cells and for individual stimuli. Once a stimulus is chosen for a single file, it will be taken into account for all the selected files corresponding to the same cell. Finally, a grand mean is computed among different cells.
-        A feature.json and protocol.json files are generated for both individual cells and the entire ensemble. A preview is provided on the last page for the .json files corresponding to the grand means and a link to .zip file containing the entire set of results is provided (see Fig. 4).
-        <br><br>
-        <figure>
-            <img src="{% static "efelg/img/efelg_download.png" %}" alt="efel_download" style="width:100%;max-width:600px; border:2px solid #666"/><br>
-            <figcaption>Fig 4. - Results page.</figcaption>
-        </figure>
-        <br>
-        <br>
-        <input id='next_btn' class="btn btn-primary" type="submit" value="Next">
-        <br>
-
+            <p>The feature extraction GUI allows users to select data from an HBP dataset and/or upload their own, and extract electrophysiological features of interest.<br>
+            The application leverages the Python Electrophys Feature Extract Library (<a href="https://github.com/BlueBrain/eFEL" target=_blank>eFEL</a>) and provides a friendly interface to select both individual voltage traces (based on the stimulus current applied) and features to be extracted.</p>
+            Please find below a short tutorial on how to use the application, or refer to the complete guide at this (<a href="https://collab.humanbrainproject.eu/#/collab/1655/nav/18580" target=_blank>link</a>).
+            <br>
+            <p><b>Step 1 of 4</b>
+            <button class="skip-intro btn btn-link btn-default">[skip introduction]</button>
+            </p>
+            Select the data from a dataset, based on cell properties to be chosen from the filter dropdown menus. Additionally and/or alternatively upload your own data for processing (see Fig. 1). 
+            <br><br>
+            <figure>
+                <br>
+                <img src="{% static "efelg/img/efelg_selection.png" %}" alt="efel_selection" style="width:100%;max-width:600px; border:2px solid #666"/><br><br>
+                <figcaption>Fig 1. - Selection/upload screen.</figcaption>
+            </figure>
+            <br>
+            The only file extension allowed at present is .abf (axon binary file) and the uploaded files must contain both the voltage and the stimulus signals. This is a mandatory condition for several features to be computed and for the feature extraction process to be completed successfully.
+            <br>
+            The analog voltage and stimulus signals are extracted through the <b>neo</b> python library, designed for representing different formats of intracellular and extracellular electrophysiological data (see <a href="https://pythonhosted.org/neo/index.html" target=_blank>neo</a> for a complete reference). 
+            <br><br>
+            <p><b>Step 2 of 4  </b>
+            <button class="skip-intro btn btn-link btn-default">[skip introduction]</button>
+            </p>
+            Once the filtering/upload done, individual traces are plotted and can be checked for selection. Traces represent the voltage membrane responses of the selected cell to the stimulus displayed in the legend. Highlight individual traces by hovering on the corresponding stimulus and select them by clicking on the same legend or through the selection buttons (see Fig. 2). When all the traces of interest have been selected, go the next page for feature selection.
+            <br><br>
+            <figure>
+                <img src="{% static "efelg/img/efelg_traces.png" %}" alt="efel_traces" style="width:100%;max-width:600px; border:2px solid #666"/><br>
+                <figcaption>Fig 2. - Voltage traces selection.</figcaption>
+            </figure>
+            <br>
+            <br><br>
+            <p><b>Step 3 of 4  </b>
+            <button class="skip-intro btn btn-link btn-default">[skip introduction]</button>
+            </p>
+            The feature selection page allows you to select the features to extract from the electrophysiological chosen signals. Features are grouped by type: 1) Spike event features - 2) Spike shape features and 3) Voltage features, and are selected by clicking on the corresponding box. When hovering on feature names a brief description is provided (see Fig. 3).
+            <br><br>
+            <figure>
+                <img src="{% static "efelg/img/efelg_features.png" %}" alt="efel_features" style="width:100%;max-width:600px; border:2px solid #666"/><br>
+                <figcaption>Fig 3. - Feature selection.</figcaption>
+            </figure>
+            <br>
+            Once the selection is completed, click on the Next button to launch the extraction process.
+            <br><br>
+            <p><b>Step 4 of 4  </b>
+            <button class="skip-intro btn btn-link btn-default">[skip introduction]</button>
+            </p>
+            The feature extraction process computes the means and standard deviations of the selected features for individual cells and for individual stimuli. Once a stimulus is chosen for a single file, it will be taken into account for all the selected files corresponding to the same cell. Finally, a grand mean is computed among different cells.
+            A feature.json and protocol.json files are generated for both individual cells and the entire ensemble. A preview is provided on the last page for the .json files corresponding to the grand means and a link to .zip file containing the entire set of results is provided (see Fig. 4).
+            <br><br>
+            <figure>
+                <img src="{% static "efelg/img/efelg_download.png" %}" alt="efel_download" style="width:100%;max-width:600px; border:2px solid #666"/><br>
+                <figcaption>Fig 4. - Results page.</figcaption>
+            </figure>
+            <br>
+            <br>
+            <input id='next_btn' class="btn btn-primary" type="submit" value="Next">
+            <br>
+        </div>
         <!-- div for loading message start -->
-        <div id="termsConditions" class="terms" style="display: None">
-            <div id="termsContainer" class="terms-obj-container">
+        <div id="termsConditions" class="center-container" style="display: none">
+            <div id="termsContainer" class="row-center-container terms-obj-container">
                 <div>
                     <h1>Terms & Conditions</h1>
                     <br>
@@ -102,6 +103,5 @@
             </div>
         </div>
         <!-- div for loading message end -->
-
     </body>
 </html>
