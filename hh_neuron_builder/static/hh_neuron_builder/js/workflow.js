@@ -1,6 +1,7 @@
 $(window).bind("pageshow", function() { 
     checkConditions();
 });
+
 $(document).ready(function(){
     // check conditions on function activation
     checkConditions();
@@ -199,6 +200,10 @@ function checkConditions(){
             document.getElementById("cell-opt-div").style.backgroundColor='rgba(255, 255, 255,0.0)';
         }
 
+        if (data['feat'] | data['opt_files'] | data['opt_set']) {
+            $('#inner-opt-div').show();
+
+        }
         if (data['feat'] & data['opt_files'] & data['opt_set']){
             if (!data['opt_flag']){
                 document.getElementById("launch-opt-btn").disabled = false;  
@@ -216,6 +221,7 @@ function checkConditions(){
 
         // Simulation panel
         if (data['run_sim']){
+            $('#inner-sim-div').show();
             document.getElementById("opt-res-bar").style.background = "green";  
             document.getElementById("down-sim-btn").disabled = false;  
             document.getElementById("run-sim-btn").disabled = false;  
@@ -327,7 +333,7 @@ function displayOptResUploadDiv() {
     document.getElementById("opt-res-file").multiple = false;
     document.getElementById("opt-res-file").accept = ".zip";
     var type = "modsim";
-    var msg = 'Upload optimization results (".zip")';
+    var msg = 'Upload model (".zip")';
     openUploadDiv(type, msg);
 }
 
@@ -390,8 +396,12 @@ function displayJobInfo() {
         var job_key_list = Object.keys(joblist);
         for (var i = 0; i < job_list_len; i++){
             (function(cnrt) {
+                crr_idx = 0;
                 $.getJSON("/hh-neuron-builder/get-nsg-job-details/" + job_key_list[cnrt] + "/", function(job_details){
-                    changeMsgPleaseWaitDiv("Fetching details for job " + (cnrt+1) + " of " + job_list_len);
+                    if (cnrt+1 > crr_idx) {
+                        print_idx = cnrt+1;
+                    }
+                    changeMsgPleaseWaitDiv("Fetching details for job " + (print_idx) + " of " + job_list_len);
 
                     var crr_job_json = job_details;
                     //

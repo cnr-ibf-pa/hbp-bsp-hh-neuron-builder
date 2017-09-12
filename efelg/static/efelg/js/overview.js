@@ -1,4 +1,7 @@
 $(document).ready(function(){
+    document.getElementById('efelg-overview-main-div').style.display = "block";
+    document.getElementById('termsConditions').style.display = "none";
+
     var classname = document.getElementsByClassName("skip-intro");
     
     for (var i = 0; i < classname.length; i++) {
@@ -18,8 +21,6 @@ function displayTermsConditions() {
 
 
 function userAccepted() {
-    document.getElementById('efelg-overview-main-div').style.display = "block";
-    document.getElementById('termsConditions').style.display = "none";
     window.location.href = "show_traces/";
 
 }
