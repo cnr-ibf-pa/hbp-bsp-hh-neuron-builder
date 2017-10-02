@@ -162,7 +162,7 @@
         <div id="e-st-warning-div" class="overlay-wrapper">
             <div id="overlay-e-st-warn" style="top:35%;" class="overlay-content">
                 <div class="please-wait-text" style="color:red; font-size: 18px;"> >> No data
-                selected << </div>
+                    selected << </div>
                 <br>
                 <button id="e-st-warning-div-btn"
                         type="button" 
@@ -177,23 +177,29 @@
 
         <!-- User's choice div -->
         <div id="e-st-user-choice-div" class="overlay-wrapper">
-            <div id="overlay-e-st-user-choice" style="top:20%;heigth:50%" class="overlay-content">
-                <br>
-                <button id="e-st-user-choice-div-btn"
-                        type="button" 
-                        class="btn btn-default"
-                        style="margin:15px;"
-                        onclick="closeUserChoiceList()">
-                    Accept
-                </button>
-                <button id="e-st-user-choice-div-btn"
-                        type="button" 
-                        class="btn btn-default"
-                        style="margin:15px;"
-                        onclick="closeUserChoiceList()">
-                   Cancel
-                </button>
+            <div id="overlay-e-st-user-choice" class="overlay-content">
+                <div><strong>List of selected traces. 
+                        <br>
+                        Click "Confirm" to continue.</strong>
+                </div>
+                <div id="e-st-user-choice">
+                </div>
             </div>
+            <br>
+            <button id="e-st-user-choice-accept-btn"
+                    type="button" 
+                    class="btn btn-default"
+                    style="margin:5px;"
+                    onclick="acceptUserChoiceList()">
+                Confirm
+            </button>
+            <button id="e-st-user-choice-cancel-btn"
+                    type="button" 
+                    class="btn btn-default"
+                    style="margin:5px;"
+                    onclick="closeUserChoiceList()">
+                Cancel
+            </button>
         </div>
         <!-- -->
 

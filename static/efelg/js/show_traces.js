@@ -382,20 +382,23 @@ function submitAll() {
         list_len = Object.keys(data).length;
         e.preventDefault(); 
         if (list_len == 0) {
-            document.getElementById("main-e-st-div").style.display = "hidden";
+            document.getElementById("main-e-st-div").style.display = "none";
             document.getElementById("e-st-warning-div").style.display = "block";
         } else {
-            document.getElementById("main-e-st-div").style.display = "hidden";
+            document.getElementById("main-e-st-div").style.display = "none";
             document.getElementById("e-st-warning-div").style.display = "hidden";
             document.getElementById("e-st-user-choice-div").style.display = "block";
+            var list_div = document.getElementById("e-st-user-choice");
+            while(list_div.firstChild){
+                list_div.removeChild(list_div.firstChild);
+            }
             for (var i = 0; i < list_len; i++){
                 var crr_key = Object.keys(data)[i];
                 var crr_stim = data[Object.keys(data)[i]]['stim'];
-                var list_div = document.getElementById("overlay-e-st-user-choice");
                 var crr_div = document.createElement("DIV");
                 crr_div.className = "center-container row-center-container";
                 if (i % 2 == 0) {
-                    crr_div.style.backgroundColor = 'rgba(200, 200, 200)'; 
+                    crr_div.style.backgroundColor = 'rgba(220, 220, 220)'; 
                 } else {
                     crr_div.style.background = 'rgba(240, 240, 240)'; 
                 }
@@ -457,4 +460,25 @@ function serializeAll() {
 function splitFilename(cellname){
     var filenameTokens = cellname.split('____');
     return filenameTokens
+}
+
+
+function acceptUserChoiceList() {
+    var crr_div = document.getElementById("e-st-user-choice");
+    while(crr_div.firstChild){
+        crr_div.removeChild(crr_div.firstChild);
+    }
+    document.getElementById("e-st-user-choice-div").style.display = "none";
+    var form = $('#gonextform')[0];
+    form.submit();
+}
+
+function closeUserChoiceList() {
+    document.getElementById("e-st-user-choice-div").style.display = "none";
+    document.getElementById("main-e-st-div").style.display = "block";
+    var crr_div = document.getElementById("e-st-user-choice");
+    while(crr_div.firstChild){
+        crr_div.removeChild(crr_div.firstChild);
+    }
+
 }
