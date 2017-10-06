@@ -410,11 +410,9 @@ def extract_features(request):
     config['comment'] = []
     config['cells'] = final_cell_dict
     config['options'] = {'relative': False, 'tolerance': 0.02, \
-            'target': target, 'delay': 500, 'nanmean': False}
-    print(config) 
-    print(config) 
-    print(config) 
-    #extractor = bpext.Extractor(full_crr_result_folder, config)
+            'target': target, 'delay': 500, 'nanmean': False, 'logging':False, \
+            'nangrace': 0, 'spike_threshold': 1, 'amp_min': 0,
+            'strict_stiminterval': {'base': True}}
     extractor = bpefe.Extractor(full_crr_result_folder, config, use_git=False)
     extractor.create_dataset()
     extractor.plt_traces()
