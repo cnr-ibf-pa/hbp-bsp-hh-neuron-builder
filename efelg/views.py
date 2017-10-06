@@ -131,26 +131,26 @@ def overview(request):
             'efel_data', rel_uploaded_folder)
     
     # build local folder complete paths
-    rel_user_crr_results_folder = os.path.join(username, time_info)
-    full_user_results_folder = os.path.join(full_result_folder, username)
+    rel_user_crr_results_folder = os.path.join(userid, time_info)
+    full_user_results_folder = os.path.join(full_result_folder, userid)
     full_user_crr_results_folder = os.path.join(full_result_folder, \
             rel_user_crr_results_folder)
-    full_user_uploaded_folder = os.path.join(full_uploaded_folder, username)
-    full_user_crr_res_res_folder = os.path.join(full_result_folder, username, \
+    full_user_uploaded_folder = os.path.join(full_uploaded_folder, userid)
+    full_user_crr_res_res_folder = os.path.join(full_result_folder, userid, \
             time_info, 'u_res')
-    full_user_crr_res_data_folder = os.path.join(full_result_folder, username, \
+    full_user_crr_res_data_folder = os.path.join(full_result_folder, userid, \
             time_info, 'u_data')
     
     # build media relative result path
     media_rel_crr_user_res = os.path.join('media', 'efel_data', \
-            rel_result_folder, username, time_info, 'u_res')
+            rel_result_folder, userid, time_info, 'u_res')
     media_abs_crr_user_res = os.path.join(settings.MEDIA_ROOT, 'efel_data', \
-            rel_result_folder, username, time_info, 'u_res')
+            rel_result_folder, userid, time_info, 'u_res')
 
     # storage relative path folder
     st_rel_user_results_folder = os.path.join(rel_result_folder, \
             rel_user_crr_results_folder)
-    st_rel_user_uploaded_folder = os.path.join(rel_uploaded_folder, username)
+    st_rel_user_uploaded_folder = os.path.join(rel_uploaded_folder, userid)
     
     # store paths in request.session
     request.session['media_rel_crr_user_res'] = media_rel_crr_user_res 
@@ -411,6 +411,9 @@ def extract_features(request):
     config['cells'] = final_cell_dict
     config['options'] = {'relative': False, 'tolerance': 0.02, \
             'target': target, 'delay': 500, 'nanmean': False}
+    print(config) 
+    print(config) 
+    print(config) 
     #extractor = bpext.Extractor(full_crr_result_folder, config)
     extractor = bpefe.Extractor(full_crr_result_folder, config, use_git=False)
     extractor.create_dataset()
