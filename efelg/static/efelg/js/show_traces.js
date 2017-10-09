@@ -378,7 +378,8 @@ function submitAll() {
     $submitForm.submit(function(e){
         var data = serializeAll();
         var form = $('#gonextform')[0];
-        form[0].value = JSON.stringify(data);
+        console.log(form);
+        form[1].value = JSON.stringify(data);
         list_len = Object.keys(data).length;
         e.preventDefault(); 
         if (list_len == 0) {
@@ -422,6 +423,7 @@ function submitAll() {
                 list_div.appendChild(crr_div);
             }
         }
+        //console.log(form);
         //form.submit();
     });
 }
@@ -470,6 +472,7 @@ function acceptUserChoiceList() {
     }
     document.getElementById("e-st-user-choice-div").style.display = "none";
     var form = $('#gonextform')[0];
+    console.log(form);
     form.submit();
 }
 

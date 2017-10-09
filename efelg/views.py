@@ -176,13 +176,14 @@ def overview(request):
 
     
 ##### serve select_features
-@csrf_exempt
 def select_features(request):
     with open(os.path.join(settings.BASE_DIR, 'static', \
             'efelg', 'efel_features_final.json')) as json_file:
         features_dict = json.load(json_file) 
     feature_names = efel.getFeatureNames()
-    selected_traces_rest = request.POST.get('csrfmiddlewaretoken')
+    #selected_traces_rest = request.POST.get('csrfmiddlewaretoken')
+    selected_traces_rest = request.POST.get('data')
+    pprint.pprint(selected_traces_rest)
     selected_traces_rest_json = json.loads(selected_traces_rest)
     request.session['selected_traces_rest_json'] = selected_traces_rest_json
 
@@ -320,7 +321,6 @@ def get_data(request, cellname=""):
 
 #####
 @login_required(login_url='/login/hbp')
-@csrf_exempt
 def extract_features(request):
     data_dir = request.session['data_dir']
     json_dir = request.session['json_dir']
@@ -539,7 +539,6 @@ def features_pdf_path(request):
 
 #####
 @login_required(login_url='/login/hbp')
-@csrf_exempt
 def upload_files(request):
     """
     Upload file to local folder

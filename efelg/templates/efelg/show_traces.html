@@ -11,7 +11,8 @@
         <meta name="viewport" content="width=device-width">
 
         <link rel="stylesheet" 
-              href="{% static 'hbp-collaboratory-theme/dist/css/bootstrap.css' %}">
+              href=
+              "{% static 'hbp-collaboratory-theme/dist/css/bootstrap.css' %}">
         <link rel="stylesheet" href="{% static 'bspg.css' %}">
         <script type="text/javascript" 
                 src="{% static 'jquery/dist/jquery.min.js' %}"></script>
@@ -76,23 +77,21 @@
                     </select>
 
                     <button onclick='location.reload()' class="btn btn-default">
-                        reset
+                        Reset
                     </button>
                 </div>
-
                 <br>
 
                 <div id='charts'></div>
-
             </div>
             <br>
-
 
             <form id="upload_files" 
                   name="upload_files_name" 
                   method="POST"
                   enctype="multipart/form-data"
-                  action="/efelg/upload_files">{% csrf_token  %}
+                  action="/efelg/upload_files">
+                {% csrf_token  %}
                   <div class="panel panel-success" id="input-groups">
                       <div class="panel-heading">
                           Upload your own file(s) and then select 
@@ -139,11 +138,10 @@
             </form>
             <div id='charts_upload'></div>
 
-
             <form 
                                     id='gonextform'
                                     method='POST'
-                                    action='/efelg/select_features/'>{% csrf_token %}
+                                    action= '/efelg/select_features/'> {% csrf_token %} 
                                     <input name='data' type='hidden'>
 
                                     <button onclick='submitAll()' 
@@ -160,9 +158,11 @@
 
         <!-- "Please wait" message div -->
         <div id="e-st-warning-div" class="overlay-wrapper">
-            <div id="overlay-e-st-warn" style="top:35%;" class="overlay-content">
-                <div class="please-wait-text" style="color:red; font-size: 18px;"> >> No data
-                    selected << </div>
+            <div id="overlay-e-st-warn" 
+                style="top:35%;" class="overlay-content">
+                <div class="please-wait-text" 
+                     style="color:red; font-size: 18px;"> >> No data
+                     selected << </div>
                 <br>
                 <button id="e-st-warning-div-btn"
                         type="button" 
