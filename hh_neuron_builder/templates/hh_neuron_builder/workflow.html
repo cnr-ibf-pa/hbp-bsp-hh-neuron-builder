@@ -11,7 +11,7 @@
             <button id="wf-btn-home" class="btn home-title-btn" onclick="window.location.href='/hh-neuron-builder/'">Home</button>
             <button id="wf-btn-new-wf" class="btn home-title-btn" title="Create a new workflow" onclick=initNewWorkflow();>New</button>
             <button id="wf-btn-clone-wf" class="btn home-title-btn" title="Clone current workflow">Clone</button>
-            <button id="wf-btn-save" class="btn home-title-btn" title="Save current workflow to Collab Storage" disabled>Save</button>
+            <button id="wf-btn-save" class="btn home-title-btn" title="Save current workflow to Collab Storage">Save</button>
         </div>
 
     </div>
@@ -183,11 +183,13 @@
             <input type="radio" name="hpc_sys" value="nsg" checked>
             <label for="nsg">NeuroScience Gateway (NSG)</label>
             <br>
-            <label for="username">Username</label>
-            <input id="username" required type="text" name="username">
+            <label for="username_submit">Username</label>
+            <input id="username_submit" required type="text" name="username_submit">
             <br>
-            <label for="password">Password</label>
-            <input id="password" required type="password" name="password">
+            <label for="password_submit">Password</label>
+            <input id="password_submit" required type="password"
+            name="password_submit">
+            l
             <br>
             <br>
             <button id="cancel-param-btn" class="btn btn-primary closebtn">Cancel</button>
@@ -275,8 +277,6 @@
     </div>
 </div>
 <!-- --> 
-
-
 
 <script type="text/javascript" src="{% static 'hh_neuron_builder/js/workflow.js' %}"></script>
 <script type="text/javascript" src="{% static 'hh_neuron_builder/js/home.js' %}"></script>

@@ -13,15 +13,15 @@ import collections
 import re
 
 class Nsg:
-    def __init__(self, username="", password="", core_num=0, node_num=0, \
+    def __init__(self, username_submit="", password_submit="", core_num=0, node_num=0, \
             runtime=0, gennum=0, offsize=0, dest_dir="", source_opt_zip="", \
             opt_name="", source_feat="", username_fetch="", password_fetch="", \
             opt_res_dir=""):
         """
         Initialization function
         """
-        self.username = username
-        self.password = password
+        self.username_submit = username_submit
+        self.password_submit = password_submit
         self.username_fetch = username_fetch
         self.password_fetch = password_fetch
         self.core_num = core_num
@@ -59,8 +59,8 @@ class Nsg:
         Launch process on NSG
         """
 
-        CRA_USER = self.username
-        PASSWORD = self.password
+        CRA_USER = self.username_submit
+        PASSWORD = self.password_submit
         KEY = self.key
         URL = self.url
         TOOL = self.tool

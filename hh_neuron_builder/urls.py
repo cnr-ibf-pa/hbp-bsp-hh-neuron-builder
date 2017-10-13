@@ -29,13 +29,15 @@ urlpatterns = [
     url(r'^download-job/(?P<job_id>.*)/$', views.download_job),    
     url(r'^upload-to-naas$', views.upload_to_naas),    
     url(r'^copy-feature-files/(?P<featurefolder>.*)/$', views.copy_feature_files),
-    url(r'^fetch-opt-set-file/(?P<source_opt_name>[_a-zA-Z0-9.]*)/$', views.fetch_opt_set_file),
+    url(r'^fetch-opt-set-file/(?P<source_opt_name>[_a-zA-Z0-9\-.]*)/$', views.fetch_opt_set_file),
     url(r'^model-loaded-flag$', views.model_loaded_flag),
     url(r'^delete-files/(?P<filetype>feat|optset|modsim)/$', views.delete_files),
     url(r'^modify-analysis-py$', views.modify_analysis_py),
     url(r'^zip-sim$', views.zip_sim),
     url(r'^upload-files/(?P<filetype>feat|modsim|optset)/$', views.upload_files),
     url(r'^download-zip/(?P<filetype>feat|modsim|optset)/$', views.download_zip),
+    url(r'^save-wf-to-storage$', views.save_wf_to_storage),
+    url(r'^get-context/$', views.get_context),
     #url(r'^upload-files$', views.upload_files),
 ]
 

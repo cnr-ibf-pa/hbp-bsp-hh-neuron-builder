@@ -63,6 +63,7 @@ $(document).ready(function(){
     document.getElementById("cancel-param-btn").onclick = closeParameterDiv;
     document.getElementById("down-opt-set-btn").onclick = downloadLocalOptSet;
     document.getElementById("wf-btn-clone-wf").onclick = cloneWorkflow;
+    document.getElementById("wf-btn-save").onclick = saveWorkflow;
 
 
     // manage simulation run buttons
@@ -521,6 +522,14 @@ function downloadLocal(filetype) {
 function cloneWorkflow() {
     displayPleaseWaitDiv();
     $.getJSON('/hh-neuron-builder/create-wf-folders/cloned', function(zip_data){
+        closePleaseWaitDiv();
+        checkConditions();
+    });
+}
+
+function saveWorkflow() {
+    displayPleaseWaitDiv();
+    $.getJSON('/hh-neuron-builder/save-wf-to-storage', function(zip_data){
         closePleaseWaitDiv();
         checkConditions();
     });

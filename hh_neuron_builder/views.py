@@ -28,9 +28,20 @@ import bbp_client
 from bbp_client.client import *
 import bbp_services.client as bsc
 
+import hbp_service_client
+import hbp_service_client.storage_service.client as service_client
+import hbp_service_client.storage_service.api as service_api_client
+from hbp_service_client.document_service.service_locator import ServiceLocator
+from hbp_service_client.document_service.client import Client
+from hbp_service_client.document_service.requestor import DocNotFoundException, DocException
+
 # import local tools
 from tools import hpc_job_manager
 from tools import resources
+from tools import collab_storage_manager
+
+# 
+import oauth
 
 # set logging up
 logging.basicConfig(stream=sys.stdout)
@@ -50,11 +61,19 @@ def home(request):
     """
 
     my_url = 'https://services.humanbrainproject.eu/idm/v1/api/user/me'
+    hbp_collab_service_url = "https://services.humanbrainproject.eu/collab/v0/collab/context/"
+
     headers = {'Authorization': get_auth_header(request.user.social_auth.get())}
     res = requests.get(my_url, headers = headers)
     res_dict = res.json()
     username = res_dict['username']
     userid = res_dict['id']
+    context = request.GET.get('ctx')
+    collab_res = requests.get(hbp_collab_service_url + context, headers = headers)
+    request.session['hhnb_storage_folder'] = "hhnb_workflows"
+
+    collab_id = collab_res.json()['collab']['id']
+
     workflows_dir = os.path.join(settings.MEDIA_ROOT, 'hhnb', 'workflows')
     scm_structure_path = os.path.join(settings.MEDIA_ROOT, 'hhnb', 'bsp_data_repository', 'singlecellmodeling_structure.json')
     opt_model_path = os.path.join(settings.MEDIA_ROOT, 'hhnb', 'bsp_data_repository', 'optimizations')
@@ -62,12 +81,12 @@ def home(request):
     # create global variables in request.session
     request.session['userid'] = userid
     request.session['username'] = username
+    request.session['context'] = context
+    request.session['collab_id'] = collab_id
     request.session['headers'] = headers
     request.session['singlecellmodeling_structure_path'] = scm_structure_path 
     request.session['optimization_model_path'] = opt_model_path
     request.session['workflows_dir'] = workflows_dir
-
-
 
     accesslogger.info(resources.string_for_log('home', request))
 
@@ -95,8 +114,8 @@ def create_wf_folders(request, wf_type="new"):
         request.session.pop('nodenum', None)
         request.session.pop('corenum', None)
         request.session.pop('runtime', None)
-        request.session.pop('username', None)
-        request.session.pop('password', None)
+        request.session.pop('username_submit', None)
+        request.session.pop('password_submit', None)
         request.session.pop('hpc_sys', None)
         request.session.pop('username_fetch', None)
         request.session.pop('password_fetch', None)
@@ -202,6 +221,8 @@ def fetch_opt_set_file(request, source_opt_name=""):
 
     opt_model_path = request.session['optimization_model_path']
     user_dir_data_opt = request.session['user_dir_data_opt_set']
+    shutil.rmtree(user_dir_data_opt)
+    os.makedirs(user_dir_data_opt)
     request.session['source_opt_name'] = source_opt_name
     request.session['source_opt_zip'] = os.path.join(opt_model_path, source_opt_name, source_opt_name + '.zip')
     shutil.copy(request.session['source_opt_zip'], user_dir_data_opt)
@@ -215,8 +236,8 @@ def run_optimization(request):
     """
 
     # fetch information from the session variable
-    username = request.session['username']
-    password = request.session['password']
+    username_submit = request.session['username_submit']
+    password_submit = request.session['password_submit']
     core_num = request.session['corenum']
     node_num = request.session['nodenum']
     runtime = request.session['runtime']
@@ -237,7 +258,8 @@ def run_optimization(request):
 
     if hpc_sys == "nsg":
 
-	nsg_obj = hpc_job_manager.Nsg(username=username, password=password, core_num=core_num, node_num=node_num, \
+	nsg_obj = hpc_job_manager.Nsg(username_submit=username_submit,
+                password_submit=password_submit, core_num=core_num, node_num=node_num, \
 		runtime=runtime, gennum=gennum, offsize=offsize, dest_dir=dest_dir, source_opt_zip=source_opt_zip, opt_name=opt_name, \
 		source_feat=source_feat, opt_res_dir=opt_res_dir)
 	nsg_obj.createzip()
@@ -318,8 +340,8 @@ def submit_run_param(request):
     request.session['nodenum'] = int(form_data['node-num']) 
     request.session['corenum'] = int(form_data['core-num'])  
     request.session['runtime'] = float(form_data['runtime'])
-    request.session['username'] = form_data['username']
-    request.session['password'] = form_data['password']
+    request.session['username_submit'] = form_data['username_submit']
+    request.session['password_submit'] = form_data['password_submit']
     request.session['hpc_sys'] = form_data['hpc_sys']
 
     return HttpResponse(json.dumps({"response": "nothing"}), content_type="application/json")
@@ -351,11 +373,12 @@ def check_cond_exist(request):
     if os.path.isfile(os.path.join(data_feat, "features.json")) and \
 	    os.path.isfile(os.path.join(data_feat, "protocols.json")):
 		response['feat'] = True
-    if not os.listdir(data_opt) == []:
+    if os.path.exists(data_opt) and not os.listdir(data_opt) == []:
 	response['opt_files'] = True
-    if not os.listdir(sim_zip) == []:
+    if os.path.exists(sim_zip) and not os.listdir(sim_zip) == []:
 	response['run_sim'] = True
-    if ('gennum' and 'offsize' and 'nodenum' and 'corenum' and 'runtime' and 'username' and 'password' and 'hpc_sys') in request.session:
+    if ('gennum' and 'offsize' and 'nodenum' and 'corenum' and 'runtime' and \
+            'username_submit' and 'password_submit' and 'hpc_sys') in request.session:
 	response['opt_set'] = True
     if request.session['opt_flag']:
 	response['opt_flag'] = True
@@ -688,3 +711,74 @@ def download_zip(request, filetype=""):
     return response
 
 
+########### handle file upload to storage collab
+def save_wf_to_storage(request):
+
+    # retrieve access_token
+    access_token = get_access_token(request.user.social_auth.get())
+
+    # retrieve data from request.session
+    collab_id = request.session['collab_id']
+    user_crr_wf_dir = request.session['user_dir']
+    wf_id = request.session['wf_id']
+    hhnb_storage_folder = request.session['hhnb_storage_folder']
+    username = request.session["username"]
+
+    context = request.session['context']
+    
+    access_token = get_access_token(request.user.social_auth.get())
+
+    sc = service_client.Client.new(access_token)
+    ac = service_api_client.ApiClient.new(access_token)
+    
+    # retrieve collab related projects
+    project_dict = ac.list_projects(None, None, None, collab_id)
+    project = project_dict['results']
+    storage_root = ac.get_entity_path(project[0]['uuid'])
+    
+    # get current working directory
+    current_working_dir = os.getcwd()
+
+    # create zip file with the entire workflow
+    os.chdir(os.path.join(user_crr_wf_dir, '..'))
+    zipname = wf_id + '.zip'
+    if os.path.exists(zipname):
+        os.remove(zipname)
+
+    foo = zipfile.ZipFile(zipname, 'w', zipfile.ZIP_DEFLATED)
+
+    for root, dirs, files in os.walk(os.path.join('.', wf_id)):
+        for d in dirs:
+            if os.listdir(os.path.join(root,d)) == []:
+                foo.write(os.path.join(root, d))
+        for f in files:
+            foo.write(os.path.join(root, f))
+    foo.close()
+    
+    # create user's folder if it does not exist
+    hhnb_full_storage_path = os.path.join(storage_root, hhnb_storage_folder)
+    user_storage_path = os.path.join(hhnb_full_storage_path, username)
+    crr_zip_storage_path = os.path.join(user_storage_path, zipname) 
+
+    if not sc.exists(str(hhnb_full_storage_path)):
+        sc.mkdir(str(hhnb_full_storage_path))
+    if not sc.exists(str(user_storage_path)):
+        sc.mkdir(str(user_storage_path))
+    if sc.exists(str(crr_zip_storage_path)):
+        sc.delete(str(crr_zip_storage_path))
+
+    sc.upload_file(zipname, str(crr_zip_storage_path), \
+        "application/zip")
+    os.chdir(current_working_dir)
+
+    return HttpResponse(json.dumps({"response":"OK", "message":""}), content_type="application/json")
+
+
+
+def get_context(request):
+    """
+    Get the context used to call the application
+    """
+    context = request.session['context']
+
+    return HttpResponse(json.dumps({"context":context}), content_type="application/json")

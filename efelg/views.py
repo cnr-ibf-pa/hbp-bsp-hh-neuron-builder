@@ -59,16 +59,26 @@ def overview(request):
         #
         #context = request.GET.get('ctx')
         my_url = 'https://services.humanbrainproject.eu/idm/v1/api/user/me'
+        hbp_collab_service_url = "https://services.humanbrainproject.eu/collab/v0/collab/context/"
+
         headers = {'Authorization': \
                 get_auth_header(request.user.social_auth.get())}
          
         res = requests.get(my_url, headers = headers)
         res_dict = res.json()
 
+        context = request.GET.get('ctx')
+
+        collab_res = requests.get(hbp_collab_service_url + context, headers = \
+            headers)
+        collab_id = collab_res.json()['collab']['id']
+
+
         # get username from request
         username = res_dict['username']
         userid = res_dict['id']
-        # collab_id = res_dict['collab']['id']
+
+        collab_id = collab_res.json()['collab']['id']
 
         # get headers
         svc_url = settings.HBP_COLLAB_SERVICE_URL
