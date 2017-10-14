@@ -38,7 +38,6 @@ from hbp_service_client.document_service.requestor import DocNotFoundException, 
 # import local tools
 from tools import hpc_job_manager
 from tools import resources
-from tools import collab_storage_manager
 
 # 
 import oauth
