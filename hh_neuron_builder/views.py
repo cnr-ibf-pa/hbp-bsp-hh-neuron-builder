@@ -39,9 +39,6 @@ from hbp_service_client.document_service.requestor import DocNotFoundException, 
 from tools import hpc_job_manager
 from tools import resources
 
-# 
-import oauth
-
 # set logging up
 logging.basicConfig(stream=sys.stdout)
 logger = logging.getLogger()
