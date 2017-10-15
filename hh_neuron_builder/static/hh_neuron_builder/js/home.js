@@ -1,20 +1,88 @@
 $(document).ready(function(){
+    document.getElementById("cancel-wf-job-list-btn").onclick = closeFetchWfStorageDiv;
+    document.getElementById("ok-nowf-btn").onclick = closeNoWfDiv;
+    $('#wf-storage-list-div').on('click', '.down-wf-btn', function(){
+        downloadWf(this.id);
+    });
 });
 
-function initNewWorkflow() {
-    $.getJSON("/hh-neuron-builder/create-wf-folders/new/", function(data){
-        window.location.href = "/hh-neuron-builder/workflow/";
+
+function fetchWorkflows() {
+    openPleaseWaitDiv("Searching for workflows in your storage");
+    $.getJSON("/hh-neuron-builder/wf-storage-list/", function(data){
+        if (data['list'].length == 0){
+            closePleaseWaitDiv();
+            openNoWfDiv();
+        } else {
+            var list = data['list'];
+            for (var i=0; i<list.length; i++) {
+                var crr_wf_div = document.createElement("DIV");
+                crr_wf_div.className = "center-container row-center";
+                var crr_wf_span = document.createElement("SPAN");
+                crr_wf_span.className = "simple-span w-40pc center-container row-center-container";
+                var textnode = document.createTextNode(list[i]); 
+                crr_wf_span.appendChild(textnode);
+                crr_wf_div.appendChild(crr_wf_span);
+                var wf_download_button = document.createElement("button");
+                wf_download_button.id = list[i];
+                wf_download_button.innerHTML = "Download";
+                wf_download_button.className = "btn btn-default down-wf-btn";
+                crr_wf_div.appendChild(wf_download_button);
+                document.getElementById("wf-storage-list-div").prepend(crr_wf_div);
+            }
+            document.getElementById("wf-storage-list-div").prepend(document.getElementById("fetch-wf-storage-title"));
+            closePleaseWaitDiv();
+            document.getElementById("overlay-wrapper-wf").style.display = "block";
+            document.getElementById("home-main-div").style.pointerEvents = "none";
+            document.body.style.overflow = "hidden";
+        };
     });
-};
+}
+//document.getElementById("overlaywrapperwait").style.display = "block";
+//document.getElementById("mainDiv").style.pointerEvents = "none";
+//document.body.style.overflow = "hidden";
+//document.getElementById("overlaywrapperwait").style.display = "none";
+//document.getElementById("mainDiv").style.pointerEvents = "auto";
+//document.body.style.overflow = "auto";
 
-function chooseOptModel() {
-    window.location.href = "/hh-neuron-builder/choose-opt-model"; 
+function openNoWfDiv() {
+    document.getElementById("home-overlay-wrapper-nowf").style.display = "block";
+    document.getElementById("home-main-div").style.pointerEvents = "none";
+    document.body.style.overflow = "auto";
 }
 
-function reloadCurrentPage() {
-    window.location.href = "";
+function closeNoWfDiv() {
+    document.getElementById("home-main-div").style.pointerEvents = "auto";
+    document.getElementById("home-main-div").style.display = "block";
+    document.body.style.overflow = "auto";
+    document.getElementById("home-overlay-wrapper-nowf").style.display = "none";
 }
 
-function colorBars() {
-    window.location.href = "";
+function openPleaseWaitDiv(message) {
+    document.getElementById("home-overlay-wrapper-wait").style.display = "block";
+    document.getElementById("home-main-div").style.pointerEvents = "none";
+    document.body.style.overflow = "auto";
+    document.getElementById("home-wait-dynamic-text").innerHTML = message;
+}
+
+function closePleaseWaitDiv(){
+    document.getElementById("home-overlay-wrapper-wait").style.display = "none";
+    document.getElementById("home-main-div").style.pointerEvents = "auto";
+    document.body.style.overflow = "auto";
+}
+
+function closeFetchWfStorageDiv() {
+    document.getElementById("overlay-wrapper-wf").style.display = "none";
+    document.getElementById("home-main-div").style.pointerEvents = "auto";
+    document.body.style.overflow = "auto";
+}
+
+function downloadWf(wfid) {
+    openPleaseWaitDiv("Downloading workflow from the storage.");
+    closeFetchWfStorageDiv();
+    var wfid_no_ext = wfid.replace(/\.[^/.]+$/, "")
+    $.getJSON('/hh-neuron-builder/fetch-wf-from-storage/' + wfid_no_ext + '/', function(data){
+                closePleaseWaitDiv();
+                window.location.href = "/hh-neuron-builder/workflow/";
+    });
 }

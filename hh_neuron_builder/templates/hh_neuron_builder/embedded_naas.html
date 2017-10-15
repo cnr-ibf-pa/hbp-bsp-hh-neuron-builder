@@ -1,29 +1,16 @@
 {% extends 'hh_neuron_builder/home_layout.html' %}
 {% load static  %}
+{% load oidc_session %}
 
 {% block content  %}
 
 <div id="efelgui-frame-div">
     <iframe style="border-style: solid;" id="naas-frame" class="object-iframe" type="text/html" src=""></iframe>
 </div>
-<button type="button" id="back-to-workflow" style="float:right;" class="btn btn-default workflow-btn">Back to workflow</button>
+<button type="button" id="back-to-wf-btn" style="float:right;" class="btn btn-default workflow-btn">Back to workflow</button>
 
-
-
-
-
-
-<script type="text/javascript" src="{% static 'hh_neuron_builder/js/embedded_efel_gui.js' %}"></script>
-<script>
-
-$.getJSON("/hh-neuron-builder/model-loaded-flag", function(data){
-    var o = data["response"];
-    if (o == "ERROR"){
-        window.location.href = "";
-    } else {
-        document.getElementById("naas-frame").setAttribute("src","https://blue-naas.humanbrainproject.eu/#/model/" + o)
-    }
-});
-
-</script>
+<!-- 
+    <script type="text/javascript" src="{% static 'hh_neuron_builder/js/embedded_efel_gui.js' %}"></script>
+    -->
+<script type="text/javascript" src="{% static 'hh_neuron_builder/js/embedded_naas.js' %}"></script>
 {% endblock  %}

@@ -1,5 +1,6 @@
 {% extends 'hh_neuron_builder/home_layout.html' %}
 {% load static  %}
+{% load oidc_session %}
 
 {% block content  %}
 
@@ -36,8 +37,8 @@
                         <!--
                             <button id="edit-feat" type="button" class="btn btn-link" disabled>Edit features files</button>
                         -->
-                        <button id="del-feat" type="button" class="btn btn-link" disabled>Delete feature files</button>
-                        <button id="down-feat-btn" type="button" class="btn btn-link">Download feature files</button>
+                        <button id="del-feat" title="Delete feature files" type="button" class="btn btn-link" disabled>Delete</button>
+                        <button id="down-feat-btn" title="Download feature files" type="button" class="btn btn-link">Download</button>
                     </div>
                     <div id="feat-bar" class="status-bar center-container row-center-container">
                     </div>
@@ -58,8 +59,8 @@
                         <!--
                             <button id="edit-opt" type="button" class="btn btn-link" disabled>Edit optimization files</button>
                         -->
-                        <button id="del-opt" type="button" class="btn btn-link" disabled>Delete optimization files</button>
-                        <button id="down-opt-set-btn" type="button" class="btn btn-link">Download optimization file</button>
+                        <button id="del-opt" title="Delete optimization files" type="button" class="btn btn-link" disabled>Delete</button>
+                        <button id="down-opt-set-btn" title="Download optimization files" type="button" class="btn btn-link">Download</button>
                     </div>
                     <div id="opt-files-bar" class="center-container status-bar">
                     </div>
@@ -113,8 +114,8 @@
                         <!--
                             <button id="edit-sim" type="button" class="btn btn-link" disabled>Edit optimization files</button>
                         -->
-                        <button id="del-sim-btn" type="button" class="btn btn-link" disabled>Delete simulation file</button>
-                        <button id="down-sim-btn" type="button" class="btn btn-link">Download simulation file</button>
+                        <button id="del-sim-btn" title="Delete optimization results" type="button" class="btn btn-link" disabled>Delete</button>
+                        <button id="down-sim-btn" title="Download optimization results" type="button" class="btn btn-link">Download</button>
                     </div>
                     <div id="opt-res-bar" class="status-bar center-container">
                     </div>
@@ -189,7 +190,6 @@
             <label for="password_submit">Password</label>
             <input id="password_submit" required type="password"
             name="password_submit">
-            l
             <br>
             <br>
             <button id="cancel-param-btn" class="btn btn-primary closebtn">Cancel</button>
@@ -279,6 +279,6 @@
 <!-- --> 
 
 <script type="text/javascript" src="{% static 'hh_neuron_builder/js/workflow.js' %}"></script>
-<script type="text/javascript" src="{% static 'hh_neuron_builder/js/home.js' %}"></script>
+<script type="text/javascript" src="{% static 'hh_neuron_builder/js/common.js' %}"></script>
 
 {% endblock  %}

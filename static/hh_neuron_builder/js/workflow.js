@@ -423,8 +423,8 @@ function displayJobInfo() {
                     var job_id_span = document.createElement("SPAN");
                     job_id_span.className = "simple-span w-30pc center-container row-center-container";
                     var textnode = document.createTextNode(crr_job_json['job_id']); 
-                    job_id_span.appendChild(textnode)
-                        crr_div.appendChild(job_id_span);
+                    job_id_span.appendChild(textnode);
+                    crr_div.appendChild(job_id_span);
                     //
                     var job_date_span = document.createElement("SPAN");
                     job_date_span.className = "simple-span w-20pc center-container row-center-container";

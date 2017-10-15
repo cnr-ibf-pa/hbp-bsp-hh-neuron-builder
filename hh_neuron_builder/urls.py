@@ -38,6 +38,9 @@ urlpatterns = [
     url(r'^download-zip/(?P<filetype>feat|modsim|optset)/$', views.download_zip),
     url(r'^save-wf-to-storage$', views.save_wf_to_storage),
     url(r'^get-context/$', views.get_context),
+    url(r'^wf-storage-list/$', views.wf_storage_list),
+    url(r'^fetch-wf-from-storage/(?P<wfid>[0-9]{14}_[0-9]+)/$',
+        views.fetch_wf_from_storage),
     #url(r'^upload-files$', views.upload_files),
 ]
 

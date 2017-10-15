@@ -1,8 +1,5 @@
-$(document).ready(function(){
-    document.getElementById("back-to-wf-btn").onclick = backToWorkflow;
-});
-
-
-function backToWorkflow() {
-    window.location.href = "/hh-neuron-builder/workflow";
+function initNewWorkflow() {
+    $.getJSON("/hh-neuron-builder/create-wf-folders/new/", function(data){
+        window.location.href = "/hh-neuron-builder/workflow/";
+    });
 }

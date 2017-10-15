@@ -3,6 +3,5 @@ $(document).ready(function(){
 });
 
 function workflowPage() {
-    console.log()
     window.location.href = "/hh-neuron-builder/workflow/";
 }

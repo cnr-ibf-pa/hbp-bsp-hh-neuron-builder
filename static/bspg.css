@@ -200,6 +200,10 @@
     margin-bottom: 20px;
 }
 
+.w-40pc {
+    max-width: 40%;
+}
+
 .w-30pc {
     max-width: 30%;
 }

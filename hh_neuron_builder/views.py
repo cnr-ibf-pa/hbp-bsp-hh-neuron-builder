@@ -59,30 +59,38 @@ def home(request):
     my_url = 'https://services.humanbrainproject.eu/idm/v1/api/user/me'
     hbp_collab_service_url = "https://services.humanbrainproject.eu/collab/v0/collab/context/"
 
-    headers = {'Authorization': get_auth_header(request.user.social_auth.get())}
+    if "headers" not in request.session:
+        headers = {'Authorization': get_auth_header(request.user.social_auth.get())}
+        request.session['headers'] = headers
+    else:
+        headers = request.session["headers"]
+
     res = requests.get(my_url, headers = headers)
     res_dict = res.json()
-    username = res_dict['username']
-    userid = res_dict['id']
-    context = request.GET.get('ctx')
-    collab_res = requests.get(hbp_collab_service_url + context, headers = headers)
-    request.session['hhnb_storage_folder'] = "hhnb_workflows"
 
-    collab_id = collab_res.json()['collab']['id']
+    if "username" not in request.session:
+        username = res_dict['username']
+        request.session['username'] = username
+    if "userid" not in request.session:
+        userid = res_dict['id']
+        request.session['userid'] = userid
+    if "context" not in request.session:
+        context = request.GET.get('ctx')
+        request.session['context'] = context
+    if "collab_id" not in request.session:
+        collab_res = requests.get(hbp_collab_service_url + context, headers = headers)
+        collab_id = collab_res.json()['collab']['id']
+        request.session['collab_id'] = collab_id
 
     workflows_dir = os.path.join(settings.MEDIA_ROOT, 'hhnb', 'workflows')
     scm_structure_path = os.path.join(settings.MEDIA_ROOT, 'hhnb', 'bsp_data_repository', 'singlecellmodeling_structure.json')
     opt_model_path = os.path.join(settings.MEDIA_ROOT, 'hhnb', 'bsp_data_repository', 'optimizations')
 
     # create global variables in request.session
-    request.session['userid'] = userid
-    request.session['username'] = username
-    request.session['context'] = context
-    request.session['collab_id'] = collab_id
-    request.session['headers'] = headers
     request.session['singlecellmodeling_structure_path'] = scm_structure_path 
     request.session['optimization_model_path'] = opt_model_path
     request.session['workflows_dir'] = workflows_dir
+    request.session['hhnb_storage_folder'] = "hhnb_workflows"
 
     accesslogger.info(resources.string_for_log('home', request))
 
@@ -156,6 +164,100 @@ def create_wf_folders(request, wf_type="new"):
         os.makedirs(request.session['user_dir_sim_run'])
 
     return HttpResponse(json.dumps({"response":"OK"}), content_type="application/json")
+
+def fetch_wf_from_storage(request, wfid=""):
+    time_info = wfid[:14]
+    idx = wfid.find('_')
+
+    userid_wf = wfid[idx+1:]
+    userid = request.session['userid']
+    workflows_dir = request.session['workflows_dir']
+    
+    # retrieve access_token
+    access_token = get_access_token(request.user.social_auth.get())
+
+    # retrieve data from request.session
+    collab_id = request.session['collab_id']
+
+    hhnb_storage_folder = request.session['hhnb_storage_folder']
+    username = request.session["username"]
+
+    context = request.session['context']
+
+    request.session['time_info'] = time_info
+    request.session['wf_id'] = wfid
+
+    sc = service_client.Client.new(access_token)
+    ac = service_api_client.ApiClient.new(access_token)
+    
+    # retrieve collab related projects
+    project_dict = ac.list_projects(None, None, None, collab_id)
+    project = project_dict['results']
+    storage_root = ac.get_entity_path(project[0]['uuid'])
+    
+    # get current working directory
+    current_working_dir = os.getcwd()
+
+    storage_wf_list = []
+    wf_storage_dir = str(os.path.join(storage_root, hhnb_storage_folder, username))
+    wf_to_be_downloaded = str(os.path.join(wf_storage_dir, wfid))
+
+    target_user_path = os.path.join(workflows_dir, userid)
+    target_path = os.path.join(workflows_dir, userid, wfid)
+    target_file_path = os.path.join(workflows_dir, userid, wfid + '.zip')
+    if not os.path.exists(target_user_path):
+        os.makedirs(target_user_path)
+    if os.path.exists(target_path):
+        shutil.rmtree(target_path)
+
+    sc.download_file(wf_to_be_downloaded + '.zip', target_file_path)
+
+    os.chdir(target_user_path)
+    zip_ref = zipfile.ZipFile(wfid + '.zip', 'r')
+    if os.path.exists(wfid):
+        shutil.rmtree(wfid)
+
+    zip_ref.extractall('.')
+    zip_ref.close()
+    os.remove(wfid + '.zip')
+
+    os.chdir(current_working_dir)
+
+    # delete keys if present in request.session
+    request.session.pop('gennum', None)
+    request.session.pop('offsize', None)
+    request.session.pop('nodenum', None)
+    request.session.pop('corenum', None)
+    request.session.pop('runtime', None)
+    request.session.pop('username_submit', None)
+    request.session.pop('password_submit', None)
+    request.session.pop('hpc_sys', None)
+    request.session.pop('username_fetch', None)
+    request.session.pop('password_fetch', None)
+    request.session.pop('hpc_sys_fetch', None)
+    request.session['user_dir'] = target_path
+    request.session['user_dir_data'] = os.path.join(target_path, 'data')
+    request.session['user_dir_data_feat'] = os.path.join(target_path, 'data', 'features')
+    request.session['user_dir_data_opt_set'] = os.path.join(target_path, 'data', 'opt_settings')
+    request.session['user_dir_data_opt_launch'] = os.path.join(target_path, 'data', 'opt_launch')
+    request.session['user_dir_results'] = os.path.join(target_path, 'results')
+    request.session['user_dir_results_opt'] = os.path.join(target_path, 'results', 'opt')
+    request.session['user_dir_sim_run'] = os.path.join(target_path, 'sim')
+
+        # create folders for global data and json files if not existing
+    if not os.path.exists(request.session['user_dir_data_feat']):
+        os.makedirs(request.session['user_dir_data_feat'])
+    if not os.path.exists(request.session['user_dir_data_opt_set']):
+        os.makedirs(request.session['user_dir_data_opt_set'])
+    if not os.path.exists(request.session['user_dir_data_opt_launch']):
+        os.makedirs(request.session['user_dir_data_opt_launch'])
+    if not os.path.exists(request.session['user_dir_results_opt']):
+        os.makedirs(request.session['user_dir_results_opt'])
+    if not os.path.exists(request.session['user_dir_sim_run']):
+        os.makedirs(request.session['user_dir_sim_run'])
+
+    return HttpResponse(json.dumps({"response":"OK"}), content_type="application/json")
+
 
 
 def embedded_efel_gui(request):
@@ -770,7 +872,6 @@ def save_wf_to_storage(request):
     return HttpResponse(json.dumps({"response":"OK", "message":""}), content_type="application/json")
 
 
-
 def get_context(request):
     """
     Get the context used to call the application
@@ -778,3 +879,42 @@ def get_context(request):
     context = request.session['context']
 
     return HttpResponse(json.dumps({"context":context}), content_type="application/json")
+
+
+def wf_storage_list(request):
+
+    # retrieve access_token
+    access_token = get_access_token(request.user.social_auth.get())
+
+    # retrieve data from request.session
+    collab_id = request.session['collab_id']
+
+    hhnb_storage_folder = request.session['hhnb_storage_folder']
+    username = request.session["username"]
+
+    context = request.session['context']
+    
+    access_token = get_access_token(request.user.social_auth.get())
+
+    sc = service_client.Client.new(access_token)
+    ac = service_api_client.ApiClient.new(access_token)
+    
+    # retrieve collab related projects
+    project_dict = ac.list_projects(None, None, None, collab_id)
+    project = project_dict['results']
+    storage_root = ac.get_entity_path(project[0]['uuid'])
+    
+    # get current working directory
+    current_working_dir = os.getcwd()
+
+    storage_wf_list = []
+    wf_storage_dir = str(os.path.join(storage_root, hhnb_storage_folder, username))
+    if not sc.exists(wf_storage_dir):
+        storage_list = []
+    else:
+        storage_list = sc.list(wf_storage_dir)
+
+    os.chdir(current_working_dir)
+
+    return HttpResponse(json.dumps({"list":storage_list}), content_type="application/json")
+
