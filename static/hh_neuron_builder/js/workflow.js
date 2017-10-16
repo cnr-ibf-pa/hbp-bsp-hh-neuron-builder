@@ -486,10 +486,15 @@ function downloadJob(jobid) {
     changeMsgPleaseWaitDiv("Downloading job and analysing data. This operation may take several minutes.");
     $.getJSON('/hh-neuron-builder/download-job/' + jobid + '/', function(data){
         $.getJSON('/hh-neuron-builder/modify-analysis-py', function(modifydata){
+            if (modifydata["response"] == "KO") {
+                closePleaseWaitDiv();
+                checkConditions();
+            } else {
             $.getJSON('/hh-neuron-builder/zip-sim', function(zip_data){
                 closePleaseWaitDiv();
                 checkConditions();
             });
+            };
         });
     });
 }
