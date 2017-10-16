@@ -204,7 +204,6 @@ function checkConditions(){
 
         if (data['feat'] | data['opt_files'] | data['opt_set']) {
             $('#inner-opt-div').show();
-
         }
         if (data['feat'] & data['opt_files'] & data['opt_set']){
             if (!data['opt_flag']){
@@ -251,6 +250,8 @@ function checkConditions(){
             document.getElementById("down-sim-btn").disabled = true;  
             document.getElementById("del-sim-btn").disabled = true;  
             document.getElementById("run-sim-btn").disabled = true;  
+            document.getElementById("opt-fetch-btn").disabled = false;  
+            document.getElementById("opt-res-up-btn").disabled = false;  
         };
     })
 }

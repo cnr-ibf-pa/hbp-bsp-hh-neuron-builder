@@ -92,6 +92,8 @@ def home(request):
     request.session['optimization_model_path'] = opt_model_path
     request.session['workflows_dir'] = workflows_dir
     request.session['hhnb_storage_folder'] = "hhnb_workflows"
+    request.session['opt_sub_flag_file'] = 'opt_sub_flag.txt'
+    request.session['sim_run_flag_file'] = 'sim_run_flag.txt'
 
     accesslogger.info(resources.string_for_log('home', request))
 
@@ -138,8 +140,6 @@ def create_wf_folders(request, wf_type="new"):
                 userid, wf_id, 'results', 'opt')
         request.session['user_dir_sim_run'] = os.path.join(workflows_dir,\
                 userid, wf_id, 'sim')
-        request.session['opt_sub_flag_file'] = 'opt_sub_flag.txt'
-        request.session['sim_run_flag_file'] = 'sim_run_flag.txt'
 
 
         # create folders for global data and json files if not existing
@@ -194,12 +194,6 @@ def create_wf_folders(request, wf_type="new"):
 
         if not os.path.isdir(request.session['user_dir_sim_run']):
             os.makedirs(request.session['user_dir_sim_run'])
-
-
-        request.session['opt_sub_flag_file'] = os.path.join(workflows_dir, \
-                userid, wf_id, 'opt_launch', 'opt_sub_flag.txt')
-        request.session['sim_run_flag_file'] = os.path.join(workflows_dir, \
-                userid, wf_id, 'sim', 'sim_run_flag.txt')
 
     return HttpResponse(json.dumps({"response":"OK"}), content_type="application/json")
 
