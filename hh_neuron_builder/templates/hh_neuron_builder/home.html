@@ -5,7 +5,8 @@
 
 {% block content %}
 <div id="home-main-div">
-    <div class="center-container column-center-container main-page-panel">
+    <div class="center-container column-center-container main-page-panel"
+        style="background-image: {% static 'hhnb/img/hhnb_background.png' %};">
         <button id="new-wf" type="button" class="btn btn-lg main-panel-btn" onclick=initNewWorkflow();>Initiate a new workflow</button>
         <button id="fetch-wf-btn" type="button" class="btn btn-lg main-panel-btn" onclick=fetchWorkflows();>Select a completed/ongoing workflow</button>
     </div>

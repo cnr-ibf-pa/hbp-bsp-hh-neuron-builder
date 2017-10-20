@@ -413,6 +413,7 @@ function displayJobInfo() {
                 $.getJSON("/hh-neuron-builder/get-nsg-job-details/" + job_key_list[cnrt] + "/", function(job_details){
                     if (cnrt+1 > crr_idx) {
                         print_idx = cnrt+1;
+                        crr_idx = print_idx;
                     }
                     changeMsgPleaseWaitDiv("Fetching details for job " + (print_idx) + " of " + job_list_len);
 
