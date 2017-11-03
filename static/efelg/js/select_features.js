@@ -1,9 +1,13 @@
-function submit_form(){
-    document.getElementById("select_feature_form").submit();
-    //document.getElementById("message_div").style.display='block';
-    //document.getElementById("message_div").scrollIntoView();
-    document.getElementById("field_set").style.display =  "none";
-    document.getElementById("load-message").style.display = "table";
+function submitForm(){
+    var $featForm = $('#select_feature_form');
+    $featForm.submit(function(e){
+        console.log($featForm[0]);
+        console.log($featForm);
+        e.preventDefault();
+    });
+    //document.getElementById("select_feature_form").submit();
+    //document.getElementById("field_set").style.display =  "none";
+    //document.getElementById("load-message").style.display = "table";
 }
 
 $.getJSON('/efelg/features_dict', function(data) {
@@ -16,19 +20,20 @@ $.getJSON('/efelg/features_dict', function(data) {
         var crrid = i.split(' ').join('_');
         var innerDivId = crrid + "_inner";
         var crrSelectButtonId = crrid + "_button";
-        var crrSelectiClearButtonId = crrid + "_clear_button";
+        var crrSelectClearButtonId = crrid + "_clear_button";
         var crrSelectInvButtonId = crrid + "_inv_button";
         var crrContainerDiv = $("<div>");
         crrContainerDiv.attr("id", crrid);
-        crrContainerDiv.addClass("panel panel-success");
+        crrContainerDiv.addClass("panel panel-info");
         var crrHeadingDiv = $("<div>");
         crrHeadingDiv.attr("name", crrid);
-        crrHeadingDiv.addClass("panel-heading");
+        crrHeadingDiv.addClass("panel-all-width");
+        //crrHeadingDiv.addClass("panel-all-width");
         crrHeadingDiv.on("click", function(){
             $(this).siblings("div").slideToggle("slow", function(){});
         });
         var crrElemDiv = $("<div>");
-        crrElemDiv.addClass("justify-div");
+        //crrElemDiv.addClass("justify-div");
         crrElemDiv.attr("id", innerDivId);
         var crrElemDivButton = $("<input>");
         crrElemDivButton.attr("id", crrSelectButtonId);
@@ -39,7 +44,7 @@ $.getJSON('/efelg/features_dict', function(data) {
             $(this).parent().children().children().prop("checked", true);
         });
         var crrElemDivClearButton = $("<input>");
-        crrElemDivClearButton.attr("id", crrSelectiClearButtonId);
+        crrElemDivClearButton.attr("id", crrSelectClearButtonId);
         crrElemDivClearButton.attr("type", "button");
         crrElemDivClearButton.attr("value","Clear all");
         crrElemDivClearButton.addClass("btn btn-link");
@@ -65,8 +70,6 @@ $.getJSON('/efelg/features_dict', function(data) {
         $('#' + innerDivId).append(crrElemDivInvButton).append("<br>");
         $('#' + innerDivId).toggle();
 
-
-
         orderedInnerKeys = Object.keys(ob).sort(function(a,b){
             return a.toLowerCase().localeCompare(b.toLowerCase());
         });
@@ -91,6 +94,9 @@ $.getJSON('/efelg/features_dict', function(data) {
             $('#' + innerDivId).append(crrElemLabel);
             $('#' + crrElemLabelId).append(crrInputElem);
             $('#' + crrElemLabelId).append(crrSpanElem);
+            if (inneridx < orderedInnerKeys.length - 1){
+                $('#' + crrElemLabelId).append(" - ");
+            }
         });
     });
 });

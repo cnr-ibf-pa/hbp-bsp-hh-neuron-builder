@@ -1,4 +1,5 @@
 '''Views'''
+
 import os
 import urllib
 from uuid import UUID
@@ -49,40 +50,36 @@ accesslogger = logging.getLogger('efelg_access.log')
 accesslogger.addHandler(logging.FileHandler('/var/log/bspg/efelg_access.log'))
 accesslogger.setLevel(logging.DEBUG)
 
-
 ##### serve overview.html
 @login_required(login_url='/login/hbp/')
 def overview(request):
 
     # if not in DEBUG mode check whether authentication token is valid
     if not settings.DEBUG:
-        #
-        #context = request.GET.get('ctx')
-        my_url = 'https://services.humanbrainproject.eu/idm/v1/api/user/me'
-        hbp_collab_service_url = "https://services.humanbrainproject.eu/collab/v0/collab/context/"
+        
+        my_url = settings.HBP_MY_USER_URL
+        hbp_collab_service_url = settings.HBP_COLLAB_SERVICE_URL + 'collab/context/'
 
         headers = {'Authorization': \
                 get_auth_header(request.user.social_auth.get())}
          
+        # request information on current user
         res = requests.get(my_url, headers = headers)
         res_dict = res.json()
-
-        context = request.GET.get('ctx')
-
-        collab_res = requests.get(hbp_collab_service_url + context, headers = \
-            headers)
-        collab_id = collab_res.json()['collab']['id']
-
-
-        # get username from request
+    
         username = res_dict['username']
         userid = res_dict['id']
 
-        collab_id = collab_res.json()['collab']['id']
+        # extract context
+        context = request.GET.get('ctx')
 
-        # get headers
-        svc_url = settings.HBP_COLLAB_SERVICE_URL
-         
+        # if context is empty redirect to appropriate page
+        if not context:
+            return render(request, 'efelg/hbp_redirect.html')
+        else:
+            collab_res = requests.get(hbp_collab_service_url + context, \
+                    headers = headers)
+            collab_id = collab_res.json()['collab']['id']
     else:
         username = 'test'
         headers = {}
@@ -124,7 +121,6 @@ def overview(request):
 
     # reading parameters from request.session
     username = request.session['username']
-    #context = request.session['context']
     
     # parameters for folder creation
     time_info = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
@@ -185,8 +181,10 @@ def overview(request):
     return render(request, 'efelg/overview.html')
 
     
-##### serve select_features
 def select_features(request):
+    '''
+    This function serves the application select-features page
+    '''
     with open(os.path.join(settings.BASE_DIR, 'static', \
             'efelg', 'efel_features_final.json')) as json_file:
         features_dict = json.load(json_file) 
@@ -276,8 +274,7 @@ def get_list(request):
     json_dir = request.session['json_dir']
     
     # extract the list of the collabs the current user belongs to
-    my_collabs_url = \
-            "https://services.humanbrainproject.eu/collab/v0/mycollabs/"
+    my_collabs_url = settings.HBP_MY_COLLABS_URL
     crr_auth_data_list = resources.user_collab_list(my_collabs_url, \
             request.user.social_auth.get()) 
 
@@ -342,8 +339,7 @@ def extract_features(request):
     full_crr_uploaded_folder = request.session['full_user_uploaded_folder']
     full_crr_data_folder = request.session['full_user_crr_res_data_folder']
     full_crr_user_folder = request.session['full_user_crr_results_folder']
-    
-    check_features = request.POST.getlist('crr_feature_check_features')
+    check_features = request.session["check_features"] 
     request.session['selected_features'] = check_features 
     cell_dict = {}
     selected_traces_rest = []
@@ -472,10 +468,20 @@ def extract_features(request):
 
     accesslogger.info(resources.string_for_log('extract_features', \
             request, page_spec_string = '___'.join(check_features)))
-    return render(request, 'efelg/extract_features.html') 
+    return HttpResponse(json.dumps({"status": "OK"})) 
 
 
 #####
+@login_required(login_url='/login/hbp')
+def results(request):
+    '''Render final page containing the link to the result zip file if any'''
+
+    check_features = request.POST.getlist('crr_feature_check_features')
+    request.session["check_features"] = check_features
+    return render(request, 'efelg/results.html')
+
+#####
+
 @login_required(login_url='/login/hbp')
 def download_zip(request):
     accesslogger.info(resources.string_for_log('download_zip', request))

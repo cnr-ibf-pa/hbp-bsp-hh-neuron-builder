@@ -5,38 +5,61 @@
 <html>
     <head>
         <script type="text/javascript" src="{% static 'bspganalytics.js' %}"></script>
+
         <title>Feature extraction GUI</title>
+
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width">
 
         <link rel="stylesheet" href="{% static 'hbp-collaboratory-theme/dist/css/bootstrap.css' %}">
         <link rel="stylesheet" href="{% static 'bspg.css' %}">
-        <script type="text/javascript" src="{% static 'jquery/dist/jquery.min.js' %}"></script>
-        <script type="text/javascript" src="{% static 'efelg/js/select_features.js' %}"></script>
     </head>
+
     <body>
-	<!-- div for loading message start -->
-	<div id="load-message" class="loader" style="display:none">
-    	<div class="loader-obj-container">
-        	<div class="glyphicon glyphicon-refresh spinning lg" style="text-align:center"></div>
-    		<div>
-    		<p>Extracting features from traces. This may take a few minutes.</p>
-    		<p>Please wait ...</p>
-    		</div>
-    	</div>
-	</div>
-        {% block content %}{% endblock %}
-        <form id="select_feature_form" action="/efelg/extract_features/" method="post">{% csrf_token %}
-            <fieldset id="field_set">
-                <div class="panel panel-info" id="panels">
-                    <div class="panel-heading">
-                        <h3>Feature selection</h3>
+        <div id="main-sf-div">
+            <div class="fixed-page-title row center-container">
+                <div class="col-sm-4 align-left"></div>
+                <div class="col-sm-4 align-center"><h4>Feature Extraction
+                        GUI</h4></div>
+                <div class="col-sm-4 align-right">Feature selection</div>
+            </div>
+
+            <form id="select_feature_form" action="/efelg/results/" method="POST">{% csrf_token %}
+                <fieldset id="field_set">
+                    <div id="mainDiv">
+                    </div>
+                    <button class="btn btn-primary"
+                                          onclick="submitForm()">Next</button>
+                </fieldset>
+            </form>
+        </div>
+
+        <!-- "No data selected" message div -->
+        <div id="e-sf-warning-div" class="overlay-wrapper">
+            <div id="overlay-e-sf-warn" style="top:35%;" class="overlay-content">
+                <div class="center-container">
+                    <div class="row-center-container">
+                        <div class="please-wait-text" 
+                             style="color:red; font-size: 18px;"> >> No feature
+                             selected << </div>
+                        <br>
+                        <button id="e-st-warning-div-btn"
+                                type="button" 
+                                class="btn btn-default"
+                                onclick="closeMessageDiv('e-sf-warning-div')">
+                            Close
+                        </button>
                     </div>
                 </div>
-
-                <div id="mainDiv"></div>
-                <button type="button" class="btn btn-primary" onclick="submit_form()">Next</button>
-            </fieldset>
-        </form>
+            </div>
+        </div>
+        <!-- -->
     </body>
 </html>
+
+<script type="text/javascript" src="{% static 'jquery/dist/jquery.min.js' %}">
+</script>
+<script type="text/javascript" src="{% static 'common/js/global.js' %}">
+</script>
+<script type="text/javascript" src="{% static 'efelg/js/select_features.js' %}">
+</script>

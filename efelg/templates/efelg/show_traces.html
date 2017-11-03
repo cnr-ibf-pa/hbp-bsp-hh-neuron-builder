@@ -6,7 +6,9 @@
     <head>
         <script type="text/javascript" src="{% static 'bspganalytics.js' %}">
         </script>
+
         <title>Feature extraction GUI</title>
+
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width">
 
@@ -14,43 +16,21 @@
               href=
               "{% static 'hbp-collaboratory-theme/dist/css/bootstrap.css' %}">
         <link rel="stylesheet" href="{% static 'bspg.css' %}">
-        <script type="text/javascript" 
-                src="{% static 'jquery/dist/jquery.min.js' %}"></script>
-        <script type="text/javascript" 
-                src="{% static 'plotlyjs/plotly.js' %}"></script>
-        <script type="text/javascript" 
-                src="{% static 'efelg/js/show_traces.js' %}"></script>
-
     </head>
 
     <body>
-        <!-- div for loading message start -->
         <div id="main-e-st-div">
-            <div class="loader" style="text-align:center">
-                <div class="loader-obj-container">
-                    <div class="glyphicon glyphicon-refresh spinning lg" 
-                         style="text-align:center"></div>
-                    <div>
-                        <p>Checking data permissions</p>
-                        <p>Please wait ...</p>
-                    </div>
-                </div>
-            </div>
-            <!-- div for loading message end -->
-
-            <div class="panel panel-info" width=100% id="input-groups">
-                <div class="panel-heading">
-                    <h3>Voltage traces selection/upload</h3>
-                </div>
+            <div class="fixed-page-title row center-container">
+                <div class="col-sm-4 align-left"></div>
+                <div class="col-sm-4 align-center"><h4>Feature Extraction
+                        GUI</h4></div>
+                <div class="col-sm-4 align-right">Trace selection/upload</div>
             </div>
             <br>
-
-
             <div class="panel panel-success" id="data-groups">
                 <div class="panel panel-heading" id="filter-groups-title">
                     Filter dataset files and select individual traces
                 </div>
-
 
                 <div class='ctrl_box'>
                     <label>Cell properties:</label>
@@ -81,7 +61,6 @@
                     </button>
                 </div>
                 <br>
-
                 <div id='charts'></div>
             </div>
             <br>
@@ -92,116 +71,146 @@
                   enctype="multipart/form-data"
                   action="/efelg/upload_files">
                 {% csrf_token  %}
-                  <div class="panel panel-success" id="input-groups">
-                      <div class="panel-heading">
-                          Upload your own file(s) and then select 
-                          individual traces
-                      </div>
-                      <br>
+                <div class="panel panel-success" id="input-groups">
+                    <div class="panel-heading">
+                        Upload your own file(s) and then select 
+                        individual traces
+                    </div>
+                    <br>
 
-                      <div class="panel">
-                          <label class="btn btn-default btn-file">
-                              Browse files...
-                              <input type="file" 
-                                     name="user_files" 
-                                     id="user_files" 
-                                     accept=".abf" 
-                                     multiple style="display:none;"/>
-                              <span class="custom-file-control"></span>
-                          </label>
+                    <div class="panel">
+                        <label class="btn btn-default btn-file">
+                            Browse files...
+                            <input type="file" 
+                                   name="user_files" 
+                                   id="user_files" 
+                                   accept=".abf" 
+                                   multiple style="display:none;"/>
+                            <span class="custom-file-control"></span>
+                        </label>
 
-                          <input type="submit" 
-                                 id="upload_button" 
-                                 name="upload_button_name" 
-                                 class="btn btn-default" 
-                                 value="Upload" />
-                          <div id="uploaded_names">
-                              <br>
-                              List of uploaded files:
-                              <br>
-                          </div>
-                      </div>
+                        <input type="submit" 
+                               id="upload_button" 
+                               name="upload_button_name" 
+                               class="btn btn-default" 
+                               value="Upload" />
+                    </div>
+                    <div id="uploaded_names">
+                        List of uploaded files:
+                        <br>
+                        <br>
+                    </div>
 
-                      <div id="loadfile_box" id="input-groups">
-                          <div class="panel-heading">
-                              <div id="loadfile_icon" 
-                                   class="glyphicon" style="text-align:center">
-                                  <span class="glyphicon glyphicon-refresh 
-                                  spinning lg"></span>
-                              </div>
+                    <!-- File uploaded box -->
+                    <div id="loadfile_box" style="display:none">
+                        <div class="panel-heading">
+                            <div id="loadfile_info"></div> 
+                        </div>
+                    </div>
+                    <!-- -->
 
+                    <!-- File rejected box -->
+                    <div id="loadfile_box_rejected" style="display:none">
+                        <div class="panel-heading">
+                            <div id="loadfile_info_rejected"></div> 
+                        </div>
+                    </div>
+                    <!-- -->
 
-                              <span id="loadfile_info"></span> 
-                          </div>
-                      </div>
-                  </div>
+                </div>
             </form>
             <div id='charts_upload'></div>
 
-            <form 
-                                    id='gonextform'
-                                    method='POST'
-                                    action= '/efelg/select_features/'> {% csrf_token %} 
-                                    <input name='data' type='hidden'>
+        </div>
+        <form id='gonextform' method='POST'
+                                 action= '/efelg/select_features/'> {% csrf_token %} 
+                                 <input name='data' type='hidden'>
 
-                                    <button onclick='submitAll()' 
-                                    class="btn btn-primary">
-                                        Next
-                                    </button>
-            </form>
+                                 <button onclick='submitAll()' 
+                                 class="btn btn-primary">
+                                     Next
+                                 </button>
+        </form>
 
         </div>
 
 
-
-
-
-        <!-- "Please wait" message div -->
+        <!-- "No data selected" message div -->
         <div id="e-st-warning-div" class="overlay-wrapper">
-            <div id="overlay-e-st-warn" 
-                style="top:35%;" class="overlay-content">
-                <div class="please-wait-text" 
-                     style="color:red; font-size: 18px;"> >> No data
-                     selected << </div>
+            <div id="overlay-e-st-warn" style="top:35%;" class="overlay-content">
+                <div class="center-container">
+                    <div class="row-center-container">
+                        <div class="please-wait-text" 
+                             style="color:red; font-size: 18px;"> >> No data
+                             selected << </div>
+                        <br>
+                        <button id="e-st-warning-div-btn"
+                                type="button" 
+                                class="btn btn-default"
+                                onclick="closeMessageDiv('e-st-warning-div',
+                                'main-e-st-div')">
+                            Close
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- -->
+
+        <!-- Wait Message div -->
+        <div id="wait-message-div" class="overlay-wrapper">
+            <div style="top: 40%;" class="overlay-content">
+                <div class="center-container">
+                    <div class="row-center-container">
+                        <div style="margin: auto;" class="spinning lg"></div>
+                        <br>
+                        <div>
+                            <div id="wmd-first">Checking data permissions</div>
+                            <div id="wmd-second">Please wait ...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- -->
+
+        <!-- User's choice div -->
+        <div id="e-st-user-choice-div" class="overlay-wrapper">
+            <div id="overlay-e-st-user-choice" class="overlay-content">
+                <div style="position: sticky;"><strong>List of selected traces. 
+                        <br>
+                        Click "Confirm" to continue.</strong>
+                        <br>
+                    <br>
+                </div>
+                <div id="e-st-user-choice">
+                </div>
                 <br>
-                <button id="e-st-warning-div-btn"
+                <button id="e-st-user-choice-accept-btn"
                         type="button" 
                         class="btn btn-default"
-                        onclick="closeWarningDiv()">
-                    Close
+                        style="margin:5px;"
+                        onclick="acceptUserChoiceList()">
+                    Confirm
+                </button>
+                <button id="e-st-user-choice-cancel-btn"
+                        type="button" 
+                        class="btn btn-default"
+                        style="margin:5px;"
+                        onclick="closeUserChoiceList()">
+                    Cancel
                 </button>
             </div>
         </div>
         <!-- -->
 
-
-        <!-- User's choice div -->
-        <div id="e-st-user-choice-div" class="overlay-wrapper">
-            <div id="overlay-e-st-user-choice" class="overlay-content">
-                <div><strong>List of selected traces. 
-                        <br>
-                        Click "Confirm" to continue.</strong>
-                </div>
-                <div id="e-st-user-choice">
-                </div>
-            </div>
-            <br>
-            <button id="e-st-user-choice-accept-btn"
-                    type="button" 
-                    class="btn btn-default"
-                    style="margin:5px;"
-                    onclick="acceptUserChoiceList()">
-                Confirm
-            </button>
-            <button id="e-st-user-choice-cancel-btn"
-                    type="button" 
-                    class="btn btn-default"
-                    style="margin:5px;"
-                    onclick="closeUserChoiceList()">
-                Cancel
-            </button>
-        </div>
-        <!-- -->
-
     </body>
 </html>
+<script type="text/javascript" 
+        src="{% static 'jquery/dist/jquery.min.js' %}"></script>
+<script type="text/javascript" 
+        src="{% static 'common/js/global.js' %}"></script>
+<script type="text/javascript" 
+        src="{% static 'efelg/js/show_traces.js' %}"></script>
+<script type="text/javascript" 
+        src="{% static 'plotlyjs/plotly.js' %}"></script>

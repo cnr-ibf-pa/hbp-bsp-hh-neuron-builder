@@ -22,7 +22,7 @@ function displayTermsConditions() {
 
 function userAccepted() {
     window.location.href = "show_traces/";
-
+    document.getElementById('termsConditions').style.display = "none";
 }
 
 function userDeclined() {

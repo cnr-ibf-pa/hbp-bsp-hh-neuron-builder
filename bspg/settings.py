@@ -49,6 +49,7 @@ HBP_COLLAB_SERVICE_URL = 'https://services.humanbrainproject.eu/collab/v0/'
 HBP_ENV_URL = 'https://collab.humanbrainproject.eu/config.json'
 HBP_IDENTITY_SERVICE_URL = 'https://services.humanbrainproject.eu/idm/v1/api'
 HBP_MY_USER_URL = 'https://services.humanbrainproject.eu/idm/v1/api/user/me'
+HBP_MY_COLLABS_URL = "https://services.humanbrainproject.eu/collab/v0/mycollabs/"
 
 USE_X_FORWARDED_HOST = True
 
@@ -76,15 +77,9 @@ INSTALLED_APPS = [
     'hbp_app_python_auth',
     ]
 
-#MIDDLEWARE_CLASSES = [
-#    'django.contrib.sessions.middleware.SessionMiddleware',
-#    'django.middleware.common.CommonMiddleware',
-#    'django.contrib.auth.middleware.AuthenticationMiddleware',
-#    'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
-#    'django.contrib.messages.middleware.MessageMiddleware',
-#    'django.middleware.security.SecurityMiddleware',
-    #'social.apps.django_app.middleware.SocialAuthExceptionMiddleware',
-#]
+MIDDLEWARE_CLASSES = [
+    'social.apps.django_app.middleware.SocialAuthExceptionMiddleware',
+]
 
 
 MIDDLEWARE = [
@@ -95,9 +90,9 @@ MIDDLEWARE = [
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
-    #'social.apps.django_app.middleware.SocialAuthExceptionMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.locale.LocaleMiddleware',
+    'django.middleware.security.SecurityMiddleware',
     #'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
