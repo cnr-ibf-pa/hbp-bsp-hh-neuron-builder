@@ -4,15 +4,18 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <script type="text/javascript" src="{% static 'bspganalytics.js' %}"></script>
+        <script type="text/javascript" 
+                src="{% static 'bspganalytics.js' %}"></script>
 
         <title>Feature extraction GUI</title>
 
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width">
 
-        <link rel="stylesheet" href="{% static 'hbp-collaboratory-theme/dist/css/bootstrap.css' %}">
-        <link rel="stylesheet" href="{% static 'bspg.css' %}">
+        <link rel="stylesheet" 
+              href="{% static 'hbp-collaboratory-theme/dist/css/bootstrap.css' %}">
+        <link rel="stylesheet" 
+              href="{% static 'bspg.css' %}">
     </head>
 
     <body>
@@ -24,19 +27,21 @@
                 <div class="col-sm-4 align-right">Feature selection</div>
             </div>
 
-            <form id="select_feature_form" action="/efelg/results/" method="POST">{% csrf_token %}
-                <fieldset id="field_set">
-                    <div id="mainDiv">
-                    </div>
-                    <button class="btn btn-primary"
-                                          onclick="submitForm()">Next</button>
-                </fieldset>
+            <form id="select_feature_form" 
+                  action="/efelg/results/" method="POST">{% csrf_token %}
+                  <fieldset id="field_set">
+                      <div id="mainDiv">
+                      </div>
+                      <button class="btn btn-primary"
+                              onclick="submitForm()">Next</button>
+                  </fieldset>
             </form>
         </div>
 
         <!-- "No data selected" message div -->
         <div id="e-sf-warning-div" class="overlay-wrapper">
-            <div id="overlay-e-sf-warn" style="top:35%;" class="overlay-content">
+            <div id="overlay-e-sf-warn" 
+                 style="top:35%;" class="overlay-content">
                 <div class="center-container">
                     <div class="row-center-container">
                         <div class="please-wait-text" 
@@ -46,7 +51,8 @@
                         <button id="e-st-warning-div-btn"
                                 type="button" 
                                 class="btn btn-default"
-                                onclick="closeMessageDiv('e-sf-warning-div')">
+                                onclick="closeMessageDiv('e-sf-warning-div',
+                                'main-sf-div')">
                             Close
                         </button>
                     </div>

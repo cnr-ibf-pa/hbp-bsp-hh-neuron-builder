@@ -3,9 +3,21 @@ function submitForm(){
     $featForm.submit(function(e){
         console.log($featForm[0]);
         console.log($featForm);
+        var all_checkboxes = document.getElementsByName("crr_feature_check_features");
+        var counter = 0;
+        for (var cbi = 0; cbi < all_checkboxes.length; cbi++){
+            if (all_checkboxes[cbi].checked) {
+                counter += 1;
+                break;
+            }
+        }
+        if (counter > 0) {
+            document.getElementById("select_feature_form").submit();
+        } else {
+                    openMessageDiv("e-sf-warning-div", "main-sf-div");
+        }
         e.preventDefault();
     });
-    //document.getElementById("select_feature_form").submit();
     //document.getElementById("field_set").style.display =  "none";
     //document.getElementById("load-message").style.display = "table";
 }
