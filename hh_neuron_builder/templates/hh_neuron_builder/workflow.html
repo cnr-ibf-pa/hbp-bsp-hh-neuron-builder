@@ -9,21 +9,29 @@
     <div class="param-title-div center-container row-center-container">
         <div id="wf-title" class="inline-div-50 align-left wf-title"></div>
         <div class="inline-div-50 align-right">
-            <button id="wf-btn-home" class="btn home-title-btn" onclick="window.location.href='/hh-neuron-builder/'">Home</button>
-            <button id="wf-btn-new-wf" class="btn home-title-btn" title="Create a new workflow" onclick=initNewWorkflow();>New</button>
-            <button id="wf-btn-clone-wf" class="btn home-title-btn" title="Clone current workflow">Clone</button>
-            <button id="wf-btn-save" class="btn home-title-btn" title="Save current workflow to Collab Storage">Save</button>
+            <button id="wf-btn-home" class="btn home-title-btn" 
+                                     onclick="window.location.href='/hh-neuron-builder/'">
+                Home</button>
+            <button id="wf-btn-new-wf" class="btn home-title-btn" 
+                                       title="Create a new workflow" 
+                                       onclick=initNewWorkflow();>
+                New</button>
+            <button id="wf-btn-clone-wf" class="btn home-title-btn" 
+                                         title="Clone current workflow">Clone</button>
+            <button id="wf-btn-save" class="btn home-title-btn" 
+                                     title="Save current workflow to Collab Storage">Save</button>
         </div>
-
     </div>
 
-    <div id="cell-opt-div" class="center-container wf-page-panel">
-        <div class="center-container">
+    <div id="cell-opt-div"  class="center-container wf-page-panel">
+        <div class="bg-light-gb center-container">
             <div>
-                <button class="btn-link"  onclick="$('#inner-opt-div').toggle(500);"><h2>Cell Optimization</h2></button>
+                <button class="btn-link"  
+                        onclick="$('#inner-opt-div').toggle(500);">
+                    <h2>Cell Optimization</h2></button>
             </div>
         </div>
-        <div id="inner-opt-div" style="display:none;" class="center-container row-center-container">
+        <div id="inner-opt-div" style="display:none;" class="bg-light-gb center-container row-center-container">
             <div class="center-container row-center-container">
                 <div class="step-panel">
                     <div class="center-container">
@@ -34,9 +42,6 @@
                         <button type="button" id="feat-up-btn" class="btn btn-default">Upload files</button>
                     </div>
                     <div class="center-container">
-                        <!--
-                            <button id="edit-feat" type="button" class="btn btn-link" disabled>Edit features files</button>
-                        -->
                         <button id="del-feat" title="Delete feature files" type="button" class="btn btn-link" disabled>Delete</button>
                         <button id="down-feat-btn" title="Download feature files" type="button" class="btn btn-link">Download</button>
                     </div>
@@ -56,9 +61,6 @@
                         <button type="button" id="opt-up-btn" class="btn btn-default">Upload file</button>
                     </div>
                     <div class="center-container">
-                        <!--
-                            <button id="edit-opt" type="button" class="btn btn-link" disabled>Edit optimization files</button>
-                        -->
                         <button id="del-opt" title="Delete optimization files" type="button" class="btn btn-link" disabled>Delete</button>
                         <button id="down-opt-set-btn" title="Download optimization files" type="button" class="btn btn-link">Download</button>
                     </div>
@@ -86,7 +88,12 @@
                 <span id="optlaunchtextspan">No optimization launched</span>
             </div>
             <div class="center-container">
-                <button type="button" id="launch-opt-btn" class="width-step-div main-panel-btn btn btn-lg" disabled>Launch optimization</button>
+                <div class="center-container row-center-container">
+                    <button type="button" id="launch-opt-btn"
+                        class="main-panel-btn btn btn-lg" 
+                        class="main-panel-btn btn btn-lg" 
+                        disabled>Launch optimization</button>
+                </div>
             </div>
 
         </div>
@@ -94,14 +101,14 @@
 
     <!-- Single cell simulation run panel -->
     <div id="run-sim-div" class="center-container  wf-page-panel">
-        <div class="center-container">
-            <div>
+        <div class="bg-light-gb center-container">
+            <div class="">
                 <button class="btn-link" onclick="$('#inner-sim-div').toggle(500);"><h2>Single Cell Simulation Run</h2></button>
             </div>
         </div>
 
         <div id="inner-sim-div" style="display:none;" class="center-container row-center-container">
-            <div class="center-container row-center-container">
+            <div class="bg-light-gb center-container row-center-container">
                 <div class="step-panel">
                     <div class="center-container">
                         <h3>Optimization results</h3> 
@@ -111,28 +118,20 @@
                         <button id="opt-res-up-btn" type="button" class="btn btn-default">Upload file</button>
                     </div>
                     <div class="center-container">
-                        <!--
-                            <button id="edit-sim" type="button" class="btn btn-link" disabled>Edit optimization files</button>
-                        -->
                         <button id="del-sim-btn" title="Delete optimization results" type="button" class="btn btn-link" disabled>Delete</button>
                         <button id="down-sim-btn" title="Download optimization results" type="button" class="btn btn-link">Download</button>
                     </div>
                     <div id="opt-res-bar" class="status-bar center-container">
                     </div>
                 </div>
-            </div>
-
-            <div class="center-container">
-                <button type="button" id="run-sim-btn" class="width-step-div main-panel-btn btn btn-lg" disabled>Run simulation</button>
+                <div class="center-container">
+                    <button type="button" id="run-sim-btn" class="width-step-div main-panel-btn btn btn-lg" disabled>Run simulation</button>
+                </div>
             </div>
         </div>
     </div>
 
 </div>
-<!--
-    <button id="test-button">Test</button>
-    <button id="test-back-button">Test-back</button>
--->
 
 <!-- section containing divs for user insertions -->
 <div id="overlaywrapper" class="overlay-wrapper">
@@ -189,7 +188,7 @@
             <br>
             <label for="password_submit">Password</label>
             <input id="password_submit" required type="password"
-            name="password_submit">
+                                                 name="password_submit">
             <br>
             <br>
             <button id="cancel-param-btn" class="btn btn-primary closebtn">Cancel</button>

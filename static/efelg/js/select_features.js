@@ -1,9 +1,14 @@
+$(document).ready(function(){
+    window.scrollTo(0,0);
+});
+
 function submitForm(){
     var $featForm = $('#select_feature_form');
     $featForm.submit(function(e){
         console.log($featForm[0]);
         console.log($featForm);
-        var all_checkboxes = document.getElementsByName("crr_feature_check_features");
+        var all_checkboxes = 
+            document.getElementsByName("crr_feature_check_features");
         var counter = 0;
         for (var cbi = 0; cbi < all_checkboxes.length; cbi++){
             if (all_checkboxes[cbi].checked) {
@@ -14,12 +19,10 @@ function submitForm(){
         if (counter > 0) {
             document.getElementById("select_feature_form").submit();
         } else {
-                    openMessageDiv("e-sf-warning-div", "main-sf-div");
+            openMessageDiv("e-sf-warning-div", "main-sf-div");
         }
         e.preventDefault();
     });
-    //document.getElementById("field_set").style.display =  "none";
-    //document.getElementById("load-message").style.display = "table";
 }
 
 $.getJSON('/efelg/features_dict', function(data) {
@@ -35,19 +38,22 @@ $.getJSON('/efelg/features_dict', function(data) {
         var crrSelectClearButtonId = crrid + "_clear_button";
         var crrSelectInvButtonId = crrid + "_inv_button";
         var crrContainerDiv = $("<div>");
-        crrContainerDiv.attr("id", crrid);
-        crrContainerDiv.addClass("panel panel-info");
         var crrHeadingDiv = $("<div>");
+        var crrElemDiv = $("<div>");
+        var crrElemDivButton = $("<input>");
+        var crrElemDivClearButton = $("<input>");
+        var crrElemDivInvButton = $("<input>");
+
+        crrContainerDiv.attr("id", crrid);
+        crrContainerDiv.addClass("panel panel-success");
+        
         crrHeadingDiv.attr("name", crrid);
-        crrHeadingDiv.addClass("panel-all-width");
-        //crrHeadingDiv.addClass("panel-all-width");
+        crrHeadingDiv.addClass("panel-heading");
         crrHeadingDiv.on("click", function(){
             $(this).siblings("div").slideToggle("slow", function(){});
         });
-        var crrElemDiv = $("<div>");
-        //crrElemDiv.addClass("justify-div");
+
         crrElemDiv.attr("id", innerDivId);
-        var crrElemDivButton = $("<input>");
         crrElemDivButton.attr("id", crrSelectButtonId);
         crrElemDivButton.attr("type", "button");
         crrElemDivButton.attr("value","Select all");
@@ -55,7 +61,7 @@ $.getJSON('/efelg/features_dict', function(data) {
         crrElemDivButton.on("click", function(){
             $(this).parent().children().children().prop("checked", true);
         });
-        var crrElemDivClearButton = $("<input>");
+
         crrElemDivClearButton.attr("id", crrSelectClearButtonId);
         crrElemDivClearButton.attr("type", "button");
         crrElemDivClearButton.attr("value","Clear all");
@@ -63,7 +69,7 @@ $.getJSON('/efelg/features_dict', function(data) {
         crrElemDivClearButton.on("click", function(){
             $(this).parent().children().children().prop("checked", false);
         });
-        var crrElemDivInvButton = $("<input>");
+
         crrElemDivInvButton.attr("id", crrSelectInvButtonId);
         crrElemDivInvButton.attr("type", "button");
         crrElemDivInvButton.attr("value","Invert selection");
@@ -75,8 +81,10 @@ $.getJSON('/efelg/features_dict', function(data) {
         });
         $("#mainDiv").append(crrContainerDiv);
         $('#' + crrid).append(crrHeadingDiv);
-        $("div[name=" + crrid + "]").append("<a href='#" + $("div[name=" + crrid + "]") + "'>" + i + "</a>");
+        $("div[name=" + crrid + "]").append("<a href='#" + 
+                $("div[name=" + crrid + "]") + "'>" + i + "</a>");
         $('#' + crrid).append(crrElemDiv);
+
         $('#' + innerDivId).append(crrElemDivButton);
         $('#' + innerDivId).append(crrElemDivClearButton);
         $('#' + innerDivId).append(crrElemDivInvButton).append("<br>");
@@ -90,15 +98,17 @@ $.getJSON('/efelg/features_dict', function(data) {
             var obj = ob[ind];
             var crrElemLabelId = ind + "label";
             var crrElemLabel = $("<label>");
+            var crrInputElem = $("<input>");
+            var crrSpanElem = $("<span>");
+
             crrElemLabel.addClass("label-check");
             crrElemLabel.attr("id", crrElemLabelId);
-            var crrInputElem = $("<input>");
+
             crrInputElem.attr("id", ind);
             crrInputElem.attr("type", "checkbox");             
             crrInputElem.attr("name", "crr_feature_check_features");
             crrInputElem.attr("value", ind);
 
-            var crrSpanElem = $("<span>");
             crrSpanElem.attr("title", obj)
                 crrSpanElem.addClass("span-check");
             crrSpanElem.append(ind);

@@ -55,9 +55,6 @@ $(document).ready(function(){
     });
 
     // assign functions to buttons' click
-    //document.getElementById("test-button").onclick = displayFetchParamDiv;
-    //document.getElementById("test-back-button").onclick = displayJobInfoDiv;
-
     // manage optimization settings buttons action
     document.getElementById("opt-set-btn").onclick = openParameterDiv;
     document.getElementById("cancel-param-btn").onclick = closeParameterDiv;

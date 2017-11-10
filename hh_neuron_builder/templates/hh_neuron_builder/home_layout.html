@@ -15,10 +15,9 @@
 
     <body>
         {% hbp_oidc_session_handler request.user %}
-        <div id="title-div" class=fixed-page-title>
-            <h1 id"title">Hodgkin-Huxley Neuron Builder</h1>
+        <div id="title-div" class="fixed-page-title bg-bordeaux">
+            <h3 id"title">Hodgkin-Huxley Neuron Builder</h3>
         </div>
-        <div class=top-spacing-div></div>
         {% block content %}{% endblock %}
     </body>
 

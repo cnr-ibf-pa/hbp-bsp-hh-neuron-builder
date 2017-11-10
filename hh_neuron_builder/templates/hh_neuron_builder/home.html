@@ -4,11 +4,19 @@
 {% hbp_oidc_session_handler request.user %}
 
 {% block content %}
-<div id="home-main-div">
+<div id="home-main-div fade-in-div">
     <div class="center-container column-center-container main-page-panel"
-        style="background-image: {% static 'hhnb/img/hhnb_background.png' %};">
-        <button id="new-wf" type="button" class="btn btn-lg main-panel-btn" onclick=initNewWorkflow();>Initiate a new workflow</button>
-        <button id="fetch-wf-btn" type="button" class="btn btn-lg main-panel-btn" onclick=fetchWorkflows();>Select a completed/ongoing workflow</button>
+        style="background-image: url('{% static "img/hhnb_03.png"%}');
+       background-size: cover;
+       background-repeat: no-repeat; 
+       background-position: center;
+        ">
+        <button id="new-wf" type="button" class="btn btn-lg main-panel-btn" 
+            onclick=initNewWorkflow();>Initiate a new workflow</button>
+        <button id="fetch-wf-btn" type="button" 
+            class="btn btn-lg main-panel-btn" 
+            onclick=fetchWorkflows();>Select a completed/ongoing workflow
+        </button>
     </div>
 </div>
 
@@ -49,6 +57,7 @@
     </div>
 </div>
 <!-- -->
+
 <script type="text/javascript" src="{% static 'hh_neuron_builder/js/home.js' %}"></script>
 <script type="text/javascript" src="{% static 'hh_neuron_builder/js/common.js' %}"></script>
 {% endblock %}

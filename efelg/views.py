@@ -57,19 +57,6 @@ def overview(request):
     # if not in DEBUG mode check whether authentication token is valid
     if not settings.DEBUG:
         
-        my_url = settings.HBP_MY_USER_URL
-        hbp_collab_service_url = settings.HBP_COLLAB_SERVICE_URL + 'collab/context/'
-
-        headers = {'Authorization': \
-                get_auth_header(request.user.social_auth.get())}
-         
-        # request information on current user
-        res = requests.get(my_url, headers = headers)
-        res_dict = res.json()
-    
-        username = res_dict['username']
-        userid = res_dict['id']
-
         # extract context
         context = request.GET.get('ctx')
 
@@ -77,6 +64,23 @@ def overview(request):
         if not context:
             return render(request, 'efelg/hbp_redirect.html')
         else:
+            my_url = settings.HBP_MY_USER_URL
+            hbp_collab_service_url = settings.HBP_COLLAB_SERVICE_URL + 'collab/context/'
+            try:
+                headers = {'Authorization': \
+                    get_auth_header(request.user.social_auth.get())}
+            except:
+                return redirect("https://bspg.pa.ibf.cnr.it/" + \
+                        "/login/hbp/?next=/https://bspg.pa.ibf.cnr.it/efelg/?ctx=" + context)
+                
+         
+            # request information on current user
+            res = requests.get(my_url, headers = headers)
+            res_dict = res.json()
+    
+            username = res_dict['username']
+            userid = res_dict['id']
+
             collab_res = requests.get(hbp_collab_service_url + context, \
                     headers = headers)
             collab_id = collab_res.json()['collab']['id']

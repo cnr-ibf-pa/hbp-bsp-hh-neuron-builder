@@ -2,7 +2,6 @@
 writeMessage("wmd-first", "Checking data permissions");
 writeMessage("wmd-second", "Please wait ...");
 openMessageDiv("wait-message-div", "main-e-st-div");
-
 //
 function submitAll() {
     var $submitForm = $('#gonextform');
@@ -318,7 +317,7 @@ function TracePlot(container_id, cell_obj) {
 
 //
 $(document).ready(function(){
-
+    window.scrollTo(0,0);
     var selected_files = [];
 
     function write_box(box_id, label_id, type, message) {

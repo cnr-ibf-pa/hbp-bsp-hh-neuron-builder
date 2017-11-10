@@ -8,8 +8,6 @@ from . import views
 
 urlpatterns = [
     url(r'^$', views.home),    
-    #url('', include('social.apps.django_app.urls', namespace='social')),
-    #url('', include('hbp_app_python_auth.urls', namespace='hbp-social')),
     url(r'^login/hbp', auth_views.login),
     url(r'^embedded-efel-gui/$', views.embedded_efel_gui),    
     url(r'^embedded-naas/$', views.embedded_naas),
@@ -41,7 +39,6 @@ urlpatterns = [
     url(r'^wf-storage-list/$', views.wf_storage_list),
     url(r'^fetch-wf-from-storage/(?P<wfid>[0-9]{14}_[0-9]+)/$',
         views.fetch_wf_from_storage),
-    #url(r'^upload-files$', views.upload_files),
 ]
 
 if settings.DEBUG:
