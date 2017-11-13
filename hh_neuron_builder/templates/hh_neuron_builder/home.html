@@ -4,18 +4,18 @@
 {% hbp_oidc_session_handler request.user %}
 
 {% block content %}
-<div id="home-main-div fade-in-div">
+<div id="home-main-div" class="fade-in-div">
     <div class="center-container column-center-container main-page-panel"
-        style="background-image: url('{% static "img/hhnb_03.png"%}');
-       background-size: cover;
-       background-repeat: no-repeat; 
-       background-position: center;
-        ">
+         style="background-image: url('{% static "img/hhnb_03.png"%}');
+         background-size: cover;
+         background-repeat: no-repeat; 
+         background-position: center;
+         ">
         <button id="new-wf" type="button" class="btn btn-lg main-panel-btn" 
-            onclick=initNewWorkflow();>Initiate a new workflow</button>
+                                          onclick=initNewWorkflow();>Initiate a new workflow</button>
         <button id="fetch-wf-btn" type="button" 
-            class="btn btn-lg main-panel-btn" 
-            onclick=fetchWorkflows();>Select a completed/ongoing workflow
+                                  class="btn btn-lg main-panel-btn" 
+                                  onclick=fetchWorkflows();>Select a completed/ongoing workflow
         </button>
     </div>
 </div>
@@ -39,9 +39,14 @@
 <!-- "Please wait" message div -->
 <div id="home-overlay-wrapper-wait" class="overlay-wrapper">
     <div id="home-overlay-wait" style="top:35%;" class="overlay-content">
-        <i class="glyphicon glyphicon-refresh spinning lg"></i>
-        <div id="home-wait-dynamic-text" class="please-wait-text"></div>
-        <div class="please-wait-text">Please wait ...</div>
+        <div class="center-container">
+            <div class="row-center-container">
+                <div style="margin: auto;" class="spinning lg"></div>
+                <br>
+                <div id="home-wait-dynamic-text" class="please-wait-text"></div>
+                <div class="please-wait-text">Please wait ...</div>
+            </div>
+        </div>
     </div>
 </div>
 <!-- -->

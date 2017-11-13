@@ -17,17 +17,19 @@ function fetchWorkflows() {
             var list = data['list'];
             for (var i=0; i<list.length; i++) {
                 var crr_wf_div = document.createElement("DIV");
-                crr_wf_div.className = "center-container row-center";
                 var crr_wf_span = document.createElement("SPAN");
-                crr_wf_span.className = "simple-span w-40pc center-container row-center-container";
                 var textnode = document.createTextNode(list[i]); 
+                var wf_download_button = document.createElement("button");
+
+                crr_wf_div.className = "center-container row-center";
+                crr_wf_span.className = "simple-span w-40pc center-container row-center-container";
                 crr_wf_span.appendChild(textnode);
                 crr_wf_div.appendChild(crr_wf_span);
-                var wf_download_button = document.createElement("button");
                 wf_download_button.id = list[i];
                 wf_download_button.innerHTML = "Download";
                 wf_download_button.className = "btn btn-default down-wf-btn";
                 crr_wf_div.appendChild(wf_download_button);
+
                 document.getElementById("wf-storage-list-div").prepend(crr_wf_div);
             }
             document.getElementById("wf-storage-list-div").prepend(document.getElementById("fetch-wf-storage-title"));
@@ -38,12 +40,6 @@ function fetchWorkflows() {
         };
     });
 }
-//document.getElementById("overlaywrapperwait").style.display = "block";
-//document.getElementById("mainDiv").style.pointerEvents = "none";
-//document.body.style.overflow = "hidden";
-//document.getElementById("overlaywrapperwait").style.display = "none";
-//document.getElementById("mainDiv").style.pointerEvents = "auto";
-//document.body.style.overflow = "auto";
 
 function openNoWfDiv() {
     document.getElementById("home-overlay-wrapper-nowf").style.display = "block";

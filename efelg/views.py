@@ -70,8 +70,8 @@ def overview(request):
                 headers = {'Authorization': \
                     get_auth_header(request.user.social_auth.get())}
             except:
-                return redirect("https://bspg.pa.ibf.cnr.it/" + \
-                        "/login/hbp/?next=/https://bspg.pa.ibf.cnr.it/efelg/?ctx=" + context)
+                print("Unexpected error:", sys.exc_info()[0])
+                #return redirect("https://bspg.pa.ibf.cnr.it/login/hbp/?next=https://bspg.pa.ibf.cnr.it/efelg/?ctx=" + context)
                 
          
             # request information on current user
