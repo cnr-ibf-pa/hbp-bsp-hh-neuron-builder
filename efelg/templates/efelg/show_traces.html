@@ -79,6 +79,23 @@
                     <br>
 
                     <div class="panel">
+
+                        <!-- File uploaded box -->
+                        <div id="loadfile_box" style="display:none">
+                            <div class="panel-heading">
+                                <div id="loadfile_info"></div> 
+                            </div>
+                        </div>
+                        <!-- -->
+
+                        <!-- File rejected box -->
+                        <div id="loadfile_box_rejected" style="display:none">
+                            <div class="panel-heading">
+                                <div id="loadfile_info_rejected"></div> 
+                            </div>
+                        </div>
+                        <!-- -->
+
                         <label class="btn btn-default btn-file">
                             Browse files...
                             <input type="file" 
@@ -95,28 +112,6 @@
                                class="btn btn-default" 
                                value="Upload" />
                     </div>
-                    <div id="uploaded_names">
-                        List of uploaded files:
-                        <br>
-                        <br>
-                    </div>
-
-                    <!-- File uploaded box -->
-                    <div id="loadfile_box" style="display:none">
-                        <div class="panel-heading">
-                            <div id="loadfile_info"></div> 
-                        </div>
-                    </div>
-                    <!-- -->
-
-                    <!-- File rejected box -->
-                    <div id="loadfile_box_rejected" style="display:none">
-                        <div class="panel-heading">
-                            <div id="loadfile_info_rejected"></div> 
-                        </div>
-                    </div>
-                    <!-- -->
-
                 </div>
             </form>
             <div id='charts_upload'></div>
@@ -180,7 +175,7 @@
                 <div style="position: sticky;"><strong>List of selected traces. 
                         <br>
                         Click "Confirm" to continue.</strong>
-                        <br>
+                    <br>
                     <br>
                 </div>
                 <div id="e-st-user-choice">

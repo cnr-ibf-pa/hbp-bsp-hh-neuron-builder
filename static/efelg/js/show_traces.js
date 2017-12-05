@@ -328,7 +328,7 @@ $(document).ready(function(){
     }
 
     $("#user_files").change(function(e) {
-        var string = '<b>Files selected:</b> ';
+        var string = '<b>Files selected: </b> ';
         var names = Object.values(e.target.files);
 
         selected_files = names.map(function(item) {
