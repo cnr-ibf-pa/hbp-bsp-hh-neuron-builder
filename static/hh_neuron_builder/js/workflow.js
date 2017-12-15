@@ -13,10 +13,15 @@ $(document).ready(function(){
     //
     // manage form for submitting run parameters
     var $formrunparam = $('#submitRunParam');
-    $formrunparam.submit(function(){
+    $formrunparam.submit(function(e){
+        e.preventDefault();
         $.post($(this).attr('action'), $(this).serialize(), function(response){
-            closeParameterDiv();
-            checkConditions();
+            if (response['response'] == "KO"){
+                openErrorDiv("Username and/or password are wrong");
+            } else {
+                closeParameterDiv();
+                checkConditions();
+            } 
         },'json');
         return false;
     });
@@ -62,7 +67,6 @@ $(document).ready(function(){
     document.getElementById("wf-btn-clone-wf").onclick = cloneWorkflow;
     document.getElementById("wf-btn-save").onclick = saveWorkflow;
 
-
     // manage simulation run buttons
     document.getElementById("run-sim-btn").onclick = inSilicoPage;
     document.getElementById("down-sim-btn").onclick = downloadLocalSim;
@@ -102,7 +106,9 @@ $(document).ready(function(){
 
     // manage buttons for downloading jobs
     document.getElementById("cancel-job-list-btn").onclick = closeJobInfoDiv;
-    //
+
+    // manage error message ok button
+    document.getElementById("ok-error-div-btn").onclick = closeErrorDiv;
 });
 
 
@@ -142,6 +148,24 @@ function openParameterDiv() {
     document.getElementById("overlaywrapper").style.display = "block";
     document.getElementById("mainDiv").style.pointerEvents = "none";
     document.body.style.overflow = "hidden";
+}
+
+
+// open side div for optimization run parameter settings
+function openErrorDiv(message) {
+    document.getElementById("mainDiv").style.pointerEvents = "none";
+    document.getElementById("overlaywrapper").style.pointerEvents = "none";
+    document.getElementById("overlaywrappererror").style.display = "block";
+    document.getElementById("errordynamictext").innerHTML = message;
+}
+
+
+// open side div for optimization run parameter settings
+function closeErrorDiv() {
+    document.getElementById("mainDiv").style.pointerEvents = "auto";
+    document.getElementById("overlaywrapper").style.pointerEvents = "auto";
+    document.getElementById("overlaywrappererror").style.display = "none";
+    document.getElementById("errordynamictext").innerHTML = "";
 }
 
 // close side div for optimization run parameter settings

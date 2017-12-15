@@ -191,7 +191,7 @@
                                                  name="password_submit">
             <br>
             <br>
-            <button id="cancel-param-btn" class="btn btn-primary closebtn">Cancel</button>
+            <button id="cancel-param-btn" type="button" class="btn btn-primary closebtn">Cancel</button>
             <button id="apply-param" class="btn btn-primary">Apply</button>
         </form>
     </div>
@@ -225,7 +225,7 @@
             <input id="password_fetch" required type="password" name="password_fetch">
             <br>
             <br>
-            <button id="cancel-param-fetch-btn" class="btn btn-primary closebtn">Cancel</button>
+            <button id="cancel-param-fetch-btn" type="button" class="btn btn-primary closebtn">Cancel</button>
             <button id="apply-param-fetch" class="btn btn-primary">Apply</button>
         </form>
     </div>
@@ -241,6 +241,21 @@
                 <div style="margin:auto;" class="spinning lg"></div>
                 <div id="waitdynamictext" class="please-wait-text"></div>
                 <div class="please-wait-text">Please wait ...</div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- -->
+
+
+<!-- "Error" message div -->
+<div id="overlaywrappererror" class="overlay-wrapper">
+    <div id="overlayerror" style="top:35%;" class="overlay-content">
+        <div class="center-container">
+            <div class="row-center-container">
+                <div id="errordynamictext" class="please-wait-text"></div>
+                <button id="ok-error-div-btn" class="btn btn-default
+                    closebtn">Ok</button>
             </div>
         </div>
     </div>

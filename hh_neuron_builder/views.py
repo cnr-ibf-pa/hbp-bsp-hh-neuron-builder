@@ -398,8 +398,10 @@ def run_optimization(request):
 
     if hpc_sys == "nsg":
 	nsg_obj = hpc_job_manager.Nsg(username_submit=username_submit,
-                password_submit=password_submit, core_num=core_num, node_num=node_num, \
-		runtime=runtime, gennum=gennum, offsize=offsize, dest_dir=dest_dir, source_opt_zip=source_opt_zip, opt_name=opt_name, \
+                password_submit=password_submit, core_num=core_num, \
+                node_num=node_num, runtime=runtime, gennum=gennum, \
+                offsize=offsize, dest_dir=dest_dir, \
+                source_opt_zip=source_opt_zip, opt_name=opt_name, \
 		source_feat=source_feat, opt_res_dir=opt_res_dir)
 	nsg_obj.createzip()
 	resp = nsg_obj.runNSG()
@@ -487,11 +489,20 @@ def submit_run_param(request):
     request.session['nodenum'] = int(form_data['node-num']) 
     request.session['corenum'] = int(form_data['core-num'])  
     request.session['runtime'] = float(form_data['runtime'])
-    request.session['username_submit'] = form_data['username_submit']
-    request.session['password_submit'] = form_data['password_submit']
     request.session['hpc_sys'] = form_data['hpc_sys']
 
-    return HttpResponse(json.dumps({"response": "nothing"}), content_type="application/json")
+    if form_data['hpc_sys'] == 'nsg':
+	nsg_obj = hpc_job_manager.Nsg() 
+        resp_check_login = nsg_obj.checkNsgLogin(form_data['username_submit'],
+                form_data['password_submit'])
+        if resp_check_login['response'] == 'OK':
+            request.session['username_submit'] = form_data['username_submit']
+            request.session['password_submit'] = form_data['password_submit']
+            resp_dict = {'response':'OK', 'message':''}
+        else:
+            resp_dict = {'response':'KO', 'message':'Bad credentials inserted'}
+
+    return HttpResponse(json.dumps(resp_dict), content_type="application/json")
 
 
 def submit_fetch_param(request):
