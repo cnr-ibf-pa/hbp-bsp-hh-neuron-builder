@@ -18,6 +18,7 @@ $(document).ready(function(){
         $.post($(this).attr('action'), $(this).serialize(), function(response){
             if (response['response'] == "KO"){
                 openErrorDiv("Username and/or password are wrong");
+                checkConditions();
             } else {
                 closeParameterDiv();
                 checkConditions();
@@ -166,6 +167,7 @@ function closeErrorDiv() {
     document.getElementById("overlaywrapper").style.pointerEvents = "auto";
     document.getElementById("overlaywrappererror").style.display = "none";
     document.getElementById("errordynamictext").innerHTML = "";
+    checkConditions();
 }
 
 // close side div for optimization run parameter settings
@@ -173,6 +175,7 @@ function closeParameterDiv() {
     document.getElementById("overlaywrapper").style.display = "none";
     document.getElementById("mainDiv").style.pointerEvents = "auto";
     document.body.style.overflow = "auto";
+    checkConditions();
 } 
 
 //

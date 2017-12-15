@@ -491,16 +491,22 @@ def submit_run_param(request):
     request.session['runtime'] = float(form_data['runtime'])
     request.session['hpc_sys'] = form_data['hpc_sys']
 
+    # if chosen system is nsg
     if form_data['hpc_sys'] == 'nsg':
 	nsg_obj = hpc_job_manager.Nsg() 
         resp_check_login = nsg_obj.checkNsgLogin(form_data['username_submit'],
                 form_data['password_submit'])
+
+        # check credentials correctness
         if resp_check_login['response'] == 'OK':
             request.session['username_submit'] = form_data['username_submit']
             request.session['password_submit'] = form_data['password_submit']
             resp_dict = {'response':'OK', 'message':''}
         else:
-            resp_dict = {'response':'KO', 'message':'Bad credentials inserted'}
+            resp_dict = {'response':'KO', 'message':'Username and/or password \
+                    are wrong'}
+            request.session.pop('username_submit', None)
+            request.session.pop('password_submit', None)
 
     return HttpResponse(json.dumps(resp_dict), content_type="application/json")
 
@@ -523,22 +529,44 @@ def check_cond_exist(request):
     The function checks on current workflow folders whether files are present to go on with the workflow.
     The presence of simulation parameters are also checked.
     """
-
+    
+    # set responses dictionary
     response = {"feat":False, "opt_files":False, "opt_set":False, \
             "run_sim":False, "opt_flag":False, "sim_flag":False}
+
+    # retrieve folder paths 
     data_feat = request.session['user_dir_data_feat']
     data_opt = request.session['user_dir_data_opt_set']
     sim_zip = request.session['user_dir_sim_run']
+    
+    # check if feature files exist
     if os.path.isfile(os.path.join(data_feat, "features.json")) and \
 	    os.path.isfile(os.path.join(data_feat, "protocols.json")):
 		response['feat'] = True
+
+    # check if optimization file exist
     if os.path.exists(data_opt) and not os.listdir(data_opt) == []:
 	response['opt_files'] = True
+
+    # check if simulation files exist
     if os.path.exists(sim_zip) and not os.listdir(sim_zip) == []:
 	response['run_sim'] = True
-    if ('gennum' and 'offsize' and 'nodenum' and 'corenum' and 'runtime' and \
-            'username_submit' and 'password_submit' and 'hpc_sys') in request.session:
-	response['opt_set'] = True
+    #
+    rsk = request.session.keys()
+    rules = [
+            'username_submit' in rsk,
+            'password_submit' in rsk,
+            'gennum' in rsk,
+            'offsize' in rsk,
+            'nodenum' in rsk,
+            'corenum' in rsk,
+            'runtime' in rsk,
+            'hpc_sys' in rsk            
+            ]
+    if all(rules):
+	response['opt_set'] = True 
+    else:
+	response['opt_set'] = False
 
     dest_dir = request.session['user_dir_data_opt_launch']
 
