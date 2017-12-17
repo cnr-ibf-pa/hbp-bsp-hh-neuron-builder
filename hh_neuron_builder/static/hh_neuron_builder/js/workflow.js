@@ -336,6 +336,11 @@ function runOptimization() {
     $.getJSON("/hh-neuron-builder/run-optimization", function(data){
         checkConditions();
         closePleaseWaitDiv();
+        if (data['status_code'] != 200){
+            openErrorDiv("Submission ended with error: " + data['status_code']);
+        } else {
+            openErrorDiv("Submission ended without errors");
+        }
     });
 }
 
