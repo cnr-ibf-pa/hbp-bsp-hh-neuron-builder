@@ -29,14 +29,21 @@ $(document).ready(function(){
 
     // manage form for submitting fetch parameters
     var $formfetchparam = $('#submitFetchParam');
-    $formfetchparam.submit(function(){
+    $formfetchparam.submit(function(e){
+        e.preventDefault();
         $.post($(this).attr('action'), $(this).serialize(), function(response){
-            closeFetchParamDiv();
-            displayJobInfoDiv();
-            checkConditions();
+            if (response['response'] == "KO"){
+                openErrorDiv("Username and/or password are wrong");
+                checkConditions();
+            } else {
+                closeFetchParamDiv();
+                displayJobInfoDiv();
+                checkConditions();
+            } 
         },'json');
         return false;
     });
+
 
     // manage form to upload simulation zip file 
     var $uploadFileForm = $('#uploadFileForm');

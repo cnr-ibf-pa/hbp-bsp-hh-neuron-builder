@@ -13,52 +13,17 @@ import collections
 import re
 
 class Nsg:
-    def __init__(self, username_submit="", password_submit="", core_num=0, \
-            node_num=0, runtime=0, gennum=0, offsize=0, dest_dir="", \
-            source_opt_zip="", opt_name="", source_feat="", username_fetch="", \
-            password_fetch="", opt_res_dir=""):
-        """
-        Initialization function
-        """
-        self.username_submit = username_submit
-        self.password_submit = password_submit
-        self.username_fetch = username_fetch
-        self.password_fetch = password_fetch
-        self.core_num = core_num
-        self.node_num = node_num
-        self.runtime = runtime
-        self.gennum = gennum
-        self.offsize = offsize
-        self.dest_dir = dest_dir
-        self.opt_res_dir = opt_res_dir
-        self.source_opt_zip = source_opt_zip
-        self.opt_name = opt_name
-        self.source_feat = source_feat
-        self.fin_opt_folder = os.path.join(self.dest_dir, self.opt_name)
-        self.zfName = os.path.join(self.fin_opt_folder, self.opt_name + '.zip')
-        self.key = 'Application_Fitting-DA5A3D2F8B9B4A5D964D4D2285A49C57'
-        self.url = 'https://nsgr.sdsc.edu:8443/cipresrest/v1'
-        self.headers = {'cipres-appkey' : self.key}                                               
-        self.tool = 'BLUEPYOPT_TG'
+    key = 'Application_Fitting-DA5A3D2F8B9B4A5D964D4D2285A49C57'
+    url = 'https://nsgr.sdsc.edu:8443/cipresrest/v1'
+    headers = {'cipres-appkey' : key}
+    tool = 'BLUEPYOPT_TG'
 
-    def setFetchUsername(self, username_fetch):
-        """
-        Set username to fetch jobs from hpc systems
-        """
-        self.username_fetch = username_fetch
+    @classmethod
+    def checkNsgLogin(cls, username, password):                                           
+        KEY = cls.key
+        URL = cls.url + '/job/' + username                
 
-
-    def setFetchPassword(self, password_fetch):
-        """
-        Set password to fetch jobs from hpc systems
-        """
-        self.password_fetch = password_fetch
-
-    def checkNsgLogin(self, username, password):                                           
-        KEY = self.key
-        URL = self.url + '/job/' + username                
-
-        r = requests.get(URL, auth=(username, password), headers=self.headers)               
+        r = requests.get(URL, auth=(username, password), headers=cls.headers)               
         root = xml.etree.ElementTree.fromstring(r.text)                                 
         flag = "OK"
 
@@ -70,27 +35,31 @@ class Nsg:
 
         return {"response": flag, "message": msg}
 
-
-    def runNSG(self):
+    @classmethod
+    def runNSG(cls, username_submit, password_submit, core_num, node_num, \
+            runtime, zfName):
         """
         Launch process on NSG
         """
 
-        CRA_USER = self.username_submit
-        PASSWORD = self.password_submit
-        KEY = self.key
-        URL = self.url
-        TOOL = self.tool
+        CRA_USER = username_submit
+        PASSWORD = password_submit
+        KEY = cls.key
+        URL = cls.url
+        TOOL = cls.tool
 
         #payload = {'tool' : TOOL, 'metadata.statusEmail' : 'false', 'vparam.number_cores_' : NCORES.value, 'vparam.number_nodes_' : NNODES.value, 'vparam.runtime_' : RT.value, 'vparam.filename_': 'init.py'}
-        payload = {'tool' : TOOL, 'metadata.statusEmail' : 'false', 'vparam.number_cores_' : self.core_num, 'vparam.number_nodes_' : self.node_num, 'vparam.runtime_' : self.runtime, 'vparam.filename_': 'init.py'}
+        #payload = {'tool' : TOOL, 'metadata.statusEmail' : 'false', 'vparam.number_cores_' : self.core_num, 'vparam.number_nodes_' : self.node_num, 'vparam.runtime_' : self.runtime, 'vparam.filename_': 'init.py'}
+        payload = {'tool' : TOOL, 'metadata.statusEmail' : 'false', \
+                'vparam.number_cores_' : core_num, 'vparam.number_nodes_' :\
+                node_num, 'vparam.runtime_' : runtime, 'vparam.filename_': 'init.py'}
 
         # set file to be submitted
-        files = {'input.infile_' : open(self.zfName,'rb')}
+        files = {'input.infile_' : open(zfName,'rb')}
 
         # submit job with post
         r = requests.post('{}/job/{}'.format(URL, CRA_USER), auth=(CRA_USER, \
-            PASSWORD), data=payload, headers=self.headers, files=files)
+            PASSWORD), data=payload, headers=cls.headers, files=files)
 
         if r.status_code != 200:
             return {"status_code":r.status_code}
@@ -104,7 +73,7 @@ class Nsg:
             selfuri = root.find('selfUri').find('url').text
 
             # extract job handle
-            r = requests.get(selfuri, auth=(CRA_USER, PASSWORD), headers=self.headers)
+            r = requests.get(selfuri, auth=(CRA_USER, PASSWORD), headers=cls.headers)
             root = xml.etree.ElementTree.fromstring(r.text)
             jobname = root.find('jobHandle').text
             for child in root:
@@ -112,24 +81,24 @@ class Nsg:
                     jobname = child.text
 
             response = {"status_code":r.status_code, "outputuri":outputuri, \
-                    "selfUri":selfuri, "jobname":jobname, "zfName":self.zfName}
+                    "selfUri":selfuri, "jobname":jobname, "zfName":zfName}
             return response
 
-
-    def fetch_job_list(self):
+    @classmethod
+    def fetch_job_list(cls, username_fetch, password_fetch):
         """
         Retrieve job list from NSG servers.
         """
 
         # read/set NSG connection parameters
-        KEY = self.key
-        URL = self.url
-        CRA_USER = self.username_fetch
-        PASSWORD = self.password_fetch
+        KEY = cls.key
+        URL = cls.url
+        CRA_USER = username_fetch
+        PASSWORD = password_fetch
 
         # 
         r_all = requests.get(URL + "/job/" + CRA_USER, auth=(CRA_USER, \
-            PASSWORD), headers=self.headers)
+            PASSWORD), headers=cls.headers)
         root_all = xml.etree.ElementTree.fromstring(r_all.text)
         job_list_dict = collections.OrderedDict()
         job_list = root_all.find('jobs')
@@ -143,20 +112,21 @@ class Nsg:
         return job_list_dict
 
 
-    def fetch_job_details(self, job_id):
+    @classmethod
+    def fetch_job_details(cls, job_id, username_fetch, password_fetch):
         """
         Retrieve details from individual jobs from the job list given as argument
         Current status, current status timestamp and submission timestamp are fetched for every job
         """
 
         # read/set NSG connection parameters
-        KEY = self.key
-        URL = self.url
-        CRA_USER = self.username_fetch
-        PASSWORD = self.password_fetch
+        KEY = cls.key
+        URL = cls.url
+        CRA_USER = username_fetch
+        PASSWORD = password_fetch
 
         r_job = requests.get(URL + "/job/" + CRA_USER + '/' + job_id, \
-                auth=(CRA_USER, PASSWORD), headers=self.headers)
+                auth=(CRA_USER, PASSWORD), headers=cls.headers)
         root_job = xml.etree.ElementTree.fromstring(r_job.text)
 
         job_date_submitted = root_job.find('dateSubmitted').text
@@ -174,25 +144,26 @@ class Nsg:
 
         return job_info_dict 
 
-
-    def fetch_job_results(self, job_res_url):
+    @classmethod
+    def fetch_job_results(cls, job_res_url, username_fetch, password_fetch, \
+            opt_res_dir):
         """
         Fetch job output files from NSG 
         """
         # read/set NSG connection parameters
-        KEY = self.key
-        URL = self.url
-        CRA_USER = self.username_fetch
-        PASSWORD = self.password_fetch
-        opt_res_dir = self.opt_res_dir
+        KEY = cls.key
+        URL = cls.url
+        CRA_USER = username_fetch
+        PASSWORD = password_fetch
+        opt_res_dir = opt_res_dir
 
-        # request all outpur file urls 
+        # request all output file urls 
         r_all = requests.get(job_res_url, auth=(CRA_USER, PASSWORD), \
-                headers=self.headers)
+                headers=cls.headers)
         root = xml.etree.ElementTree.fromstring(r_all.text)
         all_down_uri = root.find('jobfiles').findall('jobfile')
 
-        # create destination dir if not existing
+        # ureate destination dir if not existing
         if not os.path.exists(opt_res_dir):
             os.mkdir(opt_res_dir)
 
@@ -200,7 +171,7 @@ class Nsg:
         for i in all_down_uri:
             crr_down_uri = i.find('downloadUri').find('url').text
             r = requests.get(crr_down_uri, auth=(CRA_USER, PASSWORD), \
-                    headers=self.headers) 
+                    headers=cls.headers) 
             d = r.headers['content-disposition']
             filename_list = re.findall('filename=(.+)', d)
             for filename in filename_list:
@@ -209,33 +180,34 @@ class Nsg:
                         fd.write(chunk)
         return ""
 
-
-    def createzip(self):
+    @classmethod
+    def createzip(cls, fin_opt_folder, source_opt_zip, \
+            opt_name, source_feat, gennum, offsize, zfName):
         """
         Create zip file to be submitted to NSG 
         """
 
         # folder named as the optimization
-        if not os.path.exists(self.fin_opt_folder):
-            os.makedirs(self.fin_opt_folder)
+        if not os.path.exists(fin_opt_folder):
+            os.makedirs(fin_opt_folder)
         else:
-            shutil.rmtree(self.fin_opt_folder)
-            os.makedirs(self.fin_opt_folder)
+            shutil.rmtree(fin_opt_folder)
+            os.makedirs(fin_opt_folder)
 
         # unzip source optimization file 
-        z = zipfile.ZipFile(self.source_opt_zip, 'r')
-        z.extractall(path = self.fin_opt_folder)
+        z = zipfile.ZipFile(source_opt_zip, 'r')
+        z.extractall(path = fin_opt_folder)
         z.close()
 
         # change name to the optimization folder
-        source_opt_name = os.path.basename(self.source_opt_zip)[:-4]
-        crr_dest_dir = os.path.join(self.fin_opt_folder, source_opt_name)
-        fin_dest_dir = os.path.join(self.fin_opt_folder, self.opt_name)
+        source_opt_name = os.path.basename(source_opt_zip)[:-4]
+        crr_dest_dir = os.path.join(fin_opt_folder, source_opt_name)
+        fin_dest_dir = os.path.join(fin_opt_folder, opt_name)
         shutil.move(crr_dest_dir, fin_dest_dir)
 
         # copy feature files to the optimization folder
-        features_file = os.path.join(self.source_feat, 'features.json')
-        protocols_file = os.path.join(self.source_feat, 'protocols.json') 
+        features_file = os.path.join(source_feat, 'features.json')
+        protocols_file = os.path.join(source_feat, 'protocols.json') 
         fin_feat_path = os.path.join(fin_dest_dir, 'config', 'features.json')
         fin_prot_path = os.path.join(fin_dest_dir, 'config', 'protocols.json')
         if os.path.exists(fin_feat_path):
@@ -287,16 +259,16 @@ class Nsg:
         with open(os.path.join(fin_dest_dir, 'init.py'),'w') as f:
             f.write('import os')
             f.write('\n')
-            f.write('os.system(\'python opt_neuron.py --max_ngen=' + str(self.gennum) + ' --offspring_size=' + str(self.offsize) + ' --start --checkpoint ./checkpoints/checkpoint.pkl\')')
+            f.write('os.system(\'python opt_neuron.py --max_ngen=' + str(gennum) + ' --offspring_size=' + str(offsize) + ' --start --checkpoint ./checkpoints/checkpoint.pkl\')')
             f.write('\n')
         f.close()
         current_working_dir = os.getcwd()
-        os.chdir(self.fin_opt_folder)
+        os.chdir(fin_opt_folder)
 
         # build optimization folder name
-        crr_dir_opt = os.path.join('.', self.opt_name)
+        crr_dir_opt = os.path.join('.', opt_name)
 
-        foo = zipfile.ZipFile(self.zfName, 'w', zipfile.ZIP_DEFLATED)
+        foo = zipfile.ZipFile(zfName, 'w', zipfile.ZIP_DEFLATED)
 
         checkpoints_dir = os.path.join(crr_dir_opt, 'checkpoints')
         figures_dir = os.path.join(crr_dir_opt, 'figures')
@@ -331,7 +303,3 @@ class Nsg:
         foo.close()
 
         os.chdir(current_working_dir)
-
-
-def replace_feature_files(source_dir, dest_dir):
-    return True
