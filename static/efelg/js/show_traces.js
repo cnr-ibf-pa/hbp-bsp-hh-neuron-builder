@@ -2,6 +2,7 @@
 writeMessage("wmd-first", "Checking data permissions");
 writeMessage("wmd-second", "Please wait ...");
 openMessageDiv("wait-message-div", "main-e-st-div");
+
 //
 function submitAll() {
     var $submitForm = $('#gonextform');
@@ -48,10 +49,10 @@ function submitAll() {
 
                 var stimtext = document.createTextNode("Stimuli: ");
                 stim_span.appendChild(stimtext);
-                
+
                 var sorted_stim = [];
                 for (var ii = 0; ii < crr_stim.length; ii++) {
-                        sorted_stim.push(parseFloat(crr_stim[ii]));
+                    sorted_stim.push(parseFloat(crr_stim[ii]));
                 }
                 sorted_stim_fin = sorted_stim.sort(function(a, b){return a-b});
                 for (var j = 0; j < sorted_stim_fin.length; j++){
@@ -105,6 +106,8 @@ function acceptUserChoiceList() {
     }
     var form = $('#gonextform')[0];
     closeMessageDiv("e-st-user-choice-div", "main-e-st-div");
+    writeMessage("wmd-first", "");
+    writeMessage("wmd-second", "");
     form.submit();
 }
 
@@ -123,7 +126,7 @@ function TracePlot(container_id, cell_obj) {
     const SHOW_FADED = 0.15;
     const SHOW_CHECK = 0.65;
     const SHOW_HOVER = 1.0;
-
+    var temp = Object.keys(cell_obj);
     var n_traces = Object.keys(cell_obj['traces']).length;
     var self = this;
 
@@ -222,10 +225,15 @@ function TracePlot(container_id, cell_obj) {
 
         $.each(self.cell_obj['traces'], function(key, trace) {
             self.formbox.append('<input type="checkbox" name="' + key + '" />');
+            var trace_len = trace.length;
+            console.log(trace_len);
+            var a = Array.apply(null, {length: trace_len}).map(Number.call, Number);
+            var b = a.map(x => x * 1000 / self.cell_obj['disp_sampling_rate']);
 
             // Defines what is about to be plotted
             var newTrace = {
                 y: trace,
+                x: b,
                 name: key + ' ' + self.cell_obj['amp_unit'],
                 mode: 'lines',
                 hoverinfo: 'none',
@@ -254,8 +262,14 @@ function TracePlot(container_id, cell_obj) {
                 x: 0,
                 y: 1.1,
             },
+            yaxis: {
+                title: self.cell_obj['volt_unit'],
+            },
+            xaxis: {
+                title: 'ms',
+            },
             showlegend: true,
-            margin: {l: 40, b: 25, t: 0} 
+            margin: {l: 50, b: 35, t: 0} 
         }
 
         Plotly.newPlot(self.plotbox.attr('id'), plotdata, layout, {displayModeBar: false}).then(manageLegend);
@@ -437,12 +451,16 @@ $(document).ready(function(){
                 $.each(Object.keys(tree), function(index, elem) {
                     var n = ' (' + Object.keys(tree[elem]).length + ')';
                             $(el).append('<option value="' + elem + '">' + elem + n + '</option>');
-                            })
+                            });
 
                     if ($(el).next('select').length == 0) {
                         $(el).on('change', function(ev) {
+                            openMessageDiv("wait-message-div", "main-e-st-div");
+                            writeMessage("wmd-first", "Loading traces");
+                            writeMessage("wmd-second", "Please wait ...");
                             $(el).prop("disabled", true);
-
+                            var keys_len = Object.keys(tree[ev.target.value]).length;
+                            var keys_counter = keys_len;
                             $.each(tree[ev.target.value], function(index, elem) {
                                 var name_split = splitFilename(elem[0]);
                                 var cell_name = name_split[0] + ' > ' + name_split[1] + ' > ' + name_split[2] + ' >     ' + name_split[3] + ' > ' + name_split[4] + ' > ' + name_split[5];
@@ -474,10 +492,26 @@ $(document).ready(function(){
                                     $(this).parents('.cell').find('.dselall').click();
                                 })
 
+                                var elem_counter = 0;
+                                var elem_len = elem.length;
                                 $.each(elem, function(i, e) {
                                     $('#' + index).append('<div id="' + e + '"></div>');
                                     $.getJSON('/efelg/get_data/' + e, function(data) {
+                                        elem_counter++;
+                                        writeMessage("wmd-first", "Cell " + (keys_len - keys_counter + 1).toString()
+                                                + " of " + keys_len.toString() + 
+                                                ". Loading traces for file " + 
+                                                elem_counter.toString() + 
+                                                " of " + elem_len.toString());
                                         new TracePlot(e, JSON.parse(data));
+                                        if (elem_counter == elem_len){
+                                            keys_counter--;
+                                            if (keys_counter == 0) {
+                                                closeMessageDiv("wait-message-div", "main-e-st-div");
+                                                writeMessage("wmd-first", "");
+                                                writeMessage("wmd-second", "");
+                                            }
+                                        }
                                     })
                                 })
                             })

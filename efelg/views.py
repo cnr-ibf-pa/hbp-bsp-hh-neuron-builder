@@ -5,6 +5,7 @@ import urllib
 from uuid import UUID
 import sys, datetime, shutil, zipfile, pprint
 import numpy, efel, neo
+import math
 import matplotlib
 matplotlib.use('Agg')
 import requests
@@ -195,7 +196,6 @@ def select_features(request):
     feature_names = efel.getFeatureNames()
     #selected_traces_rest = request.POST.get('csrfmiddlewaretoken')
     selected_traces_rest = request.POST.get('data')
-    pprint.pprint(selected_traces_rest)
     selected_traces_rest_json = json.loads(selected_traces_rest)
     request.session['selected_traces_rest_json'] = selected_traces_rest_json
 
@@ -308,6 +308,8 @@ def get_list(request):
 #####
 @login_required(login_url='/login/hbp')
 def get_data(request, cellname=""):
+
+    disp_sampling_rate = 5000
     json_dir = request.session['json_dir']
     full_user_uploaded_folder = request.session['full_user_uploaded_folder']
     current_authorized_files = request.session["current_authorized_files"]
@@ -325,9 +327,37 @@ def get_data(request, cellname=""):
                 + '.json'
 
     with open(cellname_path) as f:
-        content = f.read()
+        content_json = f.read()
+    content = json.loads(content_json)
+
+    # extract data to be sent to frontend
+    crr_sampling_rate = content['sampling_rate']
+    coefficient = int(math.floor(crr_sampling_rate/disp_sampling_rate))
+    if coefficient < 1:
+        coefficient = 1
+        disp_sampling_rate = crr_sampling_rate
     
-    return HttpResponse(json.dumps(content), content_type="application/json")
+    trace_info = {}
+    trace_info['traces'] = {}
+    for key in content['traces'].keys():
+        trace_info['traces'][key] = content['traces'][key][::coefficient]
+    trace_info['md5'] = content['md5']
+    trace_info['species'] = content['species']
+    trace_info['sampling_rate'] = content['sampling_rate']
+    trace_info['area'] = content['area']
+    trace_info['region'] = content['region']
+    trace_info['etype'] = content['etype']
+    trace_info['type'] = content['type']
+    trace_info['name'] = content['name']
+    trace_info['sample'] = content['sample']
+    trace_info['amp_unit'] = content['amp_unit']
+    trace_info['contributors'] = content['contributors']
+    trace_info['coefficient'] = coefficient
+    trace_info['volt_unit'] = content['volt_unit']
+    trace_info['disp_sampling_rate'] = disp_sampling_rate
+
+    
+    return HttpResponse(json.dumps(json.dumps(trace_info)), content_type="application/json")
 
 
 #####
