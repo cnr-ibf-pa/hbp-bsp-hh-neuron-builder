@@ -436,10 +436,12 @@ function closeFetchParamDiv() {
 function displayJobInfoDiv(){
     displayJobInfo();
 }
+
 // Manage job info div
 function displayJobInfo() {
     displayPleaseWaitDiv();
     changeMsgPleaseWaitDiv("Fetching job list");
+    $("#job-list-div").empty();
     $.getJSON("/hh-neuron-builder/get-nsg-job-list", function(joblist){
         var job_list_len = Object.keys(joblist).length;
         var job_key_list = Object.keys(joblist);
@@ -494,7 +496,6 @@ function displayJobInfo() {
                     }
 
                     document.getElementById("job-list-div").prepend(crr_div);
-                    document.getElementById("job-list-div").prepend(document.getElementById("fetch-job-title"));
                     if (cnrt == job_list_len - 1) {
                         closePleaseWaitDiv();
                         document.getElementById("overlaywrapperjobs").style.display = "block";

@@ -154,17 +154,18 @@
                 <strong>Optimization Run Parameters</strong>
             </div>
             <br>
-            <label for="node-num">Number of nodes</label>
+            <label for="node-num">Number of nodes (max 72)</label>
             <br>
-            <input type="number" name="node-num" id="node-num" value="2"><br>
+            <input type="number" name="node-num" id="node-num" max="72" value="2"><br>
             <br>
-            <label for="core-num">Number of cores</label>
+            <label for="core-num">Number of cores (max 24)</label>
             <br>
-            <input type="number" name="core-num" id="core-num" value="1"><br>
+            <input type="number" name="core-num" id="core-num" max="24" value="1"><br>
             <br>
-            <label for="runtime">Runtime</label>
+            <label for="runtime">Runtime (max 48h)</label>
             <br>
-            <input type="number" name="runtime" id="runtime" value="0.5"><br>
+            <input type="number" name="runtime" id="runtime" max="48" value="0.5"
+            step="0.5"><br>
             <br>
             <br>
             <br>
