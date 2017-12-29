@@ -33,7 +33,7 @@ urlpatterns = [
     url(r'^modify-analysis-py$', views.modify_analysis_py),
     url(r'^zip-sim$', views.zip_sim),
     url(r'^upload-files/(?P<filetype>feat|modsim|optset)/$', views.upload_files),
-    url(r'^download-zip/(?P<filetype>feat|modsim|optset)/$', views.download_zip),
+    url(r'^download-zip/(?P<filetype>feat|modsim|optset|optres)/$', views.download_zip),
     url(r'^save-wf-to-storage$', views.save_wf_to_storage),
     url(r'^get-context/$', views.get_context),
     url(r'^wf-storage-list/$', views.wf_storage_list),

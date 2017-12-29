@@ -114,12 +114,24 @@
                         <h3>Optimization results</h3> 
                     </div>
                     <div class="center-container">
-                        <button id="opt-fetch-btn" type="button" class="btn btn-default">Fetch results</button>
-                        <button id="opt-res-up-btn" type="button" class="btn btn-default">Upload file</button>
+                        <button id="opt-fetch-btn" type="button" 
+                            class="btn btn-default">Fetch results</button>
+                        <button id="opt-res-up-btn" type="button" 
+                            class="btn btn-default">Upload file</button>
                     </div>
                     <div class="center-container">
-                        <button id="del-sim-btn" title="Delete optimization results" type="button" class="btn btn-link" disabled>Delete</button>
-                        <button id="down-sim-btn" title="Download optimization results" type="button" class="btn btn-link">Download</button>
+                        <button id="del-sim-btn" 
+                                title="Delete optimization results" 
+                                type="button" class="btn btn-link" disabled>Delete</button>
+
+                        <button id="down-opt-btn" title="Download optimization results" 
+                                                  type="button" 
+                            class="btn btn-link">Download results</button>
+                    </div>
+                    <div class="center-container">
+                        <button id="down-sim-btn" title="Download model files"
+                            type="button" 
+                            class="btn btn-link">Download model</button>
                     </div>
                     <div id="opt-res-bar" class="status-bar center-container">
                     </div>
@@ -141,7 +153,7 @@
                 <strong>Algorithm Parameters</strong>
             </div>
             <br>
-            <label for="gen-max">Number of generation (max)</label>
+            <label for="gen-max">Number of generation (max 60)</label>
             <br>
             <input class="num-edit" type="number" name="gen-max" id="gen-max" value="2" step="1" min="1"><br>
             <br>

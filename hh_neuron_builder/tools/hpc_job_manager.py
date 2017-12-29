@@ -23,7 +23,11 @@ class Nsg:
         KEY = cls.key
         URL = cls.url + '/job/' + username                
 
-        r = requests.get(URL, auth=(username, password), headers=cls.headers)               
+        try:
+            r = requests.get(URL, auth=(username, password), headers=cls.headers)               
+        except Exception as e:
+            return {'response':'KO', 'message':e.message}
+
         root = xml.etree.ElementTree.fromstring(r.text)                                 
         flag = "OK"
 
@@ -146,7 +150,7 @@ class Nsg:
 
     @classmethod
     def fetch_job_results(cls, job_res_url, username_fetch, password_fetch, \
-            opt_res_dir):
+            opt_res_dir, wf_id):
         """
         Fetch job output files from NSG 
         """
@@ -163,7 +167,7 @@ class Nsg:
         root = xml.etree.ElementTree.fromstring(r_all.text)
         all_down_uri = root.find('jobfiles').findall('jobfile')
 
-        # ureate destination dir if not existing
+        # create destination dir if not existing
         if not os.path.exists(opt_res_dir):
             os.mkdir(opt_res_dir)
 
@@ -178,6 +182,14 @@ class Nsg:
                 with open(os.path.join(opt_res_dir,filename), 'wb') as fd:
                     for chunk in r.iter_content():
                         fd.write(chunk)
+
+        fname = opt_res_dir + '_' +  wf_id
+
+        if os.path.isfile(fname):
+            shutil.remove(fname)
+
+        shutil.make_archive(fname, 'zip', opt_res_dir)
+
         return ""
 
     @classmethod

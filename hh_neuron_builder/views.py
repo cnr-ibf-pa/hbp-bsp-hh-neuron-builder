@@ -533,14 +533,11 @@ def submit_fetch_param(request):
         if resp_check_login['response'] == 'OK':
             request.session['username_fetch'] = form_data['username_fetch']
             request.session['password_fetch'] = form_data['password_fetch']
-            resp_dict = {'response':'OK', 'message':''}
         else:
-            resp_dict = {'response':'KO', 'message':'Username and/or password \
-                are wrong'}
             request.session.pop('username_fetch', None)
             request.session.pop('password_fetch', None)
 
-    return HttpResponse(json.dumps(resp_dict), content_type="application/json")
+    return HttpResponse(json.dumps(resp_check_login), content_type="application/json")
 
 def check_cond_exist(request):
     """
@@ -551,12 +548,15 @@ def check_cond_exist(request):
     
     # set responses dictionary
     response = {"feat":False, "opt_files":False, "opt_set":False, \
-            "run_sim":False, "opt_flag":False, "sim_flag":False}
+            "run_sim":False, "opt_flag":False, "sim_flag":False, \
+            'opt_res': False}
 
     # retrieve folder paths 
     data_feat = request.session['user_dir_data_feat']
     data_opt = request.session['user_dir_data_opt_set']
     sim_zip = request.session['user_dir_sim_run']
+    res_dir = request.session['user_dir_results']
+    wf_id = request.session['wf_id']
     
     # check if feature files exist
     if os.path.isfile(os.path.join(data_feat, "features.json")) and \
@@ -570,7 +570,12 @@ def check_cond_exist(request):
     # check if simulation files exist
     if os.path.exists(sim_zip) and not os.listdir(sim_zip) == []:
 	response['run_sim'] = True
-    #
+
+    # check if optimization results zip file exists
+    for i in os.listdir(res_dir):
+        if i.endswith('.zip'):
+            response['opt_res'] = True
+
     rsk = request.session.keys()
     rules = [
             'username_submit' in rsk,
@@ -716,6 +721,7 @@ def download_job(request, job_id=""):
 	username_fetch = request.session['username_fetch']
 	password_fetch = request.session['password_fetch']
 	opt_res_dir = request.session['user_dir_results_opt']
+        wf_id = request.session['wf_id']
 
 	# remove folder with current zip file
 	if os.listdir(opt_res_dir):
@@ -732,7 +738,8 @@ def download_job(request, job_id=""):
 
 	resp = hpc_job_manager.Nsg.fetch_job_results(job_res_url, \
                 username_fetch=username_fetch, \
-                password_fetch=password_fetch, opt_res_dir=opt_res_dir)
+                password_fetch=password_fetch, opt_res_dir=opt_res_dir, \
+                wf_id=wf_id)
 
     return HttpResponse(json.dumps(resp), content_type="application/json") 
 
@@ -756,7 +763,7 @@ def modify_analysis_py(request):
 		analysis_file_list.append(os.path.join(dirpath,filename))
 
     if len(analysis_file_list) != 1:
-	resp = {"Status":"ERROR", "Message":"No (or multiple) analysis.py file(s) found"}
+        resp = {"Status":"ERROR", "response":"KO", "Message":"No (or multiple) analysis.py file(s) found"}
 	return HttpResponse(json.dumps(resp), content_type="application/json") 
     else:
 	full_file_path = analysis_file_list[0]
@@ -842,6 +849,8 @@ def zip_sim(request):
     user_dir_res_opt = request.session['user_dir_results_opt']
     user_dir_sim_run = request.session['user_dir_sim_run']
 
+    opt_logs_folder = 'opt_logs'
+
     # folder named as the optimization
     if os.path.exists(user_dir_sim_run):
         shutil.rmtree(user_dir_sim_run)
@@ -869,12 +878,24 @@ def zip_sim(request):
         crr_opt_name = os.path.split(crr_opt_folder)[1]
         sim_mod_folder = os.path.join(user_dir_sim_run, crr_opt_name)
         os.makedirs(sim_mod_folder)
+        user_opt_logs = os.path.join(user_dir_sim_run, crr_opt_name, opt_logs_folder)
+        os.makedirs(user_opt_logs)
+
+        log_files = ["STDERR", "stderr.txt", "STDOUT", "stdout.txt", \
+                        "_JOBINFO.TXT", "nsgdebug", "scheduler.conf", \
+                        "scheduler_stderr.txt", "scheduler_stdout.txt", \
+                        "epilog"]
         for root, dirs, files in os.walk(user_dir_res_opt):
             if (root.endswith("mechanisms") or root.endswith("morphology") or \
                     root.endswith("checkpoints")):
                 crr_folder = os.path.split(root)[1]
                 dst = os.path.join(sim_mod_folder, crr_folder)
                 shutil.copytree(root,dst)
+
+            for crr_f in log_files:
+                if crr_f in files:
+                    shutil.copyfile(os.path.join(root, crr_f), \
+                            os.path.join(user_opt_logs, crr_f))
     
 
     for filename in os.listdir(os.path.join(sim_mod_folder, 'checkpoints')):
@@ -892,7 +913,8 @@ def zip_sim(request):
     for root, dirs, files in os.walk('.'):
         if (root == os.path.join(crr_dir_opt, 'morphology')) or \
         (root == os.path.join(crr_dir_opt, 'checkpoints')) or \
-        (root == os.path.join(crr_dir_opt, 'mechanisms')):
+        (root == os.path.join(crr_dir_opt, 'mechanisms')) or \
+        (root == os.path.join(crr_dir_opt, opt_logs_folder)):
             for f in files:
                 foo.write(os.path.join(root, f))
 
@@ -920,6 +942,8 @@ def download_zip(request, filetype=""):
         fetch_folder = request.session['user_dir_data_opt_set']
     elif filetype == "modsim":
         fetch_folder = request.session['user_dir_sim_run']
+    elif filetype == "optres":
+        fetch_folder = request.session['user_dir_results']
 
     zip_file_list = []
     for i in os.listdir(fetch_folder):

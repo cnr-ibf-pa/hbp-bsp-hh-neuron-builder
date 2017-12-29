@@ -33,7 +33,7 @@ $(document).ready(function(){
         e.preventDefault();
         $.post($(this).attr('action'), $(this).serialize(), function(response){
             if (response['response'] == "KO"){
-                openErrorDiv("Username and/or password are wrong");
+                openErrorDiv(response['message']);
                 checkConditions();
             } else {
                 closeFetchParamDiv();
@@ -78,6 +78,7 @@ $(document).ready(function(){
     // manage simulation run buttons
     document.getElementById("run-sim-btn").onclick = inSilicoPage;
     document.getElementById("down-sim-btn").onclick = downloadLocalSim;
+    document.getElementById("down-opt-btn").onclick = downloadLocalOpt;
 
     // manage extract features button
     document.getElementById("feat-efel-btn").onclick = efelPage;
@@ -223,6 +224,13 @@ function checkConditions(){
             document.getElementById('opt-param-bar').style.background = "red";
             document.getElementById('opt-param-bar').innerHTML = "Optimization parameters NOT set";
         };
+
+        if (data['opt_res']){
+            document.getElementById('down-opt-btn').disabled = false;
+        } else {
+            document.getElementById('down-opt-btn').disabled = true;
+        
+        }
 
         if (data['opt_flag']){
             document.getElementById("optlaunchimg").src = "/static/images/ok_red.png";
@@ -544,6 +552,11 @@ function downloadLocalSim(){
     downloadLocal("modsim");
 }
 
+
+//
+function downloadLocalOpt(){
+    downloadLocal("optres");
+}
 
 //
 function downloadLocalOptSet(){
