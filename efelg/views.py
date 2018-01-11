@@ -25,7 +25,7 @@ from django.template.context import RequestContext
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth import logout as auth_logout
+from django.contrib.auth import logout
 
 # import hbp/bbp modules
 from hbp_app_python_auth.auth import get_access_token, \
@@ -52,7 +52,7 @@ accesslogger.addHandler(logging.FileHandler('/var/log/bspg/efelg_access.log'))
 accesslogger.setLevel(logging.DEBUG)
 
 ##### serve overview.html
-@login_required(login_url='/login/hbp/')
+#@login_required(login_url='/login/hbp/')
 def overview(request):
 
     # if not in DEBUG mode check whether authentication token is valid
@@ -71,12 +71,17 @@ def overview(request):
                 headers = {'Authorization': \
                     get_auth_header(request.user.social_auth.get())}
             except:
-                print("Unexpected error:", sys.exc_info()[0])
+                request.session['exit_message'] = 'Unexpected error: ' + \
+                'sys.exc_info()[0]'
+                return render(request, 'efelg/hbp_redirect.html')
                 #return redirect("https://bspg.pa.ibf.cnr.it/login/hbp/?next=https://bspg.pa.ibf.cnr.it/efelg/?ctx=" + context)
                 
          
             # request information on current user
             res = requests.get(my_url, headers = headers)
+            if res.status_code != 200:
+                return render(request, 'efelg/hbp_redirect.html')
+
             res_dict = res.json()
     
             username = res_dict['username']
@@ -84,6 +89,10 @@ def overview(request):
 
             collab_res = requests.get(hbp_collab_service_url + context, \
                     headers = headers)
+
+            if res.status_code != 200:
+                return render(request, 'efelg/hbp_redirect.html')
+            
             collab_id = collab_res.json()['collab']['id']
     else:
         username = 'test'
@@ -185,7 +194,8 @@ def overview(request):
     # render to html 
     return render(request, 'efelg/overview.html')
 
-    
+
+@login_required(login_url='/login/hbp')
 def select_features(request):
     '''
     This function serves the application select-features page
@@ -203,6 +213,19 @@ def select_features(request):
             page_spec_string = selected_traces_rest))
     
     return render(request, 'efelg/select_features.html')
+
+#@login_required(login_url='/login/hbp')
+def hbp_redirect(request):
+    return render(request, 'efelg/hbp_redirect.html')
+
+
+@login_required(login_url='/login/hbp')
+def exit_efelg(request):
+    logout(request)
+    #return redirect('/efelg/logout/hbp')
+    return redirect('https://services.humanbrainproject.eu/oidc/login')
+    #return redirect('https://collab.humanbrainproject.eu/#/collab/19/nav/6342')
+
 
 
 # build .json files containing data and metadata
@@ -714,7 +737,7 @@ def upload_zip_file_to_storage(request):
             services['document_service']['prod']['url'], oidc_client)
 
     context = request.session['context']
-    auth_logout(request)
+    logout(request)
     nextUrl = urllib.quote('%s?ctx=%s' % (request.path, context))
     #return redirect('%s?next=%s' % (settings.LOGIN_URL, nextUrl))
 

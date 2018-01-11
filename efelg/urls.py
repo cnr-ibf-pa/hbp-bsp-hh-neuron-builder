@@ -9,9 +9,8 @@ from . import views
 urlpatterns = [
     url(r'^$', views.overview),    
     url(r'^overview/$', views.overview),    
-    #url('', include('social.apps.django_app.urls', namespace='social')),
-    #url('', include('hbp_app_python_auth.urls', namespace='hbp-social')),
     url(r'^login/hbp', auth_views.login),
+    url(r'^logout/hbp', auth_views.logout),
     url(r'^show_traces/$', views.show_traces),
     url(r'^generate_json_data$', views.generate_json_data),
     url(r'^get_list$', views.get_list),
@@ -28,6 +27,8 @@ urlpatterns = [
     url(r'^get_directory_structure', views.get_directory_structure),
     url(r'^upload_files', views.upload_files),
     url(r'^upload_zip_file_to_storage', views.upload_zip_file_to_storage),
+    url(r'^hbp-redirect/$', views.hbp_redirect),
+    url(r'^exit-efelg/$', views.exit_efelg),
 ]
 
 if settings.DEBUG:

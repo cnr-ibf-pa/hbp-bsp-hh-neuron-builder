@@ -27,7 +27,9 @@
                 </div>
                 <br>
                 <button id='hbp-button' class="btn btn-primary"
-                                        onclick="window.location.href='https://collab.humanbrainproject.eu/#/collab/20/nav/35258'">
+                    onclick="window.top.location.href='/efelg/exit-efelg'">
+                                        <!--                     onclick="window.top.location.href='https://services.humanbrainproject.eu/oidc/login'">                                         -->
+                                        
                     HBP Collaboratory
                 </button>
                 <br>
@@ -35,3 +37,8 @@
         </div>
     </body>
 </html>
+
+<script type="text/javascript" 
+        src="{% static 'jquery/dist/jquery.min.js' %}">
+<script type="text/javascript" 
+        src="{% static 'efelg/js/hbp_redirect.js' %}"></script>

@@ -18,15 +18,14 @@ import os
 
 from django.conf.urls import include, url
 from django.contrib import admin
-from efelg import views
+
 urlpatterns = [
     url('', include('social.apps.django_app.urls', namespace='social')),
+    url('', include('hbp_app_python_auth.urls', namespace='hbp-social')),
     url(r'^efelg/', include('efelg.urls'), name='efelg'),
     url(r'^hh-neuron-builder/', include('hh_neuron_builder.urls'), name='hh_neuron_builder'),
     url(r'^admin/', admin.site.urls),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
-    url('', include('social.apps.django_app.urls', namespace='social')),
-    url('', include('hbp_app_python_auth.urls', namespace='hbp-social')),
 ]
 
 if 'HBPDEV' not in os.environ:
