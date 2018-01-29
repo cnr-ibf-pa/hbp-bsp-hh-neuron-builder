@@ -26,6 +26,8 @@ DEV = debug.DEV
 DEBUG = debug.DEBUG 
 
 
+SESSION_COOKIE_AGE = 86400 
+
 if DEV:
     from .dev_config import *
     from .dev_app_key import *
@@ -177,10 +179,10 @@ STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
 
 
-if LOGIN_URL == 'https://bspg.pa.ibf.cnr.it/login/hbp':
+if LOGIN_URL == 'https://bspg.pa.ibf.cnr.it/login/hbp/':
     shutil.copyfile(os.path.join(STATIC_ROOT, 'ibf_bspg_analytics.js'), \
             os.path.join(STATIC_ROOT, 'bspganalytics.js'))
-elif LOGIN_URL == 'https://bspg.humanbrainproject.eu/login/hbp':
+elif LOGIN_URL == 'https://bspg.humanbrainproject.eu/login/hbp/':
     shutil.copyfile(os.path.join(STATIC_ROOT, 'epfl_bspg_analytics.js'), \
             os.path.join(STATIC_ROOT, 'bspganalytics.js'))
 

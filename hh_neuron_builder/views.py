@@ -37,6 +37,7 @@ from hbp_service_client.document_service.requestor import DocNotFoundException, 
 
 # import local tools
 from tools import hpc_job_manager
+from tools import check_manager
 from tools import resources
 
 # set logging up
@@ -93,6 +94,7 @@ def home(request):
     request.session['workflows_dir'] = workflows_dir
     request.session['hhnb_storage_folder'] = "hhnb_workflows"
     request.session['opt_sub_flag_file'] = 'opt_sub_flag.txt'
+    request.session['opt_sub_param_file'] = 'opt_sub_param.json'
     request.session['sim_run_flag_file'] = 'sim_run_flag.txt'
 
     accesslogger.info(resources.string_for_log('home', request))
@@ -412,10 +414,19 @@ def run_optimization(request):
 	if resp['status_code'] == 200:
             opt_sub_flag_file = os.path.join(dest_dir,\
                     request.session['opt_sub_flag_file'])
+            opt_sub_param_file = os.path.join(dest_dir, \
+                    request.session["opt_sub_param_file"])
 
             with open(opt_sub_flag_file, 'w') as f:
                 f.write("")
             f.close()
+
+            params = {'number_of_core': core_num, 'number_of_nodes': node_num, \
+                    'runtime': runtime, 'number_of_generation': gennum, \
+                    'offspring_size': offsize}
+            with open(opt_sub_param_file, 'w') as pf:
+                json.dump(params, pf)
+            pf.close()
 
     return HttpResponse(json.dumps(resp))
 
@@ -547,9 +558,18 @@ def check_cond_exist(request):
     """
     
     # set responses dictionary
-    response = {"feat":False, "opt_files":False, "opt_set":False, \
-            "run_sim":False, "opt_flag":False, "sim_flag":False, \
-            'opt_res': False}
+    response = { \
+            "feat": {"status": False, "message":"'features.json and/or \
+                'protocols.json' NOT present"}, \
+            "opt_files":{"status": False, "message":"Optimization files NOT \
+                present"}, \
+            "opt_set":{"status": False, "message":"Optimization parameters NOT \
+                set"}, \
+            "run_sim":{"status": False, "message":""}, \
+            "opt_flag":{"status": False}, \
+            "sim_flag":{"status": False}, \
+            'opt_res': {"status": False}, \
+            }
 
     # retrieve folder paths 
     data_feat = request.session['user_dir_data_feat']
@@ -561,20 +581,36 @@ def check_cond_exist(request):
     # check if feature files exist
     if os.path.isfile(os.path.join(data_feat, "features.json")) and \
 	    os.path.isfile(os.path.join(data_feat, "protocols.json")):
-		response['feat'] = True
+		response['feat']['status'] = True
 
     # check if optimization file exist
     if os.path.exists(data_opt) and not os.listdir(data_opt) == []:
-	response['opt_files'] = True
+	response['opt_files']['status'] = True
 
     # check if simulation files exist
-    if os.path.exists(sim_zip) and not os.listdir(sim_zip) == []:
-	response['run_sim'] = True
+    resp_sim = check_manager.simRun.checkSimFiles(sim_path=sim_zip)
+    if resp_sim['response'] == "OK":
+    #if os.path.exists(sim_zip) and not os.listdir(sim_zip) == []:
+	response['run_sim']['status'] = True
+    else:
+	response['run_sim']['status'] = False
+        response['run_sim']['message'] = resp_sim['message']
+
 
     # check if optimization results zip file exists
     for i in os.listdir(res_dir):
         if i.endswith('.zip'):
-            response['opt_res'] = True
+            response['opt_res']['status'] = True
+
+    dest_dir = request.session['user_dir_data_opt_launch']
+
+    if os.path.exists(os.path.join(dest_dir, \
+            request.session['opt_sub_flag_file'])):
+	response['opt_flag']['status'] = True
+
+    if os.path.exists(os.path.join(dest_dir, \
+            request.session['sim_run_flag_file'])):
+	response['sim_flag']['status'] = True
 
     rsk = request.session.keys()
     rules = [
@@ -587,20 +623,14 @@ def check_cond_exist(request):
             'runtime' in rsk,
             'hpc_sys' in rsk            
             ]
-    if all(rules):
-	response['opt_set'] = True 
+    if all(rules) or response['opt_flag']['status']:
+	response['opt_set']['status'] = True 
     else:
-	response['opt_set'] = False
+	response['opt_set']['status'] = False
+	response['opt_set']['message'] = "Optimization parameters NOT set"
 
-    dest_dir = request.session['user_dir_data_opt_launch']
 
-    if os.path.exists(os.path.join(dest_dir, \
-            request.session['opt_sub_flag_file'])):
-	response['opt_flag'] = True
 
-    if os.path.exists(os.path.join(dest_dir, \
-            request.session['sim_run_flag_file'])):
-	response['sim_flag'] = True
     if request.session['wf_id']:
         response['wf_id'] = request.session['wf_id']
 
@@ -638,7 +668,6 @@ def upload_files(request, filetype = ""):
 	if os.listdir(final_res_folder):
 	    shutil.rmtree(final_res_folder)
 	    os.makedirs(final_res_folder)
-
 	ext = '.zip'
 
     elif filetype == "modsim":
@@ -648,7 +677,6 @@ def upload_files(request, filetype = ""):
 	if os.listdir(final_res_folder):
 	    shutil.rmtree(final_res_folder)
 	    os.makedirs(final_res_folder)
-
 	ext = '.zip'
 
     if not filename_list:
@@ -672,12 +700,22 @@ def upload_files(request, filetype = ""):
     if filetype == "optset":
         request.session['source_opt_name'] = os.path.splitext(filename)[0]
         request.session['source_opt_zip'] = final_res_file 
+    elif filetype == "modsim":
+    #return HttpResponse(json.dumps({"safa":"fff", "sadfsadfadasdfaasdfasdf":"fff"}), content_type="application/json") 
+        user_dir_sim_run = request.session['user_dir_sim_run']
+        # unzip uploaded model file 
+        z = zipfile.ZipFile(final_res_file, 'r')
+        try:
+            z.extractall(path = user_dir_sim_run)
+        except Exception as e:
+            msg = "Unable to unzip the uploaded file. Check file integrity"
+            return HttpResponse(json.dumps({"response":"KO", "message":msg}), content_type="application/json") 
+
     
-    return HttpResponse(json.dumps({"resp":"Success"}), content_type="application/json") 
+    return HttpResponse(json.dumps({"response":"OK", "message":""}), content_type="application/json") 
 
 
 def get_nsg_job_list(request):
-    #return HttpResponse(json.dumps({"safa":"fff", "sadfsadfadasdfaasdfasdf":"fff"}), content_type="application/json") 
     """
     """
     hpc_sys_fetch = request.session['hpc_sys_fetch'] 
@@ -728,9 +766,6 @@ def download_job(request, job_id=""):
 	    shutil.rmtree(opt_res_dir)
 	    os.makedirs(opt_res_dir)
 
-        # nsg_obj = hpc_job_manager.Nsg(username_fetch=username_fetch, password_fetch=password_fetch, \
-	#	opt_res_dir=opt_res_dir) 
-
 	resp_job_details = hpc_job_manager.Nsg.fetch_job_details( \
                 job_id = job_id, username_fetch=username_fetch, \
                 password_fetch=password_fetch) 
@@ -745,6 +780,7 @@ def download_job(request, job_id=""):
 
 
 def modify_analysis_py(request):
+    msg = ""
     opt_res_folder = request.session['user_dir_results_opt']
     output_fetched_file = os.path.join(opt_res_folder, "output.tar.gz")
 
@@ -808,41 +844,47 @@ def modify_analysis_py(request):
 	os.makedirs(fig_folder)
 
 	checkpoints_folder = os.path.join(up_folder, 'checkpoints')
-	if 'checkpoint.pkl' not in os.listdir(checkpoints_folder):
-	    for files in os.listdir(checkpoints_folder):
-		if files.endswith('pkl'):
-		    shutil.copy(os.path.join(checkpoints_folder, files), \
-			    os.path.join(checkpoints_folder, 'checkpoint.pkl'))
-                    os.remove(os.path.join(up_folder, 'checkpoints', files))
-                else:
-                    if files.endswith('.hoc'):
+
+        try:
+	    if 'checkpoint.pkl' not in os.listdir(checkpoints_folder):
+	        for files in os.listdir(checkpoints_folder):
+		    if files.endswith('pkl'):
+		        shutil.copy(os.path.join(checkpoints_folder, files), \
+			        os.path.join(checkpoints_folder, 'checkpoint.pkl'))
                         os.remove(os.path.join(up_folder, 'checkpoints', files))
+                    else:
+                        if files.endswith('.hoc'):
+                            os.remove(os.path.join(up_folder, 'checkpoints', files))
 
-        f = open('opt_neuron.py', 'r')
-        lines = f.readlines()
+            f = open('opt_neuron.py', 'r')
+            lines = f.readlines()
 
-        new_line = ["import matplotlib \n"]
-        new_line.append("matplotlib.use('Agg') \n")
-        for i in lines:
-            new_line.append(i)
+            new_line = ["import matplotlib \n"]
+            new_line.append("matplotlib.use('Agg') \n")
+            for i in lines:
+                new_line.append(i)
 
-        f.close()
+            f.close()
 
-        f = open('opt_neuron.py', 'w')
-        f.writelines(new_line)
-        f.close()
+            f = open('opt_neuron.py', 'w')
+            f.writelines(new_line)
+            f.close()
+            os.system(". /web/bspg/venvbspg/bin/activate; nrnivmodl mechanisms")
 
-        os.system(". /web/bspg/venvbspg/bin/activate; nrnivmodl mechanisms")
+            if os.path.isdir('r_0')==True:
+                shutil.rmtree('r_0')
+            os.mkdir('r_0')
+            os.system(". /web/bspg/venvbspg/bin/activate; python opt_neuron.py --analyse --checkpoint ./checkpoints/checkpoint.pkl > /dev/null 2>&1")
+            os.chdir(current_working_dir)
 
-        if os.path.isdir('r_0')==True:
-            shutil.rmtree('r_0')
-        os.mkdir('r_0')
-        os.system(". /web/bspg/venvbspg/bin/activate; python opt_neuron.py --analyse --checkpoint ./checkpoints/checkpoint.pkl > /dev/null 2>&1")
+        except Exception as e:
+            msg = traceback.format_exception(*sys.exc_info())
+            os.chdir(current_working_dir)
 
-        os.chdir(current_working_dir)
+            return HttpResponse(json.dumps({"response":"KO", "message":msg}), content_type="application/json")
 
     
-    return HttpResponse(json.dumps({"response":"OK"}), content_type="application/json")
+    return HttpResponse(json.dumps({"response":"OK", "message":msg}), content_type="application/json")
 
 
 def zip_sim(request):
@@ -927,7 +969,7 @@ def zip_sim(request):
 
 def download_zip(request, filetype=""):
     """
-    download files
+    download files to local machine
     """
     current_working_dir = os.getcwd()
     if filetype == "feat":
@@ -946,9 +988,12 @@ def download_zip(request, filetype=""):
         fetch_folder = request.session['user_dir_results']
 
     zip_file_list = []
+
+    # create a list with all .zip files in folder, but use only the first one
     for i in os.listdir(fetch_folder):
         if i.endswith(".zip"):
             zip_file_list.append(i)
+
     crr_file = zip_file_list[0]
     full_file_path = os.path.join(fetch_folder, crr_file)
     crr_file_full = open(full_file_path, "r")

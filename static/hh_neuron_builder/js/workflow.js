@@ -60,7 +60,11 @@ $(document).ready(function(){
             processData: false,
             async: false,
             success: function(resp){
-                checkConditions();
+                if (resp["response"]=="KO"){
+                    openErrorDiv(resp["message"]);
+                } else {
+                    checkConditions();
+                }
             },  
         });
         e.preventDefault();
@@ -193,19 +197,19 @@ function checkConditions(){
         document.getElementById("wf-title").innerHTML = "";
         document.getElementById("wf-title").appendChild(textnode);
 
-        if (data['feat']){
+        if (data['feat']['status']){
             document.getElementById('feat-bar').style.background = "green";
             document.getElementById('feat-bar').innerHTML = "";
             document.getElementById('del-feat').disabled = false;
             document.getElementById('down-feat-btn').disabled = false;
         } else {
             document.getElementById('feat-bar').style.background = "red";
-            document.getElementById('feat-bar').innerHTML = '"features.json" and/or "protocols.json" NOT present';
+            document.getElementById("feat-bar").innerHTML = data['feat']['message'];  
             document.getElementById('del-feat').disabled = true;
             document.getElementById('down-feat-btn').disabled = true;
         };
 
-        if (data['opt_files']){
+        if (data['opt_files']['status']){
             document.getElementById('opt-files-bar').style.background = "green";
             document.getElementById('del-opt').disabled = false;
             document.getElementById('down-opt-set-btn').disabled = false;
@@ -214,67 +218,57 @@ function checkConditions(){
             document.getElementById('opt-files-bar').style.background = "red";
             document.getElementById('del-opt').disabled = true;
             document.getElementById('down-opt-set-btn').disabled = true;
+            document.getElementById('opt-files-bar').innerHTML = data['opt_files']['message'];  
             document.getElementById('opt-files-bar').innerHTML = "Optimization files NOT present";
         };
 
-        if (data['opt_set']){
+        if (data['opt_set']['status']){
             document.getElementById('opt-param-bar').style.background = "green";
             document.getElementById('opt-param-bar').innerHTML = "";
         } else {
             document.getElementById('opt-param-bar').style.background = "red";
-            document.getElementById('opt-param-bar').innerHTML = "Optimization parameters NOT set";
+            document.getElementById('opt-param-bar').innerHTML = data['opt_set']['message'];
         };
 
-        if (data['opt_res']){
+        if (data['opt_res']['status']){
             document.getElementById('down-opt-btn').disabled = false;
         } else {
             document.getElementById('down-opt-btn').disabled = true;
-        
+
         }
 
-        if (data['opt_flag']){
+        if (data['opt_flag']['status']){
             document.getElementById("optlaunchimg").src = "/static/images/ok_red.png";
             document.getElementById("optlaunchtextspan").innerHTML = "Optimization job submitted";
+            document.getElementById("launch-opt-btn").disabled = true;  
+            document.getElementById("feat-efel-btn").disabled = true;
+            document.getElementById("feat-up-btn").disabled = true;
+            document.getElementById("del-feat").disabled = true;
+            document.getElementById("opt-db-hpc-btn").disabled = true;
+            document.getElementById("opt-up-btn").disabled = true;
+            document.getElementById("del-opt").disabled = true;
+            document.getElementById("opt-set-btn").disabled = true;
         } else {
             document.getElementById("optlaunchimg").src = "/static/images/ko_red.png";
             document.getElementById("optlaunchtextspan").innerHTML = "No job submitted";
             document.getElementById("cell-opt-div").style.backgroundColor='rgba(255, 255, 255,0.0)';
-        }
-
-        if (data['feat'] | data['opt_files'] | data['opt_set']) {
-            $('#inner-opt-div').show();
-        }
-        if (data['feat'] & data['opt_files'] & data['opt_set']){
-            if (!data['opt_flag']){
-                document.getElementById("launch-opt-btn").disabled = false;  
-                document.getElementById("feat-efel-btn").disabled = false;
-                document.getElementById("feat-up-btn").disabled = false;
-                document.getElementById("opt-db-hpc-btn").disabled = false;
-                document.getElementById("opt-up-btn").disabled = false;
-                document.getElementById("opt-set-btn").disabled = false;
-                document.getElementById("del-feat").disabled = false;
-                document.getElementById("del-opt").disabled = false;
-            } else {
-                document.getElementById("launch-opt-btn").disabled = true;  
-                document.getElementById("feat-efel-btn").disabled = true;
-                document.getElementById("feat-up-btn").disabled = true;
-                document.getElementById("del-feat").disabled = true;
-                document.getElementById("opt-db-hpc-btn").disabled = true;
-                document.getElementById("opt-up-btn").disabled = true;
-                document.getElementById("del-opt").disabled = true;
-                document.getElementById("opt-set-btn").disabled = true;
-            };
-        } else {
-            document.getElementById("launch-opt-btn").disabled = true;  
+            document.getElementById("launch-opt-btn").disabled = false;  
+            document.getElementById("feat-efel-btn").disabled = false;
+            document.getElementById("feat-up-btn").disabled = false;
+            document.getElementById("opt-db-hpc-btn").disabled = false;
+            document.getElementById("opt-up-btn").disabled = false;
+            document.getElementById("opt-set-btn").disabled = false;
+            document.getElementById("del-feat").disabled = false;
+            document.getElementById("del-opt").disabled = false;
         }
 
         // Simulation panel
-        if (data['run_sim']){
+        if (data['run_sim']['status']){
             $('#inner-sim-div').show();
             document.getElementById("opt-res-bar").style.background = "green";  
             document.getElementById("down-sim-btn").disabled = false;  
             document.getElementById("run-sim-btn").disabled = false;  
-            if (data['sim_flag']){
+            if (data['sim_flag']['status']){
                 document.getElementById("del-sim-btn").disabled = true;  
                 document.getElementById("opt-fetch-btn").disabled = true;  
                 document.getElementById("opt-res-up-btn").disabled = true;  
@@ -285,6 +279,7 @@ function checkConditions(){
             } 
         } else {
             document.getElementById("opt-res-bar").style.background = "red";  
+            document.getElementById("opt-res-bar").innerHTML = data['run_sim']['message'];  
             document.getElementById("run-sim-div").style.backgroundColor='rgba(255, 255, 255, 0.06)';
             document.getElementById("down-sim-btn").disabled = true;  
             document.getElementById("del-sim-btn").disabled = true;  
@@ -326,10 +321,13 @@ function deleteSimFiles() {
 }
 
 // Display please wait div
-function displayPleaseWaitDiv() {
+function displayPleaseWaitDiv(message="") {
     document.getElementById("overlaywrapperwait").style.display = "block";
     document.getElementById("mainDiv").style.pointerEvents = "none";
     document.body.style.overflow = "hidden";
+    if (message || !(message.length === 0)){
+        document.getElementById("waitdynamictext").innerHTML = message;
+    }
 }
 
 // Hide please wait message div
@@ -414,6 +412,12 @@ function openUploadDiv(type, msg) {
     var uploadTitleDiv = document.getElementById("uploadTitleDiv");
     uploadTitleDiv.innerHTML = "<strong>" + msg + "</strong>";
 
+    // display image if uploading simulztion .zip file
+    if (type == "modsim"){
+        document.getElementById("upload_sim_img_div").style.display = "block";
+    } else {
+        document.getElementById("upload_sim_img_div").style.display = "none";
+    }
     document.getElementById("overlaywrapperoptres").style.display = "block";
     document.getElementById("mainDiv").style.pointerEvents = "none";
     document.body.style.overflow = "hidden";
@@ -535,7 +539,7 @@ function downloadJob(jobid) {
         $.getJSON('/hh-neuron-builder/modify-analysis-py', function(modifydata){
             if (modifydata["response"] == "KO") {
                 closePleaseWaitDiv();
-                checkConditions();
+                openErrorDiv(message);
             } else {
                 $.getJSON('/hh-neuron-builder/zip-sim', function(zip_data){
                     closePleaseWaitDiv();
@@ -585,7 +589,7 @@ function cloneWorkflow() {
 }
 
 function saveWorkflow() {
-    displayPleaseWaitDiv();
+    displayPleaseWaitDiv(message="Saving workflow to storage");
     $.getJSON('/hh-neuron-builder/save-wf-to-storage', function(zip_data){
         closePleaseWaitDiv();
         checkConditions();
