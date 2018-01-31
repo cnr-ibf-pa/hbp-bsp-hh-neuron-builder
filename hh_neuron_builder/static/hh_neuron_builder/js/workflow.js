@@ -234,32 +234,51 @@ function checkConditions(){
             document.getElementById('down-opt-btn').disabled = false;
         } else {
             document.getElementById('down-opt-btn').disabled = true;
-
         }
 
+        // if optimization has been submitted
         if (data['opt_flag']['status']){
             document.getElementById("optlaunchimg").src = "/static/images/ok_red.png";
             document.getElementById("optlaunchtextspan").innerHTML = "Optimization job submitted";
             document.getElementById("launch-opt-btn").disabled = true;  
+
+            // disable feature extraction buttons
             document.getElementById("feat-efel-btn").disabled = true;
             document.getElementById("feat-up-btn").disabled = true;
             document.getElementById("del-feat").disabled = true;
+
+            //disable optimization buttons
             document.getElementById("opt-db-hpc-btn").disabled = true;
             document.getElementById("opt-up-btn").disabled = true;
             document.getElementById("del-opt").disabled = true;
+
+            // disable optimization settings buttons
             document.getElementById("opt-set-btn").disabled = true;
+            // if no optimization has been submitted
         } else {
             document.getElementById("optlaunchimg").src = "/static/images/ko_red.png";
             document.getElementById("optlaunchtextspan").innerHTML = "No job submitted";
             document.getElementById("cell-opt-div").style.backgroundColor='rgba(255, 255, 255,0.0)';
-            document.getElementById("launch-opt-btn").disabled = false;  
+
+            // enable feature extraction buttons
             document.getElementById("feat-efel-btn").disabled = false;
             document.getElementById("feat-up-btn").disabled = false;
+            document.getElementById("del-feat").disabled = false;
+
+            // enable optimization buttons
             document.getElementById("opt-db-hpc-btn").disabled = false;
             document.getElementById("opt-up-btn").disabled = false;
-            document.getElementById("opt-set-btn").disabled = false;
-            document.getElementById("del-feat").disabled = false;
             document.getElementById("del-opt").disabled = false;
+
+            // enable optimization settings buttons
+            document.getElementById("opt-set-btn").disabled = false;
+
+            // if ready for submission, enable launch optimization button
+            if (data['feat']['status'] & data['opt_files']['status'] & data['opt_set']['status']){
+                document.getElementById("launch-opt-btn").disabled = false;  
+            } else {
+                document.getElementById("launch-opt-btn").disabled = true;  
+            }
         }
 
         // Simulation panel
@@ -575,23 +594,22 @@ function downloadLocalFeat(){
 function downloadLocal(filetype) {
     displayPleaseWaitDiv();
     window.location.href = "/hh-neuron-builder/download-zip/" + filetype + "/";
-    //window.location.assign("/hh-neuron-builder/download-zip/" + filetype + "/");
-    closePleaseWaitDiv();
     checkConditions();
+    closePleaseWaitDiv();
 }
 
 function cloneWorkflow() {
     displayPleaseWaitDiv();
     $.getJSON('/hh-neuron-builder/create-wf-folders/cloned', function(zip_data){
-        closePleaseWaitDiv();
         checkConditions();
+        closePleaseWaitDiv();
     });
 }
 
 function saveWorkflow() {
     displayPleaseWaitDiv(message="Saving workflow to storage");
     $.getJSON('/hh-neuron-builder/save-wf-to-storage', function(zip_data){
-        closePleaseWaitDiv();
         checkConditions();
+        closePleaseWaitDiv();
     });
 }

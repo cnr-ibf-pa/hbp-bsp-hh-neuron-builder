@@ -315,3 +315,72 @@ class Nsg:
         foo.close()
 
         os.chdir(current_working_dir)
+
+
+class OptSettings:
+    params_default = {'wf_id': "", 'gennum': 0, 'offsize': 10, \
+            'nodenum': 2, 'corenum': 1, 'runtime': 0.5, \
+            'hpc_sys':  "", 'opt_sub_param_file': ""}
+
+    @classmethod
+    #def print_opt_params(cls, wf_id=wf_id_std, gennum=0, offsize=10, nodenum=2, corenum=1, \
+    #    runtime=0.5, hpc_sys="", opt_sub_param_file=""):
+    def print_opt_params(cls, **kwargs):
+        #
+        if 'wf_id' in kwargs:
+            wf_id = kwargs['wf_id']
+        else:
+            wf_id = cls.params_default['wf_id']
+
+        #
+        if 'gennum' in kwargs:
+            gennum = kwargs['gennum']
+        else:
+            gennum = cls.params_default['gennum']
+
+        #
+        if 'offsize' in kwargs:
+            offsize = kwargs['offsize']
+        else:
+            offsize = cls.params_default['offsize']
+
+        #
+        if 'nodenum' in kwargs:
+            nodenum = kwargs['nodenum']
+        else:
+            nodenum = cls.params_default['nodenum']
+
+        #
+        if 'corenum' in kwargs:
+            corenum = kwargs['corenum']
+        else:
+            corenum = cls.params_default['corenum']
+
+        #
+        if 'runtime' in kwargs:
+            runtime = kwargs['runtime']
+        else:
+            runtime = cls.params_default['runtime']
+
+        #
+        if 'hpc_sys' in kwargs:
+            hpc_sys = kwargs['hpc_sys']
+        else:
+            hpc_sys = cls.params_default['hpc_sys']
+
+        #
+        if 'opt_sub_param_file' in kwargs:
+            opt_sub_param_file = kwargs['opt_sub_param_file']
+        else:
+            opt_sub_param_file = cls.params_default['opt_sub_param_file']
+
+        
+
+        params = {'wf_id':wf_id, 'number_of_core': corenum, 'number_of_nodes': nodenum, \
+                    'runtime': runtime, 'number_of_generation': gennum, \
+                    'offspring_size': offsize, "hpc_sys": hpc_sys}
+
+        with open(opt_sub_param_file, 'w') as pf:
+            json.dump(params, pf)
+        pf.close()
+

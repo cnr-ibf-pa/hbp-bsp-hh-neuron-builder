@@ -1,5 +1,10 @@
 '''Views'''
 
+from hbp_app_python_auth.auth import HbpAuth 
+from nose.tools import eq_, ok_
+from mock import MagicMock
+from mock import patch 
+
 import os
 import urllib
 from uuid import UUID
@@ -23,13 +28,14 @@ from django.core.urlresolvers import reverse
 from django.conf import settings
 from django.template.context import RequestContext
 from django.views.decorators.csrf import csrf_exempt
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth import logout
+#from django.contrib.auth import logout
 
 # import hbp/bbp modules
 from hbp_app_python_auth.auth import get_access_token, \
         get_token_type, get_auth_header
+from hbp_app_python_auth.views import logout as auth_logout
 from bbp_client.oidc.client import BBPOIDCClient
 from bbp_client.document_service.client import Client as DocClient
 import bbp_client
@@ -52,7 +58,7 @@ accesslogger.addHandler(logging.FileHandler('/var/log/bspg/efelg_access.log'))
 accesslogger.setLevel(logging.DEBUG)
 
 ##### serve overview.html
-#@login_required(login_url='/login/hbp/')
+@login_required(login_url='/login/hbp/')
 def overview(request):
 
     # if not in DEBUG mode check whether authentication token is valid
@@ -60,7 +66,8 @@ def overview(request):
         
         # extract context
         context = request.GET.get('ctx')
-
+        request.session['ctx'] = context
+        pprint.pprint(request.session.keys())
         # if context is empty redirect to appropriate page
         if not context:
             return render(request, 'efelg/hbp_redirect.html')
@@ -195,7 +202,7 @@ def overview(request):
     return render(request, 'efelg/overview.html')
 
 
-@login_required(login_url='/login/hbp')
+@login_required(login_url='/login/hbp/')
 def select_features(request):
     '''
     This function serves the application select-features page
@@ -214,22 +221,22 @@ def select_features(request):
     
     return render(request, 'efelg/select_features.html')
 
-#@login_required(login_url='/login/hbp')
+@login_required(login_url='/login/hbp/')
 def hbp_redirect(request):
+
+#    request.session.flush()                                        
     return render(request, 'efelg/hbp_redirect.html')
 
 
-@login_required(login_url='/login/hbp')
+#@login_required(login_url='/login/hbp/')
+@login_required(login_url='/login/hbp/')
 def exit_efelg(request):
-    logout(request)
-    #return redirect('/efelg/logout/hbp')
-    return redirect('https://services.humanbrainproject.eu/oidc/login')
-    #return redirect('https://collab.humanbrainproject.eu/#/collab/19/nav/6342')
+    return redirect('/efelg/overview/')
 
 
 
 # build .json files containing data and metadata
-@login_required(login_url='/login/hbp')
+@login_required(login_url='/login/hbp/')
 def generate_json_data(request):
     data_dir = request.session['data_dir']
     json_dir = request.session['json_dir']
@@ -272,7 +279,7 @@ def generate_json_data(request):
 '''
 Render the efel/show_traces.html page
 '''
-@login_required(login_url='/login/hbp')
+@login_required(login_url='/login/hbp/')
 def show_traces(request):
     accesslogger.info(resources.string_for_log('show_traces', request))
     time_info = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
@@ -291,7 +298,7 @@ def show_traces(request):
 '''
 Retrieve the list of .json files to be displayed for trace selection
 '''
-@login_required(login_url='/login/hbp')
+@login_required(login_url='/login/hbp/')
 def get_list(request):
     
     # final list of authorized files
@@ -329,7 +336,7 @@ def get_list(request):
 
 
 #####
-@login_required(login_url='/login/hbp')
+@login_required(login_url='/login/hbp/')
 def get_data(request, cellname=""):
 
     disp_sampling_rate = 5000
@@ -384,7 +391,7 @@ def get_data(request, cellname=""):
 
 
 #####
-@login_required(login_url='/login/hbp')
+@login_required(login_url='/login/hbp/')
 def extract_features(request):
     data_dir = request.session['data_dir']
     json_dir = request.session['json_dir']
@@ -529,7 +536,7 @@ def extract_features(request):
 
 
 #####
-@login_required(login_url='/login/hbp')
+@login_required(login_url='/login/hbp/')
 def results(request):
     '''Render final page containing the link to the result zip file if any'''
 
@@ -539,7 +546,7 @@ def results(request):
 
 #####
 
-@login_required(login_url='/login/hbp')
+@login_required(login_url='/login/hbp/')
 def download_zip(request):
     accesslogger.info(resources.string_for_log('download_zip', request))
     result_file_zip = request.session['result_file_zip']
@@ -552,7 +559,7 @@ def download_zip(request):
 
 
 #####
-@login_required(login_url='/login/hbp')
+@login_required(login_url='/login/hbp/')
 def features_dict(request):
     '''Render the feature dictionary containing all feature names, grouped by feature type'''
     with open(os.path.join(settings.BASE_DIR, 'static', 'efelg',\
@@ -562,14 +569,14 @@ def features_dict(request):
 
 
 #####
-@login_required(login_url='/login/hbp')
+@login_required(login_url='/login/hbp/')
 def _reverse_url(view_name, context_uuid):
     """generate an URL for a view including the ctx query param"""
     return '%s?ctx=%s' % (reverse(view_name), context_uuid)
 
 
 #####
-@login_required(login_url='/login/hbp')
+@login_required(login_url='/login/hbp/')
 def features_json(request):
     full_user_crr_res_res_folder = request.session['full_user_crr_res_res_folder']
     with open(os.path.join(full_user_crr_res_res_folder, 'features.json')) \
@@ -579,7 +586,7 @@ def features_json(request):
 
 
 #####
-@login_required(login_url='/login/hbp')
+@login_required(login_url='/login/hbp/')
 def features_json_path(request):
     abs_url = request.session['media_abs_crr_user_res']
     full_feature_json_file = os.path.join(abs_url, 'features.json')
@@ -587,13 +594,13 @@ def features_json_path(request):
             full_feature_json_file)}))
 
 #####
-@login_required(login_url='/login/hbp')
+@login_required(login_url='/login/hbp/')
 def features_json_files_path(request):
     abs_url = request.session['media_abs_crr_user_res']
     return HttpResponse(json.dumps({'path' : os.path.join(os.sep, abs_url)}))
 
 #####
-@login_required(login_url='/login/hbp')
+@login_required(login_url='/login/hbp/')
 def protocols_json_path(request):
     rel_url = request.session['media_rel_crr_user_res']
     full_feature_json_file = os.path.join(rel_url, 'protocols.json')
@@ -602,7 +609,7 @@ def protocols_json_path(request):
 
 
 #####
-@login_required(login_url='/login/hbp')
+@login_required(login_url='/login/hbp/')
 def features_pdf_path(request):
     rel_url = request.session['media_rel_crr_user_res']
     full_feature_json_file = os.path.join(rel_url, 'features_step.pdf')
@@ -611,7 +618,7 @@ def features_pdf_path(request):
 
 
 #####
-@login_required(login_url='/login/hbp')
+@login_required(login_url='/login/hbp/')
 def upload_files(request):
     """
     Upload file to local folder
@@ -689,7 +696,7 @@ def upload_files(request):
             content_type="application/json") 
 
 
-@login_required(login_url='/login/hbp')
+@login_required(login_url='/login/hbp/')
 def get_directory_structure(request):
     """ 
     Creates a nested dictionary that represents the folder structure of rootdir

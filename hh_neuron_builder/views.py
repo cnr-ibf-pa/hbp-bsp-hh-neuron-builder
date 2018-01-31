@@ -420,13 +420,7 @@ def run_optimization(request):
             with open(opt_sub_flag_file, 'w') as f:
                 f.write("")
             f.close()
-
-            params = {'number_of_core': core_num, 'number_of_nodes': node_num, \
-                    'runtime': runtime, 'number_of_generation': gennum, \
-                    'offspring_size': offsize}
-            with open(opt_sub_param_file, 'w') as pf:
-                json.dump(params, pf)
-            pf.close()
+            
 
     return HttpResponse(json.dumps(resp))
 
@@ -500,12 +494,22 @@ def submit_run_param(request):
     """
     #selected_traces_rest = request.POST.get('csrfmiddlewaretoken')
     form_data = request.POST
-    request.session['gennum'] = int(form_data['gen-max'])
-    request.session['offsize'] = int(form_data['offspring'])
-    request.session['nodenum'] = int(form_data['node-num']) 
-    request.session['corenum'] = int(form_data['core-num'])  
-    request.session['runtime'] = float(form_data['runtime'])
-    request.session['hpc_sys'] = form_data['hpc_sys']
+
+    gennum = int(form_data['gen-max'])
+    offsize = int(form_data['offspring'])
+    nodenum = int(form_data['node-num']) 
+    corenum = int(form_data['core-num'])  
+    runtime = float(form_data['runtime'])
+    hpc_sys = form_data['hpc_sys']
+    request.session['gennum'] = gennum
+    request.session['offsize'] = offsize 
+    request.session['nodenum'] = nodenum
+    request.session['corenum'] = corenum
+    request.session['runtime'] = runtime
+    request.session['hpc_sys'] = hpc_sys
+
+    wf_id = request.session['wf_id']
+    dest_dir = request.session['user_dir_data_opt_launch']
 
     # if chosen system is nsg
     if form_data['hpc_sys'] == 'nsg':
@@ -516,6 +520,16 @@ def submit_run_param(request):
         if resp_check_login['response'] == 'OK':
             request.session['username_submit'] = form_data['username_submit']
             request.session['password_submit'] = form_data['password_submit']
+            opt_sub_param_file = os.path.join(dest_dir, \
+                    request.session["opt_sub_param_file"])
+
+
+
+            wfid = request.session['wf_id']
+            hpc_job_manager.OptSettings.print_opt_params(wf_id=wfid, \
+                    gennum=gennum, offsize=offsize, nodenum=nodenum, \
+                    corenum=corenum, runtime=runtime, \
+                    opt_sub_param_file=opt_sub_param_file, hpc_sys=hpc_sys)
             resp_dict = {'response':'OK', 'message':''}
         else:
             resp_dict = {'response':'KO', 'message':'Username and/or password \

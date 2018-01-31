@@ -3,7 +3,6 @@
 *.swp
 *.swo
 
-BluePyExtract
 packages
 venvbspg
 letsencrypt
@@ -12,3 +11,5 @@ db.sqlite3
 bower_components
 bspg/debug.py
 static/bspganalytics.js
+static/epfl_bspg_analytics.js
+static/ibf_bspg_analytics.js
