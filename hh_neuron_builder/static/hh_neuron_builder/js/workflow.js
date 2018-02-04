@@ -238,7 +238,7 @@ function checkConditions(){
 
         // if optimization has been submitted
         if (data['opt_flag']['status']){
-            document.getElementById("optlaunchimg").src = "/static/images/ok_red.png";
+            document.getElementById("optlaunchimg").src = "/static/img/ok_red.png";
             document.getElementById("optlaunchtextspan").innerHTML = "Optimization job submitted";
             document.getElementById("launch-opt-btn").disabled = true;  
 
@@ -256,7 +256,7 @@ function checkConditions(){
             document.getElementById("opt-set-btn").disabled = true;
             // if no optimization has been submitted
         } else {
-            document.getElementById("optlaunchimg").src = "/static/images/ko_red.png";
+            document.getElementById("optlaunchimg").src = "/static/img/ko_red.png";
             document.getElementById("optlaunchtextspan").innerHTML = "No job submitted";
             document.getElementById("cell-opt-div").style.backgroundColor='rgba(255, 255, 255,0.0)';
 
