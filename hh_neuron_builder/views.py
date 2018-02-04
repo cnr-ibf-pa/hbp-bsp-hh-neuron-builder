@@ -37,7 +37,7 @@ from hbp_service_client.document_service.requestor import DocNotFoundException, 
 
 # import local tools
 from tools import hpc_job_manager
-from tools import check_manager
+from tools import wf_file_manager
 from tools import resources
 
 # set logging up
@@ -420,7 +420,6 @@ def run_optimization(request):
             with open(opt_sub_flag_file, 'w') as f:
                 f.write("")
             f.close()
-            
 
     return HttpResponse(json.dumps(resp))
 
@@ -495,12 +494,15 @@ def submit_run_param(request):
     #selected_traces_rest = request.POST.get('csrfmiddlewaretoken')
     form_data = request.POST
 
+    # read data from form
     gennum = int(form_data['gen-max'])
     offsize = int(form_data['offspring'])
     nodenum = int(form_data['node-num']) 
     corenum = int(form_data['core-num'])  
     runtime = float(form_data['runtime'])
     hpc_sys = form_data['hpc_sys']
+
+    # 
     request.session['gennum'] = gennum
     request.session['offsize'] = offsize 
     request.session['nodenum'] = nodenum
@@ -602,10 +604,10 @@ def check_cond_exist(request):
 	response['opt_files']['status'] = True
 
     # check if simulation files exist
-    resp_sim = check_manager.simRun.checkSimFiles(sim_path=sim_zip)
+    resp_sim = wf_file_manager.CheckConditions.checkSimFiles(sim_path=sim_zip)
     if resp_sim['response'] == "OK":
-    #if os.path.exists(sim_zip) and not os.listdir(sim_zip) == []:
 	response['run_sim']['status'] = True
+        response['run_sim']['message'] = ''
     else:
 	response['run_sim']['status'] = False
         response['run_sim']['message'] = resp_sim['message']
@@ -615,6 +617,7 @@ def check_cond_exist(request):
     for i in os.listdir(res_dir):
         if i.endswith('.zip'):
             response['opt_res']['status'] = True
+            break
 
     dest_dir = request.session['user_dir_data_opt_launch']
 
@@ -643,11 +646,8 @@ def check_cond_exist(request):
 	response['opt_set']['status'] = False
 	response['opt_set']['message'] = "Optimization parameters NOT set"
 
-
-
     if request.session['wf_id']:
         response['wf_id'] = request.session['wf_id']
-
 
     return HttpResponse(json.dumps(response), content_type="application/json")
 
@@ -715,7 +715,6 @@ def upload_files(request, filetype = ""):
         request.session['source_opt_name'] = os.path.splitext(filename)[0]
         request.session['source_opt_zip'] = final_res_file 
     elif filetype == "modsim":
-    #return HttpResponse(json.dumps({"safa":"fff", "sadfsadfadasdfaasdfasdf":"fff"}), content_type="application/json") 
         user_dir_sim_run = request.session['user_dir_sim_run']
         # unzip uploaded model file 
         z = zipfile.ZipFile(final_res_file, 'r')

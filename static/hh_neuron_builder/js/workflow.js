@@ -285,6 +285,7 @@ function checkConditions(){
         if (data['run_sim']['status']){
             $('#inner-sim-div').show();
             document.getElementById("opt-res-bar").style.background = "green";  
+            document.getElementById("opt-res-bar").innerHTML = data['run_sim']['message'];  
             document.getElementById("down-sim-btn").disabled = false;  
             document.getElementById("run-sim-btn").disabled = false;  
             if (data['sim_flag']['status']){

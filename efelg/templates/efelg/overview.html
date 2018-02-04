@@ -12,8 +12,7 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width">
 
-        <link rel="stylesheet" 
-              href="{% static 'hbp-collaboratory-theme/dist/css/bootstrap.css' %}">
+        <link rel="stylesheet" href="{% static 'hbp-collaboratory-theme/dist/css/bootstrap.css' %}">
         <link rel="stylesheet" href="{% static 'bspg.css' %}">
     </head>
 
@@ -21,7 +20,6 @@
         {% hbp_oidc_session_handler request.user %}
         <div id="efelg-overview-main-div">
             <div class="fixed-page-title row center-container">
-
                 <div class="col-sm-4 align-left">Overview</div>
                 <div class="col-sm-4 align-center">
                     <h4>Feature Extraction</h4>
@@ -178,12 +176,6 @@
                 </div>
             </div>
         </div>
-        <!-- div for loading message end -->
-       <!-- 
-                    <input id='temp_test' onclick="location.href =
-                    '/efelg/hbp-redirect/';" class="accept-btn btn"
-                    type="button" value="test_redirect"> 
-       -->
     </body>
 </html>
 <script type="text/javascript" 

@@ -63,7 +63,6 @@ def overview(request):
 
     # if not in DEBUG mode check whether authentication token is valid
     if not settings.DEBUG:
-        
         # extract context
         context = request.GET.get('ctx')
         request.session['ctx'] = context
@@ -228,7 +227,6 @@ def hbp_redirect(request):
     return render(request, 'efelg/hbp_redirect.html')
 
 
-#@login_required(login_url='/login/hbp/')
 @login_required(login_url='/login/hbp/')
 def exit_efelg(request):
     return redirect('/efelg/overview/')
@@ -729,8 +727,6 @@ def upload_zip_file_to_storage(request):
     collab_id = request.session['collab_id']
     st_rel_user_results_folder = request.session['st_rel_user_results_folder']
     st_rel_user_uploaded_folder = request.session['st_rel_user_uploaded_folder']
-    #storage_root = request.session['storage_root']
-    #access_token = request.session['access_token']
     crr_user_folder = request.session['time_info'] 
     output_path = request.session['result_file_zip']
     context = request.session['context']
@@ -746,7 +742,6 @@ def upload_zip_file_to_storage(request):
     context = request.session['context']
     logout(request)
     nextUrl = urllib.quote('%s?ctx=%s' % (request.path, context))
-    #return redirect('%s?next=%s' % (settings.LOGIN_URL, nextUrl))
 
     # extract project from collab_id
     project = doc_client.get_project_by_collab_id(collab_id)

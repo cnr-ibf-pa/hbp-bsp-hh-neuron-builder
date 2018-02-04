@@ -52,8 +52,6 @@ class Nsg:
         URL = cls.url
         TOOL = cls.tool
 
-        #payload = {'tool' : TOOL, 'metadata.statusEmail' : 'false', 'vparam.number_cores_' : NCORES.value, 'vparam.number_nodes_' : NNODES.value, 'vparam.runtime_' : RT.value, 'vparam.filename_': 'init.py'}
-        #payload = {'tool' : TOOL, 'metadata.statusEmail' : 'false', 'vparam.number_cores_' : self.core_num, 'vparam.number_nodes_' : self.node_num, 'vparam.runtime_' : self.runtime, 'vparam.filename_': 'init.py'}
         payload = {'tool' : TOOL, 'metadata.statusEmail' : 'false', \
                 'vparam.number_cores_' : core_num, 'vparam.number_nodes_' :\
                 node_num, 'vparam.runtime_' : runtime, 'vparam.filename_': 'init.py'}
@@ -376,8 +374,8 @@ class OptSettings:
 
         
 
-        params = {'wf_id':wf_id, 'number_of_core': corenum, 'number_of_nodes': nodenum, \
-                    'runtime': runtime, 'number_of_generation': gennum, \
+        params = {'wf_id':wf_id, 'number_of_cores': corenum, 'number_of_nodes': nodenum, \
+                    'runtime': runtime, 'number_of_generations': gennum, \
                     'offspring_size': offsize, "hpc_sys": hpc_sys}
 
         with open(opt_sub_param_file, 'w') as pf:
