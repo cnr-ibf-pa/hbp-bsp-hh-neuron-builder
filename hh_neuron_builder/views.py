@@ -178,6 +178,13 @@ def create_wf_folders(request, wf_type="new"):
         shutil.rmtree(request.session['user_dir_data_opt_launch'])
         os.makedirs(request.session['user_dir_data_opt_launch'])
 
+        opt_pf = os.path.join(crr_user_dir, 'data', 'opt_launch', \
+                request.session['opt_sub_param_file'])
+        print(opt_pf) 
+        if os.path.exists(opt_pf):
+            shutil.copy(opt_pf, request.session['user_dir_data_opt_launch'])
+
+
         # create folders
         request.session['user_dir_results'] = os.path.join(new_user_dir, \
                 'results')
