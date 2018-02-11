@@ -66,7 +66,6 @@ def overview(request):
         # extract context
         context = request.GET.get('ctx')
         request.session['ctx'] = context
-        pprint.pprint(request.session.keys())
         # if context is empty redirect to appropriate page
         if not context:
             return render(request, 'efelg/hbp_redirect.html')

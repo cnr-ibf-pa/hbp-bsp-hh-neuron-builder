@@ -229,6 +229,11 @@ function checkConditions(){
             document.getElementById('opt-param-bar').style.background = "red";
             document.getElementById('opt-param-bar').innerHTML = data['opt_set']['message'];
         };
+        document.getElementById("node-num").value = data["opt_set"]["opt_sub_param_dict"]["number_of_nodes"]; 
+        document.getElementById("core-num").value = data["opt_set"]["opt_sub_param_dict"]["number_of_cores"]; 
+        document.getElementById("offspring").value = data["opt_set"]["opt_sub_param_dict"]["offspring_size"]; 
+        document.getElementById("runtime").value = data["opt_set"]["opt_sub_param_dict"]["runtime"]; 
+        document.getElementById("gen-max").value = data["opt_set"]["opt_sub_param_dict"]["number_of_generations"]; 
 
         if (data['opt_res']['status']){
             document.getElementById('down-opt-btn').disabled = false;

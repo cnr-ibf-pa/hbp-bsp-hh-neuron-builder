@@ -3,6 +3,7 @@
 import sys
 import pprint
 import json
+import logging
 import os
 import zipfile
 from subprocess import call
@@ -20,14 +21,9 @@ from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout as auth_logout
 
-# import hbp/bbp modules
-from hbp_app_python_auth.auth import get_access_token, get_token_type, get_auth_header
-from bbp_client.oidc.client import BBPOIDCClient
-from bbp_client.document_service.client import Client as DocClient
-import bbp_client
-from bbp_client.client import *
-import bbp_services.client as bsc
+# import hbp modules
 
+from hbp_app_python_auth.auth import get_access_token, get_token_type, get_auth_header
 import hbp_service_client
 import hbp_service_client.storage_service.client as service_client
 import hbp_service_client.storage_service.api as service_api_client
@@ -221,8 +217,6 @@ def fetch_wf_from_storage(request, wfid=""):
     hhnb_storage_folder = request.session['hhnb_storage_folder']
     username = request.session["username"]
 
-    context = request.session['context']
-
     request.session['time_info'] = time_info
     request.session['wf_id'] = wfid
 
@@ -288,7 +282,7 @@ def fetch_wf_from_storage(request, wfid=""):
     request.session['user_dir_results_opt'] = os.path.join(target_path, 'results', 'opt')
     request.session['user_dir_sim_run'] = os.path.join(target_path, 'sim')
 
-        # create folders for global data and json files if not existing
+    # create folders for global data and json files if not existing
     if not os.path.exists(request.session['user_dir_data_feat']):
         os.makedirs(request.session['user_dir_data_feat'])
     if not os.path.exists(request.session['user_dir_data_opt_set']):
@@ -300,7 +294,9 @@ def fetch_wf_from_storage(request, wfid=""):
     if not os.path.exists(request.session['user_dir_sim_run']):
         os.makedirs(request.session['user_dir_sim_run'])
 
-    return HttpResponse(json.dumps({"response":"OK"}), content_type="application/json")
+    
+    return HttpResponse(json.dumps({"response":"OK"}), \
+            content_type="application/json")
 
 
 
@@ -525,12 +521,11 @@ def submit_run_param(request):
             opt_sub_param_file = os.path.join(dest_dir, \
                     request.session["opt_sub_param_file"])
 
-
-
             wfid = request.session['wf_id']
             hpc_job_manager.OptSettings.print_opt_params(wf_id=wfid, \
-                    gennum=gennum, offsize=offsize, nodenum=nodenum, \
-                    corenum=corenum, runtime=runtime, \
+                    gennum=str(gennum), offsize=str(offsize),
+                    nodenum=str(nodenum), \
+                    corenum=str(corenum), runtime=str(runtime), \
                     opt_sub_param_file=opt_sub_param_file, hpc_sys=hpc_sys)
             resp_dict = {'response':'OK', 'message':''}
         else:
@@ -630,21 +625,35 @@ def check_cond_exist(request):
 	response['sim_flag']['status'] = True
 
     rsk = request.session.keys()
+
+    opt_sub_param_dict = {}
+    opt_sub_param_file = os.path.join(request.session['user_dir_data_opt_launch'], \
+        request.session['opt_sub_param_file'])
+    if os.path.exists(opt_sub_param_file):
+        with open(opt_sub_param_file) as json_file:
+	    opt_sub_param_dict = json.load(json_file)
+	response['opt_set']['message'] = "HPC system and credentials NOT set"
+    else:
+        opt_sub_param_dict = hpc_job_manager.OptSettings.get_params_default()
+	response['opt_set']['message'] = "Optimization parameters NOT set"
+            
+    request.session['gennum'] = opt_sub_param_dict['number_of_generations']
+    request.session['offsize'] = opt_sub_param_dict['offspring_size']
+    request.session['nodenum'] = opt_sub_param_dict['number_of_nodes']
+    request.session['corenum'] = opt_sub_param_dict['number_of_cores']
+    request.session['runtime'] = opt_sub_param_dict['runtime']
+    request.session['hpc_sys'] = opt_sub_param_dict['hpc_sys']
+
     rules = [
             'username_submit' in rsk,
             'password_submit' in rsk,
-            'gennum' in rsk,
-            'offsize' in rsk,
-            'nodenum' in rsk,
-            'corenum' in rsk,
-            'runtime' in rsk,
-            'hpc_sys' in rsk            
             ]
     if all(rules) or response['opt_flag']['status']:
 	response['opt_set']['status'] = True 
     else:
 	response['opt_set']['status'] = False
-	response['opt_set']['message'] = "Optimization parameters NOT set"
+    response['opt_set']['opt_sub_param_dict'] = opt_sub_param_dict
+
 
     if request.session['wf_id']:
         response['wf_id'] = request.session['wf_id']
@@ -1031,7 +1040,6 @@ def save_wf_to_storage(request):
     hhnb_storage_folder = request.session['hhnb_storage_folder']
     username = request.session["username"]
 
-    context = request.session['context']
     
     access_token = get_access_token(request.user.social_auth.get())
 

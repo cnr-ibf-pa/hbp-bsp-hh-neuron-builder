@@ -316,13 +316,25 @@ class Nsg:
 
 
 class OptSettings:
-    params_default = {'wf_id': "", 'gennum': 0, 'offsize': 10, \
+    params_default = {'wf_id': "", 'gennum': 2, 'offsize': 10, \
             'nodenum': 2, 'corenum': 1, 'runtime': 0.5, \
             'hpc_sys':  "", 'opt_sub_param_file': ""}
 
     @classmethod
-    #def print_opt_params(cls, wf_id=wf_id_std, gennum=0, offsize=10, nodenum=2, corenum=1, \
-    #    runtime=0.5, hpc_sys="", opt_sub_param_file=""):
+    def get_params_default(cls):
+        params = {
+                'wf_id': cls.params_default["wf_id"], \
+                'number_of_cores': cls.params_default["corenum"], \
+                'number_of_nodes': cls.params_default["nodenum"], \
+                'runtime': cls.params_default["runtime"], \
+                'number_of_generations': cls.params_default["gennum"], \
+                'offspring_size': cls.params_default["offsize"], \
+                'hpc_sys': cls.params_default["hpc_sys"]
+                }
+
+        return params
+
+    @classmethod
     def print_opt_params(cls, **kwargs):
         #
         if 'wf_id' in kwargs:
