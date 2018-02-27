@@ -10,11 +10,13 @@ $(document).ready(function(){
 
 });
 
-//
+// activate save button if last page has been reached
 function checkLastPage(iframe){
     window.scrollTo(0,0);
     var innerDiv = iframe.contentDocument || iframe.contentWindow.document;
     var test = innerDiv.getElementById("hiddendiv");
+
+    // if the hiddendiv is present, display button 
     if(test != undefined) {
         document.getElementById("save-feature-files").style.display = "block";
     } else {
@@ -29,9 +31,11 @@ function saveFeatures(){
     var folderName = innerDiv.getElementById("hiddendiv").classList[0];
     $.getJSON('/hh-neuron-builder/copy-feature-files/' + folderName, 
             function(data){
-        window.location.href = "/hh-neuron-builder/workflow";
-    });    
+                window.location.href = "/hh-neuron-builder/workflow";
+            });    
 }
+
+//
 function workflowPage() {
     window.location.href = "/hh-neuron-builder/workflow/";
 }

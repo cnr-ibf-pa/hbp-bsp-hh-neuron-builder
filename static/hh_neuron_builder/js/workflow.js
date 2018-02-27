@@ -1,5 +1,14 @@
 $(window).bind("pageshow", function() { 
     checkConditions();
+    closeParameterDiv();
+    closeFetchParamDiv();
+    closeUploadDiv();
+    closePleaseWaitDiv();
+    closeJobInfoDiv();
+});
+
+$( "#mainDiv" ).focus(function() {
+    checkConditions();
 });
 
 $(document).ready(function(){
@@ -8,6 +17,11 @@ $(document).ready(function(){
 
     $('#job-list-div').on('click', '.down-job-btn', function(){
         downloadJob(this.id);
+    });
+
+
+    $('#opt-res-file').on('change', function(){
+            $('#upload-opt-res-btn').prop('disabled', !$('#opt-res-file').val());
     });
 
     //
@@ -122,6 +136,7 @@ $(document).ready(function(){
 
     // manage error message ok button
     document.getElementById("ok-error-div-btn").onclick = closeErrorDiv;
+    //
 });
 
 
@@ -174,6 +189,14 @@ function openErrorDiv(message) {
 
 
 // open side div for optimization run parameter settings
+function openExpirationDiv(message) {
+    document.getElementById("mainDiv").style.pointerEvents = "none";
+    document.getElementById("overlaywrapper").style.pointerEvents = "none";
+    document.getElementById("overlaywrapperexpiration").style.display = "block";
+    document.getElementById("expirationdynamictext").innerHTML = message;
+}
+
+// open side div for optimization run parameter settings
 function closeErrorDiv() {
     document.getElementById("mainDiv").style.pointerEvents = "auto";
     document.getElementById("overlaywrapper").style.pointerEvents = "auto";
@@ -190,13 +213,23 @@ function closeParameterDiv() {
     checkConditions();
 } 
 
+// close expiration div 
+function closeExpirationDiv() {
+    document.getElementById("overlaywrapperexpiration").style.display = "none";
+    document.getElementById("mainDiv").style.pointerEvents = "auto";
+    document.body.style.overflow = "auto";
+} 
+
 //
 function checkConditions(){
     $.getJSON('/hh-neuron-builder/check-cond-exist', function(data){
         var textnode = document.createTextNode("Workflow id: " + data["wf_id"]); 
         document.getElementById("wf-title").innerHTML = "";
         document.getElementById("wf-title").appendChild(textnode);
-
+        if (data['expiration']){
+            openExpirationDiv("The workflow directory tree is expired on the server.<br>Please go to the Home page and start a new workflow.<br>");
+            return false
+        }
         if (data['feat']['status']){
             document.getElementById('feat-bar').style.background = "green";
             document.getElementById('feat-bar').innerHTML = "";
@@ -399,6 +432,7 @@ function hideOpEndDiv() {
 
 // Manage feature files upload button
 function featUploadButton() {
+    checkConditions();
     document.getElementById("opt-res-file").value = "";
     document.getElementById("opt-res-file").multiple = true;
     document.getElementById("opt-res-file").accept = ".json";
@@ -443,6 +477,8 @@ function openUploadDiv(type, msg) {
     } else {
         document.getElementById("upload_sim_img_div").style.display = "none";
     }
+    $('#opt-res-file').val("");
+    $('#upload-opt-res-btn').prop('disabled', true);
     document.getElementById("overlaywrapperoptres").style.display = "block";
     document.getElementById("mainDiv").style.pointerEvents = "none";
     document.body.style.overflow = "hidden";
@@ -559,12 +595,18 @@ function closeJobInfoDiv() {
 function downloadJob(jobid) {
     displayPleaseWaitDiv();
     closeJobInfoDiv();
-    changeMsgPleaseWaitDiv("Downloading job and analysing data. This operation may take several minutes.");
+    changeMsgPleaseWaitDiv("Downloading job and analysing data.<br>This operation may take several minutes.");
     $.getJSON('/hh-neuron-builder/download-job/' + jobid + '/', function(data){
+        if (data["response"] == "KO"){
+            closePleaseWaitDiv();
+            openErrorDiv(data["message"]);
+            return false;
+        }
         $.getJSON('/hh-neuron-builder/modify-analysis-py', function(modifydata){
             if (modifydata["response"] == "KO") {
                 closePleaseWaitDiv();
-                openErrorDiv(message);
+                openErrorDiv(modifydata["message"]);
+                return false;
             } else {
                 $.getJSON('/hh-neuron-builder/zip-sim', function(zip_data){
                     closePleaseWaitDiv();

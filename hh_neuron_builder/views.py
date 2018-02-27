@@ -6,7 +6,7 @@ import json
 import logging
 import os
 import zipfile
-from subprocess import call
+import subprocess
 import shutil
 import tarfile
 import datetime
@@ -156,8 +156,6 @@ def create_wf_folders(request, wf_type="new"):
         crr_user_dir = request.session['user_dir']
         new_user_dir = os.path.join(workflows_dir, userid, wf_id)
 
-        request.session['user_dir'] = os.path.join(workflows_dir, userid, wf_id)
-
         # copy current user dir to the newly created workflow's dir
         shutil.copytree(os.path.join(crr_user_dir, 'data'), \
                 os.path.join(new_user_dir, 'data'))
@@ -180,25 +178,29 @@ def create_wf_folders(request, wf_type="new"):
 
         opt_pf = os.path.join(crr_user_dir, 'data', 'opt_launch', \
                 request.session['opt_sub_param_file'])
-        print(opt_pf) 
         if os.path.exists(opt_pf):
             shutil.copy(opt_pf, request.session['user_dir_data_opt_launch'])
 
+        # copy current user dir results folder  to the newly created workflow
+        shutil.copytree(os.path.join(crr_user_dir, 'results'), \
+                os.path.join(new_user_dir, 'results'))
 
-        # create folders
         request.session['user_dir_results'] = os.path.join(new_user_dir, \
                 'results')
         request.session['user_dir_results_opt'] = os.path.join(new_user_dir, \
                 'results', 'opt')
-        if not os.path.isdir(request.session['user_dir_results']):
-            os.makedirs(request.session['user_dir_results'])
-        if not os.path.isdir(request.session['user_dir_results_opt']):
-            os.makedirs(request.session['user_dir_results_opt'])
-        
-        request.session['user_dir_sim_run'] = os.path.join(workflows_dir, userid, wf_id, 'sim')
 
-        if not os.path.isdir(request.session['user_dir_sim_run']):
-            os.makedirs(request.session['user_dir_sim_run'])
+        # copy current user dir results folder  to the newly created workflow
+        shutil.copytree(os.path.join(crr_user_dir, 'sim'), \
+                os.path.join(new_user_dir, 'sim'))
+
+        request.session['user_dir_sim_run'] = os.path.join(workflows_dir, userid, wf_id, 'sim')
+        
+        sim_flag_file = os.path.join(request.session['user_dir_sim_run'], \
+                request.session['sim_run_flag_file'])
+        if os.path.exists(sim_flag_file):
+            os.remove(sim_flag_file)
+
 
     return HttpResponse(json.dumps({"response":"OK"}), content_type="application/json")
 
@@ -259,14 +261,15 @@ def fetch_wf_from_storage(request, wfid=""):
     sc.download_file(wf_to_be_downloaded + '.zip', target_file_path)
 
     # unzip wf file
-    os.chdir(target_user_path)
-    zip_ref = zipfile.ZipFile(wfid + '.zip', 'r')
-    if os.path.exists(wfid):
-        shutil.rmtree(wfid)
-    zip_ref.extractall('.')
+    final_zip_name = os.path.join(target_user_path, wfid + '.zip')
+    final_wf_dir = os.path.join(target_user_path, wfid)
+    zip_ref = zipfile.ZipFile(final_zip_name, 'r')
+    print(final_zip_name)
+    if os.path.exists(final_wf_dir):
+        shutil.rmtree(final_wf_dir)
+    zip_ref.extractall(target_user_path)
     zip_ref.close()
-    os.remove(wfid + '.zip')
-    os.chdir(current_working_dir)
+    os.remove(final_wf_dir + '.zip')
 
     # delete keys if present in request.session
     request.session.pop('gennum', None)
@@ -353,19 +356,34 @@ def set_optimization_parameters(request):
 
 
 def copy_feature_files(request, featurefolder = ""):
+    response = {"expiration": False}
+    if not os.path.exists(request.session["user_dir"]) or not \
+            os.path.exists(os.path.join(os.sep,featurefolder)):
+        response = {"expiration":True}
+        return HttpResponse(json.dumps(response), content_type="application/json")
+
+    response["folder"] = featurefolder
     shutil.copy(os.path.join(os.sep, featurefolder, 'features.json'), request.session['user_dir_data_feat'])
     shutil.copy(os.path.join(os.sep, featurefolder, 'protocols.json'), request.session['user_dir_data_feat'])
 
-    return HttpResponse(json.dumps({"response":featurefolder}), content_type="application/json")
 
+    return HttpResponse(json.dumps(response), content_type="application/json")
 
+# fetch model from dataset
 def fetch_opt_set_file(request, source_opt_name=""):
     """
     Set optimization setting file
     """
+    response = {"response": "OK", "message":""}
 
     opt_model_path = request.session['optimization_model_path']
     user_dir_data_opt = request.session['user_dir_data_opt_set']
+
+    if not os.path.exists(user_dir_data_opt):
+        response["response"] = "KO"
+        response["message"] = "Folder does not exist anymore."
+        return HttpResponse(json.dumps(response), content_type="application/json")
+
     shutil.rmtree(user_dir_data_opt)
     os.makedirs(user_dir_data_opt)
     request.session['source_opt_name'] = source_opt_name
@@ -400,7 +418,7 @@ def run_optimization(request):
 
     # build new optimization name
     opt_name = source_opt_name[:idx] + "_" + time_info
-    zfName = os.path.join(dest_dir, opt_name, opt_name + '.zip')
+    zfName = os.path.join(dest_dir, opt_name + '.zip')
     fin_opt_folder = os.path.join(dest_dir, opt_name)
 
     if hpc_sys == "nsg":
@@ -440,8 +458,7 @@ def embedded_naas(request):
     """
 
     accesslogger.info(resources.string_for_log('embedded_naas', request))
-    #request.session['sim_flag'] = True
-    dest_dir = request.session['user_dir_data_opt_launch']
+    dest_dir = request.session['user_dir_sim_run']
     sim_run_flag_file = os.path.join(dest_dir,\
             request.session['sim_run_flag_file'])
     with open(sim_run_flag_file, 'w') as f:
@@ -481,10 +498,6 @@ def upload_to_naas(request):
             abs_res_file = os.path.join(res_folder, filename)
     request.session['res_file_name'] = os.path.splitext(filename)[0]
 
-    #optimization_model_path = request.session["optimization_model_path"]
-    #source_opt_name = request.session['source_opt_name']
-    #final_path = os.path.join(optimization_model_path, source_opt_name, source_opt_name + '.zip')
-    #r = requests.post("https://blue-naas-svc.humanbrainproject.eu/upload", files={"file": open(final_path, "rb")});
     r = requests.post("https://blue-naas-svc.humanbrainproject.eu/upload", files={"file": open(abs_res_file, "rb")});
     
     return HttpResponse(json.dumps({"response": "ERROR"}), content_type="application/json")
@@ -574,9 +587,10 @@ def check_cond_exist(request):
     The function checks on current workflow folders whether files are present to go on with the workflow.
     The presence of simulation parameters are also checked.
     """
-    
+
     # set responses dictionary
     response = { \
+            "expiration": False,
             "feat": {"status": False, "message":"'features.json and/or \
                 'protocols.json' NOT present"}, \
             "opt_files":{"status": False, "message":"Optimization files NOT \
@@ -589,10 +603,14 @@ def check_cond_exist(request):
             'opt_res': {"status": False}, \
             }
 
+    if not os.path.exists(request.session["user_dir"]):
+        response = {"expiration":True}
+        return HttpResponse(json.dumps(response), content_type="application/json")
+
     # retrieve folder paths 
     data_feat = request.session['user_dir_data_feat']
     data_opt = request.session['user_dir_data_opt_set']
-    sim_zip = request.session['user_dir_sim_run']
+    sim_dir = request.session['user_dir_sim_run']
     res_dir = request.session['user_dir_results']
     wf_id = request.session['wf_id']
     
@@ -606,7 +624,7 @@ def check_cond_exist(request):
 	response['opt_files']['status'] = True
 
     # check if simulation files exist
-    resp_sim = wf_file_manager.CheckConditions.checkSimFiles(sim_path=sim_zip)
+    resp_sim = wf_file_manager.CheckConditions.checkSimFiles(sim_path=sim_dir)
     if resp_sim['response'] == "OK":
 	response['run_sim']['status'] = True
         response['run_sim']['message'] = ''
@@ -627,7 +645,7 @@ def check_cond_exist(request):
             request.session['opt_sub_flag_file'])):
 	response['opt_flag']['status'] = True
 
-    if os.path.exists(os.path.join(dest_dir, \
+    if os.path.exists(os.path.join(sim_dir, \
             request.session['sim_run_flag_file'])):
 	response['sim_flag']['status'] = True
 
@@ -732,6 +750,7 @@ def upload_files(request, filetype = ""):
         request.session['source_opt_zip'] = final_res_file 
     elif filetype == "modsim":
         user_dir_sim_run = request.session['user_dir_sim_run']
+
         # unzip uploaded model file 
         z = zipfile.ZipFile(final_res_file, 'r')
         try:
@@ -752,9 +771,6 @@ def get_nsg_job_list(request):
 	username_fetch = request.session['username_fetch']
 	password_fetch = request.session['password_fetch']
 	opt_res_dir = request.session['user_dir_results_opt']
-
-	#nsg_obj = hpc_job_manager.Nsg(username_fetch=username_fetch, password_fetch=password_fetch, \
-	#	opt_res_dir=opt_res_dir) 
 
 	resp = hpc_job_manager.Nsg.fetch_job_list(username_fetch=username_fetch, \
                 password_fetch=password_fetch)
@@ -783,11 +799,18 @@ def download_job(request, job_id=""):
     """
     """
 
+    opt_res_dir = request.session['user_dir_results_opt']
+    print(opt_res_dir)
+    if not os.path.exists(opt_res_dir):
+        return HttpResponse(json.dumps({"response":"KO", \
+            "message": "The workflow folder does not exist anymore. \
+            <br> Please start a new workflow or fetch a previous one."}), \
+            content_type="application/json") 
+
     hpc_sys_fetch = request.session['hpc_sys_fetch'] 
     if hpc_sys_fetch == "nsg":
 	username_fetch = request.session['username_fetch']
 	password_fetch = request.session['password_fetch']
-	opt_res_dir = request.session['user_dir_results_opt']
         wf_id = request.session['wf_id']
 
 	# remove folder with current zip file
@@ -853,17 +876,25 @@ def modify_analysis_py(request):
 	f.writelines(lines)
 	f.close()
 
-	f = open(os.path.join(file_path, 'evaluator.py'), 'r')    # pass an appropriate path of the required file
-	lines = f.readlines()
-	lines[167]='    #print param_names\n'
-	f.close()   # close the file and reopen in write mode to enable writing to file; you can also open in append mode and use "seek", but you will have some unwanted old data if the new data is shorter in length.
+        # modify evaluator.py if present
+        if not os.path.exists(os.path.join(file_path, 'evaluator.py')):
+            resp = {"Status":"ERROR", "response":"KO", "Message":"No (or \
+                    multiple) analysis.py file(s) found"}
+            return HttpResponse(json.dumps(resp), \
+                    content_type="application/json") 
+        else:
+	    f = open(os.path.join(file_path, 'evaluator.py'), 'r')    # pass an appropriate path of the required file
+	    lines = f.readlines()
+	    lines[167]='    #print param_names\n'
+	    f.close()   # close the file and reopen in write mode to enable writing to file; you can also open in append mode and use "seek", but you will have some unwanted old data if the new data is shorter in length.
+	    f = open(os.path.join(file_path, 'evaluator.py'), 'w')    # pass an appropriate path of the required file
+	    f.writelines(lines)
+	    f.close()
 
-
-	f = open(os.path.join(file_path, 'evaluator.py'), 'w')    # pass an appropriate path of the required file
-	f.writelines(lines)
-	f.close()
-        current_working_dir = os.getcwd()
-        os.chdir(up_folder)
+        #current_working_dir = os.getcwd()
+        #os.chdir(up_folder)
+        if up_folder not in sys.path:
+            sys.path.append(up_folder)
 
         import model
 	fig_folder = os.path.join(up_folder, 'figures')
@@ -881,34 +912,37 @@ def modify_analysis_py(request):
 		        shutil.copy(os.path.join(checkpoints_folder, files), \
 			        os.path.join(checkpoints_folder, 'checkpoint.pkl'))
                         os.remove(os.path.join(up_folder, 'checkpoints', files))
-                    else:
-                        if files.endswith('.hoc'):
-                            os.remove(os.path.join(up_folder, 'checkpoints', files))
+                    # else:
+                    #    if files.endswith('.hoc'):
+                    #        os.remove(os.path.join(up_folder, 'checkpoints', files))
 
-            f = open('opt_neuron.py', 'r')
+            f = open(os.path.join(up_folder, 'opt_neuron.py'), 'r')
             lines = f.readlines()
 
             new_line = ["import matplotlib \n"]
             new_line.append("matplotlib.use('Agg') \n")
             for i in lines:
                 new_line.append(i)
-
             f.close()
-
-            f = open('opt_neuron.py', 'w')
+            f = open(os.path.join(up_folder, 'opt_neuron.py'), 'w')
             f.writelines(new_line)
             f.close()
-            os.system(". /web/bspg/venvbspg/bin/activate; nrnivmodl mechanisms")
 
-            if os.path.isdir('r_0')==True:
-                shutil.rmtree('r_0')
-            os.mkdir('r_0')
-            os.system(". /web/bspg/venvbspg/bin/activate; python opt_neuron.py --analyse --checkpoint ./checkpoints/checkpoint.pkl > /dev/null 2>&1")
-            os.chdir(current_working_dir)
+            subprocess.call(". /web/bspg/venvbspg/bin/activate; cd " \
+                    + up_folder + "; nrnivmodl mechanisms", shell=True)
+
+            r_0_fold = os.path.join(up_folder, 'r_0')
+            if os.path.isdir(r_0_fold) == True:
+                shutil.rmtree(r_0_fold)
+            os.mkdir(r_0_fold)
+            subprocess.call(". /web/bspg/venvbspg/bin/activate; cd " \
+                    + up_folder + "; python opt_neuron.py --analyse --checkpoint \
+                    ./checkpoints > /dev/null 2>&1", shell=True)
+            #os.chdir(current_working_dir)
 
         except Exception as e:
             msg = traceback.format_exception(*sys.exc_info())
-            os.chdir(current_working_dir)
+            #os.chdir(current_working_dir)
 
             return HttpResponse(json.dumps({"response":"KO", "message":msg}), content_type="application/json")
 
@@ -975,23 +1009,28 @@ def zip_sim(request):
                     os.path.join(sim_mod_folder, "checkpoints", "cell.hoc"))
 
     current_working_dir = os.getcwd()
-    os.chdir(user_dir_sim_run)           
+
+    #os.chdir(user_dir_sim_run)           
     zipname = crr_opt_name + '.zip'
 
-    foo = zipfile.ZipFile(zipname, 'w', zipfile.ZIP_DEFLATED)
+    final_zip_name = os.path.join(user_dir_sim_run, zipname)
+    foo = zipfile.ZipFile(final_zip_name, 'w', zipfile.ZIP_DEFLATED)
+    #foo = zipfile.ZipFile(zipname, 'w', zipfile.ZIP_DEFLATED)
 
-    crr_dir_opt = os.path.join('.', crr_opt_name)
-    for root, dirs, files in os.walk('.'):
+    crr_dir_opt = os.path.join(user_dir_sim_run, crr_opt_name)
+    for root, dirs, files in os.walk(user_dir_sim_run):
         if (root == os.path.join(crr_dir_opt, 'morphology')) or \
         (root == os.path.join(crr_dir_opt, 'checkpoints')) or \
         (root == os.path.join(crr_dir_opt, 'mechanisms')) or \
         (root == os.path.join(crr_dir_opt, opt_logs_folder)):
             for f in files:
-                foo.write(os.path.join(root, f))
+                final_zip_fname = os.path.join(root, f)
+                foo.write(final_zip_fname, \
+                        final_zip_fname.replace(user_dir_sim_run, '', 1))
 
     foo.close()
 
-    os.chdir(current_working_dir)
+    #os.chdir(current_working_dir)
 
     return HttpResponse(json.dumps({"response":"OK"}), content_type="application/json")
     
@@ -1003,11 +1042,10 @@ def download_zip(request, filetype=""):
     current_working_dir = os.getcwd()
     if filetype == "feat":
         fetch_folder = request.session['user_dir_data_feat']
-        os.chdir(fetch_folder)
         zipname = os.path.join(fetch_folder, "features.zip")
         foo = zipfile.ZipFile(zipname, 'w', zipfile.ZIP_DEFLATED)
-        foo.write("features.json")
-        foo.write("protocols.json")
+        foo.write(os.path.join(fetch_folder, "features.json"), "features.json")
+        foo.write(os.path.join(fetch_folder, "protocols.json"), "protocols.json")
         foo.close()
     elif filetype == "optset":
         fetch_folder = request.session['user_dir_data_opt_set']
@@ -1029,7 +1067,6 @@ def download_zip(request, filetype=""):
     response = HttpResponse(crr_file_full, content_type="application/zip")
 
     response['Content-Disposition'] = 'attachment; filename="%s"' % crr_file
-    os.chdir(current_working_dir)
 
     return response
 
@@ -1058,23 +1095,25 @@ def save_wf_to_storage(request):
     project = project_dict['results']
     storage_root = ac.get_entity_path(project[0]['uuid'])
     
-    # get current working directory
-    current_working_dir = os.getcwd()
-
     # create zip file with the entire workflow
-    os.chdir(os.path.join(user_crr_wf_dir, '..'))
+    user_wf_path = os.path.join(user_crr_wf_dir, '..')
     zipname = wf_id + '.zip'
     if os.path.exists(zipname):
         os.remove(zipname)
 
     foo = zipfile.ZipFile(zipname, 'w', zipfile.ZIP_DEFLATED)
 
-    for root, dirs, files in os.walk(os.path.join('.', wf_id)):
+    #for root, dirs, files in os.walk(os.path.join('.', wf_id)):
+    for root, dirs, files in os.walk(user_wf_path, wf_id):
         for d in dirs:
             if os.listdir(os.path.join(root,d)) == []:
-                foo.write(os.path.join(root, d))
+                crr_zip_filename = os.path.join(root, d)
+                crr_arcname = crr_zip_filename.replace(user_wf_path, '', 1)
+                foo.write(os.path.join(root, d), crr_arcname)
         for f in files:
-            foo.write(os.path.join(root, f))
+            crr_zip_ffilename = os.path.join(root, f)
+            crr_farcname = crr_zip_ffilename.replace(user_wf_path, '', 1)
+            foo.write(os.path.join(root, f), crr_farcname)
     foo.close()
     
     # create user's folder if it does not exist
@@ -1091,7 +1130,6 @@ def save_wf_to_storage(request):
 
     sc.upload_file(zipname, str(crr_zip_storage_path), \
         "application/zip")
-    os.chdir(current_working_dir)
 
     return HttpResponse(json.dumps({"response":"OK", "message":""}), content_type="application/json")
 
@@ -1128,17 +1166,12 @@ def wf_storage_list(request):
     project = project_dict['results']
     storage_root = ac.get_entity_path(project[0]['uuid'])
     
-    # get current working directory
-    current_working_dir = os.getcwd()
-
     storage_wf_list = []
     wf_storage_dir = str(os.path.join(storage_root, hhnb_storage_folder, username))
     if not sc.exists(wf_storage_dir):
         storage_list = []
     else:
         storage_list = sc.list(wf_storage_dir)
-
-    os.chdir(current_working_dir)
 
     return HttpResponse(json.dumps({"list":storage_list}), content_type="application/json")
 

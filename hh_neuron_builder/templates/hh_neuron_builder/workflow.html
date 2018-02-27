@@ -274,6 +274,21 @@
 </div>
 <!-- -->
 
+
+<!-- "Expired Workflow" message div -->
+<div id="overlaywrapperexpiration" class="overlay-wrapper">
+    <div id="overlayexpired" style="top:35%;" class="overlay-content">
+        <div class="center-container">
+            <div class="row-center-container">
+                <div id="expirationdynamictext" class="please-wait-text"></div>
+                <button id="home-expiration-div-btn" class="btn btn-default
+                closebtn" onclick="window.location.href='/hh-neuron-builder/'">Home</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- -->
+
 <!-- Fetched jobs div -->
 <div id="overlaywrapperjobs" class="overlay-wrapper">
     <div id="overlayjobs" class="overlay-content width-80p height-90p">
@@ -309,7 +324,7 @@
         </label>
         <br>
         <button type="button" id="cancel-upload-file-btn" class="btn btn-primary">Cancel</button>
-        <input type="submit" id="upload-opt-res-btn" name="upload_opt_res_button" class="btn btn-primary" value="Upload" />
+        <input type="submit" id="upload-opt-res-btn" disabled name="upload_opt_res_button" class="btn btn-primary" value="Upload" />
         </form>
     </div>
 </div>

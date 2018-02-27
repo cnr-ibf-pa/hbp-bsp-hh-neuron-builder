@@ -224,19 +224,22 @@ class Nsg:
             os.remove(fin_feat_path)
         if os.path.exists(fin_prot_path):
             os.remove(fin_prot_path)
-        shutil.copy(features_file, os.path.join(fin_dest_dir, 'config'))
-        shutil.copy(protocols_file, os.path.join(fin_dest_dir, 'config'))
+        shutil.copyfile(features_file, fin_feat_path)
+        shutil.copyfile(protocols_file, fin_prot_path)
 
         # change feature files primary keys
         fin_morph_path = os.path.join(fin_dest_dir, 'config', 'morph.json')
         with open(fin_morph_path, 'r') as morph_file:
-            morph_json = json.load(morph_file)
+            morph_json = json.load(morph_file, \
+                    object_pairs_hook=collections.OrderedDict)
             morph_file.close()
         with open(fin_feat_path, 'r') as feat_file:
-            feat_json = json.load(feat_file)
+            feat_json = json.load(feat_file, \
+                    object_pairs_hook=collections.OrderedDict)
             feat_file.close()
         with open(fin_prot_path, 'r') as prot_file:
-            prot_json = json.load(prot_file)
+            prot_json = json.load(prot_file, \
+                    object_pairs_hook=collections.OrderedDict)
             prot_file.close()
 
         os.remove(fin_feat_path)
@@ -251,7 +254,7 @@ class Nsg:
 
         # save feature files with changed keys
         with open(fin_feat_path, 'w') as feat_file:
-            feat_file.write(json.dumps(feat_json, indent=2))
+            feat_file.write(json.dumps(feat_json, indent=4))
             feat_file.close()
 
         # save protocol files with changed keys
@@ -272,11 +275,9 @@ class Nsg:
             f.write('os.system(\'python opt_neuron.py --max_ngen=' + str(gennum) + ' --offspring_size=' + str(offsize) + ' --start --checkpoint ./checkpoints/checkpoint.pkl\')')
             f.write('\n')
         f.close()
-        current_working_dir = os.getcwd()
-        os.chdir(fin_opt_folder)
 
         # build optimization folder name
-        crr_dir_opt = os.path.join('.', opt_name)
+        crr_dir_opt = os.path.join(fin_opt_folder, opt_name)
 
         foo = zipfile.ZipFile(zfName, 'w', zipfile.ZIP_DEFLATED)
 
@@ -293,28 +294,33 @@ class Nsg:
         if os.path.exists(r_0_dir):
             shutil.rmtree(r_0_dir)
 
-        for root, dirs, files in os.walk('.'):
+        for root, dirs, files in os.walk(fin_opt_folder):
             if (root == os.path.join(crr_dir_opt, 'morphology')) or \
                     (root == os.path.join(crr_dir_opt, 'config')) or \
                     (root == os.path.join(crr_dir_opt, 'mechanisms')) or \
                     (root == os.path.join(crr_dir_opt, 'model')):
-                        #
+                #
                 for f in files:
-                    foo.write(os.path.join(root, f))
+                    final_zip_fname = os.path.join(root, f)
+                    foo.write(final_zip_fname, \
+                            final_zip_fname.replace(fin_opt_folder, '', 1))
 
             if (root == os.path.join(crr_dir_opt, 'checkpoints')) or \
                     (root == os.path.join(crr_dir_opt, 'figures')):
-                        foo.write(os.path.join(root))
+                        final_zip_fold_name = os.path.join(root)
+                        foo.write(final_zip_fold_name, \
+                                final_zip_fold_name.replace(fin_opt_folder, '',
+                                    1))
 
             if (root == crr_dir_opt):
                 for f in files:
                     if f.endswith('.py'):
-                        foo.write(os.path.join(root, f))                    
+                        final_zip_fname = os.path.join(root, f)
+                        foo.write(final_zip_fname, \
+                            final_zip_fname.replace(fin_opt_folder, '', 1))
         foo.close()
 
-        os.chdir(current_working_dir)
-
-
+#
 class OptSettings:
     params_default = {'wf_id': "", 'gennum': 2, 'offsize': 10, \
             'nodenum': 2, 'corenum': 1, 'runtime': 0.5, \
