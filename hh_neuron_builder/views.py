@@ -447,9 +447,12 @@ def run_optimization(request):
 
 def model_loaded_flag(request):
     if 'res_file_name' in request.session:
-	return HttpResponse(json.dumps({"response": request.session['res_file_name']}), content_type="application/json")
+	return HttpResponse(json.dumps(\
+                {"response": request.session['res_file_name']}),\
+                content_type="application/json")
     else:
-	return HttpResponse(json.dumps({"response": "ERROR"}), content_type="application/json")
+	return HttpResponse(json.dumps({"response": "ERROR"}), \
+                content_type="application/json")
 
 
 def embedded_naas(request):
@@ -865,8 +868,10 @@ def modify_analysis_py(request):
 	lines[228]='    traces=[]\n'
 	lines[238]='        traces.append(response.keys()[0])\n'
 	lines[242]='\n    stimord={} \n    for i in range(len(traces)): \n        stimord[i]=float(traces[i][traces[i].find(\'_\')+1:traces[i].find(\'.soma\')]) \n    import operator \n    sorted_stimord = sorted(stimord.items(), key=operator.itemgetter(1)) \n    traces2=[] \n    for i in range(len(sorted_stimord)): \n        traces2.append(traces[sorted_stimord[i][0]]) \n    traces=traces2 \n'
+        lines[243]='    plot_multiple_responses([responses], cp_filename, fig=model_fig, traces=traces)\n'
 	lines[243]='    plot_multiple_responses([responses], fig=model_fig, traces=traces)\n'
-	lines[366]="def plot_multiple_responses(responses, fig, traces):\n"
+	#lines[366]="def plot_multiple_responses(responses, fig, traces):\n"
+        lines[366]="def plot_multiple_responses(responses, cp_filename, fig, traces):\n"
 	lines[369] = "\n"
 	lines[370] = "\n"
 	lines[371] = "\n"# n is the line number you want to edit; subtract 1 as indexing of list starts from 0
@@ -891,8 +896,6 @@ def modify_analysis_py(request):
 	    f.writelines(lines)
 	    f.close()
 
-        #current_working_dir = os.getcwd()
-        #os.chdir(up_folder)
         if up_folder not in sys.path:
             sys.path.append(up_folder)
 
@@ -938,11 +941,9 @@ def modify_analysis_py(request):
             subprocess.call(". /web/bspg/venvbspg/bin/activate; cd " \
                     + up_folder + "; python opt_neuron.py --analyse --checkpoint \
                     ./checkpoints > /dev/null 2>&1", shell=True)
-            #os.chdir(current_working_dir)
 
         except Exception as e:
             msg = traceback.format_exception(*sys.exc_info())
-            #os.chdir(current_working_dir)
 
             return HttpResponse(json.dumps({"response":"KO", "message":msg}), content_type="application/json")
 
@@ -1010,12 +1011,10 @@ def zip_sim(request):
 
     current_working_dir = os.getcwd()
 
-    #os.chdir(user_dir_sim_run)           
     zipname = crr_opt_name + '.zip'
 
     final_zip_name = os.path.join(user_dir_sim_run, zipname)
     foo = zipfile.ZipFile(final_zip_name, 'w', zipfile.ZIP_DEFLATED)
-    #foo = zipfile.ZipFile(zipname, 'w', zipfile.ZIP_DEFLATED)
 
     crr_dir_opt = os.path.join(user_dir_sim_run, crr_opt_name)
     for root, dirs, files in os.walk(user_dir_sim_run):
@@ -1029,8 +1028,6 @@ def zip_sim(request):
                         final_zip_fname.replace(user_dir_sim_run, '', 1))
 
     foo.close()
-
-    #os.chdir(current_working_dir)
 
     return HttpResponse(json.dumps({"response":"OK"}), content_type="application/json")
     
