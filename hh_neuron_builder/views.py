@@ -869,7 +869,7 @@ def modify_analysis_py(request):
 	lines[238]='        traces.append(response.keys()[0])\n'
 	lines[242]='\n    stimord={} \n    for i in range(len(traces)): \n        stimord[i]=float(traces[i][traces[i].find(\'_\')+1:traces[i].find(\'.soma\')]) \n    import operator \n    sorted_stimord = sorted(stimord.items(), key=operator.itemgetter(1)) \n    traces2=[] \n    for i in range(len(sorted_stimord)): \n        traces2.append(traces[sorted_stimord[i][0]]) \n    traces=traces2 \n'
         lines[243]='    plot_multiple_responses([responses], cp_filename, fig=model_fig, traces=traces)\n'
-	lines[243]='    plot_multiple_responses([responses], fig=model_fig, traces=traces)\n'
+	#lines[243]='    plot_multiple_responses([responses], fig=model_fig, traces=traces)\n'
 	#lines[366]="def plot_multiple_responses(responses, fig, traces):\n"
         lines[366]="def plot_multiple_responses(responses, cp_filename, fig, traces):\n"
 	lines[369] = "\n"
