@@ -158,7 +158,7 @@ def create_wf_folders(request, wf_type="new"):
 
         # copy current user dir to the newly created workflow's dir
         shutil.copytree(os.path.join(crr_user_dir, 'data'), \
-                os.path.join(new_user_dir, 'data'))
+                os.path.join(new_user_dir, 'data'), symlinks=True)
                 
         request.session['user_dir'] = new_user_dir
         
@@ -183,7 +183,7 @@ def create_wf_folders(request, wf_type="new"):
 
         # copy current user dir results folder  to the newly created workflow
         shutil.copytree(os.path.join(crr_user_dir, 'results'), \
-                os.path.join(new_user_dir, 'results'))
+                os.path.join(new_user_dir, 'results'), symlinks=True)
 
         request.session['user_dir_results'] = os.path.join(new_user_dir, \
                 'results')
@@ -192,7 +192,7 @@ def create_wf_folders(request, wf_type="new"):
 
         # copy current user dir results folder  to the newly created workflow
         shutil.copytree(os.path.join(crr_user_dir, 'sim'), \
-                os.path.join(new_user_dir, 'sim'))
+                os.path.join(new_user_dir, 'sim'), symlinks=True)
 
         request.session['user_dir_sim_run'] = os.path.join(workflows_dir, userid, wf_id, 'sim')
         
@@ -264,7 +264,6 @@ def fetch_wf_from_storage(request, wfid=""):
     final_zip_name = os.path.join(target_user_path, wfid + '.zip')
     final_wf_dir = os.path.join(target_user_path, wfid)
     zip_ref = zipfile.ZipFile(final_zip_name, 'r')
-    print(final_zip_name)
     if os.path.exists(final_wf_dir):
         shutil.rmtree(final_wf_dir)
     zip_ref.extractall(target_user_path)
@@ -272,17 +271,6 @@ def fetch_wf_from_storage(request, wfid=""):
     os.remove(final_wf_dir + '.zip')
 
     # delete keys if present in request.session
-    request.session.pop('gennum', None)
-    request.session.pop('offsize', None)
-    request.session.pop('nodenum', None)
-    request.session.pop('corenum', None)
-    request.session.pop('runtime', None)
-    request.session.pop('username_submit', None)
-    request.session.pop('password_submit', None)
-    request.session.pop('hpc_sys', None)
-    request.session.pop('username_fetch', None)
-    request.session.pop('password_fetch', None)
-    request.session.pop('hpc_sys_fetch', None)
     request.session['user_dir'] = target_path
     request.session['user_dir_data'] = os.path.join(target_path, 'data')
     request.session['user_dir_data_feat'] = os.path.join(target_path, 'data', 'features')
@@ -660,7 +648,7 @@ def check_cond_exist(request):
     if os.path.exists(opt_sub_param_file):
         with open(opt_sub_param_file) as json_file:
 	    opt_sub_param_dict = json.load(json_file)
-	response['opt_set']['message'] = "HPC system and credentials NOT set"
+	response['opt_set']['message'] = "Settings retrieved. Credentials NOT set"
     else:
         opt_sub_param_dict = hpc_job_manager.OptSettings.get_params_default()
 	response['opt_set']['message'] = "Optimization parameters NOT set"
@@ -942,6 +930,13 @@ def modify_analysis_py(request):
                     + up_folder + "; python opt_neuron.py --analyse --checkpoint \
                     ./checkpoints > /dev/null 2>&1", shell=True)
 
+            # symlink to be removed
+            symlink_path = os.path.join(up_folder, "x86_64", "*.inc")
+            try:
+                os.remove(symlink_path)
+            except:
+                pass
+
         except Exception as e:
             msg = traceback.format_exception(*sys.exc_info())
 
@@ -996,7 +991,7 @@ def zip_sim(request):
                     root.endswith("checkpoints")):
                 crr_folder = os.path.split(root)[1]
                 dst = os.path.join(sim_mod_folder, crr_folder)
-                shutil.copytree(root,dst)
+                shutil.copytree(root,dst, symlinks=True)
 
             for crr_f in log_files:
                 if crr_f in files:
@@ -1078,9 +1073,10 @@ def save_wf_to_storage(request):
     collab_id = request.session['collab_id']
     user_crr_wf_dir = request.session['user_dir']
     wf_id = request.session['wf_id']
+    wf_dir = request.session['workflows_dir']
+    userid = request.session['userid']
     hhnb_storage_folder = request.session['hhnb_storage_folder']
     username = request.session["username"]
-
     
     access_token = get_access_token(request.user.social_auth.get())
 
@@ -1093,15 +1089,16 @@ def save_wf_to_storage(request):
     storage_root = ac.get_entity_path(project[0]['uuid'])
     
     # create zip file with the entire workflow
-    user_wf_path = os.path.join(user_crr_wf_dir, '..')
+    user_wf_path = os.path.join(wf_dir, userid)
     zipname = wf_id + '.zip'
-    if os.path.exists(zipname):
-        os.remove(zipname)
+    zipname_full = os.path.join(user_wf_path, zipname)
+    if os.path.exists(zipname_full):
+        os.remove(zipname_full)
 
-    foo = zipfile.ZipFile(zipname, 'w', zipfile.ZIP_DEFLATED)
+    foo = zipfile.ZipFile(zipname_full, 'w', zipfile.ZIP_DEFLATED)
 
     #for root, dirs, files in os.walk(os.path.join('.', wf_id)):
-    for root, dirs, files in os.walk(user_wf_path, wf_id):
+    for root, dirs, files in os.walk(os.path.join(user_wf_path, wf_id)):
         for d in dirs:
             if os.listdir(os.path.join(root,d)) == []:
                 crr_zip_filename = os.path.join(root, d)
@@ -1125,7 +1122,7 @@ def save_wf_to_storage(request):
     if sc.exists(str(crr_zip_storage_path)):
         sc.delete(str(crr_zip_storage_path))
 
-    sc.upload_file(zipname, str(crr_zip_storage_path), \
+    sc.upload_file(zipname_full, str(crr_zip_storage_path), \
         "application/zip")
 
     return HttpResponse(json.dumps({"response":"OK", "message":""}), content_type="application/json")
