@@ -151,7 +151,7 @@ function inSilicoPage() {
     $.getJSON("/hh-neuron-builder/upload-to-naas", function(uploaddata){
         $.getJSON("/hh-neuron-builder/model-loaded-flag", function(data){
             var o = data["response"];
-            if (o == "ERROR"){
+            if (o == "KO"){
                 window.location.href = "";
             } else {
                 window.location.href = "/hh-neuron-builder/embedded-naas/";

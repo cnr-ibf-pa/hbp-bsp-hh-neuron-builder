@@ -439,7 +439,7 @@ def model_loaded_flag(request):
                 {"response": request.session['res_file_name']}),\
                 content_type="application/json")
     else:
-	return HttpResponse(json.dumps({"response": "ERROR"}), \
+	return HttpResponse(json.dumps({"response": "KO"}), \
                 content_type="application/json")
 
 
@@ -484,14 +484,22 @@ def get_local_optimization_list(request):
 def upload_to_naas(request):
     res_folder = request.session['user_dir_sim_run']
     res_folder_ls = os.listdir(res_folder) 
+    abs_res_file = []
     for filename in res_folder_ls:
         if filename.endswith(".zip"):
             abs_res_file = os.path.join(res_folder, filename)
-    request.session['res_file_name'] = os.path.splitext(filename)[0]
+            break
 
-    r = requests.post("https://blue-naas-svc.humanbrainproject.eu/upload", files={"file": open(abs_res_file, "rb")});
+    if not abs_res_file:
+        return HttpResponse(json.dumps({"response": "KO", "message": "No \
+        simulation .zip file is present"}), content_type="application/json")
+    else:
+        request.session['res_file_name'] = os.path.splitext(filename)[0]
+        r = requests.post("https://blue-naas-svc.humanbrainproject.eu/upload", files={"file": open(abs_res_file, "rb")});
+        pprint.pprint(r)
     
-    return HttpResponse(json.dumps({"response": "ERROR"}), content_type="application/json")
+    return HttpResponse(json.dumps({"response": "OK", "message":"Model \
+            correctly uploaded to naas"}), content_type="application/json")
 
 
 def submit_run_param(request):
