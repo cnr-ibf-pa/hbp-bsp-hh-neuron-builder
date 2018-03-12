@@ -496,7 +496,6 @@ def upload_to_naas(request):
     else:
         request.session['res_file_name'] = os.path.splitext(filename)[0]
         r = requests.post("https://blue-naas-svc.humanbrainproject.eu/upload", files={"file": open(abs_res_file, "rb")});
-        pprint.pprint(r)
     
     return HttpResponse(json.dumps({"response": "OK", "message":"Model \
             correctly uploaded to naas"}), content_type="application/json")
@@ -799,7 +798,6 @@ def download_job(request, job_id=""):
     """
 
     opt_res_dir = request.session['user_dir_results_opt']
-    print(opt_res_dir)
     if not os.path.exists(opt_res_dir):
         return HttpResponse(json.dumps({"response":"KO", \
             "message": "The workflow folder does not exist anymore. \
