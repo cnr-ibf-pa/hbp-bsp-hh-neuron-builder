@@ -21,7 +21,7 @@ $(document).ready(function(){
 
 
     $('#opt-res-file').on('change', function(){
-            $('#upload-opt-res-btn').prop('disabled', !$('#opt-res-file').val());
+        $('#upload-opt-res-btn').prop('disabled', !$('#opt-res-file').val());
     });
 
     //
@@ -151,7 +151,7 @@ function inSilicoPage() {
     $.getJSON("/hh-neuron-builder/upload-to-naas", function(uploaddata){
         $.getJSON("/hh-neuron-builder/model-loaded-flag", function(data){
             var o = data["response"];
-            if (o == "ERROR"){
+            if (o == "KO"){
                 window.location.href = "";
             } else {
                 window.location.href = "/hh-neuron-builder/embedded-naas/";
@@ -516,6 +516,17 @@ function displayJobInfo() {
     changeMsgPleaseWaitDiv("Fetching job list");
     $("#job-list-div").empty();
     $.getJSON("/hh-neuron-builder/get-nsg-job-list", function(joblist){
+        console.log("entered")
+        console.log("entered")
+        console.log("entered")
+        console.log("entered")
+        console.log("entered")
+        if ($.isEmptyObject(joblist)){
+            closePleaseWaitDiv();
+            openErrorDiv("You have no job on the hpc system");
+            checkConditions();
+            return false; 
+        }
         var job_list_len = Object.keys(joblist).length;
         var job_key_list = Object.keys(joblist);
         for (var i = 0; i < job_list_len; i++){
