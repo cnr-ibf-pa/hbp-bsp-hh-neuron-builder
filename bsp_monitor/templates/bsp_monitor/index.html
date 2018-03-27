@@ -35,11 +35,11 @@
                         <!-- google stat - start-->
                         <div class="col-sm-6 stats-big-container">
                             <div class="col-sm-3 align-center">
-                                <div class="panel panel-default br-7">
-                                    <div class="panel panel-heading">
+                                <div class="uc-t-box">
+                                    <div class="title-analytics bck">
                                         # users
                                     </div>
-                                    <div class="panel panel-content">
+                                    <div class="">
                                         <div id="active-users-container" class="center-container rt-boxes">
                                             <p id='active-users-value' class="rt-num vert-align">--</p>
                                         </div>
@@ -48,18 +48,20 @@
                                 </div>
                             </div>
                             <div class="col-sm-9 align-center ">
-                                <div class="panel panel-default br-7">
-                                    <div class="panel panel-heading br-7">
+                                <div class="uc-t-box">
+                                    <div class="title-analytics bck">
                                         visited pages
                                     </div>
-                                    <div class="panel panel-content">
+                                    <div class="">
                                         <figure class="rt-boxes vert-align" style="position:relative" id="chart-rt-pages-container"></figure>
                                     </div>
                                     <div class="center-container"><i>last 5min</i></div>
                                 </div>
                             </div>
-                            <div class="col-sm-12 align-center bottom-bar">
-                                Source: google analytics
+                            <div class="center-container">
+                                <div class="col-sm-12 align-center bottom-bar">
+                                    Source: Google Analytics
+                                </div>
                             </div>
                         </div>
                         <!-- google stat - end -->
@@ -67,29 +69,31 @@
                         <!-- bsp stat - start -->
                         <div class="col-sm-6 align-center">
                             <div class="col-sm-3 align-center">
-                                <div class="panel panel-default br-7">
-                                    <div class="panel panel-heading br-7">
+                                <div class="uc-t-box">
+                                    <div class="title-analytics bck">
                                         # use cases
                                     </div>
-                                    <div id="current-cloned-container" class="panel panel-content rt-boxes center-container">
+                                    <div id="current-cloned-container" class="rt-boxes center-container">
                                         <p id='rt-uc-num' class="rt-num">--</p>
                                     </div>
                                     <div class="center-container"><i>last 24h</i></div>
                                 </div>
                             </div>
                             <div class="col-sm-9 align-center">
-                                <div class="panel panel-default br-7">
-                                    <div class="panel panel-heading">
+                                <div class="uc-t-box">
+                                    <div class="title-analytics bck">
                                         use cases
                                     </div>
-                                    <div class="panel panel-content">
+                                    <div class="">
                                         <figure class="rt-boxes" id="chart-rt-uc-container"></figure>
                                     </div>
                                     <div class="center-container"><i>last 24h</i></div>
                                 </div>
                             </div>
-                            <div class="col-sm-12 align-center bottom-bar">
-                                Source: BSP analytics
+                            <div class="center-container">
+                                <div class="col-sm-12 align-center bottom-bar">
+                                    Source: BSP Analytics
+                                </div>
                             </div>
                             <!-- bsp stat - end -->
                         </div>
@@ -119,11 +123,11 @@
                     <div class="panel-body">
                         <div class="col-sm-6 align-center">
                             <div class="stats-small-container">
-                                <h4><strong>Analytics</strong></h4>
+                                <strong>BSP usage statistics</strong>
                             </div>
                             <div id="google-analytics-div">
                                 <div class="uc-t-box" style="padding-top:10px;">
-                                    <p style="font-family:Arial,Helvetica,sans-serif; font-size:16px;font-weight:bold; color:#666;">Locations (Google Analytics)</p>
+                                    <p class="title-analytics">Locations</p>
                                     <figure class="hist-boxes center-container" style="width:99%;" id="embed-geo"></figure>
                                 </div>
                                 <div class="uc-t-box">
@@ -136,7 +140,7 @@
                         </div>
                         <div class="col-sm-6 align-center">
                             <div class="stats-small-container">
-                                <h4><strong>Use case cloning</strong></h4>
+                                <strong>Use case cloning</strong>
                             </div>
                             <div id="uc-hist-div">
                                 <div class="chart col-sm-12" id="user-chart2"></div>
@@ -166,7 +170,7 @@ function executeHistoryStat(){
     plotGeo(IDS, FILTERS);
     plotSessionNum(IDS, FILTERS);
     plotUserNum(IDS, FILTERS);
-        plotHistoryUsecases();
+    plotHistoryUsecases();
 }
 
 function executeRealTimeStat(){
@@ -336,6 +340,7 @@ function plotHistoryUsecases(){
                     scales: {
                         xAxes: [{
                             display: false,
+                            barPercentage: 0.3,
                         }],
                         yAxes: [{
                             ticks: {
@@ -456,9 +461,10 @@ function plotSessionNum(IDS, FILTERS){
             datasets : [
             {
                 data : data1,
-                pointRadius : 1,
+                pointRadius : 0,
                 pointHoverRadius : 3,
                 label: "# sessions",
+                backgroundColor: 'rgba(0, 102, 0, 0.4)',
             },
             ]
         };
@@ -503,8 +509,9 @@ function plotUserNum(IDS, FILTERS){
             datasets : [
             {
                 data : data1,
-                pointRadius : 1,
+                pointRadius : 0,
                 pointHoverRadius : 3,
+                backgroundColor: 'rgba(251, 85, 85, 0.4)',
             },
             ]
         };
@@ -518,7 +525,7 @@ function plotUserNum(IDS, FILTERS){
                 legend: {display: false},
                 title: {
                     display: true,
-                    text: 'Number of users (Google Analytics)',
+                    text: 'Number of users',
                     fontSize: 16,
                 },
             }
@@ -568,7 +575,7 @@ function plotGeo(IDS, FILTERS){
             type: 'GEO',
             options: {
                 width: '100%',
-                title: "Locations (Google Analytics)",
+                title: "Locations",
                 fontSize: 16,
             }
         }
@@ -606,67 +613,67 @@ from_day.onchange = function(){
     var from_day_crr_date = moment(from_day_crr_value);
     var date_diff = to_day_crr_date.diff(from_day_crr_date, 'days');
     if (date_diff < 0)
-                                    to_day.value = this.value;
-                                    }
+        to_day.value = this.value;
+}
 
 
-                                    // manage to_day.onchange function
-                                    to_day.onchange = function(){
-                                    var from_day = document.getElementById("from-day");
-                                    var from_day_crr_value = from_day.value;
-                                    var from_day_crr_date = moment(from_day_crr_value);
-                                    to_day.setAttribute("value", this.value);
-                                    var to_day_crr_date = moment(this.value);
-                                    var date_diff = to_day_crr_date.diff(from_day_crr_date, 'days');
-                                    if (date_diff < 0){
-                                    from_day.value = this.value;
-                                    }
-                                    }
+// manage to_day.onchange function
+to_day.onchange = function(){
+    var from_day = document.getElementById("from-day");
+    var from_day_crr_value = from_day.value;
+    var from_day_crr_date = moment(from_day_crr_value);
+    to_day.setAttribute("value", this.value);
+    var to_day_crr_date = moment(this.value);
+    var date_diff = to_day_crr_date.diff(from_day_crr_date, 'days');
+    if (date_diff < 0){
+        from_day.value = this.value;
+    }
+}
 
 
-                                    /**
-                                    * Create a new canvas inside the specified element. Set it to be the width
-                                    * and height of its container.
-                                    * @param {string} id The id attribute of the element to host the canvas.
-                                    * @return {RenderingContext} The 2D canvas context.
-                                    */
-                                    function makeCanvas(id) {
-                                    var container = document.getElementById(id);
-                                    var canvas = document.createElement('canvas');
-                                    var ctx = canvas.getContext('2d');
+/**
+ * Create a new canvas inside the specified element. Set it to be the width
+ * and height of its container.
+ * @param {string} id The id attribute of the element to host the canvas.
+ * @return {RenderingContext} The 2D canvas context.
+ */
+function makeCanvas(id) {
+    var container = document.getElementById(id);
+    var canvas = document.createElement('canvas');
+    var ctx = canvas.getContext('2d');
 
-                                    container.innerHTML = '';
-                                    canvas.width = container.offsetWidth;
-                                    canvas.height = container.offsetHeight;
-                                    container.appendChild(canvas);
+    container.innerHTML = '';
+    canvas.width = container.offsetWidth;
+    canvas.height = container.offsetHeight;
+    container.appendChild(canvas);
 
-                                    return ctx;
-                                    }
+    return ctx;
+}
 
 
 
-                                    gapi.analytics.ready(function() {
-                                    $.getJSON("/bsp-monitor/get-access-token/ganalytics/", function(data){
-                                    gapi.analytics.auth.authorize({
-                                    'serverAuth': {
-                                    'access_token': data["access_token_ganalytics"]
-                                    }
-                                    });
+gapi.analytics.ready(function() {
+    $.getJSON("/bsp-monitor/get-access-token/ganalytics/", function(data){
+        gapi.analytics.auth.authorize({
+            'serverAuth': {
+                'access_token': data["access_token_ganalytics"]
+            }
+        });
 
-                                    plotRtUsers(IDS, RT_FILTERS);
-                                    plotRtPages(IDS, RT_FILTERS);
-                                    plotGeo(IDS, FILTERS);
-                                    plotSessionNum(IDS, FILTERS);
-                                    plotUserNum(IDS, FILTERS);
-                                    plotRtUsecases();
-                                    plotHistoryUsecases();
+        plotRtUsers(IDS, RT_FILTERS);
+        plotRtPages(IDS, RT_FILTERS);
+        plotGeo(IDS, FILTERS);
+        plotSessionNum(IDS, FILTERS);
+        plotUserNum(IDS, FILTERS);
+        plotRtUsecases();
+        plotHistoryUsecases();
 
-                                    setInterval(function(){
-                                    plotRtUsers(IDS, RT_FILTERS);
-                                    plotRtPages(IDS, FILTERS);
-                                    }, REFRESH_TIME);
-                                    })
-                                    })
+        setInterval(function(){
+            plotRtUsers(IDS, RT_FILTERS);
+            plotRtPages(IDS, FILTERS);
+        }, REFRESH_TIME);
+    })
+})
             </script>
 
     </body>
