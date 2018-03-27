@@ -49,18 +49,10 @@ def tree_json(request):
         
     hdr =  auth.get_authorization_header(request)
     logger.info("header from tree_json")
-    logger.info("header from tree_json")
-    logger.info("header from tree_json")
-    logger.info("header from tree_json")
-    logger.info("header from tree_json")
-    logger.info("header from tree_json")
     logger.info(hdr)
-    bsp_url = settings.HBP_COLLAB_SERVICE_URL + 'collab/161/nav/all/'
+    bsp_url = settings.HBP_COLLAB_SERVICE_URL + 'collab/1655/nav/all/'
     res = requests.get(bsp_url, headers = hdr)
     if res.status_code != 200:
-        logger.info('bad code')
-        logger.info('bad code')
-        logger.info('bad code')
         logger.info('bad code')
         #context = request.GET.get('ctx')
         #request.session.flush()

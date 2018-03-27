@@ -51,6 +51,11 @@
     height: auto;
 }
 
+.height-200px {
+    height: 200px;
+}
+
+
 .param-title-div {
     background-color: rgba(200, 200, 200, 1);
     text-align: center;
@@ -77,10 +82,10 @@
 .main-page-panel {
     /*background: rgba(0, 60, 0, 0.2);
      */
-    box-shadow: 2px 3px 4px 4px #bbbbbb;
-    padding: 20px;
-    min-height: 600px;
-    width: 100%;
+box-shadow: 2px 3px 4px 4px #bbbbbb;
+padding: 20px;
+min-height: 600px;
+width: 100%;
 }
 
 .wf-page-panel {
@@ -130,7 +135,11 @@
 .panel-all-width {
     width: 100%;
     color: green;
+}
 
+.stat-title-div {
+    color: rgba(204, 122, 0, 0.7);
+    background-color: rgba(204, 122, 0, 0.7);
 }
 /**************/
 
@@ -217,7 +226,7 @@
 }
 
 .w-20pc {
-  max-width: 20%;
+    max-width: 20%;
 }
 
 .w-15pc {
@@ -226,6 +235,10 @@
 
 .w-10pc {
     max-width: 10%;
+}
+
+.vert-align {
+    vertical-align: middle;
 }
 
 /***********/
@@ -286,15 +299,12 @@
 }
 
 .sticky-pos {
-    position: -webkit-sticky;
-    position: -moz-sticky;
     position: sticky;
 }
 
 .fixed-page-title {
-    position: -webkit-sticky;
-    position: -moz-sticky;
     position: sticky;
+    position: -webkit-sticky;
     z-index: 9;
     left: 0px;
     top: 3px;
@@ -521,11 +531,11 @@ div.justify-class:after {
 /* animations */
 
 .spinning {
-	border: 10px solid #d9d9d9;
-  	border-radius: 50%;
-  	border-top: 10px solid #aaaaaa;
- 	width: 50px;
-  	height: 50px;
+    border: 10px solid #d9d9d9;
+    border-radius: 50%;
+    border-top: 10px solid #aaaaaa;
+    width: 50px;
+    height: 50px;
     -webkit-animation: spin 1.5s infinite linear;
     -moz-animation: spin 1.5s infinite linear;
     -o-animation: spin 1.5s infinite linear;
@@ -570,7 +580,7 @@ div.justify-class:after {
 }
 
 .spinning.small {
- 	font-size: 18px;
+    font-size: 18px;
 }
 
 .fade-in-div {
@@ -586,7 +596,6 @@ div.justify-class:after {
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
-    user-select: none;
 }
 
 /* The actual popup */
@@ -638,4 +647,120 @@ div.justify-class:after {
 @media screen and (max-height: 450px) {
     .sidenav {padding-top: 15px;}
     .sidenav a {font-size: 18px;}
+}
+
+.rt-boxes{
+    border: none;
+    text-align:center;
+    height: 250px;
+}
+
+.hist-boxes{
+    border-radius:4px;
+    text-align:center;
+    margin: 0px;
+    height: 350px;
+}
+
+
+.rt-num{
+    font-weight:500;
+    text-align:center;
+    font-size: 70px;
+}
+
+.rt-boxes.is-increasing{
+    -webkit-animation:rt-a 5s;
+    animation:rt-a 5s;
+}
+
+.rt-boxes.is-decreasing{
+    -webkit-animation:rt-b 5s;
+    animation:rt-b 5s;
+}
+
+@-webkit-keyframes rt-a{10%{
+        background-color:#ebffeb;
+        border-color:rgba(0,128,0,.5);
+        color:green
+    }
+}
+
+@keyframes rt-a{10%{
+        background-color:#ebffeb;
+        border-color:rgba(0,128,0,.5);
+    color:green}
+}
+
+@-webkit-keyframes rt-b{10%{
+        background-color:#ffebeb;
+    border-color:rgba(255,0,0,.5);color:red}
+}
+
+@keyframes rt-b{10%{background-color:#ffebeb;
+        border-color:rgba(255,0,0,.5);
+    color:red}
+}
+
+.Chartjs-figure{height:250px}
+
+.Chartjs-legend{list-style:none;margin:0;padding:1em 0 0;text-align:center}
+
+.Chartjs-legend>li{display:inline-block;padding:.25em .5em}
+
+.Chartjs-legend>li>i{display:inline-block;height:1em;margin-right:.5em;vertical-align:-.1em;width:1em}
+
+
+.stats-small-container{
+    border-radius: 5px;
+    border-style: solid;
+    border-width: 1px;
+}
+
+.stats-big-container{
+    border-radius: 5px;
+    border-style: solid;
+    border-width: 0px;
+    z-index: 2;
+}
+
+.bottom-bar{
+    background-color: rgba(200,200,200,0.4);
+    text-align: left;
+    margin: 7px;
+    padding: 2px;
+}
+
+.panel-stat {
+    margin-bottom: 6px;
+    margin-left: 6px;
+    margin-right: 6px;
+    padding-bottom: 1px;
+    border-radius: 6px; 
+}
+
+.panel-stat-container{
+    padding: 20px;
+}
+
+.br-7{
+    border-radius: 7px;
+}
+
+.panel-stat-sub-cont{
+margin:6px;
+}
+
+
+.border-style{
+border-style: solid;
+border-width: 1px;
+}
+
+.uc-t-box{
+    border-radius:6px;
+    box-shadow: 2px 1px 4px 2px #BBBBBB;
+    text-align:center;
+    margin-bottom: 30px;
+    margin-top: 30px;
 }

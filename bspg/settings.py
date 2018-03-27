@@ -70,6 +70,7 @@ INSTALLED_APPS = [
     'efelg',
     'sitemap',
     'hh_neuron_builder',
+    'bsp_monitor',
     'djangobower',
     #'rest_framework',
     'social.apps.django_app.default',

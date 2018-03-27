@@ -24,6 +24,7 @@ urlpatterns = [
     url('', include('hbp_app_python_auth.urls', namespace='hbp-social')),
     url(r'^efelg/', include('efelg.urls'), name='efelg'),
     url(r'^hh-neuron-builder/', include('hh_neuron_builder.urls'), name='hh_neuron_builder'),
+    url(r'^bsp-monitor/', include('bsp_monitor.urls'), name='bsp_monitor'),
     url(r'^admin/', admin.site.urls),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
 ]
