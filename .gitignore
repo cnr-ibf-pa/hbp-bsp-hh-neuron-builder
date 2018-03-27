@@ -10,6 +10,7 @@ media
 db.sqlite3
 bower_components
 bspg/debug.py
+bspg/keys
 bspg/credentials.json
 static/bspganalytics.js
 static/epfl_bspg_analytics.js
