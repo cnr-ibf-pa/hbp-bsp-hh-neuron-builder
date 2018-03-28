@@ -653,6 +653,8 @@ div.justify-class:after {
     border: none;
     text-align:center;
     height: 250px;
+    position: relative;
+    margin: auto;
 }
 
 .hist-boxes{
@@ -660,6 +662,8 @@ div.justify-class:after {
     text-align:center;
     margin: 0px;
     height: 350px;
+    position: relative;
+    margin: auto;
 }
 
 

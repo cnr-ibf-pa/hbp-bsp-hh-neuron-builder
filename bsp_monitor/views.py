@@ -107,4 +107,3 @@ def get_uc(request, start_date="0", end_date="0"):
 def get_uc_item_list(request):
     uc_topics_names = g.FileManager.get_name_convention()
     return HttpResponse(json.dumps({"Response":"OK", "UC_TOPICS_NAMES":uc_topics_names}), content_type="application/json")
-
