@@ -27,6 +27,10 @@ $(document).ready(function(){
 
     $(window).on('resize', function() {
         printLoadingMessage("pl-cnt");
+    });
+
+    $(window).on('resize', function() {
+        printLoadingMessage("pl-cnt");
         clearTimeout(window.resizedFinished);
         window.resizedFinished = setTimeout(function(){
             reloadAll();
