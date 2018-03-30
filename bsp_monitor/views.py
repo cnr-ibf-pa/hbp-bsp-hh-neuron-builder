@@ -1,8 +1,16 @@
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.conf import settings
+from django.contrib.auth.decorators import login_required
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
+
+# import hbp/bbp modules
+from hbp_app_python_auth.auth import get_access_token, \
+        get_token_type, get_auth_header
+from hbp_app_python_auth.views import logout as auth_logout
+
+#
 import json
 import datetime 
 import bisect
@@ -11,10 +19,12 @@ import pprint
 
 from tools import g
 
+@login_required(login_url='/login/hbp/')
 def index(request):
     return render(request, 'bsp_monitor/index.html')
 
 
+@login_required(login_url='/login/hbp/')
 def get_access_token(request, token_type=""):
     '''
     Get token to grant access to google services
@@ -31,12 +41,14 @@ def get_access_token(request, token_type=""):
         return HttpResponse(json.dumps(final_dict), content_type="application/json")
 
 
+@login_required(login_url='/login/hbp/')
 def get_gs(request):
     client = g.GoogleStatManager.get_gs_client()
     sheet = client.open('Usecases - Collabs (Responses)').sheet1
     usecases = sheet.get_all_records()
     return HttpResponse(json.dumps({"Response":"OK"}), content_type="application/json")
 
+@login_required(login_url='/login/hbp/')
 def get_uc(request, start_date="0", end_date="0"):
     """
     Get usecases stats
@@ -104,6 +116,7 @@ def get_uc(request, start_date="0", end_date="0"):
             "uc_topics_full": uc_full}), \
             content_type="application/json")
 
+@login_required(login_url='/login/hbp/')
 def get_uc_item_list(request):
     uc_topics_names = g.FileManager.get_name_convention()
     return HttpResponse(json.dumps({"Response":"OK", "UC_TOPICS_NAMES":uc_topics_names}), content_type="application/json")

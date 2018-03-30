@@ -8,6 +8,7 @@ from . import views
 
 urlpatterns = [
     url(r'^$', views.index),    
+    url(r'^login/hbp', auth_views.login),
     url(r'^get-access-token/(?P<token_type>ganalytics|gsheet|all)/$', views.get_access_token),    
     url(r'^get-gs/$', views.get_gs),    
     url(r'^get-uc-item-list/$', views.get_uc_item_list),    

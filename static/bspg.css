@@ -791,3 +791,10 @@ background-color: rgba(5,80,10,0.2);
 background-color: rgba(5,80,10,0.2);
 padding: 5px;
 }
+
+.rt-pl-cnt {
+min-width: 50px;
+}
+.pl-cnt {
+min-width: 80px;
+}

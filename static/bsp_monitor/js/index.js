@@ -5,7 +5,7 @@ var DIMENSIONS = 'rt:pagePath=~/collab/1655(\/.*|$)';
 var REFRESH_TIME = 60000;
 
 $(document).ready(function(){
-    printLoadingMessage(["hist-pl-cnt", "rt-pl-cnt"]);
+    printLoadingMessage(["hist-pl-cnt", "rt-pl-cnt", "hist-leg-cnt"],["Loading ...", "Loading ...", ""]);
     //
     var todayUtc = moment.utc();
     var todayUtcFormat = todayUtc.format("YYYY-MM-DD");
@@ -26,11 +26,7 @@ $(document).ready(function(){
     document.getElementById("refresh-btn").onclick = executeRealTimeStat;
 
     $(window).on('resize', function() {
-        printLoadingMessage("pl-cnt");
-    });
-
-    $(window).on('resize', function() {
-        printLoadingMessage("pl-cnt");
+    printLoadingMessage(["hist-pl-cnt", "rt-pl-cnt", "hist-leg-cnt"],["Loading ...", "Loading ...", ""]);
         clearTimeout(window.resizedFinished);
         window.resizedFinished = setTimeout(function(){
             reloadAll();
@@ -38,7 +34,6 @@ $(document).ready(function(){
     });
 
     function reloadAll(){
-        printLoadingMessage("pl-cnt");
         plotGeo(IDS, FILTERS);
         plotUserNum(IDS, FILTERS);
         plotSessionNum(IDS, FILTERS);
@@ -48,16 +43,15 @@ $(document).ready(function(){
         plotRtUsecases();
     }
 
-    function printLoadingMessage(cl_name){
-        displayPleaseWaitDiv("");
+    function printLoadingMessage(cl_name, load_str){
         for (var j = 0; j < cl_name.length; j++){
             var crr_cl = cl_name[j];
+            var crr_str = load_str[j];
             var t = document.getElementsByClassName(crr_cl);
             for (var i = 0; i<t.length; i++){
-                document.getElementById(t[i]["id"]).innerHTML = "<div class='center-container' style='font-size:14px;position:absolute;top: 0px;left:0px;'>Loading ...</div>";
+                document.getElementById(t[i]["id"]).innerHTML = "<div class='center-container' style='font-size:14px;position:absolute;top: 0px;left:0px;'>" +  crr_str + "</div>";
             }
         }
-        closePleaseWaitDiv();
     }
     // manage from_day.onchange function
     from_day.onchange = function(){
@@ -216,11 +210,11 @@ function plotHistoryUsecases(){
             crr_global_container.setAttribute("class", "uc-t-box");
             //
             crr_figure.setAttribute('id', key);
-            crr_figure.setAttribute("class", "hist-boxes pl-cnt");
+            crr_figure.setAttribute("class", "hist-boxes hist-pl-cnt");
             //
 
             crr_legend.setAttribute("class", "Chartjs-legend");
-            crr_legend.setAttribute("class", "Chartjs-legend center-container legends");
+            crr_legend.setAttribute("class", "Chartjs-legend center-container legends hist-leg-cnt");
             crr_legend.setAttribute("id", crr_legend_id);
             //
 
@@ -514,9 +508,9 @@ function plotGeo(IDS, FILTERS){
             }
         });
         dataChart.once('success', function(response){resolve(response);
-        document.getElementById("locations").innerHTML = "Locations";
+            document.getElementById("locations").innerHTML = "Locations";
         })
-            .once('error', function(response){resolve(response); })
+        .once('error', function(response){resolve(response); })
             .execute();
     });
 }
@@ -534,6 +528,7 @@ function plotGeo(IDS, FILTERS){
 function makeCanvas(id) {
     var container = document.getElementById(id);
     var canvas = document.createElement('canvas');
+
     var ctx = canvas.getContext('2d');
 
     container.innerHTML = '';
