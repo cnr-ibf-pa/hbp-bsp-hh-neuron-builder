@@ -29,15 +29,15 @@ DEBUG = debug.DEBUG
 SESSION_COOKIE_AGE = 86400 
 
 if DEV:
-    from .dev_config import *
-    from .dev_app_key import *
+    from dev_config import *
+    from keys.dev_app_key import *
     if not DEBUG:
-        from .dev_auth_key import *
+        from keys.dev_auth_key import *
 else:
-    from .prod_config import *
-    from .prod_app_key import *
+    from prod_config import *
+    from keys.prod_app_key import *
     if not DEBUG:
-        from .prod_auth_key import*
+        from keys.prod_auth_key import*
 
 
 ALLOWED_HOSTS = [

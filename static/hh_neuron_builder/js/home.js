@@ -9,6 +9,8 @@ $(document).ready(function(){
 
 function fetchWorkflows() {
     openPleaseWaitDiv("Searching for workflows in your storage");
+    var listDivEl = document.getElementById("wf-storage-list-div");
+    listDivEl.innerHTML = "";
     $.getJSON("/hh-neuron-builder/wf-storage-list/", function(data){
         if (data['list'].length == 0){
             closePleaseWaitDiv();
@@ -30,9 +32,9 @@ function fetchWorkflows() {
                 wf_download_button.className = "btn btn-default down-wf-btn";
                 crr_wf_div.appendChild(wf_download_button);
 
-                document.getElementById("wf-storage-list-div").prepend(crr_wf_div);
+                listDivEl.prepend(crr_wf_div);
             }
-            document.getElementById("wf-storage-list-div").prepend(document.getElementById("fetch-wf-storage-title"));
+            listDivEl.prepend(document.getElementById("fetch-wf-storage-title"));
             closePleaseWaitDiv();
             document.getElementById("overlay-wrapper-wf").style.display = "block";
             document.getElementById("home-main-div").style.pointerEvents = "none";

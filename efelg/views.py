@@ -66,6 +66,9 @@ def overview(request):
         # extract context
         context = request.GET.get('ctx')
         request.session['ctx'] = context
+        access_token = get_access_token(request.user.social_auth.get())
+        print(access_token)
+
         # if context is empty redirect to appropriate page
         if not context:
             return render(request, 'efelg/hbp_redirect.html')
@@ -79,11 +82,18 @@ def overview(request):
                 request.session['exit_message'] = 'Unexpected error: ' + \
                 'sys.exc_info()[0]'
                 return render(request, 'efelg/hbp_redirect.html')
-                #return redirect("https://bspg.pa.ibf.cnr.it/login/hbp/?next=https://bspg.pa.ibf.cnr.it/efelg/?ctx=" + context)
-                
+
+            print("request.user.social_auth.get()")
+            print(request.user.social_auth.get())
+            print("get auth header - start")
+            print(get_auth_header(request.user.social_auth.get()))
+            print("get auth header - end")
+
          
             # request information on current user
             res = requests.get(my_url, headers = headers)
+            pprint.pprint(res.json())
+               
             if res.status_code != 200:
                 return render(request, 'efelg/hbp_redirect.html')
 
@@ -94,6 +104,8 @@ def overview(request):
 
             collab_res = requests.get(hbp_collab_service_url + context, \
                     headers = headers)
+            pprint.pprint(collab_res.json())
+            pprint.pprint(request)
 
             if res.status_code != 200:
                 return render(request, 'efelg/hbp_redirect.html')

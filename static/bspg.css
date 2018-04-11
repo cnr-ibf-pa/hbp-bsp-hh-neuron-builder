@@ -1,4 +1,19 @@
 /* containers */
+* {
+    box-sizing: border-box;
+}
+.img-container {
+    float: left;
+    width: 33.33%;
+    padding: 5px;
+    display: inline-block;
+}
+.clearfix::after {
+    content: "";
+    clear: both;
+    display: table;
+}
+
 .center-container {
     display: flex;
     flex-wrap: wrap;
@@ -666,6 +681,15 @@ div.justify-class:after {
     margin: auto;
 }
 
+.hist-geo-boxes{
+    border-radius:4px;
+    text-align:center;
+    margin: 0px;
+    height: 308px;
+    position: relative;
+    margin: auto;
+    display: inline-block;
+}
 
 .rt-num{
     font-weight:500;
