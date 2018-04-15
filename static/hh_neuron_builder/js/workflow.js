@@ -592,7 +592,7 @@ function displayJobInfo() {
                         cell3.innerHTML = "  " + crr_job_json["job_stage"] + "  " ;
 
                         var datetime = crr_job_json["job_date_submitted"];
-                        var gmt_datetime = moment.utc(datetime).toString();
+                        var gmt_datetime = moment.utc(datetime).format();
                         cell4.innerHTML = "  " + gmt_datetime + "  ";
                         cell5.appendChild(job_download_button2);
 
