@@ -92,6 +92,7 @@ def home(request):
     request.session['opt_sub_flag_file'] = 'opt_sub_flag.txt'
     request.session['opt_sub_param_file'] = 'opt_sub_param.json'
     request.session['sim_run_flag_file'] = 'sim_run_flag.txt'
+    request.session['wf_job_ids'] = 'wf_job_ids.json'
 
     accesslogger.info(resources.string_for_log('home', request))
 
@@ -402,6 +403,9 @@ def run_optimization(request):
     hpc_sys = request.session['hpc_sys']
     source_feat = request.session['user_dir_data_feat']
     opt_res_dir = request.session['user_dir_results_opt']
+    workflows_dir = request.session['workflows_dir']
+    userid = request.session['userid']
+    
     idx = source_opt_name.rfind('_')
 
     # build new optimization name
@@ -423,12 +427,27 @@ def run_optimization(request):
 	if resp['status_code'] == 200:
             opt_sub_flag_file = os.path.join(dest_dir,\
                     request.session['opt_sub_flag_file'])
-            opt_sub_param_file = os.path.join(dest_dir, \
-                    request.session["opt_sub_param_file"])
 
             with open(opt_sub_flag_file, 'w') as f:
                 f.write("")
             f.close()
+        
+            wf_job_ids = request.session['wf_job_ids']
+            wf_id = request.session['wf_id']
+            ids_file = os.path.join(workflows_dir, userid, wf_job_ids)
+            ids_dict = {"wf_id" : wf_id, "hpc_sys": hpc_sys}
+
+            # update file containing 
+            if os.path.exists(ids_file):
+                with open(ids_file, "r") as fh:
+                    all_id = json.load(fh)
+            else:
+                all_id = {}
+
+            all_id[resp["jobname"]] = ids_dict
+                
+            with open(ids_file, "w") as fh:
+                json.dump(all_id, fh)
 
     return HttpResponse(json.dumps(resp))
 
@@ -773,6 +792,28 @@ def get_nsg_job_list(request):
 	resp = hpc_job_manager.Nsg.fetch_job_list(username_fetch=username_fetch, \
                 password_fetch=password_fetch)
 
+        # read job id file
+        workflows_dir = request.session['workflows_dir']
+        userid = request.session['userid']
+        wf_job_ids = request.session['wf_job_ids']
+        wf_id = request.session['wf_id']
+
+        ids_file = os.path.join(workflows_dir, userid, wf_job_ids)
+
+        if os.path.exists(ids_file):
+            with open(ids_file, "r") as fh:
+                all_id = json.load(fh)
+        else:
+            all_id = {}
+
+        # fetch workflow ids for all fetched jobs and add to response
+        for key in resp:
+            if key in all_id:
+                resp[key]["wf"] = all_id[key]
+            else:
+                resp[key]["wf"] = {"wf_id": "No workflow id associated", \
+                        "hpc_sys":"unknown"}
+
     return HttpResponse(json.dumps(resp), content_type="application/json") 
 
 
@@ -789,6 +830,7 @@ def get_nsg_job_details(request, jobid=""):
 	resp = hpc_job_manager.Nsg.fetch_job_details( \
                 job_id = jobid, username_fetch=username_fetch, \
                 password_fetch=password_fetch) 
+
 
     return HttpResponse(json.dumps(resp), content_type="application/json") 
 
@@ -834,8 +876,9 @@ def modify_analysis_py(request):
     output_fetched_file = os.path.join(opt_res_folder, "output.tar.gz")
 
     if not os.path.exists(output_fetched_file):
-        return HttpResponse(json.dumps({"response":"KO", "message":"No output \
-            file downloaded"}), content_type="application/json")
+        msg = "No ouptut file was generated in the optimization process. \
+                Check your optimization settings."    
+        return HttpResponse(json.dumps({"response":"KO", "message": msg}), content_type="application/json")
 
     tar = tarfile.open(os.path.join(opt_res_folder, "output.tar.gz"))
     tar.extractall(path=opt_res_folder)
@@ -848,7 +891,9 @@ def modify_analysis_py(request):
 		analysis_file_list.append(os.path.join(dirpath,filename))
 
     if len(analysis_file_list) != 1:
-        resp = {"Status":"ERROR", "response":"KO", "Message":"No (or multiple) analysis.py file(s) found"}
+        msg = "No (or multiple) analysis.py file(s) found. \
+                Check the .zip file submitted for the optimization."
+        resp = {"Status":"ERROR", "response":"KO", "message": msg}
 	return HttpResponse(json.dumps(resp), content_type="application/json") 
     else:
 	full_file_path = analysis_file_list[0]
@@ -877,8 +922,9 @@ def modify_analysis_py(request):
 
         # modify evaluator.py if present
         if not os.path.exists(os.path.join(file_path, 'evaluator.py')):
-            resp = {"Status":"ERROR", "response":"KO", "Message":"No (or \
-                    multiple) analysis.py file(s) found"}
+            msg = "No evaluator.py file found. \
+                Check the .zip file submitted for the optimization."
+            resp = {"Status":"ERROR", "response":"KO", "message": msg}
             return HttpResponse(json.dumps(resp), \
                     content_type="application/json") 
         else:

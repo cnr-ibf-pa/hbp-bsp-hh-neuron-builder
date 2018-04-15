@@ -19,6 +19,9 @@ $(document).ready(function(){
         downloadJob(this.id);
     });
 
+    $('#job-list-body').on('click', '.down-job-btn', function(){
+        downloadJob(this.id);
+    });
 
     $('#opt-res-file').on('change', function(){
         $('#upload-opt-res-btn').prop('disabled', !$('#opt-res-file').val());
@@ -516,11 +519,6 @@ function displayJobInfo() {
     changeMsgPleaseWaitDiv("Fetching job list");
     $("#job-list-div").empty();
     $.getJSON("/hh-neuron-builder/get-nsg-job-list", function(joblist){
-        console.log("entered")
-        console.log("entered")
-        console.log("entered")
-        console.log("entered")
-        console.log("entered")
         if ($.isEmptyObject(joblist)){
             closePleaseWaitDiv();
             openErrorDiv("You have no job on the hpc system");
@@ -529,6 +527,8 @@ function displayJobInfo() {
         }
         var job_list_len = Object.keys(joblist).length;
         var job_key_list = Object.keys(joblist);
+        var tableId = document.getElementById("job-list-table");
+        var tableBody = document.getElementById("job-list-body");
         for (var i = 0; i < job_list_len; i++){
             (function(cnrt) {
                 crr_idx = 0;
@@ -541,50 +541,84 @@ function displayJobInfo() {
 
                     var crr_job_json = job_details;
                     //
-                    var crr_div = document.createElement("DIV");
-                    crr_div.className = "center-container row-center-container";
+                    //var crr_div = document.createElement("DIV");
+                    //crr_div.className = "center-container row-center-container";
                     //
-                    var job_id_span = document.createElement("SPAN");
-                    job_id_span.className = "simple-span w-30pc center-container row-center-container";
-                    var textnode = document.createTextNode(crr_job_json['job_id']); 
-                    job_id_span.appendChild(textnode);
-                    crr_div.appendChild(job_id_span);
+                    //var job_id_span = document.createElement("SPAN");
+                    //job_id_span.className = "simple-span w-30pc center-container row-center-container";
+                    //var textnode = document.createTextNode(crr_job_json['job_id']); 
+                    //job_id_span.appendChild(textnode);
+                    //crr_div.appendChild(job_id_span);
                     //
-                    var job_date_span = document.createElement("SPAN");
-                    job_date_span.className = "simple-span w-20pc center-container row-center-container";
-                    var job_date = document.createTextNode(crr_job_json['job_date_submitted']);
-                    job_date_span.appendChild(job_date);
-                    crr_div.appendChild(job_date_span);
+                    //var job_date_span = document.createElement("SPAN");
+                    //job_date_span.className = "simple-span w-20pc center-container row-center-container";
+                    //var job_date = document.createTextNode(crr_job_json['job_date_submitted']);
+                    //job_date_span.appendChild(job_date);
+                    //crr_div.appendChild(job_date_span);
                     //
-                    var job_status_span = document.createElement("SPAN");
-                    job_status_span.className = "simple-span w-15pc center-container row-center-container";
+                    //var job_status_span = document.createElement("SPAN");
+                    //job_status_span.className = "simple-span w-15pc center-container row-center-container";
 
-                    var job_status = document.createTextNode(crr_job_json['job_stage']); 
-                    job_status_span.appendChild(job_status);
+                    //var job_status = document.createTextNode(crr_job_json['job_stage']); 
+                    //job_status_span.appendChild(job_status);
 
-                    crr_div.appendChild(job_status_span);
+                    //crr_div.appendChild(job_status_span);
 
-                    var job_download_button = document.createElement("button");
-                    job_download_button.id = crr_job_json['job_id'];
-                    job_download_button.innerHTML = "Download";
-                    job_download_button.className = "btn btn-default down-job-btn";
-                    job_download_button.disabled = true;
-                    crr_div.appendChild(job_download_button);
+                    //var job_download_button = document.createElement("button");
+                    //job_download_button.id = crr_job_json['job_id'] + "2";
+                    //job_download_button.innerHTML = "Download";
+                    //job_download_button.className = "btn btn-default down-job-btn";
+                    //job_download_button.disabled = true;
+                    //crr_div.appendChild(job_download_button);
+
+
+                    var job_download_button2 = document.createElement("button");
+                    job_download_button2.id = crr_job_json['job_id'];
+                    job_download_button2.innerHTML = "Download";
+                    job_download_button2.className = "btn btn-default down-job-btn";
+                    job_download_button2.disabled = true;
 
                     // 
+
+                    var crr_row = tableBody.insertRow(-1);
+                    var cell1 = crr_row.insertCell(0)
+                        var cell2 = crr_row.insertCell(1)
+                        var cell3 = crr_row.insertCell(2)
+                        var cell4 = crr_row.insertCell(3)
+                        var cell5 = crr_row.insertCell(4)
+                        cell1.innerHTML = "  " + joblist[crr_job_json["job_id"]]["wf"]["wf_id"] + "  ";
+                        cell2.innerHTML = "  " + crr_job_json["job_id"] + "  ";
+
+                        cell3.innerHTML = "  " + crr_job_json["job_stage"] + "  " ;
+
+                        var datetime = crr_job_json["job_date_submitted"];
+                        var gmt_datetime = moment.utc(datetime).toString();
+                        cell4.innerHTML = "  " + gmt_datetime + "  ";
+                        cell5.appendChild(job_download_button2);
+
+
                     if (crr_job_json['job_stage'] == "COMPLETED") {
-                        job_status_span.style.backgroundColor = 'green';
-                        job_download_button.disabled = false;
+                        cell3.setAttribute("bgcolor", "#00AA00");
+                        job_download_button2.disabled = false;
                     } else {
-                        job_status_span.style.backgroundColor = 'rgb(255, 153, 102)';
+                        cell3.setAttribute("bgcolor", "#DD9900");
                     }
 
-                    document.getElementById("job-list-div").prepend(crr_div);
+
+
+                    //document.getElementById("job-list-div").prepend(crr_div);
                     if (cnrt == job_list_len - 1) {
-                        closePleaseWaitDiv();
-                        document.getElementById("overlaywrapperjobs").style.display = "block";
-                        document.getElementById("mainDiv").style.pointerEvents = "none";
-                        document.body.style.overflow = "hidden";
+                        setTimeout(function()
+                        {
+                            closePleaseWaitDiv();
+                            document.getElementById("overlaywrapperjobs").style.display = "block";
+                            document.getElementById("mainDiv").style.pointerEvents = "none";
+                            document.body.style.overflow = "hidden";
+                            var jobth = document.getElementById("job-th");
+                            jobth.click();
+                            var wfth = document.getElementById("wf-th");
+                            wfth.click();
+                        }, 2000);
                     }
                 });
             })(i);

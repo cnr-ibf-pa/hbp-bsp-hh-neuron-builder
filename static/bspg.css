@@ -61,6 +61,12 @@
     text-align: left;
 }
 
+.width-95p {
+    max-width: 95%;
+    width: auto;
+    text-align: left;
+}
+
 .height-90p {
     max-height: 90%;
     height: auto;
@@ -772,13 +778,13 @@ div.justify-class:after {
 }
 
 .panel-stat-sub-cont{
-margin:6px;
+    margin:6px;
 }
 
 
 .border-style{
-border-style: solid;
-border-width: 1px;
+    border-style: solid;
+    border-width: 1px;
 }
 
 .uc-t-box{
@@ -798,7 +804,7 @@ border-width: 1px;
     margin-top: 5px;
     color:#666;
     font-size: 18px;
-background-color: rgba(5,80,10,0.2);
+    background-color: rgba(5,80,10,0.2);
 }
 
 
@@ -812,13 +818,70 @@ background-color: rgba(5,80,10,0.2);
 .title-analytics.bck{
     border-top-left-radius:6px 6px;
     border-top-right-radius:6px 6px;
-background-color: rgba(5,80,10,0.2);
-padding: 5px;
+    background-color: rgba(5,80,10,0.2);
+    padding: 5px;
 }
 
 .rt-pl-cnt {
-min-width: 50px;
+    min-width: 50px;
 }
+
 .pl-cnt {
-min-width: 80px;
+    min-width: 80px;
+}
+
+table.sortable th:not(.sorttable_sorted):not(.sorttable_sorted_reverse):not(.sorttable_nosort):after { 
+    content: " \25B4\25BE" 
+}
+
+table {
+    width: 100%;
+    padding: 16px;
+}
+
+td {
+    text-align: center;
+    padding-bottom: 14px;
+    padding-top: 14px;
+    padding-left: 14px;
+    padding-right: 14px;
+    margin-top: 12px;
+    margin-bottom: 12px;
+    margin-left: 12px;
+    margin-right: 12px;
+}
+
+th {
+    cursor: pointer;
+    background-color: #92929292;
+}
+
+.tth {
+    padding: 10px;
+    margin:8px;
+    text-align:left;
+}
+
+.ttd {
+    padding: 8px;
+    margin:6px;
+    text-align:left;
+}
+
+td {
+    padding: 8px;
+    margin:6px;
+    text-align:left;
+}
+
+tr:nth-child(even) {
+    background-color: #e2e2e2;
+    padding-bottom: 14px;
+    padding-top: 14px;
+    padding-left: 14px;
+    padding-right: 14px;
+    margin-top: 12px;
+    margin-bottom: 12px;
+    margin-left: 12px;
+    margin-right: 12px;
 }

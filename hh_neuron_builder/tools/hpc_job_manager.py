@@ -77,10 +77,10 @@ class Nsg:
             # extract job handle
             r = requests.get(selfuri, auth=(CRA_USER, PASSWORD), headers=cls.headers)
             root = xml.etree.ElementTree.fromstring(r.text)
-            jobname = root.find('jobHandle').text
-            for child in root:
-                if child.tag=='jobHandle':
-                    jobname = child.text
+            if not r.status_code == 200:
+                jobname = "No jobname because error in submission"
+            else:
+                jobname = root.find('jobHandle').text
 
             response = {"status_code":r.status_code, "outputuri":outputuri, \
                     "selfUri":selfuri, "jobname":jobname, "zfName":zfName}
@@ -102,6 +102,8 @@ class Nsg:
         r_all = requests.get(URL + "/job/" + CRA_USER, auth=(CRA_USER, \
             PASSWORD), headers=cls.headers)
         root_all = xml.etree.ElementTree.fromstring(r_all.text)
+
+        # create final dictionary
         job_list_dict = collections.OrderedDict()
         job_list = root_all.find('jobs')
         for job in job_list.findall('jobstatus'):

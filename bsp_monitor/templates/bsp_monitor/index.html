@@ -1,5 +1,5 @@
 {% load static  %}
-{% load oidc_session %} 
+{% load oidc_session %}
 
 <!DOCTYPE html>
 <html>
@@ -16,7 +16,6 @@
         <script type="text/javascript" src="{% static 'palette.js' %}"></script>
         <script type="text/javascript" src="{% static 'bsp_monitor/js/ga.js' %}"></script>
         <script type="text/javascript" src="{% static 'bsp_monitor/js/index.js' %}"></script>
-
     </head>
 
     <body id="main-body">
@@ -126,41 +125,31 @@
                             </div>
                         </div>
                         <div class="panel-body">
-                            <!--<div class="col-sm-6 align-center">-->
+                            <div class="col-sm-6 align-center">
                                 <div class="stats-small-container">
                                     <strong>BSP usage statistics</strong>
                                 </div>
                                 <div id="google-analytics-div">
-                                    <div class="clearfix">
-                                        <div class="img-container">
-                                            <div class="uc-t-box" style="padding-top:10px;">
-                                                <p class="title-analytics" id="locations">Locations</p>
-                                                <figure class="hist-geo-boxes center-container hist-pl-cnt" style="width:99%;" id="embed-geo"></figure>
-                                             </div>
-                                        </div>
-                                        <div class="img-container">
-                                            <div class="uc-t-box">
-                                                <figure class="hist-boxes vert-align hist-pl-cnt" id="session-num"></figure>
-                                            </div>
-                                         </div>
-                                        <div class="img-container">
-                                            <div class="uc-t-box">
-                                                <figure class="hist-boxes vert-align hist-pl-cnt" id="user-num"></figure>
-                                            </div>
-                                        </div>
+                                    <div class="uc-t-box" style="padding-top:10px;">
+                                        <p class="title-analytics" id="locations"></p>
+                                        <figure class="hist-boxes center-container hist-pl-cnt" style="width:99%;" id="embed-geo"></figure>
+                                    </div>
+                                    <div class="uc-t-box">
+                                        <figure class="hist-boxes vert-align hist-pl-cnt" id="session-num"></figure>
+                                    </div>
+                                    <div class="uc-t-box">
+                                        <figure class="hist-boxes vert-align hist-pl-cnt" id="user-num"></figure>
                                     </div>
                                 </div>
-                            <!--</div>-->
-                            <!--<div class="col-sm-6 align-center">-->
+                            </div>
+                            <div class="col-sm-6 align-center">
                                 <div class="stats-small-container">
                                     <strong>Use case cloning</strong>
                                 </div>
-                                <div class="clearfix">
-                                        <div class="img-container" id="uc-hist-div">
-                                        <div class="hist-pl-cnt chart col-sm-12" id="user-chart2"></div>
-                                        </div>
+                                <div class="" id="uc-hist-div">
+                                    <div class="hist-pl-cnt chart col-sm-12" id="user-chart2"></div>
                                 </div>
-                            <!--</div>-->
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -177,36 +177,36 @@
             <label for="runtime">Runtime (max 48h)</label>
             <br>
             <input type="number" name="runtime" id="runtime" max="48" step="0.5"><br>
-                                                                      <br>
-                                                                      <br>
-                                                                      <br>
-                                                                      <div class="param-title-div">
-                                                                          <strong>HPC system</strong>
-                                                                      </div>
-                                                                      <br>
-                                                                      <!--
-                                                                      <input type="radio" name="hpc_sys" value="marconi" disabled>
-                                                                      <label for="marconi">MARCONI</label>
-                                                                      <br>
-                                                                      <br>
-                                                                      <input type="radio" name="hpc_sys" value="jureca" disabled>
-                                                                      <label for="jureca">JURECA</label>
-                                                                      <br>
-                                                                      <br>
-                                                                      -->
-                                                                      <input type="radio" name="hpc_sys" value="nsg" checked>
-                                                                      <label for="nsg">NeuroScience Gateway (NSG)</label>
-                                                                      <br>
-                                                                      <label for="username_submit">Username</label>
-                                                                      <input id="username_submit" required type="text" name="username_submit">
-                                                                      <br>
-                                                                      <label for="password_submit">Password</label>
-                                                                      <input id="password_submit" required type="password"
-                                                                                                           name="password_submit">
-                                                                      <br>
-                                                                      <br>
-                                                                      <button id="cancel-param-btn" type="button" class="btn btn-primary closebtn">Cancel</button>
-                                                                      <button id="apply-param" class="btn btn-primary">Apply</button>
+            <br>
+            <br>
+            <br>
+            <div class="param-title-div">
+                <strong>HPC system</strong>
+            </div>
+            <br>
+            <!--
+                <input type="radio" name="hpc_sys" value="marconi" disabled>
+                <label for="marconi">MARCONI</label>
+                <br>
+                <br>
+                <input type="radio" name="hpc_sys" value="jureca" disabled>
+                <label for="jureca">JURECA</label>
+                <br>
+                <br>
+            -->
+            <input type="radio" name="hpc_sys" value="nsg" checked>
+            <label for="nsg">NeuroScience Gateway (NSG)</label>
+            <br>
+            <label for="username_submit">Username</label>
+            <input id="username_submit" required type="text" name="username_submit">
+            <br>
+            <label for="password_submit">Password</label>
+            <input id="password_submit" required type="password"
+                                                 name="password_submit">
+            <br>
+            <br>
+            <button id="cancel-param-btn" type="button" class="btn btn-primary closebtn">Cancel</button>
+            <button id="apply-param" class="btn btn-primary">Apply</button>
         </form>
     </div>
 </div>
@@ -222,14 +222,14 @@
             </div>
             <br>
             <!--
-            <input type="radio" name="hpc_sys_fetch" value="marconi" disabled>
-            <label for="marconi">MARCONI</label>
-            <br>
-            <br>
-            <input type="radio" name="hpc_sys_fetch" value="jureca" disabled>
-            <label for="jureca">JURECA</label>
-            <br>
-            <br>
+                <input type="radio" name="hpc_sys_fetch" value="marconi" disabled>
+                <label for="marconi">MARCONI</label>
+                <br>
+                <br>
+                <input type="radio" name="hpc_sys_fetch" value="jureca" disabled>
+                <label for="jureca">JURECA</label>
+                <br>
+                <br>
             -->
             <input type="radio" name="hpc_sys_fetch" value="nsg" checked>
             <label for="nsg">NeuroScience Gateway (NSG)</label>
@@ -295,10 +295,32 @@
 
 <!-- Fetched jobs div -->
 <div id="overlaywrapperjobs" class="overlay-wrapper">
-    <div id="overlayjobs" class="overlay-content width-80p height-90p">
-        <div id="fetch-job-title" class="param-title-div">
-            <strong>Download job results</strong>
+    <div id="overlayjobs" class="overlay-content width-95p height-90p">
+        <div class="center-container row-center-container">
+            <div class="center-container row-center-container">
+                <div id="fetch-job-title">
+                    <h4><strong>Download job results</strong></h4>
+                </div>
+            </div>
+
+            <div class="center-container row-center-container">
+                <table id="job-list-table" class="sortable" cellpadding="10">
+                    <thead> 
+                        <tr> 
+                            <th id="wf-th" class="tth">Workflow ID</th> 
+                            <th id="job-th" class="tth">Job ID</th> 
+                            <th class="tth">Status</th> 
+                            <th class="tth">Date/Time</th> 
+                            <th class="sorttable_nosort"></th> 
+                        </tr> 
+                        <tbody id="job-list-body">
+                        </tbody>
+                    </thead> 
+
+                </table>
+            </div>
         </div>
+
         <div id="job-list-div" class="center-container row-center-container"
                                style="max-height:30%;">
         </div>
@@ -315,7 +337,7 @@
         <form id="uploadFileForm" action="" method="POST" enctype="multipart/form-data">{% csrf_token %}
             <div id="uploadTitleDiv" class="param-title-div">
             </div>
-            <br>
+        <br>
         <div id="upload_sim_img_div">
             <img src="{% static "img/expected_sim_zip.png"  %}"
                  style="width:100%" alt="Expected sim zip file">
