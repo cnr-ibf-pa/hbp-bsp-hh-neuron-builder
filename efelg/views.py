@@ -47,6 +47,10 @@ from tools import manage_json
 from tools import resources
 from tools import manage_collab_storage
 
+# import common tools library for the bspg project
+sys.path.append(os.path.join(settings.BASE_DIR))
+from ctools import manage_auth
+
 # set logging up
 logging.basicConfig(stream=sys.stdout)
 logger = logging.getLogger()
@@ -63,43 +67,47 @@ def overview(request):
 
     # if not in DEBUG mode check whether authentication token is valid
     if not settings.DEBUG:
-        # extract context
-        context = request.GET.get('ctx')
-        request.session['ctx'] = context
-        access_token = get_access_token(request.user.social_auth.get())
 
-        # if context is empty redirect to appropriate page
+        # read context
+        context = request.GET.get('ctx', None)
+
+        # if not ctx exit the application 
         if not context:
             return render(request, 'efelg/hbp_redirect.html')
-        else:
-            my_url = settings.HBP_MY_USER_URL
-            hbp_collab_service_url = settings.HBP_COLLAB_SERVICE_URL + 'collab/context/'
-            try:
-                headers = {'Authorization': \
-                    get_auth_header(request.user.social_auth.get())}
-            except:
-                request.session['exit_message'] = 'Unexpected error: ' + \
-                'sys.exc_info()[0]'
-                return render(request, 'efelg/hbp_redirect.html')
-         
-            # request information on current user
-            res = requests.get(my_url, headers = headers)
-               
-            if res.status_code != 200:
-                return render(request, 'efelg/hbp_redirect.html')
 
-            res_dict = res.json()
-    
-            username = res_dict['username']
-            userid = res_dict['id']
+        # set context
+        request.session['ctx'] = context
 
-            collab_res = requests.get(hbp_collab_service_url + context, \
-                    headers = headers)
+        # get headers for requests
+        headers = {'Authorization': \
+            get_auth_header(request.user.social_auth.get())}
 
-            if res.status_code != 200:
-                return render(request, 'efelg/hbp_redirect.html')
+        # build path for getting credentials 
+        my_url = settings.HBP_MY_USER_URL
+        hbp_collab_service_url = settings.HBP_COLLAB_SERVICE_URL + 'collab/context/'
+
+        # request user and collab details
+        res = requests.get(my_url, headers = headers)
+        collab_res = requests.get(hbp_collab_service_url + context, \
+                headers = headers)
+        
+        if res.status_code != 200 or collab_res.status_code != 200:
+            manage_auth.Token.renewToken(request)
             
-            collab_id = collab_res.json()['collab']['id']
+            headers = {'Authorization': \
+                get_auth_header(request.user.social_auth.get())}
+            
+            res = requests.get(my_url, headers = headers)
+            collab_res = requests.get(hbp_collab_service_url + context, \
+                headers = headers)
+
+        if res.status_code != 200 or collab_res.status_code != 200:
+            return render(request, 'efelg/hbp_redirect.html')
+
+        # extract information on user credentials and collab
+        username = res.json()['username']
+        userid = res.json()['id']
+        collab_id = collab_res.json()['collab']['id']
     else:
         username = 'test'
         headers = {}
@@ -206,11 +214,16 @@ def select_features(request):
     '''
     This function serves the application select-features page
     '''
+
+    # if not ctx exit the application 
+    if not "ctx" in request.session:
+        return render(request, 'efelg/hbp_redirect.html')
+
+    # read features groups
     with open(os.path.join(settings.BASE_DIR, 'static', \
             'efelg', 'efel_features_final.json')) as json_file:
         features_dict = json.load(json_file) 
     feature_names = efel.getFeatureNames()
-    #selected_traces_rest = request.POST.get('csrfmiddlewaretoken')
     selected_traces_rest = request.POST.get('data')
     selected_traces_rest_json = json.loads(selected_traces_rest)
     request.session['selected_traces_rest_json'] = selected_traces_rest_json
@@ -222,20 +235,16 @@ def select_features(request):
 
 @login_required(login_url='/login/hbp/')
 def hbp_redirect(request):
-
-#    request.session.flush()                                        
     return render(request, 'efelg/hbp_redirect.html')
-
-
-@login_required(login_url='/login/hbp/')
-def exit_efelg(request):
-    return redirect('/efelg/overview/')
-
-
 
 # build .json files containing data and metadata
 @login_required(login_url='/login/hbp/')
 def generate_json_data(request):
+
+    # if not ctx exit the application 
+    if not "ctx" in request.session:
+        return render(request, 'efelg/hbp_redirect.html')
+
     data_dir = request.session['data_dir']
     json_dir = request.session['json_dir']
     all_files = os.listdir(data_dir)
@@ -273,12 +282,16 @@ def generate_json_data(request):
     return HttpResponse("")
 
 
-#####
-'''
-Render the efel/show_traces.html page
-'''
 @login_required(login_url='/login/hbp/')
 def show_traces(request):
+    '''
+    Render the efel/show_traces.html page
+    '''
+
+    # if not ctx exit the application 
+    if not "ctx" in request.session:
+        return render(request, 'efelg/hbp_redirect.html')
+
     accesslogger.info(resources.string_for_log('show_traces', request))
     time_info = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
     username = request.session['username']
@@ -292,12 +305,16 @@ def show_traces(request):
     return render(request, 'efelg/show_traces.html')
 
 
-##### 
-'''
-Retrieve the list of .json files to be displayed for trace selection
-'''
 @login_required(login_url='/login/hbp/')
 def get_list(request):
+    '''
+    Retrieve the list of .json files to be displayed for trace selection
+    '''
+
+    # if not ctx exit the application 
+    if not "ctx" in request.session:
+        return render(request, 'efelg/hbp_redirect.html')
+
     
     # final list of authorized files
     allfiles = []
@@ -336,6 +353,11 @@ def get_list(request):
 #####
 @login_required(login_url='/login/hbp/')
 def get_data(request, cellname=""):
+
+    # if not ctx exit the application 
+    if not "ctx" in request.session:
+        return render(request, 'efelg/hbp_redirect.html')
+
 
     disp_sampling_rate = 5000
     json_dir = request.session['json_dir']
@@ -391,6 +413,11 @@ def get_data(request, cellname=""):
 #####
 @login_required(login_url='/login/hbp/')
 def extract_features(request):
+
+    # if not ctx exit the application 
+    if not "ctx" in request.session:
+        return render(request, 'efelg/hbp_redirect.html')
+
     data_dir = request.session['data_dir']
     json_dir = request.session['json_dir']
     selected_traces_rest_json = request.session['selected_traces_rest_json'] 
@@ -536,6 +563,11 @@ def extract_features(request):
 #####
 @login_required(login_url='/login/hbp/')
 def results(request):
+
+    # if not ctx exit the application 
+    if not "ctx" in request.session:
+        return render(request, 'efelg/hbp_redirect.html')
+
     '''Render final page containing the link to the result zip file if any'''
 
     check_features = request.POST.getlist('crr_feature_check_features')
@@ -546,6 +578,11 @@ def results(request):
 
 @login_required(login_url='/login/hbp/')
 def download_zip(request):
+
+    # if not ctx exit the application 
+    if not "ctx" in request.session:
+        return render(request, 'efelg/hbp_redirect.html')
+
     accesslogger.info(resources.string_for_log('download_zip', request))
     result_file_zip = request.session['result_file_zip']
     result_file_zip_name = request.session['result_file_zip_name']
@@ -559,6 +596,11 @@ def download_zip(request):
 #####
 @login_required(login_url='/login/hbp/')
 def features_dict(request):
+
+    # if not ctx exit the application 
+    if not "ctx" in request.session:
+        return render(request, 'efelg/hbp_redirect.html')
+
     '''Render the feature dictionary containing all feature names, grouped by feature type'''
     with open(os.path.join(settings.BASE_DIR, 'static', 'efelg',\
             'efel_features_final.json')) as json_file:
@@ -568,14 +610,12 @@ def features_dict(request):
 
 #####
 @login_required(login_url='/login/hbp/')
-def _reverse_url(view_name, context_uuid):
-    """generate an URL for a view including the ctx query param"""
-    return '%s?ctx=%s' % (reverse(view_name), context_uuid)
-
-
-#####
-@login_required(login_url='/login/hbp/')
 def features_json(request):
+
+    # if not ctx exit the application 
+    if not "ctx" in request.session:
+        return render(request, 'efelg/hbp_redirect.html')
+
     full_user_crr_res_res_folder = request.session['full_user_crr_res_res_folder']
     with open(os.path.join(full_user_crr_res_res_folder, 'features.json')) \
             as json_file:
@@ -586,6 +626,11 @@ def features_json(request):
 #####
 @login_required(login_url='/login/hbp/')
 def features_json_path(request):
+
+    # if not ctx exit the application 
+    if not "ctx" in request.session:
+        return render(request, 'efelg/hbp_redirect.html')
+
     abs_url = request.session['media_abs_crr_user_res']
     full_feature_json_file = os.path.join(abs_url, 'features.json')
     return HttpResponse(json.dumps({'path' : os.path.join(os.sep, \
@@ -594,12 +639,22 @@ def features_json_path(request):
 #####
 @login_required(login_url='/login/hbp/')
 def features_json_files_path(request):
+
+    # if not ctx exit the application 
+    if not "ctx" in request.session:
+        return render(request, 'efelg/hbp_redirect.html')
+
     abs_url = request.session['media_abs_crr_user_res']
     return HttpResponse(json.dumps({'path' : os.path.join(os.sep, abs_url)}))
 
 #####
 @login_required(login_url='/login/hbp/')
 def protocols_json_path(request):
+
+    # if not ctx exit the application 
+    if not "ctx" in request.session:
+        return render(request, 'efelg/hbp_redirect.html')
+
     rel_url = request.session['media_rel_crr_user_res']
     full_feature_json_file = os.path.join(rel_url, 'protocols.json')
     return HttpResponse(json.dumps({'path' : os.path.join(os.sep, \
@@ -609,6 +664,11 @@ def protocols_json_path(request):
 #####
 @login_required(login_url='/login/hbp/')
 def features_pdf_path(request):
+
+    # if not ctx exit the application 
+    if not "ctx" in request.session:
+        return render(request, 'efelg/hbp_redirect.html')
+
     rel_url = request.session['media_rel_crr_user_res']
     full_feature_json_file = os.path.join(rel_url, 'features_step.pdf')
     return HttpResponse(json.dumps({'path' : os.path.join(os.sep, \
@@ -699,6 +759,11 @@ def get_directory_structure(request):
     """ 
     Creates a nested dictionary that represents the folder structure of rootdir
     """
+
+    # if not ctx exit the application 
+    if not "ctx" in request.session:
+        return render(request, 'efelg/hbp_redirect.html')
+
     accesslogger.info(resources.string_for_log('get_directory_structure', \
             request))
     rootdir = os.path.join(settings.MEDIA_ROOT, 'efel_data', 'app_data')
@@ -763,3 +828,4 @@ def upload_zip_file_to_storage(request):
 
     # render to html page
     return HttpResponse("") 
+

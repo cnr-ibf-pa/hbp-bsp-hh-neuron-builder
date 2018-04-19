@@ -30,14 +30,14 @@ SESSION_COOKIE_AGE = 86400
 
 if DEV:
     from dev_config import *
-    from keys.dev_app_key import *
+    from bspg_keys.dev_app_key import *
     if not DEBUG:
-        from keys.dev_auth_key import *
+        from bspg_keys.dev_auth_key import *
 else:
     from prod_config import *
-    from keys.prod_app_key import *
+    from bspg_keys.prod_app_key import *
     if not DEBUG:
-        from keys.prod_auth_key import*
+        from bspg_keys.prod_auth_key import*
 
 
 ALLOWED_HOSTS = [

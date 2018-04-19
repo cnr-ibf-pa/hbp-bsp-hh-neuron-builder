@@ -27,7 +27,6 @@ urlpatterns = [
     url(r'^upload_files', views.upload_files),
     url(r'^upload_zip_file_to_storage', views.upload_zip_file_to_storage),
     url(r'^hbp-redirect/$', views.hbp_redirect),
-    url(r'^exit-efelg/$', views.exit_efelg),
 ]
 
 if settings.DEBUG:

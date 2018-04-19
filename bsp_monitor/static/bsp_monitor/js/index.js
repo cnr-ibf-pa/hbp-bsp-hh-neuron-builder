@@ -34,9 +34,12 @@ $(document).ready(function(){
     });
 
     function reloadAll(){
+        
         plotGeo(IDS, FILTERS);
-        plotUserNum(IDS, FILTERS);
         plotSessionNum(IDS, FILTERS);
+        plotUserNum(IDS, FILTERS);
+        plotUserCum(IDS, FILTERS);//
+        plotPagesView(IDS, FILTERS); //
         plotHistoryUsecases();
         plotRtUsers(IDS, RT_FILTERS);
         plotRtPages(IDS, RT_FILTERS);
@@ -87,6 +90,8 @@ function executeHistoryStat(){
     plotGeo(IDS, FILTERS);
     plotSessionNum(IDS, FILTERS);
     plotUserNum(IDS, FILTERS);
+    plotUserCum(IDS, FILTERS); //
+    plotPagesView(IDS, FILTERS); //
     plotHistoryUsecases();
 }
 
@@ -144,6 +149,7 @@ function plotRtPages(IDS, FILTERS){
                     labels[row[0]] = labels[row[0]] ? labels[row[0]]:row[1];
                 }
             });
+
             if (Object.getOwnPropertyNames(pages).length == 0){
                 data = {
                     datasets:[{data:[1],
@@ -199,15 +205,18 @@ function plotHistoryUsecases(){
     $.getJSON('/bsp-monitor/get-uc/' + dates[0] + '/' + dates[1] + '/', function (resp){
         var uc_hist_div = document.getElementById("uc-hist-div");
         uc_hist_div.innerHTML = "";
+        
         var all_data = resp["uc_topics_full"];
         for (var key in all_data){
-            var crr_global_container = document.createElement("div");
+            var crr_global_container=document.createElement("div");
+            var crr_container = document.createElement("div");
             var crr_figure = document.createElement("figure");
             var crr_legend_container = document.createElement("div");
             var crr_legend = document.createElement("ol");
             var crr_legend_id = key + "-legend";
 
-            crr_global_container.setAttribute("class", "uc-t-box");
+            crr_container.setAttribute("class", "uc-t-box");
+            crr_global_container.setAttribute("class","use-case-box");
             //
             crr_figure.setAttribute('id', key);
             crr_figure.setAttribute("class", "hist-boxes hist-pl-cnt");
@@ -218,9 +227,12 @@ function plotHistoryUsecases(){
             crr_legend.setAttribute("id", crr_legend_id);
             //
 
-            crr_global_container.appendChild(crr_figure);
-            crr_global_container.appendChild(crr_legend);
+            crr_container.appendChild(crr_figure);
+            crr_container.appendChild(crr_legend);
+            crr_global_container.appendChild(crr_container);
+
             uc_hist_div.appendChild(crr_global_container);
+            
             var crr_t_labels = [];
             var crr_t_plot_labels = [];
             var crr_t_data = [];
@@ -237,8 +249,7 @@ function plotHistoryUsecases(){
                     crr_t_plot_labels.push("");
                     crr_t_data.push(resp["uc_topics_full"][key][yy]);
                 }
-            } 
-
+            }
             data = {
                 labels: crr_t_labels,
                 datasets: [{data: crr_t_data,
@@ -253,7 +264,8 @@ function plotHistoryUsecases(){
                 // The data for our dataset
                 data: data,
                 options: {
-                    legend: {display: false},
+                    legend: {
+                        display: false},
                     title: {
                         display: true,
                         text: 'Number of cloned use cases for: ' + key,
@@ -289,7 +301,7 @@ function generateLegend(id, items) {
         var color = item.color || item.fillColor;
         var label = item.label;
         return '<li><i style="background:' + color + '"></i>' +
-            escapeHtml(label) + '</li>';
+          escapeHtml(label) + '</li>';
     }).join('');
 }
 
@@ -386,7 +398,7 @@ function plotSessionNum(IDS, FILTERS){
                 pointRadius : 0,
                 pointHoverRadius : 3,
                 label: "# sessions",
-                backgroundColor: 'rgba(0, 102, 0, 0.4)',
+                backgroundColor:'rgba(0, 102, 0, 0.4)',
             },
             ]
         };
@@ -397,9 +409,10 @@ function plotSessionNum(IDS, FILTERS){
             // The data for our dataset
             data: data,
             options: {
-                legend: {display: false},
+                legend: {
+                    display: false},
                 title: {
-                    display: true,
+                    display: false,
                     text: 'Number of sessions',
                     fontSize: 16,
                 },
@@ -407,6 +420,7 @@ function plotSessionNum(IDS, FILTERS){
         });
     });
 }
+
 /* plot # of users */
 function plotUserNum(IDS, FILTERS){
     var dates = getDates();
@@ -414,27 +428,64 @@ function plotUserNum(IDS, FILTERS){
         'ids': IDS,
         'filters': FILTERS,
         'dimensions': 'ga:date',
-        'metrics': 'ga:users',
+        'metrics': 'ga:users, ga:newUsers',
         'start-date': dates[0],
         'end-date': dates[1]
     });
+   
     Promise.all([user_num]).then(function(results) {
 
         var data1 = results[0].rows.map(function(row) { return +row[1]; });
+        var data2 = results[0].rows.map(function(row) { return +row[2]; });
+        
         var labels = results[0].rows.map(function(row) { return +row[0]; });
         labels = labels.map(function(label) {
             return moment(label, 'YYYYMMDD').format('DD-MM');
         });
-
+         
+        var data3=[];
+        for (var i = 0, len = data1.length; i < len; i++) {
+            data3[i]=data1[i]-data2[i];
+        }
+        
         var data = {
             labels : labels,
             datasets : [
-            {
-                data : data1,
+            {     
+                label: 'All users', 
+                fillColor : 'rgba(221,185,209,0.5)',
+                pointColor : 'rgba(221,185,209,1)',          
                 pointRadius : 0,
                 pointHoverRadius : 3,
-                backgroundColor: 'rgba(251, 85, 85, 0.4)',
+                backgroundColor: 'rgba(221,185,209,0.5)',
+                borderColor:'rgba(221,185,209,1)',
+                borderWidth: 0.8,
+                data : data1
             },
+            {   
+                label:'New users',
+                pointRadius : 0,
+                pointHoverRadius : 3,
+                fillColor : 'rgba(197,134,176,0.6)',
+                pointColor : 'rgba(197,134,176,1)',
+                backgroundColor: 'rgba(197,134,176,0.6)',
+                borderColor:'rgba(197,134,176,1)',
+                borderWidth: 0.8,
+                data : data2
+               
+            },
+             {   
+                label:'Old users',
+                pointRadius : 0,
+                pointHoverRadius : 3,
+                fillColor : 'rgba(239,74,129,0.4)',
+                pointColor : 'rgba(239,74,129,1)',
+                backgroundColor: 'rgba(239,74,129,0.4)',
+                borderColor:'rgba(239,74,129,1)',
+                borderWidth: 0.8,
+                data : data3
+            },
+           
             ]
         };
         var ctx = makeCanvas('user-num');
@@ -442,19 +493,225 @@ function plotUserNum(IDS, FILTERS){
             type: 'line',
             // The data for our dataset
             data: data,
-            label: "# users",
             options: {
-                legend: {display: false},
+                legend: {
+                    display: false,
+                        },
                 title: {
-                    display: true,
+                    display: false,
                     text: 'Number of users',
                     fontSize: 16,
                 },
             }
         });
+         generateLegend('legend-plotUserNum-container', data.datasets);
     });
 }
 
+function plotUserCum(IDS, FILTERS){
+    var dates = getDates();
+    var user_cum = query({
+        'ids': IDS,
+        'filters': FILTERS,
+        'dimensions': 'ga:date',
+        'metrics': 'ga:users, ga:newUsers',
+        'start-date': dates[0],
+        'end-date': dates[1]
+    });
+
+    Promise.all([user_cum]).then(function(results) {
+
+        var data1 = results[0].rows.map(function(row) { return +row[1]; });
+        var data2 = results[0].rows.map(function(row) { return +row[2]; });
+        
+        var labels = results[0].rows.map(function(row) { return +row[0]; });
+        labels = labels.map(function(label) {
+            return moment(label, 'YYYYMMDD').format('DD-MM');
+        });
+         
+        var data3=[];
+        for (var i = 0, len = data1.length; i < len; i++) {
+            data3[i]=data1[i]-data2[i];
+        }
+        
+        var cum_user=[];
+            cum_user[0]=data1[0];
+        var cum_newuser=[];
+            cum_newuser[0]=data2[0];
+        var cum_olduser=[];
+            cum_olduser[0]=data3[0];
+
+        for(var i=1, len = data1.length; i < len; i++){
+            cum_user[i]=data1[i]+cum_user[i-1];
+            cum_newuser[i]=data2[i]+cum_newuser[i-1];
+            cum_olduser[i]=data3[i]+cum_olduser[i-1];
+        }
+        //console.log(Object.values(data1));
+        var data = {
+            labels : labels,
+            datasets : [
+            {     
+                label: 'All users', 
+                fillColor : 'rgba(221,185,209,0.5)',
+                pointColor : 'rgba(221,185,209,1)',          
+                pointRadius : 0,
+                pointHoverRadius : 3,
+                backgroundColor: 'rgba(221,185,209,0.5)',
+                borderColor:'rgba(221,185,209,1)',
+                borderWidth: 0.8,
+                data : cum_user
+            },
+            {   
+                label:'New users',
+                pointRadius : 0,
+                pointHoverRadius : 3,
+                fillColor : 'rgba(197,134,176,0.6)',
+                pointColor : 'rgba(197,134,176,1)',
+                backgroundColor: 'rgba(197,134,176,0.6)',
+                borderColor:'rgba(197,134,176,1)',
+                borderWidth: 0.8,
+                data : cum_newuser
+               
+            },
+             {   
+                label:'Old users',
+                pointRadius : 0,
+                pointHoverRadius : 3,
+                fillColor : 'rgba(239,74,129,0.4)',
+                pointColor : 'rgba(239,74,129,1)',
+                backgroundColor: 'rgba(239,74,129,0.4)',
+                borderColor:'rgba(239,74,129,1)',
+                borderWidth: 0.8,
+                data : cum_olduser
+            },
+            ]
+        };
+     
+        var ctx = makeCanvas('user-cum');
+        var chart = new Chart(ctx, {
+            type: 'line',
+            // The data for our dataset
+            data: data,
+            options: {
+                legend: {
+                   position: 'top',
+                   display: false,
+                        },
+                title: {
+                    display: false,
+                    text: 'Cumulative number users',
+                    fontSize: 16,
+                },
+            }
+        });
+        generateLegend('legend-plotUserCum-container', data.datasets);
+    });
+
+}
+/*generate random color rgb*/
+function rgbColor(){
+     function getRandomInt(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+        //generate random red, green and blue intensity
+        var r = getRandomInt(0, 255);
+        var g = getRandomInt(0, 255);
+        var b = getRandomInt(0, 255);
+        return "rgb(" + r + "," + g + "," + b + ")";
+}
+
+/* plot # number page visited */
+function plotPagesView(IDS, FILTERS){
+    var dates = getDates();
+    var time=[];
+        query({
+            'ids': IDS,
+            'filters': FILTERS,
+            'dimensions': 'ga:date',
+            'metrics': 'ga:pageviews',
+            'start-date': dates[0],
+            'end-date': dates[1]
+        }).then(function(response) {
+
+        response.rows.forEach(function(row, i) {
+            time.push(moment(row[0], 'YYYYMMDD').format('DD-MM'));
+        });
+    });
+        query({
+            'ids': IDS,
+            'filters': FILTERS,
+            'dimensions': 'ga:pagePath, ga:pageTitle, ga:date',
+            'metrics': 'ga:pageviews',
+            'sort': 'ga:pagePath',
+            'start-date': dates[0],
+            'end-date': dates[1]
+        })
+        .then(function(response) {
+
+        var pages = [], urls=[], data0=[];
+
+        response.rows.forEach(function(row, i) {
+       
+        if(urls.indexOf(row[0]) == -1){   
+                urls.push(row[0]);
+        }
+       
+        pages.push([row[0], +row[3], moment(row[2], 'YYYYMMDD').format('DD-MM'), row[1].split("-")]);
+        data0.push(row[0]); //Url
+        });
+   
+        var ind=[], value=[], j=0;
+        for(var i=0, len=urls.length; i<len; i++){
+            var v=[];
+            ind.push(data0.indexOf(urls[i]));
+
+            for(;j<ind[i]; j++){
+                v.push(pages[j]);
+            }
+            value.push(v);
+        }
+        
+        var vet=[];
+       
+        for(var i=2, len=value.length; i<len; i++){
+            var x=getData(time,value[i]);
+            var col=rgbColor();
+            vet.push({label:x[1], data:x[0],pointRadius:0,pointHoverRadius:3, backgroundColor:'rgb(0, 0, 0, 0)',fillColor:col,borderColor:col, borderWidth:1.5})
+        }
+        var data={
+            labels:time,
+            datasets:vet
+        }
+
+        var ctx = makeCanvas('page-view');
+        var chart = new Chart(ctx, {
+            type: 'line',
+            // The data for our dataset
+            data: data,
+            labels : time,
+            options: {
+                legend: {display: false},
+                title: {
+                    display: false,
+                    text: 'Pages views',
+                    fontSize: 16,
+                },
+            }
+        });
+        generateLegend('legend-plotPagesView-container', data.datasets);
+   });
+}
+function getData(time,value){
+    var data1=[];
+        for(var i=0, len=time.length; i<len; i++){
+            data1.push(0);
+        }        
+        for(var i=0, len=value.length; i<len; i++){ 
+            var x=time.indexOf(value[i][2]);
+            data1[x]=value[i][1];
+        }
+    return [data1, value[0][3]]
+}
 /* get dates from html element */
 function getDates(){
     var from_day = document.getElementById("from-day").value;
@@ -554,6 +811,8 @@ gapi.analytics.ready(function() {
         plotGeo(IDS, FILTERS);
         plotSessionNum(IDS, FILTERS);
         plotUserNum(IDS, FILTERS);
+        plotUserCum(IDS, FILTERS);//
+        plotPagesView(IDS, FILTERS); //
         plotRtUsecases();
         plotHistoryUsecases();
 

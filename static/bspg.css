@@ -1,11 +1,24 @@
 /* containers */
+
 * {
     box-sizing: border-box;
 }
 .img-container {
+    margin-left: 0px;
     float: left;
     width: 33.33%;
     padding: 5px;
+    display: inline-block;
+    position: relative;
+    margin: auto;
+}
+.use-case-box{
+    width: 33.33%;
+    padding: 5px;
+    display: inline-block;
+    position: relative;
+    margin: auto;
+    vertical-align: baseline;
     display: inline-block;
 }
 .clearfix::after {
@@ -737,7 +750,7 @@ div.justify-class:after {
     color:red}
 }
 
-.Chartjs-figure{height:250px}
+.Chartjs-figure{height:250px;}
 
 .Chartjs-legend{list-style:none;margin:0;padding:1em 0 0;text-align:center}
 
@@ -787,6 +800,14 @@ div.justify-class:after {
     border-width: 1px;
 }
 
+.uc-t-box1{
+    height: 388px;
+    border-radius:6px;
+    box-shadow: 2px 1px 4px 2px #BBBBBB;
+    text-align:center;
+    margin-bottom: 30px;
+    margin-top: 30px;
+}
 .uc-t-box{
     border-radius:6px;
     box-shadow: 2px 1px 4px 2px #BBBBBB;
