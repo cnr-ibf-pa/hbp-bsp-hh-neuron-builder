@@ -13,5 +13,3 @@ bower_components
 bspg/debug.py
 bspg/bspg_keys
 static/bspganalytics.js
-static/epfl_bspg_analytics.js
-static/ibf_bspg_analytics.js

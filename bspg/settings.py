@@ -180,9 +180,14 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
 
 STATIC_POOL = os.path.join(BASE_DIR, 'static_pool')
 
-STATICFILES_DIRS = [
+if os.path.exists(STATIC_POOL):
+
+    STATICFILES_DIRS = [
         STATIC_POOL
-]
+    ]
+else:
+    STATICFILES_DIRS = []
+
 
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
@@ -192,14 +197,14 @@ STATICFILES_FINDERS = (
 
 
 if LOGIN_URL == 'https://bspg.pa.ibf.cnr.it/login/hbp/':
-    shutil.copyfile(os.path.join(STATIC_POOL, 'ibf_bspg_analytics.js'), \
+    shutil.copyfile(os.path.join(STATIC_ROOT, 'ibf_bspg_analytics.js'), \
             os.path.join(STATIC_POOL, 'bspganalytics.js'))
-    shutil.copyfile(os.path.join(STATIC_POOL, 'ibf_bspg_analytics.js'), \
+    shutil.copyfile(os.path.join(STATIC_ROOT, 'ibf_bspg_analytics.js'), \
             os.path.join(STATIC_ROOT, 'bspganalytics.js'))
 elif LOGIN_URL == 'https://bspg.humanbrainproject.eu/login/hbp/':
-    shutil.copyfile(os.path.join(STATIC_POOL, 'epfl_bspg_analytics.js'), \
+    shutil.copyfile(os.path.join(STATIC_ROOT, 'epfl_bspg_analytics.js'), \
             os.path.join(STATIC_POOL, 'bspganalytics.js'))
-    shutil.copyfile(os.path.join(STATIC_POOL, 'epfl_bspg_analytics.js'), \
+    shutil.copyfile(os.path.join(STATIC_ROOT, 'epfl_bspg_analytics.js'), \
             os.path.join(STATIC_ROOT, 'bspganalytics.js'))
 
 BOWER_COMPONENTS_ROOT = BASE_DIR
