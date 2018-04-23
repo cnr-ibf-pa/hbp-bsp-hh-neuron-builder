@@ -180,12 +180,9 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
 
 STATIC_POOL = os.path.join(BASE_DIR, 'static_pool')
 
-if os.path.exists(STATIC_POOL):
-    STATICFILES_DIRS = [
+STATICFILES_DIRS = [
         STATIC_POOL
-    ]
-else:
-    STATICFILES_DIRS = []
+]
 
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
