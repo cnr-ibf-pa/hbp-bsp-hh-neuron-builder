@@ -9,14 +9,14 @@ class GoogleStatManager:
     SCOPE = 'https://www.googleapis.com/auth/analytics.readonly'
 
     # The location of the key file with the key data.
-    KEY_FILEPATH = 'bspg/keys/credentials.json'
+    KEY_FILEPATH = 'bspg/bspg_keys/credentials.json'
 
     # The scope for the OAuth2 request.
     SCOPE_GSHEET = ['https://spreadsheets.google.com/feeds',\
         'https://www.googleapis.com/auth/drive']
 
     # The location of the key file with the key data.
-    KEY_FILEPATH_GSHEET = 'bspg/keys/BSP-Analytics-05a7ae680dc8.json'
+    KEY_FILEPATH_GSHEET = 'bspg/bspg_keys/BSP-Analytics-05a7ae680dc8.json'
 
     # Defines a method to get an access token from the ServiceAccount object.
     @classmethod

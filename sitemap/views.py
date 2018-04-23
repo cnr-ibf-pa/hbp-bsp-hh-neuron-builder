@@ -7,7 +7,7 @@ import logging
 logging.basicConfig(stream=sys.stdout)
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
-from bspg import auth
+from tools import auth
 import urllib
 import requests
 from django.contrib.auth import logout as auth_logout
@@ -120,7 +120,7 @@ def tree_json(request):
             if 'children' not in parent:
                 parent['children'] = []
             parent['children'].append(user)
-    with open('static/flare.json', 'w') as outfile:
+    with open('static/sitemap/flare.json', 'w') as outfile:
         json.dump(users_tree[0], outfile)
     request.session['sitemap'] = users_tree[0]
     return HttpResponse(json.dumps(users_tree[0]))

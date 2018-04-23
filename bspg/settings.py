@@ -72,7 +72,6 @@ INSTALLED_APPS = [
     'hh_neuron_builder',
     'bsp_monitor',
     'djangobower',
-    #'rest_framework',
     'social.apps.django_app.default',
     'hbp_app_python_auth',
     ]
@@ -179,15 +178,10 @@ STATIC_URL = '/static/'
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
 
-
-if LOGIN_URL == 'https://bspg.pa.ibf.cnr.it/login/hbp/':
-    shutil.copyfile(os.path.join(STATIC_ROOT, 'ibf_bspg_analytics.js'), \
-            os.path.join(STATIC_ROOT, 'bspganalytics.js'))
-elif LOGIN_URL == 'https://bspg.humanbrainproject.eu/login/hbp/':
-    shutil.copyfile(os.path.join(STATIC_ROOT, 'epfl_bspg_analytics.js'), \
-            os.path.join(STATIC_ROOT, 'bspganalytics.js'))
+STATIC_POOL = os.path.join(BASE_DIR, 'static_pool')
 
 STATICFILES_DIRS = [
+        STATIC_POOL
 ]
 
 STATICFILES_FINDERS = (
@@ -196,6 +190,17 @@ STATICFILES_FINDERS = (
     'djangobower.finders.BowerFinder',
 )
 
+
+if LOGIN_URL == 'https://bspg.pa.ibf.cnr.it/login/hbp/':
+    shutil.copyfile(os.path.join(STATIC_POOL, 'ibf_bspg_analytics.js'), \
+            os.path.join(STATIC_POOL, 'bspganalytics.js'))
+    shutil.copyfile(os.path.join(STATIC_POOL, 'ibf_bspg_analytics.js'), \
+            os.path.join(STATIC_ROOT, 'bspganalytics.js'))
+elif LOGIN_URL == 'https://bspg.humanbrainproject.eu/login/hbp/':
+    shutil.copyfile(os.path.join(STATIC_POOL, 'epfl_bspg_analytics.js'), \
+            os.path.join(STATIC_POOL, 'bspganalytics.js'))
+    shutil.copyfile(os.path.join(STATIC_POOL, 'epfl_bspg_analytics.js'), \
+            os.path.join(STATIC_ROOT, 'bspganalytics.js'))
 
 BOWER_COMPONENTS_ROOT = BASE_DIR
 

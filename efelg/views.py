@@ -217,7 +217,7 @@ def select_features(request):
 
     # if not ctx exit the application 
     if not "ctx" in request.session:
-        return render(request, 'efelg/hbp_redirect.html')
+        return render(request, 'efelg/hbp_redirect.html', {"status":"KO", "message":"Problem"})
 
     # read features groups
     with open(os.path.join(settings.BASE_DIR, 'static', \
@@ -508,14 +508,20 @@ def extract_features(request):
             'target': target, 'delay': 500, 'nanmean': False, 'logging':False, \
             'nangrace': 0, 'spike_threshold': 1, 'amp_min': 0,
             'strict_stiminterval': {'base': True}}
-    extractor = bpefe.Extractor(full_crr_result_folder, config, use_git=False)
-    extractor.create_dataset()
-    extractor.plt_traces()
-    extractor.extract_features()
-    extractor.mean_features()
-    extractor.plt_features()
-    extractor.feature_config_cells(version="legacy")
-    extractor.feature_config_all(version="legacy")
+    try:
+        extractor = bpefe.Extractor(full_crr_result_folder, config, use_git=False)
+        extractor.create_dataset()
+        extractor.plt_traces()
+        extractor.extract_features()
+        extractor.mean_features()
+        extractor.plt_features()
+        extractor.feature_config_cells(version="legacy")
+        extractor.feature_config_all(version="legacy")
+    except:
+        return render(request, 'efelg/hbp_redirect.html', {"status":"KO", \
+                "message": "An error occured while extracting the features. \
+                Either you selected too many data or the traces were corrupted."})
+
 
     conf_dir = request.session['conf_dir']
     conf_cit = os.path.join(conf_dir, 'citation_list.json')

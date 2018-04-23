@@ -7,16 +7,11 @@
     <title>Electrophys Feature Extraction GUI</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
-
-    {# Bower Dependencies #}
     <link rel="stylesheet" href="{% static 'hbp-collaboratory-theme/dist/css/bootstrap.css' %}">
   </head>
   <body>
     {% hbp_oidc_session_handler request.user %}
     {% block content %}{% endblock %}
-    {# Bower Dependencies #}
     <script type="text/javascript" src="{% static 'jquery/dist/jquery.min.js' %}"></script>
-    <script type="text/javascript" src="{% static 'lodash/dist/lodash.min.js' %}"></script>
-    <script type="text/javascript" src="{% static 'angular/angular.min.js' %}"></script>
   </body>
 </html>
