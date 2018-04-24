@@ -623,20 +623,6 @@ function rgbColor(){
 /* plot # number page visited */
 function plotPagesView(IDS, FILTERS){
     var dates = getDates();
-    var time=[];
-        query({
-            'ids': IDS,
-            'filters': FILTERS,
-            'dimensions': 'ga:date',
-            'metrics': 'ga:pageviews',
-            'start-date': dates[0],
-            'end-date': dates[1]
-        }).then(function(response) {
-
-        response.rows.forEach(function(row, i) {
-            time.push(moment(row[0], 'YYYYMMDD').format('DD-MM'));
-        });
-    });
         query({
             'ids': IDS,
             'filters': FILTERS,
@@ -648,22 +634,30 @@ function plotPagesView(IDS, FILTERS){
         })
         .then(function(response) {
 
-        var pages = [], urls=[], data0=[];
+        var pages = [], data0=[],day=[], title=[];
 
         response.rows.forEach(function(row, i) {
        
-        if(urls.indexOf(row[0]) == -1){   
-                urls.push(row[0]);
+        var t=row[1].split("-");
+        if(title.indexOf(t[0]) == -1){   
+                title.push(t[0]);
         }
-       
-        pages.push([row[0], +row[3], moment(row[2], 'YYYYMMDD').format('DD-MM'), row[1].split("-")]);
-        data0.push(row[0]); //Url
+        if(day.indexOf(+row[2])==-1){
+            day.push(+row[2]);
+        }
+        day.sort();
+        pages.push([t[0], +row[3], moment(row[2], 'YYYYMMDD').format('DD-MM'), row[0]]);
+        data0.push(t[0]); //Url
         });
-   
+
+        var time=[];
+        for(var i=0, len=day.length; i<len; i++){
+            time.push(moment(day[i].toString(), 'YYYYMMDD').format('DD-MM'));
+        }
         var ind=[], value=[], j=0;
-        for(var i=0, len=urls.length; i<len; i++){
+        for(var i=0, len=title.length; i<len; i++){
             var v=[];
-            ind.push(data0.indexOf(urls[i]));
+            ind.push(data0.indexOf(title[i]));
 
             for(;j<ind[i]; j++){
                 v.push(pages[j]);
@@ -710,7 +704,7 @@ function getData(time,value){
             var x=time.indexOf(value[i][2]);
             data1[x]=value[i][1];
         }
-    return [data1, value[0][3]]
+    return [data1, value[0][0]]
 }
 /* get dates from html element */
 function getDates(){
