@@ -16,11 +16,9 @@
               href=
               "{% static 'hbp-collaboratory-theme/dist/css/bootstrap.css' %}">
         <link rel="stylesheet" href="{% static 'bspg.css' %}">
-        <link rel="stylesheet" href="{% static 'mytheme.css' %}">
     </head>
 
     <body>
-
         <div id="main-e-st-div">
             <div class="fixed-page-title row center-container">
                 <div class="col-sm-4 align-left">Trace selection/upload</div>
@@ -36,90 +34,34 @@
 
                 <div class='ctrl_box'>
                     <label>Cell properties:</label>
-                    <div id="container">
-                        <div id="contributorsTitle" class="tableTitle">
-                            <label>Contributor</label>
-                        </div>
-                        <div id="contributorsD">
-                            <form>
-                                <table id="contributors"></table>
-                            </form>
-                        </div>
-                        <div id="speciesTitle" class="tableTitle">
-                            <label>Specie</label>
-                        </div>
-                        <div id="speciesD">
-                            <form>
-                                <table id="species"></table>
-                            </form>
-                        </div>
-                        <div id="structureTitle" class="tableTitle">
-                            <label>Structure</label>
-                        </div>
-                        <div id="structureD">
-                            <form>
-                                <table id="structures"></table>
-                            </form>
-                        </div>
-                        <div id="regionTitle" class="tableTitle">
-                            <label>Region</label>
-                        </div>
-                        <div id="regionD">
-                            <form>
-                                <table id="regions"></table>
-                            </form>
-                        </div>
-                        <div id="typeTitle" class="tableTitle">
-                            <label>Type</label>
-                        </div>
-                        <div id="typeD">
-                            <form>
-                                <table id="types"></table>
-                            </form>
-                        </div>
-                        <div id="etypeTitle" class="tableTitle">
-                            <label>EType</label>
-                        </div>
-                        <div id="etypeD">
-                            <form>
-                                <table id="etypes"></table>
-                            </form>
-                        </div>
-                        <br>
-                        <div id="buttonD">
-                            <button type="button" id="apply" onclick="checkSelection()">Apply</button>
-                            <button type="button" id="reset" onclick="resetFields()">Reset</button>
-                        </div>
-                    </div>
+                    <br>
+                    Species
+                    <select id="drop_species" class="btn btn-default">
+                        <option value="">--</option>
+                    </select>
+                    > Structure 
+                    <select id="drop_area" class="btn btn-default">
+                        <option value="">--</option>
+                    </select>
+                    > Region
+                    <select id="drop_region" class="btn btn-default">  
+                        <option value="">--</option>
+                    </select>
+                    > Type 
+                    <select id="drop_type" class="btn btn-default">
+                        <option value="">--</option>
+                    </select>
+                    > eType 
+                    <select id="drop_etype" class="btn btn-default">
+                        <option value="">--</option>
+                    </select>
 
-                    <!--<br>-->
-                    <!--Species-->
-                    <!--<select id="drop_species" class="btn btn-default">-->
-                        <!--<option value="">&#45;&#45;</option>-->
-                    <!--</select>-->
-                    <!--&gt; Structure-->
-                    <!--<select id="drop_area" class="btn btn-default">-->
-                        <!--<option value="">&#45;&#45;</option>-->
-                    <!--</select>-->
-                    <!--&gt; Region-->
-                    <!--<select id="drop_region" class="btn btn-default">-->
-                        <!--<option value="">&#45;&#45;</option>-->
-                    <!--</select>-->
-                    <!--&gt; Type-->
-                    <!--<select id="drop_type" class="btn btn-default">-->
-                        <!--<option value="">&#45;&#45;</option>-->
-                    <!--</select>-->
-                    <!--&gt; eType-->
-                    <!--<select id="drop_etype" class="btn btn-default">-->
-                        <!--<option value="">&#45;&#45;</option>-->
-                    <!--</select>-->
-
-                    <!--<button onclick='location.reload()' class="btn btn-default">-->
-                        <!--Reset-->
-                    <!--</button>-->
-                <!--</div>-->
-                <!--<br>-->
-                <!--<div id='charts'></div>-->
+                    <button onclick='location.reload()' class="btn btn-default">
+                        Reset
+                    </button>
+                </div>
+                <br>
+                <div id='charts'></div>
             </div>
             <br>
 
@@ -176,7 +118,7 @@
 
         </div>
         <form id='gonextform' method='POST'
-                               action= '/efelg/select_features/'> {% csrf_token %}
+                               action= '/efelg/select_features/'> {% csrf_token %} 
                                <input name='data' type='hidden'>
 
                                <button onclick='submitAll()' 
