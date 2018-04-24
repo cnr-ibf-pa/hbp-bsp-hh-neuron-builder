@@ -13,6 +13,7 @@ urlpatterns = [
     url(r'^show_traces/$', views.show_traces),
     url(r'^generate_json_data$', views.generate_json_data),
     url(r'^get_list$', views.get_list),
+    url(r'^get_list_new$', views.get_list_new),
     url(r'^get_data/(?P<cellname>[0-9a-zA-Z_-]+)$', views.get_data),
     url(r'^select_features/$', views.select_features),
     url(r'^extract-features$', views.extract_features),

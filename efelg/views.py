@@ -350,6 +350,50 @@ def get_list(request):
     return HttpResponse(json.dumps(allfiles), content_type="application/json")
 
 
+
+##### 
+'''
+Retrieve the list of .json files to be displayed for trace selection
+'''
+# @login_required(login_url='/login/hbp/')
+def get_list_new(request):
+    
+    # final list of authorized files
+    # allfiles = []
+
+    #retrieve data from session variables
+    # json_dir = request.session['json_dir']
+
+    # extract the list of the collabs the current user belongs to
+    # my_collabs_url = settings.HBP_MY_COLLABS_URL
+    # crr_auth_data_list = resources.user_collab_list(my_collabs_url, \
+    #         request.user.social_auth.get())
+
+    # retrieve the file containing the authorizations for each data file
+    # conf_dir = request.session['conf_dir']
+    # conf_dir = os.path.join(settings.MEDIA_ROOT,  'efel_data', 'eg_json_data', 'conf_json')
+    #
+    # file_auth_fullpath = os.path.join(conf_dir, "files_authorization.json")
+    # with open(file_auth_fullpath) as f:
+    #     files_auth = json.load(f)
+    #
+    #  
+    # for i in os.listdir(json_dir):
+    #     crr_file_path = os.path.join(json_dir, i)
+    #     if crr_file_path in files_auth:
+    #
+    #      if i in files_auth:
+    #          crr_file_auth = files_auth[crr_file_path]
+    #          crr_file_auth = files_auth[i]
+    #          if any(j in crr_file_auth for j in crr_auth_data_list) or \
+    #                  crr_file_auth[0]=="all":
+    #     allfiles.append(i[:-5])
+    # request.session["current_authorized_files"] = allfiles
+
+    # return HttpResponse(json.dumps(allfiles), content_type="application/json")
+    json_file = open(os.path.join(settings.MEDIA_ROOT, 'efel_data', 'eg_json_data', 'output.json'))
+    return HttpResponse(json_file, content_type="application/json")
+
 #####
 @login_required(login_url='/login/hbp/')
 def get_data(request, cellname=""):
