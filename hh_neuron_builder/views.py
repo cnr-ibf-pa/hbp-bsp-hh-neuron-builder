@@ -36,6 +36,10 @@ from tools import hpc_job_manager
 from tools import wf_file_manager
 from tools import resources
 
+# import common tools library for the bspg project
+sys.path.append(os.path.join(settings.BASE_DIR))
+from ctools import manage_auth
+
 # set logging up
 logging.basicConfig(stream=sys.stdout)
 logger = logging.getLogger()
@@ -53,6 +57,10 @@ def home(request):
     Serving home page for "hh neuron builder" application
     """
 
+    # read context
+    context = request.GET.get('ctx', None)
+
+    #
     my_url = 'https://services.humanbrainproject.eu/idm/v1/api/user/me'
     hbp_collab_service_url = "https://services.humanbrainproject.eu/collab/v0/collab/context/"
 
@@ -63,6 +71,23 @@ def home(request):
         headers = request.session["headers"]
 
     res = requests.get(my_url, headers = headers)
+    collab_res = requests.get(hbp_collab_service_url + context, \
+            headers = headers)
+        
+    if res.status_code != 200 or collab_res.status_code != 200:
+        manage_auth.Token.renewToken(request)
+            
+        headers = {'Authorization': \
+            get_auth_header(request.user.social_auth.get())}
+            
+        res = requests.get(my_url, headers = headers)
+        collab_res = requests.get(hbp_collab_service_url + context, \
+            headers = headers)
+
+    if res.status_code != 200 or collab_res.status_code != 200:
+        return render(request, 'efelg/hbp_redirect.html')
+
+        
     res_dict = res.json()
 
     if "username" not in request.session:
