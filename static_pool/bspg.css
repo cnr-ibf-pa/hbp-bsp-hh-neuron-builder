@@ -12,6 +12,10 @@
     position: relative;
     margin: auto;
 }
+
+.img-container.two-thirds{
+    width: 66.66%;
+}
 .use-case-box{
     width: 33.33%;
     padding: 5px;
