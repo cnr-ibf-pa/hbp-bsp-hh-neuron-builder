@@ -58,8 +58,13 @@ def home(request):
     """
 
     # read context
-    context = request.GET.get('ctx', None)
-
+    if "context" not in request.session:
+        context = request.GET.get('ctx', None)
+    else:
+        context = request.session["context"]
+    # if not ctx exit the application 
+    if not context:
+        return render(request, 'efelg/hbp_redirect.html')
     #
     my_url = 'https://services.humanbrainproject.eu/idm/v1/api/user/me'
     hbp_collab_service_url = "https://services.humanbrainproject.eu/collab/v0/collab/context/"
