@@ -635,6 +635,7 @@ def check_cond_exist(request):
     if os.path.isfile(os.path.join(data_feat, "features.json")) and \
 	    os.path.isfile(os.path.join(data_feat, "protocols.json")):
 		response['feat']['status'] = True
+		response['feat']['message'] = ""
 
     # check if optimization file exist
     if os.path.exists(data_opt) and not os.listdir(data_opt) == []:

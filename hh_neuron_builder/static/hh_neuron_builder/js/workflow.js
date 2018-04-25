@@ -8,12 +8,12 @@ $(window).bind("pageshow", function() {
 });
 
 $( "#mainDiv" ).focus(function() {
-    checkConditions();
+    //checkConditions();
 });
 
 $(document).ready(function(){
     // check conditions on function activation
-    checkConditions();
+    //checkConditions();
 
     $('#job-list-div').on('click', '.down-job-btn', function(){
         downloadJob(this.id);
@@ -27,7 +27,6 @@ $(document).ready(function(){
         $('#upload-opt-res-btn').prop('disabled', !$('#opt-res-file').val());
     });
 
-    //
     // manage form for submitting run parameters
     var $formrunparam = $('#submitRunParam');
     $formrunparam.submit(function(e){
@@ -122,7 +121,7 @@ $(document).ready(function(){
     document.getElementById("opt-res-up-btn").onclick = displayOptResUploadDiv;
 
     // manage button for deleting features
-    document.getElementById("del-feat").onclick = deleteFeatureFiles;
+    document.getElementById("del-feat-btn").onclick = deleteFeatureFiles;
     document.getElementById("down-feat-btn").onclick = downloadLocalFeat;
 
     // manage button for deleting optimization setting files
@@ -236,12 +235,12 @@ function checkConditions(){
         if (data['feat']['status']){
             document.getElementById('feat-bar').style.background = "green";
             document.getElementById('feat-bar').innerHTML = "";
-            document.getElementById('del-feat').disabled = false;
+            document.getElementById("del-feat-btn").disabled = false;
             document.getElementById('down-feat-btn').disabled = false;
         } else {
             document.getElementById('feat-bar').style.background = "red";
             document.getElementById("feat-bar").innerHTML = data['feat']['message'];  
-            document.getElementById('del-feat').disabled = true;
+            document.getElementById("del-feat-btn").disabled = true;
             document.getElementById('down-feat-btn').disabled = true;
         };
 
@@ -286,7 +285,7 @@ function checkConditions(){
             // disable feature extraction buttons
             document.getElementById("feat-efel-btn").disabled = true;
             document.getElementById("feat-up-btn").disabled = true;
-            document.getElementById("del-feat").disabled = true;
+            document.getElementById("del-feat-btn").disabled = true;
 
             //disable optimization buttons
             document.getElementById("opt-db-hpc-btn").disabled = true;
@@ -295,24 +294,12 @@ function checkConditions(){
 
             // disable optimization settings buttons
             document.getElementById("opt-set-btn").disabled = true;
+            
             // if no optimization has been submitted
         } else {
             document.getElementById("optlaunchimg").src = "/static/img/ko_red.png";
             document.getElementById("optlaunchtextspan").innerHTML = "No job submitted";
             document.getElementById("cell-opt-div").style.backgroundColor='rgba(255, 255, 255,0.0)';
-
-            // enable feature extraction buttons
-            document.getElementById("feat-efel-btn").disabled = false;
-            document.getElementById("feat-up-btn").disabled = false;
-            document.getElementById("del-feat").disabled = false;
-
-            // enable optimization buttons
-            document.getElementById("opt-db-hpc-btn").disabled = false;
-            document.getElementById("opt-up-btn").disabled = false;
-            document.getElementById("del-opt").disabled = false;
-
-            // enable optimization settings buttons
-            document.getElementById("opt-set-btn").disabled = false;
 
             // if ready for submission, enable launch optimization button
             if (data['feat']['status'] & data['opt_files']['status'] & data['opt_set']['status']){
@@ -435,7 +422,6 @@ function hideOpEndDiv() {
 
 // Manage feature files upload button
 function featUploadButton() {
-    checkConditions();
     document.getElementById("opt-res-file").value = "";
     document.getElementById("opt-res-file").multiple = true;
     document.getElementById("opt-res-file").accept = ".json";
