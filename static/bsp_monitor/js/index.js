@@ -241,7 +241,7 @@ function plotHistoryUsecases(){
             if (resp["Response"] == "KO"){
                 data = {
                     datasets:[{data:[]}],
-                    labels:["No use case cloned"]
+                    labels:["No use case executed"]
                 } 
             } else {
                 for (var yy in resp["uc_topics_full"][key]){
@@ -268,7 +268,7 @@ function plotHistoryUsecases(){
                         display: false},
                     title: {
                         display: true,
-                        text: 'Number of cloned use cases for: ' + key,
+                        text: 'Number of use case executions for: ' + key,
                         fontSize: 16,
                     },
                     scales: {
@@ -340,7 +340,7 @@ function plotRtUsecases(){
                     })
 
                 }],
-                labels:["No use case cloned"]
+                labels:["No use case executed"]
             } 
         }
         else {
