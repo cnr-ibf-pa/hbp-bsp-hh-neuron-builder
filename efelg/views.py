@@ -68,8 +68,11 @@ def overview(request):
     # if not in DEBUG mode check whether authentication token is valid
     if not settings.DEBUG:
 
-        # read context
-        context = request.GET.get('ctx', None)
+        if not 'ctx' in request.session:
+            # read context
+            context = request.GET.get('ctx', None)
+        else:
+            context = request.session['ctx']
 
         # if not ctx exit the application 
         if not context:
