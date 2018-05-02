@@ -236,6 +236,7 @@ width: 100%;
     vertical-align: bottom;
 }
 
+
 .all-width {
     width: 100%;
 }
@@ -882,14 +883,20 @@ th {
 }
 
 .tth {
-    padding: 10px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    padding-right: 5px;
+    padding-left: 5px;
     margin:8px;
     text-align:left;
 }
 
 .ttd {
-    padding: 8px;
-    margin:6px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    padding-right: 5px;
+    padding-left: 5px;
+    margin: 3px;
     text-align:left;
 }
 

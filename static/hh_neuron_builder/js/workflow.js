@@ -568,24 +568,32 @@ function displayJobInfo() {
                     // 
 
                     var crr_row = tableBody.insertRow(-1);
-                    var cell1 = crr_row.insertCell(0)
-                        var cell2 = crr_row.insertCell(1)
-                        var cell3 = crr_row.insertCell(2)
-                        var cell4 = crr_row.insertCell(3)
-                        var cell5 = crr_row.insertCell(4)
-                        cell1.innerHTML = "  " + joblist[crr_job_json["job_id"]]["wf"]["wf_id"] + "  ";
-                        cell2.innerHTML = "  " + crr_job_json["job_id"] + "  ";
+                    var cell1 = crr_row.insertCell(0);
+                    var cell2 = crr_row.insertCell(1);
+                    var cell3 = crr_row.insertCell(2);
+                    var cell4 = crr_row.insertCell(3);
+                    var cell5 = crr_row.insertCell(4);
+                    cell1.className += "ttd";
+                    cell2.className += "ttd";
+                    cell3.className += "ttd";
+                    cell3.setAttribute("align", "center");
+                    cell4.className += "ttd";
+                    cell5.className += "ttd";
+                    cell1.innerHTML = "  " + joblist[crr_job_json["job_id"]]["wf"]["wf_id"] + "  ";
+                    cell2.innerHTML = "  " + crr_job_json["job_id"] + "  ";
+                    cell3.innerHTML = "  " + crr_job_json["job_stage"] + "  " ;
 
-                        cell3.innerHTML = "  " + crr_job_json["job_stage"] + "  " ;
-
-                        var datetime = crr_job_json["job_date_submitted"];
-                        var gmt_datetime = moment.utc(datetime).format();
-                        cell4.innerHTML = "  " + gmt_datetime + "  ";
-                        cell5.appendChild(job_download_button2);
+                    var datetime = crr_job_json["job_date_submitted"];
+                    var gmt_datetime = moment.utc(datetime).format();
+                    cell4.innerHTML = "  " + gmt_datetime + "  ";
+                    cell5.appendChild(job_download_button2);
 
 
                     if (crr_job_json['job_stage'] == "COMPLETED") {
-                        cell3.setAttribute("bgcolor", "#00AA00");
+                        //cell3.setAttribute("fontcolor", "#00802b");
+                        cell3.style.color = "#00802b";
+                        cell3.style.fontWeight = "bolder";
+                        cell3.style.fontSize = "14px";
                         job_download_button2.disabled = false;
                     } else {
                         cell3.setAttribute("bgcolor", "#DD9900");
