@@ -515,6 +515,7 @@ function displayJobInfo() {
         var job_key_list = Object.keys(joblist);
         var tableId = document.getElementById("job-list-table");
         var tableBody = document.getElementById("job-list-body");
+        $("#job-list-body").empty();
         for (var i = 0; i < job_list_len; i++){
             (function(cnrt) {
                 crr_idx = 0;
