@@ -574,7 +574,7 @@ function plotUserCum(IDS, FILTERS){
                
             },
              {   
-                label:'Old users',
+                label:'Returning users',
                 pointRadius : 0,
                 pointHoverRadius : 3,
                 fillColor : 'rgba(239,74,129,0.4)',

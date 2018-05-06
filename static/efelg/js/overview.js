@@ -30,7 +30,7 @@ $(document).ready(function(){
 
 
 function loadShowTraces() {
-    window.location.href = "show_traces/";
+    window.location.href = "/efelg/show_traces/";
 }
 
 //function userDeclined() {

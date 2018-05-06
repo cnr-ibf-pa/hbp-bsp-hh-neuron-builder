@@ -144,67 +144,62 @@ def overview(request):
         os.makedirs(json_dir)
 
     # save parameters in request.session
-    request.session['username'] = username
-    request.session['userid'] = userid
-    request.session['headers'] = headers
-    request.session['authorized_data_list'] = []
+    request.session["username"] = username
+    request.session["userid"] = userid
+    request.session["headers"] = headers
+    request.session["authorized_data_list"] = []
     request.session["current_authorized_files"] = []
 
     # reading parameters from request.session
-    username = request.session['username']
+    username = request.session["username"]
     
     # parameters for folder creation
     time_info = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
     
     # create global variables in request.session
-    request.session['time_info'] = time_info
+    request.session["time_info"] = time_info
 
     # build local folder paths
-    rel_result_folder = os.path.join('efel_gui', 'results')
-    rel_uploaded_folder = os.path.join('efel_gui', 'uploaded')
-    full_result_folder = os.path.join(settings.MEDIA_ROOT, \
-            'efel_data', rel_result_folder)
-    full_uploaded_folder = os.path.join(settings.MEDIA_ROOT, \
-            'efel_data', rel_uploaded_folder)
+    res_dir = os.path.join("efel_gui", "results")
+    r_up_dir = os.path.join("efel_gui", "uploaded")
+    res_dir = os.path.join(settings.MEDIA_ROOT, \
+            "efel_data", res_dir)
+    up_dir = os.path.join(settings.MEDIA_ROOT, \
+            "efel_data", r_up_dir)
     
     # build local folder complete paths
-    rel_user_crr_results_folder = os.path.join(userid, time_info)
-    full_user_results_folder = os.path.join(full_result_folder, userid)
-    full_user_crr_results_folder = os.path.join(full_result_folder, \
-            rel_user_crr_results_folder)
-    full_user_uploaded_folder = os.path.join(full_uploaded_folder, userid)
-    full_user_crr_res_res_folder = os.path.join(full_result_folder, userid, \
-            time_info, 'u_res')
-    full_user_crr_res_data_folder = os.path.join(full_result_folder, userid, \
-            time_info, 'u_data')
+    u_time_f = os.path.join(userid, time_info)
+    user_res_dir = os.path.join(res_dir, userid)
+    user_crr_res_dir = os.path.join(res_dir, u_time_f)
+    u_up_dir = os.path.join(up_dir, userid)
+    u_crr_res_r_dir = os.path.join(res_dir, userid, time_info, "u_res")
+    u_crr_res_d_dir = os.path.join(res_dir, userid, time_info, 'u_data')
     
     # build media relative result path
     media_rel_crr_user_res = os.path.join('media', 'efel_data', \
-            rel_result_folder, userid, time_info, 'u_res')
+            res_dir, userid, time_info, 'u_res')
     media_abs_crr_user_res = os.path.join(settings.MEDIA_ROOT, 'efel_data', \
-            rel_result_folder, userid, time_info, 'u_res')
+            res_dir, userid, time_info, 'u_res')
 
     # storage relative path folder
-    st_rel_user_results_folder = os.path.join(rel_result_folder, \
-            rel_user_crr_results_folder)
-    st_rel_user_uploaded_folder = os.path.join(rel_uploaded_folder, userid)
+    st_rel_user_results_folder = os.path.join(res_dir, \
+            u_time_f)
+    st_rel_user_uploaded_folder = os.path.join(r_up_dir, userid)
     
+    if not os.path.exists(user_res_dir):
+        os.makedirs(user_res_dir)
+
     # store paths in request.session
     request.session['media_rel_crr_user_res'] = media_rel_crr_user_res 
     request.session['media_abs_crr_user_res'] = media_abs_crr_user_res 
     request.session['st_rel_user_results_folder'] = st_rel_user_results_folder
     request.session['st_rel_user_uploaded_folder'] = st_rel_user_uploaded_folder
-    request.session['full_user_crr_results_folder'] = \
-            full_user_crr_results_folder
-    request.session['full_user_results_folder'] = \
-            full_user_results_folder
-    request.session['full_user_crr_results_folder'] = \
-            full_user_crr_results_folder
-    request.session['full_user_crr_res_res_folder'] = \
-            full_user_crr_res_res_folder
-    request.session['full_user_crr_res_data_folder'] = \
-            full_user_crr_res_data_folder
-    request.session['full_user_uploaded_folder'] = full_user_uploaded_folder
+    request.session['user_crr_res_dir'] = user_crr_res_dir
+    request.session['user_res_dir'] = user_res_dir
+    request.session['user_crr_res_dir'] = user_crr_res_dir
+    request.session['u_crr_res_r_dir'] = u_crr_res_r_dir
+    request.session['u_crr_res_d_dir'] = u_crr_res_d_dir
+    request.session['u_up_dir'] = u_up_dir
     
     accesslogger.info(resources.string_for_log('overview', request))
 
@@ -408,19 +403,19 @@ def get_data(request, cellname=""):
 
     disp_sampling_rate = 5000
     json_dir = request.session['json_dir']
-    full_user_uploaded_folder = request.session['full_user_uploaded_folder']
+    u_up_dir = request.session['u_up_dir']
     current_authorized_files = request.session["current_authorized_files"]
 
     if cellname not in current_authorized_files and not \
-            os.path.isfile(os.path.join(full_user_uploaded_folder, cellname)):
+            os.path.isfile(os.path.join(u_up_dir, cellname)):
         return HttpResponse("")
     
     if os.path.isfile(os.path.join(json_dir, cellname) + '.json'):
         cellname_path = os.path.join(json_dir, cellname) + '.json'
         
-    elif os.path.isfile(os.path.join(full_user_uploaded_folder, cellname) \
+    elif os.path.isfile(os.path.join(u_up_dir, cellname) \
             + '.json'):
-        cellname_path = os.path.join(full_user_uploaded_folder, cellname) \
+        cellname_path = os.path.join(u_up_dir, cellname) \
                 + '.json'
 
     with open(cellname_path) as f:
@@ -471,10 +466,10 @@ def extract_features(request):
     allfeaturesnames = efel.getFeatureNames()
     
     crr_user_folder = request.session['time_info'] 
-    full_crr_result_folder = request.session['full_user_crr_res_res_folder']
-    full_crr_uploaded_folder = request.session['full_user_uploaded_folder']
-    full_crr_data_folder = request.session['full_user_crr_res_data_folder']
-    full_crr_user_folder = request.session['full_user_crr_results_folder']
+    full_crr_result_folder = request.session['u_crr_res_r_dir']
+    full_crr_uploaded_folder = request.session['u_up_dir']
+    full_crr_data_folder = request.session['u_crr_res_d_dir']
+    full_crr_user_folder = request.session['user_crr_res_dir']
     check_features = request.session["check_features"] 
     request.session['selected_features'] = check_features 
     cell_dict = {}
@@ -669,8 +664,8 @@ def features_json(request):
     if not "ctx" in request.session:
         return render(request, 'efelg/hbp_redirect.html')
 
-    full_user_crr_res_res_folder = request.session['full_user_crr_res_res_folder']
-    with open(os.path.join(full_user_crr_res_res_folder, 'features.json')) \
+    u_crr_res_r_dir = request.session['u_crr_res_r_dir']
+    with open(os.path.join(u_crr_res_r_dir, 'features.json')) \
             as json_file:
         features_json = json.load(json_file) 
     return HttpResponse(json.dumps(features_json))
@@ -734,9 +729,9 @@ def upload_files(request):
     """
     Upload file to local folder
     """
-    full_user_uploaded_folder = request.session['full_user_uploaded_folder']
-    if not os.path.exists(full_user_uploaded_folder):
-        os.makedirs(full_user_uploaded_folder)
+    u_up_dir = request.session['u_up_dir']
+    if not os.path.exists(u_up_dir):
+        os.makedirs(u_up_dir)
     
     user_files = request.FILES.getlist('user_files')
 
@@ -757,7 +752,7 @@ def upload_files(request):
             continue
         crr_file_name = k.name
         crr_file_name = re.sub('-', '_', k.name)
-        crr_local_filename = os.path.join(full_user_uploaded_folder, \
+        crr_local_filename = os.path.join(u_up_dir, \
                 crr_file_name)
 
         # if file exists delete and recreate it
@@ -787,7 +782,7 @@ def upload_files(request):
     for name in names_full_path:
         outfilename = '____'.join(manage_json.get_cell_info(name, \
                 upload_flag = True)) + '.json'
-        outfilepath = os.path.join(full_user_uploaded_folder, outfilename)
+        outfilepath = os.path.join(u_up_dir, outfilename)
 
         data = manage_json.gen_data_struct(name, "",  upload_flag = True)
         if os.path.isfile(outfilepath):
