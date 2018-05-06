@@ -590,13 +590,15 @@ function displayJobInfo() {
 
 
                     if (crr_job_json['job_stage'] == "COMPLETED") {
-                        //cell3.setAttribute("fontcolor", "#00802b");
                         cell3.style.color = "#00802b";
                         cell3.style.fontWeight = "bolder";
                         cell3.style.fontSize = "14px";
                         job_download_button2.disabled = false;
                     } else {
-                        cell3.setAttribute("bgcolor", "#DD9900");
+                        cell3.style.color = "#DD9900";
+                        cell3.style.fontWeight = "bolder";
+                        cell3.style.fontSize = "14px";
+                        job_download_button2.disabled = true;
                     }
 
 
