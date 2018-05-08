@@ -1,11 +1,18 @@
 $(document).ready(function(){
     document.getElementById("cancel-wf-job-list-btn").onclick = closeFetchWfStorageDiv;
     document.getElementById("ok-nowf-btn").onclick = closeNoWfDiv;
+    document.getElementById("new-wf").onclick = initNewWorkflow;
     $('#wf-storage-list-div').on('click', '.down-wf-btn', function(){
         downloadWf(this.id);
     });
 });
 
+function initNewWorkflow() {
+    console.log("asdfasfas");
+    $.getJSON("/hh-neuron-builder/create-wf-folders/nyes/", function(data){
+        window.location.href = "/hh-neuron-builder/workflow/";
+    });
+};
 
 function fetchWorkflows() {
     openPleaseWaitDiv("Searching for workflows in your storage");
