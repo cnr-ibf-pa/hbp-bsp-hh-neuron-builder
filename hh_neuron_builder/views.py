@@ -56,28 +56,40 @@ def home(request):
     """
     Serving home page for "hh neuron builder" application
     """
+    
+    ctx = request.GET.get('ctx', None)
+
+    if not ctx:
+        return render(request, 'efelg/hbp_redirect.html')
+    else:
+        exc = "tab_" + datetime.datetime.now().strftime('%Y%m%d%H%M%S')
+        context = {"exc":exc, "ctx":str(ctx)}
+        return render(request, 'hh_neuron_builder/home.html', context)
 
     # read context
-    if "context" not in request.session:
-        context = request.GET.get('ctx', None)
-    else:
-        context = request.session["context"]
+    #if "context" not in request.session:
+    #    context = request.GET.get('ctx', None)
+    #else:
+    #    context = request.session["context"]
     # if not ctx exit the application 
-    if not context:
-        return render(request, 'efelg/hbp_redirect.html')
+    #if not context:
+    #    return render(request, 'efelg/hbp_redirect.html')
     #
-    my_url = 'https://services.humanbrainproject.eu/idm/v1/api/user/me'
-    hbp_collab_service_url = "https://services.humanbrainproject.eu/collab/v0/collab/context/"
+    #exc = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
+    #request.session[exc] = {}
 
-    if "headers" not in request.session:
-        headers = {'Authorization': get_auth_header(request.user.social_auth.get())}
-        request.session['headers'] = headers
-    else:
-        headers = request.session["headers"]
+def initialize(request, exc = "", ctx = ""):
+
+    request.session[exc] = {}
+
+    my_url = settings.HBP_MY_USER_URL
+    collab_context_url = settings.HBP_COLLAB_SERVICE_URL + "collab/context/"
+
+    headers = {'Authorization': get_auth_header(request.user.social_auth.get())}
+    request.session[exc]['headers'] = headers
 
     res = requests.get(my_url, headers = headers)
-    collab_res = requests.get(hbp_collab_service_url + context, \
-            headers = headers)
+    collab_res = requests.get(collab_context_url + ctx, headers = headers)
         
     if res.status_code != 200 or collab_res.status_code != 200:
         manage_auth.Token.renewToken(request)
@@ -86,28 +98,25 @@ def home(request):
             get_auth_header(request.user.social_auth.get())}
             
         res = requests.get(my_url, headers = headers)
-        collab_res = requests.get(hbp_collab_service_url + context, \
+        collab_res = requests.get(collab_context_url + ctx, \
             headers = headers)
 
     if res.status_code != 200 or collab_res.status_code != 200:
         return render(request, 'efelg/hbp_redirect.html')
-
         
     res_dict = res.json()
 
-    if "username" not in request.session:
+    if "username" not in request.session[exc]:
         username = res_dict['username']
-        request.session['username'] = username
-    if "userid" not in request.session:
+        request.session[exc]['username'] = username
+    if "userid" not in request.session[exc]:
         userid = res_dict['id']
-        request.session['userid'] = userid
-    if "context" not in request.session:
-        context = request.GET.get('ctx')
-        request.session['context'] = context
-    if "collab_id" not in request.session:
-        collab_res = requests.get(hbp_collab_service_url + context, headers = headers)
+        request.session[exc]['userid'] = userid
+    if "ctx" not in request.session[exc]:
+        request.session[exc]['ctx'] = ctx
+    if "collab_id" not in request.session[exc]:
         collab_id = collab_res.json()['collab']['id']
-        request.session['collab_id'] = collab_id
+        request.session[exc]['collab_id'] = collab_id
     
     # build directory names
     workflows_dir = os.path.join(settings.MEDIA_ROOT, 'hhnb', 'workflows')
@@ -115,128 +124,132 @@ def home(request):
     opt_model_path = os.path.join(settings.MEDIA_ROOT, 'hhnb', 'bsp_data_repository', 'optimizations')
 
     # create global variables in request.session
-    request.session['singlecellmodeling_structure_path'] = scm_structure_path 
-    request.session['optimization_model_path'] = opt_model_path
-    request.session['workflows_dir'] = workflows_dir
-    request.session['hhnb_storage_folder'] = "hhnb_workflows"
-    request.session['opt_sub_flag_file'] = 'opt_sub_flag.txt'
-    request.session['opt_sub_param_file'] = 'opt_sub_param.json'
-    request.session['sim_run_flag_file'] = 'sim_run_flag.txt'
-    request.session['wf_job_ids'] = 'wf_job_ids.json'
+    request.session[exc]['singlecellmodeling_structure_path'] = scm_structure_path 
+    request.session[exc]['optimization_model_path'] = opt_model_path
+    request.session[exc]['workflows_dir'] = workflows_dir
+    request.session[exc]['hhnb_storage_folder'] = "hhnb_workflows"
+    request.session[exc]['opt_sub_flag_file'] = 'opt_sub_flag.txt'
+    request.session[exc]['opt_sub_param_file'] = 'opt_sub_param.json'
+    request.session[exc]['sim_run_flag_file'] = 'sim_run_flag.txt'
+    request.session[exc]['wf_job_ids'] = 'wf_job_ids.json'
 
     accesslogger.info(resources.string_for_log('home', request))
 
-    return render(request, 'hh_neuron_builder/home.html')
+    request.session.save()
+    
+    return HttpResponse(json.dumps({"response":"OK"}), content_type="application/json")
 
 
-def create_wf_folders(request, wf_type="new"):
+def create_wf_folders(request, wf_type="new", exc="", ctx=""):
     """
     Create folders for current workflow
     """
+
     time_info = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
-    workflows_dir = request.session['workflows_dir']
-    userid = request.session['userid']
+    workflows_dir = request.session[exc]['workflows_dir']
+    userid = request.session[exc]['userid']
     wf_id = time_info + '_' + userid
 
-    request.session['time_info'] = time_info
-    request.session['wf_id'] = wf_id
+    request.session[exc]['time_info'] = time_info
+    request.session[exc]['wf_id'] = wf_id
 
     if wf_type == "new":
         # delete keys if present in request.session
-        request.session.pop('gennum', None)
-        request.session.pop('offsize', None)
-        request.session.pop('nodenum', None)
-        request.session.pop('corenum', None)
-        request.session.pop('runtime', None)
-        request.session.pop('username_submit', None)
-        request.session.pop('password_submit', None)
-        request.session.pop('hpc_sys', None)
-        request.session.pop('username_fetch', None)
-        request.session.pop('password_fetch', None)
-        request.session.pop('hpc_sys_fetch', None)
-        request.session['user_dir'] = os.path.join(workflows_dir, userid, wf_id)
-        request.session['user_dir_data'] = os.path.join(workflows_dir, \
+        request.session[exc].pop('gennum', None)
+        request.session[exc].pop('offsize', None)
+        request.session[exc].pop('nodenum', None)
+        request.session[exc].pop('corenum', None)
+        request.session[exc].pop('runtime', None)
+        request.session[exc].pop('username_submit', None)
+        request.session[exc].pop('password_submit', None)
+        request.session[exc].pop('hpc_sys', None)
+        request.session[exc].pop('username_fetch', None)
+        request.session[exc].pop('password_fetch', None)
+        request.session[exc].pop('hpc_sys_fetch', None)
+        request.session[exc]['user_dir'] = os.path.join(workflows_dir, userid, wf_id)
+        request.session[exc]['user_dir_data'] = os.path.join(workflows_dir, \
                 userid, wf_id, 'data')
-        request.session['user_dir_data_feat'] = os.path.join(workflows_dir, \
+        request.session[exc]['user_dir_data_feat'] = os.path.join(workflows_dir, \
                 userid, wf_id, 'data', 'features')
-        request.session['user_dir_data_opt_set'] = os.path.join(workflows_dir, \
+        request.session[exc]['user_dir_data_opt_set'] = os.path.join(workflows_dir, \
                 userid, wf_id, 'data', 'opt_settings')
-        request.session['user_dir_data_opt_launch'] = os.path.join(\
+        request.session[exc]['user_dir_data_opt_launch'] = os.path.join(\
                 workflows_dir, userid, wf_id, 'data', 'opt_launch')
-        request.session['user_dir_results'] = os.path.join(workflows_dir, \
+        request.session[exc]['user_dir_results'] = os.path.join(workflows_dir, \
                 userid, wf_id, 'results')
-        request.session['user_dir_results_opt'] = os.path.join(workflows_dir, \
+        request.session[exc]['user_dir_results_opt'] = os.path.join(workflows_dir, \
                 userid, wf_id, 'results', 'opt')
-        request.session['user_dir_sim_run'] = os.path.join(workflows_dir,\
+        request.session[exc]['user_dir_sim_run'] = os.path.join(workflows_dir,\
                 userid, wf_id, 'sim')
 
 
         # create folders for global data and json files if not existing
-        if not os.path.exists(request.session['user_dir_data_feat']):
-	    os.makedirs(request.session['user_dir_data_feat'])
-        if not os.path.exists(request.session['user_dir_data_opt_set']):
-	    os.makedirs(request.session['user_dir_data_opt_set'])
-        if not os.path.exists(request.session['user_dir_data_opt_launch']):
-	    os.makedirs(request.session['user_dir_data_opt_launch'])
-        if not os.path.exists(request.session['user_dir_results_opt']):
-	    os.makedirs(request.session['user_dir_results_opt'])
-        if not os.path.exists(request.session['user_dir_sim_run']):
-	    os.makedirs(request.session['user_dir_sim_run'])
+        if not os.path.exists(request.session[exc]['user_dir_data_feat']):
+	    os.makedirs(request.session[exc]['user_dir_data_feat'])
+        if not os.path.exists(request.session[exc]['user_dir_data_opt_set']):
+	    os.makedirs(request.session[exc]['user_dir_data_opt_set'])
+        if not os.path.exists(request.session[exc]['user_dir_data_opt_launch']):
+	    os.makedirs(request.session[exc]['user_dir_data_opt_launch'])
+        if not os.path.exists(request.session[exc]['user_dir_results_opt']):
+	    os.makedirs(request.session[exc]['user_dir_results_opt'])
+        if not os.path.exists(request.session[exc]['user_dir_sim_run']):
+	    os.makedirs(request.session[exc]['user_dir_sim_run'])
 
     if wf_type == "cloned":
-        crr_user_dir = request.session['user_dir']
+        crr_user_dir = request.session[exc]['user_dir']
         new_user_dir = os.path.join(workflows_dir, userid, wf_id)
 
         # copy current user dir to the newly created workflow's dir
         shutil.copytree(os.path.join(crr_user_dir, 'data'), \
                 os.path.join(new_user_dir, 'data'), symlinks=True)
                 
-        request.session['user_dir'] = new_user_dir
+        request.session[exc]['user_dir'] = new_user_dir
         
         #
-        request.session['user_dir_data'] = os.path.join(new_user_dir,\
+        request.session[exc]['user_dir_data'] = os.path.join(new_user_dir,\
                 'data')
-        request.session['user_dir_data_feat'] = os.path.join(new_user_dir,\
+        request.session[exc]['user_dir_data_feat'] = os.path.join(new_user_dir,\
                 'data', 'features')
-        request.session['user_dir_data_opt_set'] = os.path.join(new_user_dir, \
+        request.session[exc]['user_dir_data_opt_set'] = os.path.join(new_user_dir, \
                 'data', 'opt_settings')
-        request.session['user_dir_data_opt_launch'] = os.path.join(new_user_dir,\
+        request.session[exc]['user_dir_data_opt_launch'] = os.path.join(new_user_dir,\
                 'data', 'opt_launch')
 
         # remove old optimization launch folder and create a new one
-        shutil.rmtree(request.session['user_dir_data_opt_launch'])
-        os.makedirs(request.session['user_dir_data_opt_launch'])
+        shutil.rmtree(request.session[exc]['user_dir_data_opt_launch'])
+        os.makedirs(request.session[exc]['user_dir_data_opt_launch'])
 
         opt_pf = os.path.join(crr_user_dir, 'data', 'opt_launch', \
-                request.session['opt_sub_param_file'])
+                request.session[exc]['opt_sub_param_file'])
         if os.path.exists(opt_pf):
-            shutil.copy(opt_pf, request.session['user_dir_data_opt_launch'])
+            shutil.copy(opt_pf, request.session[exc]['user_dir_data_opt_launch'])
 
         # copy current user dir results folder  to the newly created workflow
         shutil.copytree(os.path.join(crr_user_dir, 'results'), \
                 os.path.join(new_user_dir, 'results'), symlinks=True)
 
-        request.session['user_dir_results'] = os.path.join(new_user_dir, \
+        request.session[exc]['user_dir_results'] = os.path.join(new_user_dir, \
                 'results')
-        request.session['user_dir_results_opt'] = os.path.join(new_user_dir, \
+        request.session[exc]['user_dir_results_opt'] = os.path.join(new_user_dir, \
                 'results', 'opt')
 
         # copy current user dir results folder  to the newly created workflow
         shutil.copytree(os.path.join(crr_user_dir, 'sim'), \
                 os.path.join(new_user_dir, 'sim'), symlinks=True)
 
-        request.session['user_dir_sim_run'] = os.path.join(workflows_dir, userid, wf_id, 'sim')
+        request.session[exc]['user_dir_sim_run'] = os.path.join(workflows_dir, userid, wf_id, 'sim')
         
-        sim_flag_file = os.path.join(request.session['user_dir_sim_run'], \
-                request.session['sim_run_flag_file'])
+        sim_flag_file = os.path.join(request.session[exc]['user_dir_sim_run'], \
+                request.session[exc]['sim_run_flag_file'])
         if os.path.exists(sim_flag_file):
             os.remove(sim_flag_file)
 
+    request.session.save()
 
     return HttpResponse(json.dumps({"response":"OK"}), content_type="application/json")
 
 
-def fetch_wf_from_storage(request, wfid=""):
+def fetch_wf_from_storage(request, wfid="", exc="", ctx=""):
     '''
     Fetch previous workflows from current collab's storage
     '''
@@ -245,20 +258,20 @@ def fetch_wf_from_storage(request, wfid=""):
     idx = wfid.find('_')
 
     userid_wf = wfid[idx+1:]
-    userid = request.session['userid']
-    workflows_dir = request.session['workflows_dir']
+    userid = request.session[exc]['userid']
+    workflows_dir = request.session[exc]['workflows_dir']
     
     # retrieve access_token
     access_token = get_access_token(request.user.social_auth.get())
 
     # retrieve data from request.session
-    collab_id = request.session['collab_id']
+    collab_id = request.session[exc]['collab_id']
 
-    hhnb_storage_folder = request.session['hhnb_storage_folder']
-    username = request.session["username"]
+    hhnb_storage_folder = request.session[exc]['hhnb_storage_folder']
+    username = request.session[exc]["username"]
 
-    request.session['time_info'] = time_info
-    request.session['wf_id'] = wfid
+    request.session[exc]['time_info'] = time_info
+    request.session[exc]['wf_id'] = wfid
 
     sc = service_client.Client.new(access_token)
     ac = service_api_client.ApiClient.new(access_token)
@@ -302,28 +315,29 @@ def fetch_wf_from_storage(request, wfid=""):
     os.remove(final_wf_dir + '.zip')
 
     # delete keys if present in request.session
-    request.session['user_dir'] = target_path
-    request.session['user_dir_data'] = os.path.join(target_path, 'data')
-    request.session['user_dir_data_feat'] = os.path.join(target_path, 'data', 'features')
-    request.session['user_dir_data_opt_set'] = os.path.join(target_path, 'data', 'opt_settings')
-    request.session['user_dir_data_opt_launch'] = os.path.join(target_path, 'data', 'opt_launch')
-    request.session['user_dir_results'] = os.path.join(target_path, 'results')
-    request.session['user_dir_results_opt'] = os.path.join(target_path, 'results', 'opt')
-    request.session['user_dir_sim_run'] = os.path.join(target_path, 'sim')
+    request.session[exc]['user_dir'] = target_path
+    request.session[exc]['user_dir_data'] = os.path.join(target_path, 'data')
+    request.session[exc]['user_dir_data_feat'] = os.path.join(target_path, 'data', 'features')
+    request.session[exc]['user_dir_data_opt_set'] = os.path.join(target_path, 'data', 'opt_settings')
+    request.session[exc]['user_dir_data_opt_launch'] = os.path.join(target_path, 'data', 'opt_launch')
+    request.session[exc]['user_dir_results'] = os.path.join(target_path, 'results')
+    request.session[exc]['user_dir_results_opt'] = os.path.join(target_path, 'results', 'opt')
+    request.session[exc]['user_dir_sim_run'] = os.path.join(target_path, 'sim')
 
     # create folders for global data and json files if not existing
-    if not os.path.exists(request.session['user_dir_data_feat']):
-        os.makedirs(request.session['user_dir_data_feat'])
-    if not os.path.exists(request.session['user_dir_data_opt_set']):
-        os.makedirs(request.session['user_dir_data_opt_set'])
-    if not os.path.exists(request.session['user_dir_data_opt_launch']):
-        os.makedirs(request.session['user_dir_data_opt_launch'])
-    if not os.path.exists(request.session['user_dir_results_opt']):
-        os.makedirs(request.session['user_dir_results_opt'])
-    if not os.path.exists(request.session['user_dir_sim_run']):
-        os.makedirs(request.session['user_dir_sim_run'])
+    if not os.path.exists(request.session[exc]['user_dir_data_feat']):
+        os.makedirs(request.session[exc]['user_dir_data_feat'])
+    if not os.path.exists(request.session[exc]['user_dir_data_opt_set']):
+        os.makedirs(request.session[exc]['user_dir_data_opt_set'])
+    if not os.path.exists(request.session[exc]['user_dir_data_opt_launch']):
+        os.makedirs(request.session[exc]['user_dir_data_opt_launch'])
+    if not os.path.exists(request.session[exc]['user_dir_results_opt']):
+        os.makedirs(request.session[exc]['user_dir_results_opt'])
+    if not os.path.exists(request.session[exc]['user_dir_sim_run']):
+        os.makedirs(request.session[exc]['user_dir_sim_run'])
 
-    
+    request.session.save()
+
     return HttpResponse(json.dumps({"response":"OK"}), \
             content_type="application/json")
 
@@ -338,7 +352,7 @@ def embedded_efel_gui(request):
     return render(request, 'hh_neuron_builder/embedded_efel_gui.html')
 
 
-def workflow(request, wf="new"):
+def workflow(request):
     """
     Serving page for rendering workflow page
     """
@@ -355,48 +369,40 @@ def choose_opt_model(request):
     return render(request, 'hh_neuron_builder/choose_opt_model.html')
 
 
-def get_model_list(request):
+def get_model_list(request, exc="", ctx=""):
     """
     Serving api call to get list of optimization models
     """
-    model_file = request.session["singlecellmodeling_structure_path"]
+    model_file = request.session[exc]["singlecellmodeling_structure_path"]
     with open(model_file) as json_file:
 	model_file_dict = json.load(json_file)
 
     return HttpResponse(json.dumps(model_file_dict), content_type="application/json")
 
 
-def set_optimization_parameters(request):
-    """
-    Serving "set_optimization_parameters" page
-    """
-
-    return render(request, 'hh_neuron_builder/set_optimization_parameters.html')
-
-
-def copy_feature_files(request, featurefolder = ""):
+def copy_feature_files(request, featurefolder = "", exc = "", ctx = ""):
     response = {"expiration": False}
-    if not os.path.exists(request.session["user_dir"]) or not \
+    if not os.path.exists(request.session[exc]["user_dir"]) or not \
             os.path.exists(os.path.join(os.sep,featurefolder)):
         response = {"expiration":True}
         return HttpResponse(json.dumps(response), content_type="application/json")
 
     response["folder"] = featurefolder
-    shutil.copy(os.path.join(os.sep, featurefolder, 'features.json'), request.session['user_dir_data_feat'])
-    shutil.copy(os.path.join(os.sep, featurefolder, 'protocols.json'), request.session['user_dir_data_feat'])
+    shutil.copy(os.path.join(os.sep, featurefolder, 'features.json'), request.session[exc]['user_dir_data_feat'])
+    shutil.copy(os.path.join(os.sep, featurefolder, 'protocols.json'), request.session[exc]['user_dir_data_feat'])
 
 
     return HttpResponse(json.dumps(response), content_type="application/json")
 
 # fetch model from dataset
-def fetch_opt_set_file(request, source_opt_name=""):
+def fetch_opt_set_file(request, source_opt_name="", exc="", ctx=""):
     """
     Set optimization setting file
     """
     response = {"response": "OK", "message":""}
 
-    opt_model_path = request.session['optimization_model_path']
-    user_dir_data_opt = request.session['user_dir_data_opt_set']
+    opt_model_path = request.session[exc]['optimization_model_path']
+    user_dir_data_opt = request.session[exc]['user_dir_data_opt_set']
 
     if not os.path.exists(user_dir_data_opt):
         response["response"] = "KO"
@@ -405,36 +411,37 @@ def fetch_opt_set_file(request, source_opt_name=""):
 
     shutil.rmtree(user_dir_data_opt)
     os.makedirs(user_dir_data_opt)
-    request.session['source_opt_name'] = source_opt_name
-    request.session['source_opt_zip'] = os.path.join(opt_model_path, source_opt_name, source_opt_name + '.zip')
-    shutil.copy(request.session['source_opt_zip'], user_dir_data_opt)
+    request.session[exc]['source_opt_name'] = source_opt_name
+    request.session[exc]['source_opt_zip'] = os.path.join(opt_model_path, source_opt_name, source_opt_name + '.zip')
+    shutil.copy(request.session[exc]['source_opt_zip'], user_dir_data_opt)
 
+    request.session.save()
     return HttpResponse("")
 
 
-def run_optimization(request):
+def run_optimization(request, exc="", ctx=""):
     """
     Run optimization on remote systems
     """
 
     # fetch information from the session variable
-    username_submit = request.session['username_submit']
-    password_submit = request.session['password_submit']
-    core_num = request.session['corenum']
-    node_num = request.session['nodenum']
-    runtime = request.session['runtime']
-    gennum = request.session['gennum']
-    time_info = request.session['time_info']
-    offsize = request.session['offsize']
-    source_opt_name = request.session['source_opt_name']
-    source_opt_zip = request.session['source_opt_zip']
-    dest_dir = request.session['user_dir_data_opt_launch']
-    user_dir_data_opt = request.session['user_dir_data_opt_set']
-    hpc_sys = request.session['hpc_sys']
-    source_feat = request.session['user_dir_data_feat']
-    opt_res_dir = request.session['user_dir_results_opt']
-    workflows_dir = request.session['workflows_dir']
-    userid = request.session['userid']
+    username_submit = request.session[exc]['username_submit']
+    password_submit = request.session[exc]['password_submit']
+    core_num = request.session[exc]['corenum']
+    node_num = request.session[exc]['nodenum']
+    runtime = request.session[exc]['runtime']
+    gennum = request.session[exc]['gennum']
+    time_info = request.session[exc]['time_info']
+    offsize = request.session[exc]['offsize']
+    source_opt_name = request.session[exc]['source_opt_name']
+    source_opt_zip = request.session[exc]['source_opt_zip']
+    dest_dir = request.session[exc]['user_dir_data_opt_launch']
+    user_dir_data_opt = request.session[exc]['user_dir_data_opt_set']
+    hpc_sys = request.session[exc]['hpc_sys']
+    source_feat = request.session[exc]['user_dir_data_feat']
+    opt_res_dir = request.session[exc]['user_dir_results_opt']
+    workflows_dir = request.session[exc]['workflows_dir']
+    userid = request.session[exc]['userid']
     
     idx = source_opt_name.rfind('_')
 
@@ -456,14 +463,14 @@ def run_optimization(request):
 
 	if resp['status_code'] == 200:
             opt_sub_flag_file = os.path.join(dest_dir,\
-                    request.session['opt_sub_flag_file'])
+                    request.session[exc]['opt_sub_flag_file'])
 
             with open(opt_sub_flag_file, 'w') as f:
                 f.write("")
             f.close()
         
-            wf_job_ids = request.session['wf_job_ids']
-            wf_id = request.session['wf_id']
+            wf_job_ids = request.session[exc]['wf_job_ids']
+            wf_id = request.session[exc]['wf_id']
             ids_file = os.path.join(workflows_dir, userid, wf_job_ids)
             ids_dict = {"wf_id" : wf_id, "hpc_sys": hpc_sys}
 
@@ -479,41 +486,35 @@ def run_optimization(request):
             with open(ids_file, "w") as fh:
                 json.dump(all_id, fh)
 
+    request.session.save()
+
     return HttpResponse(json.dumps(resp))
 
 
-def model_loaded_flag(request):
-    if 'res_file_name' in request.session:
+def model_loaded_flag(request, exc="", ctx=""):
+    if 'res_file_name' in request.session[exc]:
 	return HttpResponse(json.dumps(\
-                {"response": request.session['res_file_name']}),\
+                {"response": request.session[exc]['res_file_name']}),\
                 content_type="application/json")
     else:
 	return HttpResponse(json.dumps({"response": "KO"}), \
                 content_type="application/json")
 
 
-def embedded_naas(request):
+def embedded_naas(request, exc="", ctx=""):
     """
     Render page with embedded "neuron as a service" app
     """
 
     accesslogger.info(resources.string_for_log('embedded_naas', request))
-    dest_dir = request.session['user_dir_sim_run']
+    dest_dir = request.session[exc]['user_dir_sim_run']
     sim_run_flag_file = os.path.join(dest_dir,\
-            request.session['sim_run_flag_file'])
+            request.session[exc]['sim_run_flag_file'])
     with open(sim_run_flag_file, 'w') as f:
         f.write("")
     f.close()
 
     return render(request, 'hh_neuron_builder/embedded_naas.html')
-
-
-def set_optimization_parameters_fetch(request):
-    """
-    Render page for optimization parameter fetch
-    """
-
-    return render(request, 'hh_neuron_builder/set_optimization_parameters_fetch.html')
 
 
 def get_local_optimization_list(request):
@@ -530,8 +531,8 @@ def get_local_optimization_list(request):
 
 
 
-def upload_to_naas(request):
-    res_folder = request.session['user_dir_sim_run']
+def upload_to_naas(request, exc="", ctx=""):
+    res_folder = request.session[exc]['user_dir_sim_run']
     res_folder_ls = os.listdir(res_folder) 
     abs_res_file = []
     for filename in res_folder_ls:
@@ -543,17 +544,20 @@ def upload_to_naas(request):
         return HttpResponse(json.dumps({"response": "KO", "message": "No \
         simulation .zip file is present"}), content_type="application/json")
     else:
-        request.session['res_file_name'] = os.path.splitext(filename)[0]
+        request.session[exc]['res_file_name'] = os.path.splitext(filename)[0]
         r = requests.post("https://blue-naas-svc.humanbrainproject.eu/upload", files={"file": open(abs_res_file, "rb")});
     
+    request.session.save()
+
     return HttpResponse(json.dumps({"response": "OK", "message":"Model \
             correctly uploaded to naas"}), content_type="application/json")
 
 
-def submit_run_param(request):
+def submit_run_param(request, exc="", ctx=""):
     """
     Save user's optimization parameters
     """
+
     #selected_traces_rest = request.POST.get('csrfmiddlewaretoken')
     form_data = request.POST
 
@@ -566,15 +570,15 @@ def submit_run_param(request):
     hpc_sys = form_data['hpc_sys']
 
     # 
-    request.session['gennum'] = gennum
-    request.session['offsize'] = offsize 
-    request.session['nodenum'] = nodenum
-    request.session['corenum'] = corenum
-    request.session['runtime'] = runtime
-    request.session['hpc_sys'] = hpc_sys
+    request.session[exc]['gennum'] = gennum
+    request.session[exc]['offsize'] = offsize 
+    request.session[exc]['nodenum'] = nodenum
+    request.session[exc]['corenum'] = corenum
+    request.session[exc]['runtime'] = runtime
+    request.session[exc]['hpc_sys'] = hpc_sys
 
-    wf_id = request.session['wf_id']
-    dest_dir = request.session['user_dir_data_opt_launch']
+    wf_id = request.session[exc]['wf_id']
+    dest_dir = request.session[exc]['user_dir_data_opt_launch']
 
     # if chosen system is nsg
     if form_data['hpc_sys'] == 'nsg':
@@ -583,12 +587,12 @@ def submit_run_param(request):
 
         # check credentials correctness
         if resp_check_login['response'] == 'OK':
-            request.session['username_submit'] = form_data['username_submit']
-            request.session['password_submit'] = form_data['password_submit']
+            request.session[exc]['username_submit'] = form_data['username_submit']
+            request.session[exc]['password_submit'] = form_data['password_submit']
             opt_sub_param_file = os.path.join(dest_dir, \
-                    request.session["opt_sub_param_file"])
+                    request.session[exc]["opt_sub_param_file"])
 
-            wfid = request.session['wf_id']
+            wfid = request.session[exc]['wf_id']
             hpc_job_manager.OptSettings.print_opt_params(wf_id=wfid, \
                     gennum=str(gennum), offsize=str(offsize),
                     nodenum=str(nodenum), \
@@ -598,13 +602,15 @@ def submit_run_param(request):
         else:
             resp_dict = {'response':'KO', 'message':'Username and/or password \
                     are wrong'}
-            request.session.pop('username_submit', None)
-            request.session.pop('password_submit', None)
+            request.session[exc].pop('username_submit', None)
+            request.session[exc].pop('password_submit', None)
+
+    request.session.save()
 
     return HttpResponse(json.dumps(resp_dict), content_type="application/json")
 
 
-def submit_fetch_param(request):
+def submit_fetch_param(request, exc="", ctx=""):
     """
     Save user's optimization parameters
     """
@@ -613,22 +619,24 @@ def submit_fetch_param(request):
 
     # if chosen system is nsg
     if form_data['hpc_sys_fetch'] == 'nsg':
-        request.session['hpc_sys_fetch'] = form_data['hpc_sys_fetch']
+        request.session[exc]['hpc_sys_fetch'] = form_data['hpc_sys_fetch']
         resp_check_login = \
         hpc_job_manager.Nsg.checkNsgLogin(username=form_data['username_fetch'],
                 password=form_data['password_fetch'])
 
         # check credentials correctness
         if resp_check_login['response'] == 'OK':
-            request.session['username_fetch'] = form_data['username_fetch']
-            request.session['password_fetch'] = form_data['password_fetch']
+            request.session[exc]['username_fetch'] = form_data['username_fetch']
+            request.session[exc]['password_fetch'] = form_data['password_fetch']
         else:
-            request.session.pop('username_fetch', None)
-            request.session.pop('password_fetch', None)
+            request.session[exc].pop('username_fetch', None)
+            request.session[exc].pop('password_fetch', None)
+
+    request.session.save()
 
     return HttpResponse(json.dumps(resp_check_login), content_type="application/json")
 
-def check_cond_exist(request):
+def check_cond_exist(request, exc="", ctx=""):
     """
     Check if conditions for performing steps are present.
     The function checks on current workflow folders whether files are present to go on with the workflow.
@@ -650,16 +658,17 @@ def check_cond_exist(request):
             'opt_res': {"status": False}, \
             }
 
-    if not os.path.exists(request.session["user_dir"]):
+    if not os.path.exists(request.session[exc]['user_dir']):
         response = {"expiration":True}
         return HttpResponse(json.dumps(response), content_type="application/json")
 
     # retrieve folder paths 
-    data_feat = request.session['user_dir_data_feat']
-    data_opt = request.session['user_dir_data_opt_set']
-    sim_dir = request.session['user_dir_sim_run']
-    res_dir = request.session['user_dir_results']
-    wf_id = request.session['wf_id']
+    data_feat = request.session[exc]['user_dir_data_feat']
+    data_opt = request.session[exc]['user_dir_data_opt_set']
+    sim_dir = request.session[exc]['user_dir_sim_run']
+    res_dir = request.session[exc]['user_dir_results']
+    wf_id = request.session[exc]['wf_id']
+    dest_dir = request.session[exc]['user_dir_data_opt_launch']
     
     # check if feature files exist
     if os.path.isfile(os.path.join(data_feat, "features.json")) and \
@@ -680,69 +689,76 @@ def check_cond_exist(request):
 	response['run_sim']['status'] = False
         response['run_sim']['message'] = resp_sim['message']
 
-
     # check if optimization results zip file exists
     for i in os.listdir(res_dir):
         if i.endswith('.zip'):
             response['opt_res']['status'] = True
             break
 
-    dest_dir = request.session['user_dir_data_opt_launch']
-
+    # check if optimization has been submitted
     if os.path.exists(os.path.join(dest_dir, \
-            request.session['opt_sub_flag_file'])):
+            request.session[exc]['opt_sub_flag_file'])):
 	response['opt_flag']['status'] = True
 
+    # check if simulation has been launched
     if os.path.exists(os.path.join(sim_dir, \
-            request.session['sim_run_flag_file'])):
+            request.session[exc]['sim_run_flag_file'])):
 	response['sim_flag']['status'] = True
 
-    rsk = request.session.keys()
-
+    # build dictionary with optimization submission parameters
     opt_sub_param_dict = {}
-    opt_sub_param_file = os.path.join(request.session['user_dir_data_opt_launch'], \
-        request.session['opt_sub_param_file'])
+    opt_sub_param_file = os.path.join(request.session[exc]['user_dir_data_opt_launch'], \
+        request.session[exc]['opt_sub_param_file'])
+    # if parameter file exists, read values
     if os.path.exists(opt_sub_param_file):
         with open(opt_sub_param_file) as json_file:
 	    opt_sub_param_dict = json.load(json_file)
-	response['opt_set']['message'] = "Settings retrieved. Credentials NOT set"
-    else:
-        opt_sub_param_dict = hpc_job_manager.OptSettings.get_params_default()
-	response['opt_set']['message'] = "Optimization parameters NOT set"
-            
-    request.session['gennum'] = opt_sub_param_dict['number_of_generations']
-    request.session['offsize'] = opt_sub_param_dict['offspring_size']
-    request.session['nodenum'] = opt_sub_param_dict['number_of_nodes']
-    request.session['corenum'] = opt_sub_param_dict['number_of_cores']
-    request.session['runtime'] = opt_sub_param_dict['runtime']
-    request.session['hpc_sys'] = opt_sub_param_dict['hpc_sys']
 
-    rules = [
+        response['opt_set']['opt_sub_param_dict'] = opt_sub_param_dict
+
+        rsk = request.session[exc].keys()
+        rules = [
             'username_submit' in rsk,
             'password_submit' in rsk,
             ]
-    if all(rules) or response['opt_flag']['status']:
-	response['opt_set']['status'] = True 
+
+        if all(rules):
+	    response['opt_set']['status'] = True 
+	    response['opt_set']['message'] = ""
+        else:
+	    response['opt_set']['status'] = False
+	    response['opt_set']['message'] = "Settings retrieved. Credentials NOT set"
     else:
+        opt_sub_param_dict = hpc_job_manager.OptSettings.get_params_default()
+	response['opt_set']['message'] = "Optimization parameters NOT set"
 	response['opt_set']['status'] = False
-    response['opt_set']['opt_sub_param_dict'] = opt_sub_param_dict
+        response['opt_set']['opt_sub_param_dict'] = opt_sub_param_dict
+            
+    request.session[exc]['gennum'] = opt_sub_param_dict['number_of_generations']
+    request.session[exc]['offsize'] = opt_sub_param_dict['offspring_size']
+    request.session[exc]['nodenum'] = opt_sub_param_dict['number_of_nodes']
+    request.session[exc]['corenum'] = opt_sub_param_dict['number_of_cores']
+    request.session[exc]['runtime'] = opt_sub_param_dict['runtime']
+    request.session[exc]['hpc_sys'] = opt_sub_param_dict['hpc_sys']
 
 
-    if request.session['wf_id']:
-        response['wf_id'] = request.session['wf_id']
+    if request.session[exc]['wf_id']:
+        response['wf_id'] = request.session[exc]['wf_id']
+
+    request.session.save()
 
     return HttpResponse(json.dumps(response), content_type="application/json")
 
 
 
 # delete feature files
-def delete_files(request, filetype=""):
+def delete_files(request, filetype="", exc="", ctx=""):
     if filetype == "feat":
-        folder = request.session['user_dir_data_feat']
+        folder = request.session[exc]['user_dir_data_feat']
     elif filetype == "optset":
-        folder = request.session['user_dir_data_opt_set']
+        folder = request.session[exc]['user_dir_data_opt_set']
     elif filetype == "modsim":
-        folder = request.session['user_dir_sim_run']
+        folder = request.session[exc]['user_dir_sim_run']
 
     shutil.rmtree(folder)
     os.makedirs(folder)
@@ -750,15 +766,15 @@ def delete_files(request, filetype=""):
     return HttpResponse(json.dumps({"resp":True}), content_type="application/json")
 
 
-def upload_files(request, filetype = ""):
+def upload_files(request, filetype = "", exc = "", ctx = ""):
     filename_list = request.FILES.getlist('opt-res-file')
 
     if filetype == "feat":
-	final_res_folder = request.session['user_dir_data_feat']
+	final_res_folder = request.session[exc]['user_dir_data_feat']
 	ext = '.json'
 
     elif filetype == "optset":
-	final_res_folder = request.session['user_dir_data_opt_set']
+	final_res_folder = request.session[exc]['user_dir_data_opt_set']
 
 	# remove folder with current zip file
 	if os.listdir(final_res_folder):
@@ -767,7 +783,7 @@ def upload_files(request, filetype = ""):
 	ext = '.zip'
 
     elif filetype == "modsim":
-	final_res_folder = request.session['user_dir_sim_run']
+	final_res_folder = request.session[exc]['user_dir_sim_run']
 
 	# remove folder with current zip file
 	if os.listdir(final_res_folder):
@@ -794,10 +810,10 @@ def upload_files(request, filetype = ""):
 	    final_file.close()
 
     if filetype == "optset":
-        request.session['source_opt_name'] = os.path.splitext(filename)[0]
-        request.session['source_opt_zip'] = final_res_file 
+        request.session[exc]['source_opt_name'] = os.path.splitext(filename)[0]
+        request.session[exc]['source_opt_zip'] = final_res_file 
     elif filetype == "modsim":
-        user_dir_sim_run = request.session['user_dir_sim_run']
+        user_dir_sim_run = request.session[exc]['user_dir_sim_run']
 
         # unzip uploaded model file 
         z = zipfile.ZipFile(final_res_file, 'r')
@@ -807,27 +823,28 @@ def upload_files(request, filetype = ""):
             msg = "Unable to unzip the uploaded file. Check file integrity"
             return HttpResponse(json.dumps({"response":"KO", "message":msg}), content_type="application/json") 
 
+    request.session.save()
     
     return HttpResponse(json.dumps({"response":"OK", "message":""}), content_type="application/json") 
 
 
-def get_nsg_job_list(request):
+def get_nsg_job_list(request, exc="", ctx=""):
     """
     """
-    hpc_sys_fetch = request.session['hpc_sys_fetch'] 
+    hpc_sys_fetch = request.session[exc]['hpc_sys_fetch'] 
     if hpc_sys_fetch == "nsg":
-	username_fetch = request.session['username_fetch']
-	password_fetch = request.session['password_fetch']
-	opt_res_dir = request.session['user_dir_results_opt']
+	username_fetch = request.session[exc]['username_fetch']
+	password_fetch = request.session[exc]['password_fetch']
+	opt_res_dir = request.session[exc]['user_dir_results_opt']
 
 	resp = hpc_job_manager.Nsg.fetch_job_list(username_fetch=username_fetch, \
                 password_fetch=password_fetch)
 
         # read job id file
-        workflows_dir = request.session['workflows_dir']
-        userid = request.session['userid']
-        wf_job_ids = request.session['wf_job_ids']
-        wf_id = request.session['wf_id']
+        workflows_dir = request.session[exc]['workflows_dir']
+        userid = request.session[exc]['userid']
+        wf_job_ids = request.session[exc]['wf_job_ids']
+        wf_id = request.session[exc]['wf_id']
 
         ids_file = os.path.join(workflows_dir, userid, wf_job_ids)
 
@@ -845,18 +862,20 @@ def get_nsg_job_list(request):
                 resp[key]["wf"] = {"wf_id": "No workflow id associated", \
                         "hpc_sys":"unknown"}
 
+    request.session.save()
+
     return HttpResponse(json.dumps(resp), content_type="application/json") 
 
 
-def get_nsg_job_details(request, jobid=""):
+def get_nsg_job_details(request, jobid="", exc="", ctx=""):
     """
     """
     #return HttpResponse(json.dumps({"job_id": jobid, "job_date_submitted":"2017-07-24T16:40:21-07:00", "job_stage":"COMPLETED"}), content_type="application/json") 
 
-    hpc_sys_fetch = request.session['hpc_sys_fetch'] 
+    hpc_sys_fetch = request.session[exc]['hpc_sys_fetch'] 
     if hpc_sys_fetch == "nsg":
-	username_fetch = request.session['username_fetch']
-	password_fetch = request.session['password_fetch']
+	username_fetch = request.session[exc]['username_fetch']
+	password_fetch = request.session[exc]['password_fetch']
 
 	resp = hpc_job_manager.Nsg.fetch_job_details( \
                 job_id = jobid, username_fetch=username_fetch, \
@@ -866,22 +885,22 @@ def get_nsg_job_details(request, jobid=""):
     return HttpResponse(json.dumps(resp), content_type="application/json") 
 
 
-def download_job(request, job_id=""): 
+def download_job(request, job_id="", exc="", ctx=""): 
     """
     """
 
-    opt_res_dir = request.session['user_dir_results_opt']
+    opt_res_dir = request.session[exc]['user_dir_results_opt']
     if not os.path.exists(opt_res_dir):
         return HttpResponse(json.dumps({"response":"KO", \
             "message": "The workflow folder does not exist anymore. \
             <br> Please start a new workflow or fetch a previous one."}), \
             content_type="application/json") 
 
-    hpc_sys_fetch = request.session['hpc_sys_fetch'] 
+    hpc_sys_fetch = request.session[exc]['hpc_sys_fetch'] 
     if hpc_sys_fetch == "nsg":
-	username_fetch = request.session['username_fetch']
-	password_fetch = request.session['password_fetch']
-        wf_id = request.session['wf_id']
+	username_fetch = request.session[exc]['username_fetch']
+	password_fetch = request.session[exc]['password_fetch']
+        wf_id = request.session[exc]['wf_id']
 
 	# remove folder with current zip file
 	if os.listdir(opt_res_dir):
@@ -901,9 +920,9 @@ def download_job(request, job_id=""):
     return HttpResponse(json.dumps(resp), content_type="application/json") 
 
 
-def modify_analysis_py(request):
+def modify_analysis_py(request, exc="", ctx=""):
     msg = ""
-    opt_res_folder = request.session['user_dir_results_opt']
+    opt_res_folder = request.session[exc]['user_dir_results_opt']
     output_fetched_file = os.path.join(opt_res_folder, "output.tar.gz")
 
     if not os.path.exists(output_fetched_file):
@@ -1029,9 +1048,9 @@ def modify_analysis_py(request):
     return HttpResponse(json.dumps({"response":"OK", "message":msg}), content_type="application/json")
 
 
-def zip_sim(request):
-    user_dir_res_opt = request.session['user_dir_results_opt']
-    user_dir_sim_run = request.session['user_dir_sim_run']
+def zip_sim(request, exc="", ctx=""):
+    user_dir_res_opt = request.session[exc]['user_dir_results_opt']
+    user_dir_sim_run = request.session[exc]['user_dir_sim_run']
 
     opt_logs_folder = 'opt_logs'
 
@@ -1110,24 +1129,24 @@ def zip_sim(request):
     return HttpResponse(json.dumps({"response":"OK"}), content_type="application/json")
     
 
-def download_zip(request, filetype=""):
+def download_zip(request, filetype="", exc="", ctx=""):
     """
     download files to local machine
     """
     current_working_dir = os.getcwd()
     if filetype == "feat":
-        fetch_folder = request.session['user_dir_data_feat']
+        fetch_folder = request.session[exc]['user_dir_data_feat']
         zipname = os.path.join(fetch_folder, "features.zip")
         foo = zipfile.ZipFile(zipname, 'w', zipfile.ZIP_DEFLATED)
         foo.write(os.path.join(fetch_folder, "features.json"), "features.json")
         foo.write(os.path.join(fetch_folder, "protocols.json"), "protocols.json")
         foo.close()
     elif filetype == "optset":
-        fetch_folder = request.session['user_dir_data_opt_set']
+        fetch_folder = request.session[exc]['user_dir_data_opt_set']
     elif filetype == "modsim":
-        fetch_folder = request.session['user_dir_sim_run']
+        fetch_folder = request.session[exc]['user_dir_sim_run']
     elif filetype == "optres":
-        fetch_folder = request.session['user_dir_results']
+        fetch_folder = request.session[exc]['user_dir_results']
 
     zip_file_list = []
 
@@ -1141,25 +1160,27 @@ def download_zip(request, filetype=""):
     crr_file_full = open(full_file_path, "r")
     response = HttpResponse(crr_file_full, content_type="application/zip")
 
+    request.session.save()
+
     response['Content-Disposition'] = 'attachment; filename="%s"' % crr_file
 
     return response
 
 
 ########### handle file upload to storage collab
-def save_wf_to_storage(request):
+def save_wf_to_storage(request, exc="", ctx=""):
 
     # retrieve access_token
     access_token = get_access_token(request.user.social_auth.get())
 
     # retrieve data from request.session
-    collab_id = request.session['collab_id']
-    user_crr_wf_dir = request.session['user_dir']
-    wf_id = request.session['wf_id']
-    wf_dir = request.session['workflows_dir']
-    userid = request.session['userid']
-    hhnb_storage_folder = request.session['hhnb_storage_folder']
-    username = request.session["username"]
+    collab_id = request.session[exc]['collab_id']
+    user_crr_wf_dir = request.session[exc]['user_dir']
+    wf_id = request.session[exc]['wf_id']
+    wf_dir = request.session[exc]['workflows_dir']
+    userid = request.session[exc]['userid']
+    hhnb_storage_folder = request.session[exc]['hhnb_storage_folder']
+    username = request.session[exc]["username"]
     
     access_token = get_access_token(request.user.social_auth.get())
 
@@ -1211,27 +1232,18 @@ def save_wf_to_storage(request):
     return HttpResponse(json.dumps({"response":"OK", "message":""}), content_type="application/json")
 
 
-def get_context(request):
-    """
-    Get the context used to call the application
-    """
-    context = request.session['context']
-
-    return HttpResponse(json.dumps({"context":context}), content_type="application/json")
-
-
-def wf_storage_list(request):
+def wf_storage_list(request, exc="", ctx=""):
 
     # retrieve access_token
     access_token = get_access_token(request.user.social_auth.get())
 
     # retrieve data from request.session
-    collab_id = request.session['collab_id']
+    collab_id = request.session[exc]['collab_id']
 
-    hhnb_storage_folder = request.session['hhnb_storage_folder']
-    username = request.session["username"]
+    hhnb_storage_folder = request.session[exc]['hhnb_storage_folder']
+    username = request.session[exc]["username"]
 
-    context = request.session['context']
+    context = request.session[exc]['ctx']
     
     access_token = get_access_token(request.user.social_auth.get())
 

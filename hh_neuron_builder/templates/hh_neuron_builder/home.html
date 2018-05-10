@@ -4,6 +4,7 @@
 {% hbp_oidc_session_handler request.user %}
 
 {% block content %}
+
 <div id="home-main-div" class="fade-in-div">
     <div class="center-container column-center-container main-page-panel"
          style="background-image: url('{% static "hh_neuron_builder/img/hhnb_03.png" %}');
@@ -62,6 +63,14 @@
     </div>
 </div>
 <!-- -->
+<script>
+var exc = "{{ exc }}";
+var ctx = "{{ ctx }}";
+sessionStorage.setItem("exc", exc);
+sessionStorage.setItem("ctx", ctx);
+console.log(sessionStorage.getItem("exc"));
+console.log(sessionStorage.getItem("ctx"));
+</script>
 
 <script type="text/javascript" src="{% static 'hh_neuron_builder/js/home.js' %}"></script>
 <script type="text/javascript" src="{% static 'hh_neuron_builder/js/common.js' %}"></script>

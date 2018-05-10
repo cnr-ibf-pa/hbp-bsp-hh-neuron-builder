@@ -1,6 +1,9 @@
 $(document).ready(function(){
     var address = "https://raw.githubusercontent.com/lbologna/bsp_data_repository/master/optimizations/"
-	$.getJSON("/hh-neuron-builder/get_model_list", function(data){
+    var exc = sessionStorage.getItem("exc", exc) ?  sessionStorage.getItem("exc") : "";
+    var ctx = sessionStorage.getItem("ctx", ctx) ? sessionStorage.getItem("ctx") : "";
+
+	$.getJSON("/hh-neuron-builder/get_model_list/" + exc + "/" + ctx, function(data){
 		$.each(data, function(idx, val){
 			$.each(val, function(index, e){
 				$("#sub-title-div" ).after("<div  id=" + index + " class='model-info-div'></div>");
@@ -14,8 +17,11 @@ $(document).ready(function(){
 });
 
 	$('body').on('click', '.model-info-div', function(){
+    var exc = sessionStorage.getItem("exc", exc) ?  sessionStorage.getItem("exc") : "";
+    var ctx = sessionStorage.getItem("ctx", ctx) ? sessionStorage.getItem("ctx") : "";
        var optimization_name = $(this).attr('id');
-       $.get("/hh-neuron-builder/fetch-opt-set-file/" + optimization_name, function(){
+       $.get("/hh-neuron-builder/fetch-opt-set-file/" + optimization_name +
+               "/" + exc + "/" + ctx + "/", function(){
 		window.location.href = "/hh-neuron-builder/workflow/";
        });
 	});
@@ -25,7 +31,7 @@ function setHPCParameters() {
 }
 
 function launchOptimizationHPC() {
-	window.location.href = "/hh-neuron-builder/launch-opt-hpc"; 
+	window.location.href = "/hh-neuron-builder/launch-opt-hpc/" + exc + "/" + ctx; 
 }
 
 function reloadCurrentPage() {

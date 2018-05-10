@@ -1,3 +1,7 @@
+var exc = sessionStorage.getItem("exc", exc) ?  sessionStorage.getItem("exc") : "";
+var ctx = sessionStorage.getItem("ctx", ctx) ? sessionStorage.getItem("ctx") : "";
+var req_pattern = exc + '/' + ctx;
+
 $(window).bind("pageshow", function() { 
     checkConditions();
     closeParameterDiv();
@@ -31,13 +35,13 @@ $(document).ready(function(){
     var $formrunparam = $('#submitRunParam');
     $formrunparam.submit(function(e){
         e.preventDefault();
-        $.post($(this).attr('action'), $(this).serialize(), function(response){
+        $.post('/hh-neuron-builder/submit-run-param/' + req_pattern + '/', $(this).serialize(), function(response){
             if (response['response'] == "KO"){
                 openErrorDiv("Username and/or password are wrong");
                 checkConditions();
             } else {
-                closeParameterDiv();
                 checkConditions();
+                closeParameterDiv();
             } 
         },'json');
         return false;
@@ -47,7 +51,7 @@ $(document).ready(function(){
     var $formfetchparam = $('#submitFetchParam');
     $formfetchparam.submit(function(e){
         e.preventDefault();
-        $.post($(this).attr('action'), $(this).serialize(), function(response){
+        $.post('/hh-neuron-builder/submit-fetch-param/' + req_pattern + '/', $(this).serialize(), function(response){
             if (response['response'] == "KO"){
                 openErrorDiv(response['message']);
                 checkConditions();
@@ -88,12 +92,16 @@ $(document).ready(function(){
     });
 
     // assign functions to buttons' click
+    
+    // manage top bar buttons
+    document.getElementById("wf-btn-home").onclick = goHome;
+    document.getElementById("wf-btn-clone-wf").onclick = cloneWorkflow;
+    document.getElementById("wf-btn-save").onclick = saveWorkflow;
+
     // manage optimization settings buttons action
     document.getElementById("opt-set-btn").onclick = openParameterDiv;
     document.getElementById("cancel-param-btn").onclick = closeParameterDiv;
     document.getElementById("down-opt-set-btn").onclick = downloadLocalOptSet;
-    document.getElementById("wf-btn-clone-wf").onclick = cloneWorkflow;
-    document.getElementById("wf-btn-save").onclick = saveWorkflow;
 
     // manage simulation run buttons
     document.getElementById("run-sim-btn").onclick = inSilicoPage;
@@ -150,13 +158,13 @@ function efelPage() {
 
 // serve embedded-naas page
 function inSilicoPage() {
-    $.getJSON("/hh-neuron-builder/upload-to-naas", function(uploaddata){
-        $.getJSON("/hh-neuron-builder/model-loaded-flag", function(data){
+    $.getJSON("/hh-neuron-builder/upload-to-naas/" + req_pattern, function(uploaddata){
+        $.getJSON("/hh-neuron-builder/model-loaded-flag/" + req_pattern, function(data){
             var o = data["response"];
             if (o == "KO"){
                 window.location.href = "";
             } else {
-                window.location.href = "/hh-neuron-builder/embedded-naas/";
+                window.location.href = "/hh-neuron-builder/embedded-naas/" + req_pattern + "/";
             } 
         });
 
@@ -212,7 +220,6 @@ function closeParameterDiv() {
     document.getElementById("overlaywrapper").style.display = "none";
     document.getElementById("mainDiv").style.pointerEvents = "auto";
     document.body.style.overflow = "auto";
-    checkConditions();
 } 
 
 // close expiration div 
@@ -224,7 +231,9 @@ function closeExpirationDiv() {
 
 //
 function checkConditions(){
-    $.getJSON('/hh-neuron-builder/check-cond-exist', function(data){
+    
+    $.getJSON('/hh-neuron-builder/check-cond-exist/' + req_pattern, function(data){
+        console.log(data)
         var textnode = document.createTextNode("Workflow id: " + data["wf_id"]); 
         document.getElementById("wf-title").innerHTML = "";
         document.getElementById("wf-title").appendChild(textnode);
@@ -297,6 +306,17 @@ function checkConditions(){
             
             // if no optimization has been submitted
         } else {
+            // enable feature extraction buttons
+            document.getElementById("feat-efel-btn").disabled = false;
+            document.getElementById("feat-up-btn").disabled = false;
+
+            //enable optimization buttons
+            document.getElementById("opt-db-hpc-btn").disabled = false;
+            document.getElementById("opt-up-btn").disabled = false;
+
+            // disable optimization settings buttons
+            document.getElementById("opt-set-btn").disabled = false;
+
             document.getElementById("optlaunchimg").src = "/static/img/ko_red.png";
             document.getElementById("optlaunchtextspan").innerHTML = "No job submitted";
             document.getElementById("cell-opt-div").style.backgroundColor='rgba(255, 255, 255,0.0)';
@@ -316,6 +336,7 @@ function checkConditions(){
             document.getElementById("opt-res-bar").innerHTML = data['run_sim']['message'];  
             document.getElementById("down-sim-btn").disabled = false;  
             document.getElementById("run-sim-btn").disabled = false;  
+
             if (data['sim_flag']['status']){
                 document.getElementById("del-sim-btn").disabled = true;  
                 document.getElementById("opt-fetch-btn").disabled = true;  
@@ -340,9 +361,10 @@ function checkConditions(){
 
 // Delete features.json and protocol.json files from containing folder
 function deleteFeatureFiles() {
+
     var resp = confirm("Are you sure you want to delete current feature files?");
     if (resp) {
-        $.getJSON("/hh-neuron-builder/delete-files/feat/", function(data){
+        $.getJSON("/hh-neuron-builder/delete-files/feat/" + req_pattern + "/", function(data){
             checkConditions();
         });
     }
@@ -352,7 +374,7 @@ function deleteFeatureFiles() {
 function deleteOptFiles() {
     var resp = confirm("Are you sure you want to delete current optimization files?");
     if (resp) {
-        $.getJSON("/hh-neuron-builder/delete-files/optset/", function(data){
+        $.getJSON("/hh-neuron-builder/delete-files/optset/" + exc + "/" + ctx + "/", function(data){
             checkConditions();
         });
     }
@@ -362,7 +384,7 @@ function deleteOptFiles() {
 function deleteSimFiles() {
     var resp = confirm("Are you sure you want to delete current optimization files?");
     if (resp) {
-        $.getJSON("/hh-neuron-builder/delete-files/modsim/", function(data){
+        $.getJSON("/hh-neuron-builder/delete-files/modsim/" + exc + "/" + ctx + "/", function(data){
             checkConditions();
         });
     }
@@ -394,7 +416,7 @@ function runOptimization() {
     document.getElementById("run-sim-btn").disabled = true;
     displayPleaseWaitDiv();
     changeMsgPleaseWaitDiv("Launching optimization on the hpc system");
-    $.getJSON("/hh-neuron-builder/run-optimization", function(data){
+    $.getJSON("/hh-neuron-builder/run-optimization/" + req_pattern, function(data){
         checkConditions();
         closePleaseWaitDiv();
         if (data['status_code'] != 200){
@@ -455,7 +477,8 @@ function displayOptSetUploadDiv() {
 //
 function openUploadDiv(type, msg) {
     var uploadForm = document.getElementById("uploadFileForm");
-    uploadForm.setAttribute("action","/hh-neuron-builder/upload-files/" + type + "/");
+
+    uploadForm.setAttribute("action", "/hh-neuron-builder/upload-files/" + type + "/" + exc + "/" + ctx + "/");
 
     var uploadTitleDiv = document.getElementById("uploadTitleDiv");
     uploadTitleDiv.innerHTML = "<strong>" + msg + "</strong>";
@@ -504,7 +527,7 @@ function displayJobInfo() {
     displayPleaseWaitDiv();
     changeMsgPleaseWaitDiv("Fetching job list");
     $("#job-list-div").empty();
-    $.getJSON("/hh-neuron-builder/get-nsg-job-list", function(joblist){
+    $.getJSON("/hh-neuron-builder/get-nsg-job-list/" + req_pattern, function(joblist){
         if ($.isEmptyObject(joblist)){
             closePleaseWaitDiv();
             openErrorDiv("You have no job on the hpc system");
@@ -519,7 +542,7 @@ function displayJobInfo() {
         for (var i = 0; i < job_list_len; i++){
             (function(cnrt) {
                 crr_idx = 0;
-                $.getJSON("/hh-neuron-builder/get-nsg-job-details/" + job_key_list[cnrt] + "/", function(job_details){
+                $.getJSON("/hh-neuron-builder/get-nsg-job-details/" + job_key_list[cnrt] + "/" + req_pattern + "/", function(job_details){
                     if (cnrt+1 > crr_idx) {
                         print_idx = cnrt+1;
                         crr_idx = print_idx;
@@ -638,19 +661,19 @@ function downloadJob(jobid) {
     displayPleaseWaitDiv();
     closeJobInfoDiv();
     changeMsgPleaseWaitDiv("Downloading job and analysing data.<br>This operation may take several minutes.");
-    $.getJSON('/hh-neuron-builder/download-job/' + jobid + '/', function(data){
+    $.getJSON('/hh-neuron-builder/download-job/' + jobid + '/' + req_pattern + '/', function(data){
         if (data["response"] == "KO"){
             closePleaseWaitDiv();
             openErrorDiv(data["message"]);
             return false;
         }
-        $.getJSON('/hh-neuron-builder/modify-analysis-py', function(modifydata){
+        $.getJSON('/hh-neuron-builder/modify-analysis-py/' + req_pattern, function(modifydata){
             if (modifydata["response"] == "KO") {
                 closePleaseWaitDiv();
                 openErrorDiv(modifydata["message"]);
                 return false;
             } else {
-                $.getJSON('/hh-neuron-builder/zip-sim', function(zip_data){
+                $.getJSON('/hh-neuron-builder/zip-sim/' + req_pattern, function(zip_data){
                     closePleaseWaitDiv();
                     checkConditions();
                 });
@@ -682,15 +705,17 @@ function downloadLocalFeat(){
 }
 //
 function downloadLocal(filetype) {
+
     displayPleaseWaitDiv();
-    window.location.href = "/hh-neuron-builder/download-zip/" + filetype + "/";
+    window.location.href = "/hh-neuron-builder/download-zip/" + filetype + "/" +
+        exc + "/" + ctx + "/";
     checkConditions();
     closePleaseWaitDiv();
 }
 
 function cloneWorkflow() {
     displayPleaseWaitDiv();
-    $.getJSON('/hh-neuron-builder/create-wf-folders/cloned', function(zip_data){
+    $.getJSON('/hh-neuron-builder/create-wf-folders/cloned/' + req_pattern, function(zip_data){
         checkConditions();
         closePleaseWaitDiv();
     });
@@ -698,8 +723,14 @@ function cloneWorkflow() {
 
 function saveWorkflow() {
     displayPleaseWaitDiv(message="Saving workflow to storage");
-    $.getJSON('/hh-neuron-builder/save-wf-to-storage', function(zip_data){
+    $.getJSON('/hh-neuron-builder/save-wf-to-storage/' + req_pattern, function(zip_data){
         checkConditions();
         closePleaseWaitDiv();
     });
+}
+
+function goHome() {
+    displayPleaseWaitDiv(message="Loading ...");
+    window.location.href='/hh-neuron-builder?ctx=' + ctx;
+    closePleaseWaitDiv();
 }

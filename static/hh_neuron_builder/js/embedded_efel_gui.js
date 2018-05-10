@@ -2,11 +2,18 @@ document.getElementById("back-to-workflow").onclick = workflowPage;
 document.getElementById("save-feature-files").onclick = saveFeatures;
 
 $(document).ready(function(){
-    $.getJSON('/hh-neuron-builder/get-context/', function(data){
-        var context = data["context"];         
-        document.getElementById("efelgui-frame").setAttribute("src", 
-                "/efelg/?ctx=" + context);
-    })
+
+    var exc = sessionStorage.getItem("exc", exc) ?  sessionStorage.getItem("exc") : "";
+    var ctx = sessionStorage.getItem("ctx", ctx) ? sessionStorage.getItem("ctx") : "";
+    
+    document.getElementById("efelgui-frame").setAttribute("src", 
+                "/efelg/?ctx=" + ctx);
+
+   // $.getJSON('/hh-neuron-builder/get-context/', function(data){
+   //     var context = data["context"];         
+   //     document.getElementById("efelgui-frame").setAttribute("src", 
+   //             "/efelg/?ctx=" + context);
+   // })
 
 });
 
@@ -26,10 +33,14 @@ function checkLastPage(iframe){
 
 //
 function saveFeatures(){
+
+    var exc = sessionStorage.getItem("exc", exc) ?  sessionStorage.getItem("exc") : "";
+    var ctx = sessionStorage.getItem("ctx", ctx) ? sessionStorage.getItem("ctx") : "";
+    
     var innerDiv = document.getElementById("efelgui-frame").contentDocument || 
         getElementById("efelgui-frame").contentWindow.document;
     var folderName = innerDiv.getElementById("hiddendiv").classList[0];
-    $.getJSON('/hh-neuron-builder/copy-feature-files/' + folderName, 
+    $.getJSON('/hh-neuron-builder/copy-feature-files/' + folderName + '/' + exc + '/' + ctx +'/', 
             function(data){
                 window.location.href = "/hh-neuron-builder/workflow";
             });    

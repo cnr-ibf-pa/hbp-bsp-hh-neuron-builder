@@ -148,7 +148,7 @@
 <!-- section containing divs for user insertions -->
 <div id="overlaywrapper" class="overlay-wrapper">
     <div id="overlayparam" class="overlay-content">
-        <form id='submitRunParam' method='POST' action='/hh-neuron-builder/submit-run-param/'>{% csrf_token %}
+        <form id='submitRunParam' method='POST'>{% csrf_token %}
             <div class="param-title-div">
                 <strong>Algorithm Parameters</strong>
             </div>
@@ -216,7 +216,7 @@
 <!-- section containing divs for user fetch system insertions -->
 <div id="overlaywrapperfetch" class="overlay-wrapper">
     <div id="overlayparamfetch" style="top:30%;" class="overlay-content">
-        <form id='submitFetchParam' method='POST' action='/hh-neuron-builder/submit-fetch-param/'>{% csrf_token %}
+        <form id='submitFetchParam' method='POST'>{% csrf_token %}
             <div class="param-title-div">
                 <strong>HPC system</strong>
             </div>

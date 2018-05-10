@@ -1,24 +1,26 @@
+var exc = sessionStorage.getItem("exc", exc) ?  sessionStorage.getItem("exc") : "";
+var ctx = sessionStorage.getItem("ctx", ctx) ? sessionStorage.getItem("ctx") : "";
+var req_pattern = exc + '/' + ctx;
+
 $(document).ready(function(){
+    openPleaseWaitDiv("Initializing");
     document.getElementById("cancel-wf-job-list-btn").onclick = closeFetchWfStorageDiv;
     document.getElementById("ok-nowf-btn").onclick = closeNoWfDiv;
     document.getElementById("new-wf").onclick = initNewWorkflow;
     $('#wf-storage-list-div').on('click', '.down-wf-btn', function(){
         downloadWf(this.id);
     });
-});
 
-function initNewWorkflow() {
-    console.log("asdfasfas");
-    $.getJSON("/hh-neuron-builder/create-wf-folders/nyes/", function(data){
-        window.location.href = "/hh-neuron-builder/workflow/";
+    $.getJSON("/hh-neuron-builder/initialize/" + exc + "/" + ctx + "", function(data){
+    closePleaseWaitDiv();
     });
-};
+});
 
 function fetchWorkflows() {
     openPleaseWaitDiv("Searching for workflows in your storage");
     var listDivEl = document.getElementById("wf-storage-list-div");
     listDivEl.innerHTML = "";
-    $.getJSON("/hh-neuron-builder/wf-storage-list/", function(data){
+    $.getJSON("/hh-neuron-builder/wf-storage-list/" + req_pattern + "/", function(data){
         if (data['list'].length == 0){
             closePleaseWaitDiv();
             openNoWfDiv();
@@ -41,7 +43,6 @@ function fetchWorkflows() {
 
                 listDivEl.prepend(crr_wf_div);
             }
-            listDivEl.prepend(document.getElementById("fetch-wf-storage-title"));
             closePleaseWaitDiv();
             document.getElementById("overlay-wrapper-wf").style.display = "block";
             document.getElementById("home-main-div").style.pointerEvents = "none";
@@ -86,8 +87,8 @@ function downloadWf(wfid) {
     openPleaseWaitDiv("Downloading workflow from the storage.");
     closeFetchWfStorageDiv();
     var wfid_no_ext = wfid.replace(/\.[^/.]+$/, "")
-    $.getJSON('/hh-neuron-builder/fetch-wf-from-storage/' + wfid_no_ext + '/', function(data){
-                closePleaseWaitDiv();
-                window.location.href = "/hh-neuron-builder/workflow/";
-    });
+        $.getJSON('/hh-neuron-builder/fetch-wf-from-storage/' + wfid_no_ext + '/' + req_pattern + '/', function(data){
+            closePleaseWaitDiv();
+            window.location.href = "/hh-neuron-builder/workflow/";
+        });
 }
