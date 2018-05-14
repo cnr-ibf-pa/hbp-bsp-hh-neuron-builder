@@ -1,0 +1,183 @@
+div#container {
+    overflow: auto;
+    position: relative;
+    margin: auto;
+    top: 10px;
+    width: 98%;
+    /*
+    max-width: 1200px;
+    */
+    min-width: 800px;
+    border: 1px solid #73AD21;
+    height: 350px;
+}
+div#contributorsTitle {
+    position: absolute;
+    top: 33%;
+    left: 6%;
+    width: 14%;
+    text-align: center;
+    margin-top: -100px;
+}
+div#contributorsD {
+    overflow: auto;
+    position: absolute;
+    top: 39%;
+    left: 6%;
+    margin-top: -100px;
+    width:  14%;
+    height: 200px;
+    border: 1px solid;
+    text-align: left;
+    padding: 2px;
+}
+div#speciesTitle {
+    position: absolute;
+    top: 33%;
+    left: 21%;
+    width: 14%;
+    text-align: center;
+    margin-top: -100px;
+}
+div#speciesD {
+	 overflow: auto;
+    position: absolute;
+    top: 39%;
+    left: 21%;
+    margin-top: -100px;
+    width:  14%;
+    height: 200px;
+    border: 1px solid;
+    text-align: left;
+    padding: 2px;
+}
+div#structureTitle {
+    position: absolute;
+    top: 33%;
+    left: 36%;
+    width: 14%;
+    text-align: center;
+    margin-top: -100px;
+}
+div#structureD {
+    overflow: auto;
+    position: absolute;
+    top: 39%;
+    left: 36%;
+    margin-top: -100px;
+    width:  14%;
+    height: 200px;
+    border: 1px solid;
+    text-align: left;
+    padding: 2px;
+}
+div#regionTitle {
+    position: absolute;
+    top: 33%;
+    left: 51%;
+    width: 14%;
+    text-align: center;
+    margin-top: -100px;
+}
+div#regionD {
+	overflow: auto;
+    position: absolute;
+    top: 39%;
+    left: 51%;
+    margin-top: -100px;
+    width:  14%;
+    height: 200px;
+    border: 1px solid;
+    text-align: left;
+    padding: 2px;
+}
+div#typeTitle {
+    position: absolute;
+    top: 33%;
+    left: 66%;
+    width: 14%;
+    text-align: center;
+    margin-top: -100px;
+}
+div#typeD {
+	 overflow: auto;
+    position: absolute;
+    top: 39%;
+    left: 66%;
+    margin-top: -100px;
+    width:  14%;
+    height: 200px;
+    border: 1px solid;
+    text-align: left;
+    padding: 2px;
+}
+div#etypeTitle {
+    position: absolute;
+    top: 33%;
+    left: 81%;
+    width: 14%;
+    text-align: center;
+    margin-top: -100px;
+}
+div#etypeD {
+	 overflow: auto;
+    position: absolute;
+    top: 39%;
+    left: 81%;
+    margin-top: -100px;
+    width:  14%;
+    height: 200px;
+    border: 1px solid;
+    text-align: left;
+    padding: 2px;
+}
+.tableTitle {
+    /*font-family: sans-serif;
+    color: #808080;*/
+}
+
+div#buttonD {
+    /*
+    overflow: hidden ;
+    */
+    position: absolute;
+    top: 100%;
+    left: 3%;
+    margin-top: -80px;
+    width: 95%;
+    height: 14%;
+
+}
+
+button#apply, button#reset {
+    /*
+    height: 80%;
+    */
+    width: 45%;
+    margin: 10px 10px 10px 10px;
+}
+
+label.withinTable {
+    color: #999999;
+    font-weight: normal;
+}
+
+label.activated {
+    color: black;
+    font-weight: normal;
+}
+
+label.selected {
+    color: black;
+    font-weight: bold;
+}
+
+label.withinTable:hover{
+    background-color: rgba(153, 204, 255, 0.7);
+    /*
+     * font-style: italic;
+     * text-decoration-line: underline;
+     * transition: all 1s linear;
+     * transform: scale(2, 2); 
+     */
+}
