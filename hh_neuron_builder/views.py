@@ -314,7 +314,7 @@ def fetch_wf_from_storage(request, wfid="", exc="", ctx=""):
     zip_ref.close()
     os.remove(final_wf_dir + '.zip')
 
-    # delete keys if present in request.session
+    # overwrite keys if present in request.session
     request.session[exc]['user_dir'] = target_path
     request.session[exc]['user_dir_data'] = os.path.join(target_path, 'data')
     request.session[exc]['user_dir_data_feat'] = os.path.join(target_path, 'data', 'features')
@@ -323,6 +323,15 @@ def fetch_wf_from_storage(request, wfid="", exc="", ctx=""):
     request.session[exc]['user_dir_results'] = os.path.join(target_path, 'results')
     request.session[exc]['user_dir_results_opt'] = os.path.join(target_path, 'results', 'opt')
     request.session[exc]['user_dir_sim_run'] = os.path.join(target_path, 'sim')
+
+    user_dir_data_opt = request.session[exc]['user_dir_data_opt_set']
+    for crr_f in os.listdir(user_dir_data_opt):
+        if crr_f.endswith(".zip"):
+            request.session[exc]['source_opt_name'] = os.path.splitext(crr_f)[0]
+            request.session[exc]['source_opt_zip'] = \
+                    os.path.join(user_dir_data_opt, crr_f)
+            break
+
 
     # create folders for global data and json files if not existing
     if not os.path.exists(request.session[exc]['user_dir_data_feat']):
@@ -812,6 +821,8 @@ def upload_files(request, filetype = "", exc = "", ctx = ""):
     if filetype == "optset":
         request.session[exc]['source_opt_name'] = os.path.splitext(filename)[0]
         request.session[exc]['source_opt_zip'] = final_res_file 
+        print(request.session[exc]['source_opt_zip'])
+        print(request.session[exc]['source_opt_name'])
     elif filetype == "modsim":
         user_dir_sim_run = request.session[exc]['user_dir_sim_run']
 
