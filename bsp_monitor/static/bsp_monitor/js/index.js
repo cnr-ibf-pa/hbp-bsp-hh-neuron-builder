@@ -4,6 +4,13 @@ var RT_FILTERS = 'rt:pagePath=~/collab/1655(\/.*|$)';
 var DIMENSIONS = 'rt:pagePath=~/collab/1655(\/.*|$)';
 var REFRESH_TIME = 60000;
 
+var rt_pages_dim = "rt:pagePath,rt:pageTitle,rt:minutesAgo";
+var rt_metrics = "rt:pageviews";
+
+var ga_pages_dim = "ga:pagePath,ga:pageTitle";
+var ga_metrics = "ga:pageviews";
+
+
 $(document).ready(function(){
     printLoadingMessage(["hist-pl-cnt", "rt-pl-cnt", "hist-leg-cnt"],["Loading ...", "Loading ...", ""]);
     //
@@ -26,7 +33,7 @@ $(document).ready(function(){
     document.getElementById("refresh-btn").onclick = executeRealTimeStat;
 
     $(window).on('resize', function() {
-    printLoadingMessage(["hist-pl-cnt", "rt-pl-cnt", "hist-leg-cnt"],["Loading ...", "Loading ...", ""]);
+        printLoadingMessage(["hist-pl-cnt", "rt-pl-cnt", "hist-leg-cnt"],["Loading ...", "Loading ...", ""]);
         clearTimeout(window.resizedFinished);
         window.resizedFinished = setTimeout(function(){
             reloadAll();
@@ -34,7 +41,7 @@ $(document).ready(function(){
     });
 
     function reloadAll(){
-        
+
         plotGeo(IDS, FILTERS);
         plotSessionNum(IDS, FILTERS);
         plotUserNum(IDS, FILTERS);
@@ -42,8 +49,17 @@ $(document).ready(function(){
         plotPagesView(IDS, FILTERS); //
         plotHistoryUsecases();
         plotRtUsers(IDS, RT_FILTERS);
-        plotRtPages(IDS, RT_FILTERS);
+        plotRtPages(IDS, RT_FILTERS, rt_pages_dim, rt_metrics);
         plotRtUsecases();
+
+        /* BLOCK USED FOR PLOT NEEDED FOR THE REVIEW
+        //plotHistoryUsecasesReview();
+        //plotHistPagesReview_02(IDS, FILTERS);
+        plotHistUCReview(IDS, FILTERS);
+        plotHistUCExecReview(IDS, FILTERS);
+        plotHistUCExecReview(IDS, FILTERS);
+        */
+
     }
 
     function printLoadingMessage(cl_name, load_str){
@@ -93,11 +109,15 @@ function executeHistoryStat(){
     plotUserCum(IDS, FILTERS); //
     plotPagesView(IDS, FILTERS); //
     plotHistoryUsecases();
+    /* BLOCK USED FOR PLOT NEEDED FOR THE REVIEW
+       plotHistPagesReview(IDS, FILTERS);
+       plotHistUCReview(IDS, FILTERS);
+       */
 }
 
 function executeRealTimeStat(){
     plotRtUsers(IDS, RT_FILTERS);
-    plotRtPages(IDS, RT_FILTERS);
+    plotRtPages(IDS, RT_FILTERS, rt_pages_dim, rt_metrics);
     plotRtUsecases();
 }
 
@@ -132,72 +152,76 @@ function setClassChangeTimeout(element){
 }
 
 /* get real time pages- start */
-function plotRtPages(IDS, FILTERS){
-    gapi.client.analytics.data.realtime.get({ids:IDS, dimensions:"rt:pagePath,rt:pageTitle,rt:minutesAgo", metrics:"rt:pageviews", filters:FILTERS}).then(function(t){
-        if (!("result" in t) || !("rows" in t.result)){
-            data = {
-                datasets:[{data:[1]}],
-                labels:["No visit"]
-            }
-        }else{
-            var pages = {};
-            var labels = {};
-            var data = {};
-            t.result.rows.forEach(function(row, i) {
-                if (parseInt(row[2]) >= 0 && parseInt(row[2]) <= 5){
-                    pages[row[0]] = pages[row[0]] ? pages[row[0]]+(+row[3]):+row[3];
-                    labels[row[0]] = labels[row[0]] ? labels[row[0]]:row[1];
-                }
-            });
-
-            if (Object.getOwnPropertyNames(pages).length == 0){
+function plotRtPages(IDS, FILTERS, crr_dimensions, rt_metrics){
+    gapi.client.analytics.data.realtime.get({ids:IDS, 
+        dimensions:crr_dimensions, 
+        metrics:rt_metrics, 
+        filters:FILTERS})
+        .then(function(t){
+            if (!("result" in t) || !("rows" in t.result)){
                 data = {
-                    datasets:[{data:[1],
-                        backgroundColor: palette('tol', 1).map(function(hex) {
-                            return '#' + hex;
-                        })
-                    }],
+                    datasets:[{data:[1]}],
                     labels:["No visit"]
                 }
-            } else {
-                var data_all = [];
-                var labels_str = [];
-                var tooltips = [];
-                Object.keys(labels).forEach(function(key, index) {
-                    data_all.push(pages[key]);
-                    labels_str.push(labels[key]);
-                    crr_ttip = labels[key].substr(0,labels[key].indexOf('-')-1);
-                    if (crr_ttip == "" || crr_ttip == " "){
-                        crr_ttip = "HBP-BSP";
+            }else{
+                var pages = {};
+                var labels = {};
+                var data = {};
+                t.result.rows.forEach(function(row, i) {
+                    if (parseInt(row[2]) >= 0 && parseInt(row[2]) <= 5){
+                        pages[row[0]] = pages[row[0]] ? pages[row[0]]+(+row[3]):+row[3];
+                        labels[row[0]] = labels[row[0]] ? labels[row[0]]:row[1];
                     }
-                    tooltips.push(crr_ttip);
-                });  
-                data = { 
-                    labels:tooltips,
-                    datasets:[{
-                        data:data_all,
-                        backgroundColor: palette('tol', data_all.length).map(function(hex) {
-                            return '#' + hex;
-                        })
-                    }]
-                };
-            }
-        }
-        var ctx = makeCanvas('chart-rt-pages-container');
-        var chart = new Chart(ctx, {
-            type: 'doughnut',
-            // The data for our dataset
-            data: data,
-            options: {
-                legend:{
-                    position: 'top',
-                    labels:{
-                        boxWidth: 10,
-                    },
+                });
+
+                if (Object.getOwnPropertyNames(pages).length == 0){
+                    data = {
+                        datasets:[{data:[1],
+                            backgroundColor: palette('tol', 1).map(function(hex) {
+                                return '#' + hex;
+                            })
+                        }],
+                        labels:["No visit"]
+                    }
+                } else {
+                    var data_all = [];
+                    var labels_str = [];
+                    var tooltips = [];
+                    Object.keys(labels).forEach(function(key, index) {
+                        data_all.push(pages[key]);
+                        labels_str.push(labels[key]);
+                        crr_ttip = labels[key].substr(0,labels[key].indexOf('-')-1);
+                        if (crr_ttip == "" || crr_ttip == " "){
+                            crr_ttip = "HBP-BSP";
+                        }
+                        tooltips.push(crr_ttip);
+                    });  
+                    data = { 
+                        labels:tooltips,
+                        datasets:[{
+                            data:data_all,
+                            backgroundColor: palette('tol', data_all.length).map(function(hex) {
+                                return '#' + hex;
+                            })
+                        }]
+                    };
                 }
-            },
+            }
+            var ctx = makeCanvas('chart-rt-pages-container');
+            var chart = new Chart(ctx, {
+                type: 'doughnut',
+                // The data for our dataset
+                data: data,
+                options: {
+                    legend:{
+                        position: 'top',
+                        labels:{
+                            boxWidth: 10,
+                        },
+                    }
+                },
+            });
         });
-    });
 }
 /* plot  real time pages- end */
 function plotHistoryUsecases(){
@@ -205,7 +229,7 @@ function plotHistoryUsecases(){
     $.getJSON('/bsp-monitor/get-uc/' + dates[0] + '/' + dates[1] + '/', function (resp){
         var uc_hist_div = document.getElementById("uc-hist-div");
         uc_hist_div.innerHTML = "";
-        
+
         var all_data = resp["uc_topics_full"];
         for (var key in all_data){
             var crr_global_container=document.createElement("div");
@@ -232,7 +256,7 @@ function plotHistoryUsecases(){
             crr_global_container.appendChild(crr_container);
 
             uc_hist_div.appendChild(crr_global_container);
-            
+
             var crr_t_labels = [];
             var crr_t_plot_labels = [];
             var crr_t_data = [];
@@ -266,22 +290,22 @@ function plotHistoryUsecases(){
                 options: {
                     legend: {
                         display: false},
-                    title: {
-                        display: true,
-                        text: 'Number of use case executions for: ' + key,
-                        fontSize: 16,
-                    },
-                    scales: {
-                        xAxes: [{
-                            display: false,
-                            barPercentage: 0.3,
-                        }],
-                        yAxes: [{
-                            ticks: {
-                                beginAtZero: true
-                            }
-                        }]
-                    },
+                        title: {
+                            display: true,
+                            text: 'Number of use case executions for: ' + key,
+                            fontSize: 16,
+                        },
+                        scales: {
+                            xAxes: [{
+                                display: false,
+                                barPercentage: 0.3,
+                            }],
+                            yAxes: [{
+                                ticks: {
+                                    beginAtZero: true
+                                }
+                            }]
+                        },
                 }
             });
             generateLegend2(crr_legend_id, data, crr_t_labels);
@@ -301,7 +325,7 @@ function generateLegend(id, items) {
         var color = item.color || item.fillColor;
         var label = item.label;
         return '<li><i style="background:' + color + '"></i>' +
-          escapeHtml(label) + '</li>';
+            escapeHtml(label) + '</li>';
     }).join('');
 }
 
@@ -411,11 +435,11 @@ function plotSessionNum(IDS, FILTERS){
             options: {
                 legend: {
                     display: false},
-                title: {
-                    display: false,
-                    text: 'Number of sessions',
-                    fontSize: 16,
-                },
+                    title: {
+                        display: false,
+                        text: 'Number of sessions',
+                        fontSize: 16,
+                    },
             }
         });
     });
@@ -432,22 +456,22 @@ function plotUserNum(IDS, FILTERS){
         'start-date': dates[0],
         'end-date': dates[1]
     });
-   
+
     Promise.all([user_num]).then(function(results) {
 
         var data1 = results[0].rows.map(function(row) { return +row[1]; });
         var data2 = results[0].rows.map(function(row) { return +row[2]; });
-        
+
         var labels = results[0].rows.map(function(row) { return +row[0]; });
         labels = labels.map(function(label) {
             return moment(label, 'YYYYMMDD').format('DD-MM');
         });
-         
+
         var data3=[];
         for (var i = 0, len = data1.length; i < len; i++) {
             data3[i]=data1[i]-data2[i];
         }
-        
+
         var data = {
             labels : labels,
             datasets : [
@@ -472,9 +496,9 @@ function plotUserNum(IDS, FILTERS){
                 borderColor:'rgba(197,134,176,1)',
                 borderWidth: 0.8,
                 data : data2
-               
+
             },
-             {   
+            {   
                 label:'Returning users',
                 pointRadius : 0,
                 pointHoverRadius : 3,
@@ -485,7 +509,7 @@ function plotUserNum(IDS, FILTERS){
                 borderWidth: 0.8,
                 data : data3
             },
-           
+
             ]
         };
         var ctx = makeCanvas('user-num');
@@ -496,7 +520,7 @@ function plotUserNum(IDS, FILTERS){
             options: {
                 legend: {
                     display: false,
-                        },
+                },
                 title: {
                     display: false,
                     text: 'Number of users',
@@ -504,7 +528,7 @@ function plotUserNum(IDS, FILTERS){
                 },
             }
         });
-         generateLegend('legend-plotUserNum-container', data.datasets);
+        generateLegend('legend-plotUserNum-container', data.datasets);
     });
 }
 
@@ -523,23 +547,23 @@ function plotUserCum(IDS, FILTERS){
 
         var data1 = results[0].rows.map(function(row) { return +row[1]; });
         var data2 = results[0].rows.map(function(row) { return +row[2]; });
-        
+
         var labels = results[0].rows.map(function(row) { return +row[0]; });
         labels = labels.map(function(label) {
             return moment(label, 'YYYYMMDD').format('DD-MM');
         });
-         
+
         var data3=[];
         for (var i = 0, len = data1.length; i < len; i++) {
             data3[i]=data1[i]-data2[i];
         }
-        
+
         var cum_user=[];
-            cum_user[0]=data1[0];
+        cum_user[0]=data1[0];
         var cum_newuser=[];
-            cum_newuser[0]=data2[0];
+        cum_newuser[0]=data2[0];
         var cum_olduser=[];
-            cum_olduser[0]=data3[0];
+        cum_olduser[0]=data3[0];
 
         for(var i=1, len = data1.length; i < len; i++){
             cum_user[i]=data1[i]+cum_user[i-1];
@@ -571,9 +595,9 @@ function plotUserCum(IDS, FILTERS){
                 borderColor:'rgba(197,134,176,1)',
                 borderWidth: 0.8,
                 data : cum_newuser
-               
+
             },
-             {   
+            {   
                 label:'Returning users',
                 pointRadius : 0,
                 pointHoverRadius : 3,
@@ -586,7 +610,7 @@ function plotUserCum(IDS, FILTERS){
             },
             ]
         };
-     
+
         var ctx = makeCanvas('user-cum');
         var chart = new Chart(ctx, {
             type: 'line',
@@ -594,9 +618,9 @@ function plotUserCum(IDS, FILTERS){
             data: data,
             options: {
                 legend: {
-                   position: 'top',
-                   display: false,
-                        },
+                    position: 'top',
+                    display: false,
+                },
                 title: {
                     display: false,
                     text: 'Cumulative number users',
@@ -610,44 +634,45 @@ function plotUserCum(IDS, FILTERS){
 }
 /*generate random color rgb*/
 function rgbColor(){
-     function getRandomInt(min, max) {
+    function getRandomInt(min, max) {
         return Math.floor(Math.random() * (max - min + 1)) + min;
-        }
-        //generate random red, green and blue intensity
-        var r = getRandomInt(0, 255);
-        var g = getRandomInt(0, 255);
-        var b = getRandomInt(0, 255);
-        return "rgb(" + r + "," + g + "," + b + ")";
+    }
+    //generate random red, green and blue intensity
+    var r = getRandomInt(0, 255);
+    var g = getRandomInt(0, 255);
+    var b = getRandomInt(0, 255);
+    return "rgb(" + r + "," + g + "," + b + ")";
 }
 
 /* plot # number page visited */
 function plotPagesView(IDS, FILTERS){
     var dates = getDates();
-        query({
-            'ids': IDS,
-            'filters': FILTERS,
-            'dimensions': 'ga:pagePath, ga:pageTitle, ga:date',
-            'metrics': 'ga:pageviews',
-            'sort': 'ga:pagePath',
-            'start-date': dates[0],
-            'end-date': dates[1]
-        })
-        .then(function(response) {
+    query({
+        'ids': IDS,
+        'filters': FILTERS,
+        'dimensions': 'ga:pagePath, ga:pageTitle, ga:date',
+        'metrics': 'ga:pageviews',
+        'sort': 'ga:pagePath',
+        'start-date': dates[0],
+        'end-date': dates[1],
+        'max-results': 10000
+    })
+    .then(function(response) {
 
         var pages = [], data0=[],day=[], title=[];
 
         response.rows.forEach(function(row, i) {
-       
-        var t=row[1].split("-");
-        if(title.indexOf(t[0]) == -1){   
+
+            var t=row[1].split("-");
+            if(title.indexOf(t[0]) == -1){   
                 title.push(t[0]);
-        }
-        if(day.indexOf(+row[2])==-1){
-            day.push(+row[2]);
-        }
-        day.sort();
-        pages.push([t[0], +row[3], moment(row[2], 'YYYYMMDD').format('DD-MM'), row[0]]);
-        data0.push(t[0]); //Url
+            }
+            if(day.indexOf(+row[2])==-1){
+                day.push(+row[2]);
+            }
+            day.sort();
+            pages.push([t[0], +row[3], moment(row[2], 'YYYYMMDD').format('DD-MM'), row[0]]);
+            data0.push(t[0]); //Url
         });
 
         var time=[];
@@ -664,9 +689,9 @@ function plotPagesView(IDS, FILTERS){
             }
             value.push(v);
         }
-        
+
         var vet=[];
-       
+
         for(var i=2, len=value.length; i<len; i++){
             var x=getData(time,value[i]);
             var col=rgbColor();
@@ -693,17 +718,17 @@ function plotPagesView(IDS, FILTERS){
             }
         });
         generateLegend('legend-plotPagesView-container', data.datasets);
-   });
+    });
 }
 function getData(time,value){
     var data1=[];
-        for(var i=0, len=time.length; i<len; i++){
-            data1.push(0);
-        }        
-        for(var i=0, len=value.length; i<len; i++){ 
-            var x=time.indexOf(value[i][2]);
-            data1[x]=value[i][1];
-        }
+    for(var i=0, len=time.length; i<len; i++){
+        data1.push(0);
+    }        
+    for(var i=0, len=value.length; i<len; i++){ 
+        var x=time.indexOf(value[i][2]);
+        data1[x]=value[i][1];
+    }
     return [data1, value[0][0]]
 }
 /* get dates from html element */
@@ -741,12 +766,13 @@ function plotGeo(IDS, FILTERS){
         var dates = getDates();
         var dataChart = new gapi.analytics.googleCharts.DataChart({
             query: {
-                ids: IDS,
-                metrics: 'ga:sessions',
-                dimensions: 'ga:country',
-                'sort': '-ga:sessions',
+                'ids': IDS,
+                'filters': FILTERS,
+                'metrics': 'ga:sessions',
+                'dimensions': 'ga:country',
                 "start-date": dates[0],
-                "end-date": dates[1]
+                "end-date": dates[1],
+                'max-results': 10000,
             },
             chart: {
                 container: 'embed-geo',
@@ -801,7 +827,7 @@ gapi.analytics.ready(function() {
             }
         });
         plotRtUsers(IDS, RT_FILTERS);
-        plotRtPages(IDS, RT_FILTERS);
+        plotRtPages(IDS, RT_FILTERS, rt_pages_dim, rt_metrics);
         plotGeo(IDS, FILTERS);
         plotSessionNum(IDS, FILTERS);
         plotUserNum(IDS, FILTERS);
@@ -812,7 +838,7 @@ gapi.analytics.ready(function() {
 
         setInterval(function(){
             plotRtUsers(IDS, RT_FILTERS);
-            plotRtPages(IDS, RT_FILTERS);
+            plotRtPages(IDS, RT_FILTERS, rt_pages_dim, rt_metrics);
             plotRtUsecases();
         }, REFRESH_TIME);
     }).then(closePleaseWaitDiv())
@@ -833,4 +859,231 @@ function closePleaseWaitDiv() {
     document.getElementById("overlaywrapperwaitmon").style.display = "none";
     document.getElementById("mainDiv").style.pointerEvents = "auto";
     document.body.style.overflow = "auto";
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+////////////////////////////////////////////////
+////////////////////////////////////////////////
+////////////////////////////////////////////////
+////////////////////////////////////////////////
+////////////////////////////////////////////////
+////////////////////////////////////////////////
+
+function selectColor(colorNum, colors){
+    if (colors < 1) colors = 1; // defaults to one color - avoid divide by zero
+    return "hsl(" + (colorNum * (360 / colors) % 360) + ",100%,50%)";
+}
+
+
+
+function plotHistoryUsecasesReview(){
+    var dates = getDates();
+    $.getJSON('/bsp-monitor/get-uc/' + dates[0] + '/' + dates[1] + '/', function (resp){
+        console.log(resp);
+        var data = {};
+        if (resp["rt_uc_num"] == 0){
+            data = {
+                datasets:[{data:[1], 
+                    backgroundColor: palette('tol', 1).map(function(hex) {
+                        return '#' + hex;
+                    })
+
+                }],
+                labels:["No use case executed"]
+            } 
+        }
+        else {
+            data = {
+                datasets:[{data:resp["uc_topics_count"],
+                    backgroundColor: palette('tol', resp["uc_topics_count"].length).map(function(hex) {
+                        return '#' + hex;
+                    })
+                }],
+                labels:resp["uc_topics"]
+            } 
+        }
+        var ctx = makeCanvas('chart-rt-uc-container-review');
+        var chart = new Chart(ctx, {
+            type: 'doughnut',
+            // The data for our dataset
+            data: data,
+            options: {
+                legend:{
+                    position: 'top',
+                    labels:{
+                        boxWidth: 10,
+                    }
+                }
+            },
+        });
+    });
+}
+
+
+/* get real time pages- start */
+function plotHistPagesReview(IDS, FILTERS){
+    var dates = getDates();
+    query({
+        'ids': IDS,
+        'filters': FILTERS,
+        'dimensions': 'ga:pagePath, ga:pageTitle, ga:date',
+        'metrics': 'ga:pageviews',
+        'sort': 'ga:pagePath',
+        'start-date': dates[0],
+        'end-date': dates[1],
+        'max-results': 10000
+    })
+    .then(function(t) {
+        if (!("rows" in t)){
+            data = {
+                datasets:[{data:[1]}],
+                labels:["No visit"]
+            }
+        }else{
+            var pages = {};
+            var labels = {};
+            var data = {};
+            var counter_access = 0;
+            var counter_no_nav = 0;
+            var counter_no_dash = 0;
+            var counter_all_pages = 0;
+            t['rows'].forEach(function(row, i) {
+                // if the bsp root has been accessed (i.e. no item visited)
+                if (row[0].indexOf("nav") == -1){
+                    counter_no_nav = counter_no_nav + 1;
+                    return
+                }else if (row[1].indexOf("-") == -1){
+                    counter_no_dash = counter_no_dash + 1;
+                    return
+                }else{
+                    crr_label = row[1].substr(0, row[1].indexOf('-')-1);
+                    pages[crr_label] = pages[crr_label] ? pages[crr_label]+(+row[3]) : +row[3];
+                    labels[crr_label] = crr_label;
+                    counter_all_pages = counter_all_pages + (+row[3])
+                }
+            });
+
+            if (Object.getOwnPropertyNames(pages).length == 0){
+                data = {
+                    datasets:[{data:[1],
+                        backgroundColor: palette('tol', 1).map(function(hex) {
+                            return '#' + hex;
+                        })
+                    }],
+                    labels:["No visit"]
+                }
+            } else {
+                var data_all = [];
+                var labels_str = [];
+                var tooltips = [];
+                Object.keys(labels).forEach(function(key, index) {
+                    data_all.push(pages[key]);
+                    labels_str.push(labels[key]);
+                    tooltips.push(labels[key]);
+                });  
+                var bg = [];
+                for (var i=0; i < data_all.length; i++){
+                    bg.push(selectColor(i, data_all.length)); 
+                }
+                data = { 
+                    labels:tooltips,
+                    datasets:[{
+                        data:data_all,
+                        backgroundColor: bg
+                    }]
+                };
+            }
+        }
+        var ctx = makeCanvas('chart-rt-pages-container-review');
+        var chart = new Chart(ctx, {
+            type: 'doughnut',
+            // The data for our dataset
+            data: data,
+            options: {
+                legend:{
+                    position: 'top',
+                    labels:{
+                        boxWidth: 10,
+                    },
+                }
+            },
+        });
+    });
+}
+
+/* get real time pages- start */
+function plotHistUCReview(IDS, FILTERS){
+    $.getJSON('/bsp-monitor/get-all-no-alex/',function(t) {
+        console.log(t);
+        var bg = [];
+        for (var i=0; i < t["uc_topics_count"].length; i++){
+            bg.push(selectColor(i, t["uc_topics_count"].length)); 
+        }
+        data = { 
+            labels:t["uc_topics"],
+            datasets:[{
+                data:t["uc_topics_count"],
+                backgroundColor: bg
+            }]
+        };
+        var ctx = makeCanvas('chart-rt-uc-container-review');
+        var chart = new Chart(ctx, {
+            type: 'doughnut',
+            // The data for our dataset
+            data: data,
+            options: {
+                legend:{
+                    position: 'top',
+                    labels:{
+                        boxWidth: 10,
+                    },
+                }
+            },
+        });
+    });
+}
+
+/* get real time pages- start */
+function plotHistUCExecReview(IDS, FILTERS){
+    $.getJSON('/bsp-monitor/get-exec-member/',function(t) {
+        console.log(t);
+        data = { 
+            labels:t["dates"],
+            datasets:[{
+                data:t["count"],
+                pointRadius : 0,
+                pointHoverRadius : 3,
+                label: "",
+                backgroundColor:'rgba(30, 70, 240, 0.4)',
+            }]
+        };
+        var ctx = makeCanvas('exec-member-container-review');
+        var chart = new Chart(ctx, {
+            type: 'line',
+            // The data for our dataset
+            data: data,
+            options: {
+                legend:{
+                    position: 'top',
+                    labels:{
+                        boxWidth: 10,
+                    },
+                }
+            },
+        });
+    });
 }

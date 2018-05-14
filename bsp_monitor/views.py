@@ -1,3 +1,5 @@
+import datetime
+from collections import OrderedDict
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.conf import settings
@@ -11,6 +13,7 @@ from hbp_app_python_auth.auth import get_access_token, \
 from hbp_app_python_auth.views import logout as auth_logout
 
 #
+import os
 import json
 import datetime 
 import bisect
@@ -120,3 +123,90 @@ def get_uc(request, start_date="0", end_date="0"):
 def get_uc_item_list(request):
     uc_topics_names = g.FileManager.get_name_convention()
     return HttpResponse(json.dumps({"Response":"OK", "UC_TOPICS_NAMES":uc_topics_names}), content_type="application/json")
+
+
+def get_all_no_alex(request):
+    path = "/app/media/bsp_monitor/assets"
+    with open(os.path.join(path, "all_no_alex.json")) as fh:
+        data = json.load(fh)
+
+    counter = 0
+    counter_out = 0
+    out_list = []
+
+    uc_list = g.FileManager.get_uc_json()
+    uc_topics_names = g.FileManager.get_name_convention()
+    uc_old_names = g.FileManager.get_old_uc_names()
+
+    uc_topics = []
+
+    # create final dictionary
+    uc_full = {}
+    for i in uc_list:
+        uctn = uc_topics_names[uc_list[i]]
+        if uctn not in uc_full:
+            uc_full[uctn] = {}
+        if i not in uc_full[uctn]:
+            uc_full[uctn][i] = 0
+
+    for i in data:
+        if i not in uc_list:
+            if i in uc_old_names:
+                print("old")
+                print(i)
+                uctn = uc_topics_names[uc_old_names[i]]
+                print(uctn)
+            else:
+                continue
+        else:
+            print("new")
+            uctn = uc_topics_names[uc_list[i]]
+            print(uctn)
+            
+        print("range data i")
+        print(int(data[i]))
+        for j in range(data[i]):
+            uc_topics.append(uctn)
+        
+        counter += int(data[i])
+
+    uc_topics_np = np.array(uc_topics)
+    uc_topics_unique, uc_topics_count = np.unique(uc_topics_np, return_counts=True)
+
+    return HttpResponse(json.dumps({"Response":"OK", \
+            "uc_topics":list(uc_topics_unique),\
+            "uc_topics_count":list(uc_topics_count), \
+            }), \
+            content_type="application/json")
+
+
+def get_exec_member(request):
+    path = "/app/media/bsp_monitor/assets"
+    with open(os.path.join(path, "member.json")) as fh:
+        data = json.load(fh)
+
+    d = data.keys()
+    dd = sorted(d, key=lambda x: datetime.datetime.strptime(x, '%Y/%m/%d'))
+    dates = []
+    count = []
+    for k in dd:
+        print(k)
+        dates.append(k)
+        count.append(data[k])
+    return HttpResponse(json.dumps({"dates":dates, "count":count}))
+
+def get_exec_not_member(request):
+    path = "/app/media/bsp_monitor/assets"
+    with open(os.path.join(path, "not_member.json")) as fh:
+        data = json.load(fh)
+    pprint.pprint(data)
+    dates = []
+    count = []
+    for k in data:
+        dates.append(k)
+        count.append(data[k])
+    return HttpResponse(json.dumps({"dates":dates, "count":count}))
+
+
+
+

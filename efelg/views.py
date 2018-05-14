@@ -345,8 +345,16 @@ def get_list(request):
 
     request.session["current_authorized_files"] = allfiles 
 
-    return HttpResponse(json.dumps(allfiles), content_type="application/json")
 
+    output_json = manage_json.generate_json_output(allfiles, json_dir)
+
+    user_dir = request.session['user_res_dir']
+    with open(os.path.join(user_dir, 'output.json'), 'w') as f:
+        json.dumps(output_json, f)
+
+
+    #return HttpResponse(json.dumps(allfiles), content_type="application/json")
+    return HttpResponse(json.dumps(output_json), content_type="application/json")
 
 
 ##### 

@@ -167,3 +167,51 @@ def extract_authorized_collab(metadata_file):
         all_meta = json.load(meta)
     
     return all_meta['authorized_collabs']
+
+
+# generate json output from all authorized user traces
+def generate_json_output(authorized_list, source_dir):
+    output_file = {"Contributors": {}}
+
+    for i in authorized_list:
+        file_name = i + '.json'
+        with open(os.path.join(source_dir, file_name), 'r') as f:
+            json_file = json.load(f)
+
+        contributor = json_file["contributors"]["name"]
+        specie = json_file["species"]
+        structure = json_file["area"]
+        region = json_file["region"]
+        cell_type = json_file["type"]
+        etype = json_file["etype"]
+        cell_id = json_file["name"]
+        filename = file_name
+
+        if contributor not in output_file["Contributors"]:
+            output_file["Contributors"][contributor] = {}
+
+        if specie not in output_file["Contributors"][contributor]:
+            output_file["Contributors"][contributor][specie] = {}
+
+        if structure not in output_file["Contributors"][contributor][specie]:
+            output_file["Contributors"][contributor][specie][structure] = {}
+
+        if region not in output_file["Contributors"][contributor][specie][structure]:
+            output_file["Contributors"][contributor][specie][structure][region] = {}
+
+        if cell_type not in output_file["Contributors"][contributor][specie][structure][region]:
+            output_file["Contributors"][contributor][specie][structure][region][cell_type] = {}
+
+        if etype not in output_file["Contributors"][contributor][specie][structure][region][cell_type]:
+            output_file["Contributors"][contributor][specie][structure][region][cell_type][etype] = {}
+
+        if cell_id not in output_file["Contributors"][contributor][specie][structure][region][cell_type][etype]:
+            output_file["Contributors"][contributor][specie][structure][region][cell_type][etype][cell_id] = {}
+
+	if len(output_file["Contributors"][contributor][specie][structure][region][cell_type][etype][cell_id]) == 0:
+            output_file["Contributors"][contributor][specie][structure][region][cell_type][etype][cell_id] = [filename]
+
+        elif i not in output_file["Contributors"][contributor][specie][structure][region][cell_type][etype][cell_id]:
+            output_file["Contributors"][contributor][specie][structure][region][cell_type][etype][cell_id].append(filename)
+
+    return output_file

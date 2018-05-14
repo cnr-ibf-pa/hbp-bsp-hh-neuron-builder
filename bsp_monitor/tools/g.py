@@ -74,10 +74,25 @@ class FileManager:
             "analysisandvisualization": "Analysis and Visualization",
             "modelvalidation": "Model Validation"
             }
-    
+    OLD_UC = {
+            "Optimize a cerebellar granule cell multicompartmental model with BluePyOpt running on Neuro Science Gateway (NSG)": "singlecellmodeling",
+            "Optimise a fast spiking interneuron in the Basal Ganglia":"singlecellmodeling",
+            "Synaptic events fitting (user's model)":"traceanalysis",
+            "Synaptic events fitting (user's data)":"traceanalysis",
+            "singlecellinsilicoexperimentsundercurrent":"singlecellinsilicoexperiments",
+            "Single cell in silico experiments under current/voltage clamp":"singlecellinsilicoexperiments",
+            "Hodgkin-Huxley Neuron Builder - CDP2 Product 1":"highlyintegratedworkflows",
+            "Morphology Analysis":"morphology",
+            "Morphology Visualization":"morphology"
+            }
+
     @classmethod
     def get_name_convention(cls):
         return cls.NAME_CONVENTION
+
+    @classmethod
+    def get_old_uc_names(cls):
+        return cls.OLD_UC
 
     @classmethod
     def get_uc_json(cls):
