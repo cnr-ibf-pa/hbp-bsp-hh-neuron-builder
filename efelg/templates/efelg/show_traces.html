@@ -87,78 +87,80 @@
                         </div>
                         <br>
                         <div class="center-container">
-                        <div id="buttonD" class="row-center-container">
-                            <button type="button" class="btn btn-default" id="apply" onclick="applySelection()" disabled>Apply</button>
-                            <button type="button" class="btn btn-default" id="reset" onclick="resetFields()">Reset</button>
+                            <div id="buttonD" class="row-center-container">
+                                <div id="citation-text"></div>
+                                <div id="ref-citation-text"></div>
+                                <button type="button" class="btn btn-default" id="apply" onclick="applySelection()" disabled>Apply</button>
+                                <button type="button" class="btn btn-default" id="reset" onclick="resetFields()">Reset</button>
+                            </div>
                         </div>
-                        </div>
-                    </div>
-                <br>
-                <div id='charts'></div>
-            </div>
-            <br>
-
-            <form id="upload_files" 
-                  name="upload_files_name" 
-                  method="POST"
-                  enctype="multipart/form-data"
-                  action="/efelg/upload_files">
-                {% csrf_token  %}
-                <div class="panel panel-success" id="input-groups">
-                    <div class="panel-heading">
-                        Upload your own file(s) and then select 
-                        individual traces
                     </div>
                     <br>
-
-                    <div class="panel">
-
-                        <!-- File uploaded box -->
-                        <div id="loadfile_box" style="display:none">
-                            <div class="panel-heading">
-                                <div id="loadfile_info"></div> 
-                            </div>
-                        </div>
-                        <!-- -->
-
-                        <!-- File rejected box -->
-                        <div id="loadfile_box_rejected" style="display:none">
-                            <div class="panel-heading">
-                                <div id="loadfile_info_rejected"></div> 
-                            </div>
-                        </div>
-                        <!-- -->
-
-                        <label class="btn btn-default btn-file">
-                            Browse files...
-                            <input type="file" 
-                                   name="user_files" 
-                                   id="user_files" 
-                                   accept=".abf" 
-                                   multiple style="display:none;"/>
-                            <span class="custom-file-control"></span>
-                        </label>
-
-                        <input type="submit" 
-                               id="upload_button" 
-                               name="upload_button_name" 
-                               class="btn btn-default" 
-                               value="Upload" />
-                    </div>
+                    <div id='charts'></div>
                 </div>
+                <br>
+
+                <form id="upload_files" 
+                      name="upload_files_name" 
+                      method="POST"
+                      enctype="multipart/form-data"
+                      action="/efelg/upload_files">
+                    {% csrf_token  %}
+                    <div class="panel panel-success" id="input-groups">
+                        <div class="panel-heading">
+                            Upload your own file(s) and then select 
+                            individual traces
+                        </div>
+                        <br>
+
+                        <div class="panel">
+
+                            <!-- File uploaded box -->
+                            <div id="loadfile_box" style="display:none">
+                                <div class="panel-heading">
+                                    <div id="loadfile_info"></div> 
+                                </div>
+                            </div>
+                            <!-- -->
+
+                            <!-- File rejected box -->
+                            <div id="loadfile_box_rejected" style="display:none">
+                                <div class="panel-heading">
+                                    <div id="loadfile_info_rejected"></div> 
+                                </div>
+                            </div>
+                            <!-- -->
+
+                            <label class="btn btn-default btn-file">
+                                Browse files...
+                                <input type="file" 
+                                       name="user_files" 
+                                       id="user_files" 
+                                       accept=".abf" 
+                                       multiple style="display:none;"/>
+                                <span class="custom-file-control"></span>
+                            </label>
+
+                            <input type="submit" 
+                                   id="upload_button" 
+                                   name="upload_button_name" 
+                                   class="btn btn-default" 
+                                   value="Upload" />
+                        </div>
+                    </div>
+                </form>
+                <div id='charts_upload'></div>
+
+            </div>
+            <form id='gonextform' method='POST'
+                                   action= '/efelg/select_features/'> {% csrf_token %} 
+                                   <input name='data' type='hidden'>
+
+                                   <button onclick='submitAll()' 
+                                   class="btn btn-primary">
+                                       Next
+                                   </button>
             </form>
-            <div id='charts_upload'></div>
-
-        </div>
-        <form id='gonextform' method='POST'
-                               action= '/efelg/select_features/'> {% csrf_token %} 
-                               <input name='data' type='hidden'>
-
-                               <button onclick='submitAll()' 
-                               class="btn btn-primary">
-                                   Next
-                               </button>
-        </form>
 
         </div>
 
