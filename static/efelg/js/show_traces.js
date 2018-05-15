@@ -122,6 +122,8 @@ function closeUserChoiceList() {
 
 // Plotting class
 function TracePlot(container_id, cell_obj) {
+    console.log(container_id);
+    console.log(cell_obj);
 
     const SHOW_FADED = 0.15;
     const SHOW_CHECK = 0.65;
@@ -226,7 +228,6 @@ function TracePlot(container_id, cell_obj) {
         $.each(self.cell_obj['traces'], function(key, trace) {
             self.formbox.append('<input type="checkbox" name="' + key + '" />');
             var trace_len = trace.length;
-            console.log(trace_len);
             var a = Array.apply(null, {length: trace_len}).map(Number.call, Number);
             var b = a.map(x => x * 1000 / self.cell_obj['disp_sampling_rate']);
 
@@ -239,6 +240,7 @@ function TracePlot(container_id, cell_obj) {
                 hoverinfo: 'none',
                 opacity: SHOW_FADED,
             }
+            console.log(newTrace)
             plotdata.push(newTrace);
         })
 
@@ -272,6 +274,7 @@ function TracePlot(container_id, cell_obj) {
             margin: {l: 50, b: 35, t: 0} 
         }
 
+        console.log(self.plotbox.attr('id'))
         Plotly.newPlot(self.plotbox.attr('id'), plotdata, layout, {displayModeBar: false}).then(manageLegend);
         self.refresh();
     }
@@ -423,7 +426,6 @@ $(document).ready(function(){
     $('#charts').empty();
     var jqxhr = $.getJSON('/efelg/get_list', function(data) {
         json = data;
-        console.log(json)
         contrib_keys = Object.keys(json['Contributors']);
         for (var i = 0; i < contrib_keys.length; i++) {
             c = contrib_keys[i];
@@ -591,14 +593,12 @@ function applySelection() {
         file = Object.values(json['Contributors'][contributor][specie][structure][region][type][etype][cell]);
         file.forEach(function (el) {
             var fileName = el.split('.')[0];
-            console.log(fileName);
             $('#' + cell).append('<div id="' + fileName + '"></div>');
             $.getJSON('/efelg/get_data/' + fileName, function(data) {
                 writeMessage("wmd-first", "Cell " + (i + 1).toString() +
                         + " of " + (cells.length + 1).toString() +
                         + ". Loading traces for file " + (1 + 1).toString() +
                         + " of " + (file.length + 1).toString());
-                console.log(fileName);
                 new TracePlot(fileName, JSON.parse(data));
             })
         });

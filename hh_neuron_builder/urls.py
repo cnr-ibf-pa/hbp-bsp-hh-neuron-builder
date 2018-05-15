@@ -13,6 +13,7 @@ req_pattern = '(?P<exc>' + exc_pattern  + ')/(?P<ctx>' + ctx_pattern + ')'
 urlpatterns = [
     url(r'^$', views.home),    
     url(r'^login/hbp', auth_views.login),
+    url(r'^logout/hbp', auth_views.logout),
     url(r'^check-cond-exist/' + req_pattern + '$', views.check_cond_exist),
     url(r'^choose-opt-model/$', views.choose_opt_model),    
     url(r'^copy-feature-files/(?P<featurefolder>.*)/' + req_pattern  +'/$', views.copy_feature_files),
