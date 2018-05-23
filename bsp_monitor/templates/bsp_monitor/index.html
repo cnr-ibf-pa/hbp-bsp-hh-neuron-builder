@@ -1,0 +1,258 @@
+{% load static  %}
+
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <script type="text/javascript" src="{% static 'bspganalytics.js' %}"></script>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width">
+        <link rel="stylesheet" type="text/css" href="{% static 'hbp-collaboratory-theme/dist/css/bootstrap.css' %}">
+        <link rel="stylesheet" type="text/css" href="{% static 'bspg.css' %}">
+        <title>Brain Simulation Platform Monitor</title>
+        <script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.3.1.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.min.js"></script>
+        <script type="text/javascript" src="{% static 'moment-with-locales.js' %}"></script>
+        <script type="text/javascript" src="{% static 'palette.js' %}"></script>
+        <script type="text/javascript" src="{% static 'bsp_monitor/js/ga.js' %}"></script>
+        <script type="text/javascript" src="{% static 'bsp_monitor/js/index.js' %}"></script>
+
+    </head>
+
+    <body id="main-body">
+        <div id="title-div-container" class="fixed-page-title bg-bordeaux">
+            <div id="title-div" class="row center-container">
+                <h3 id="title">Brain Simulation Platform Monitor</h3>
+            </div>
+        </div>
+        <!-- ********************************** -->
+        <!-- REAL TIME PANEL - START -->
+        <div id="mainDiv">
+            <div class="panel-stat-container">
+                <div class="panel panel-info panel-stat-sub-cont row br-7">
+                    <div class="panel-heading clearfix br-7 center-container">
+                        <h4 class="col-sm-3 align-left"><strong>Real-time usage</strong></h4>
+                        <button id="refresh-btn" class="btn-link col-sm-9 align-right">Refresh</button>
+                    </div>
+                    <div class="panel-body">
+                        <!-- main div - start-->
+                        <div class="">
+                            <!-- google stat - start-->
+                            <div class="col-sm-6 stats-big-container">
+                                <div class="col-sm-3 align-center">
+                                    <div class="uc-t-box">
+                                        <div class="title-analytics bck">
+                                            # users
+                                        </div>
+                                        <div class="">
+                                            <div id="active-users-container" class="center-container rt-boxes">
+                                                <p id='active-users-value' class="rt-pl-cnt rt-num vert-align">--</p>
+                                            </div>
+                                        </div>
+                                        <div class="center-container"><i>last 60s</i></div>
+                                    </div>
+                                </div>
+                                <div class="col-sm-9 align-center ">
+                                    <div class="uc-t-box">
+                                        <div class="title-analytics bck">
+                                            visited pages
+                                        </div>
+                                        <div class="">
+                                            <figure class="rt-boxes vert-align rt-pl-cnt" style="position:relative" id="chart-rt-pages-container"></figure>
+                                        </div>
+                                        <div class="center-container"><i>last 5min</i></div>
+                                    </div>
+                                </div>
+                                <div class="center-container">
+                                    <div class="col-sm-12 align-center bottom-bar">
+                                        Source: Google Analytics
+                                    </div>
+                                </div>
+                            </div>
+
+
+
+
+
+
+
+                            <!-- google stat - end -->
+
+                            <!-- bsp stat - start -->
+                            <div class="col-sm-6 align-center">
+                                <div class="col-sm-3 align-center">
+                                    <div class="uc-t-box">
+                                        <div class="title-analytics bck">
+                                            # use cases
+                                        </div>
+                                        <div id="current-cloned-container" class="rt-boxes center-container">
+                                            <p id='rt-uc-num' class="rt-num rt-pl-cnt">--</p>
+                                        </div>
+                                        <div class="center-container"><i>last 24h</i></div>
+                                    </div>
+                                </div>
+                                <div class="col-sm-9 align-center">
+                                    <div class="uc-t-box">
+                                        <div class="title-analytics bck">
+                                            use cases
+                                        </div>
+                                        <div class="">
+                                            <figure class="rt-boxes rt-pl-cnt" id="chart-rt-uc-container"></figure>
+                                        </div>
+                                        <div class="center-container"><i>last 24h</i></div>
+                                    </div>
+                                </div>
+                                <div class="center-container">
+                                    <div class="col-sm-12 align-center bottom-bar">
+                                        Source: BSP Analytics
+                                    </div>
+                                </div>
+                                <!-- bsp stat - end -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <!-- main div - end -->
+                <!-- REAL TIME PANEL - END -->
+
+
+
+
+                <!-- HISTORY PANEL - START -->
+                <div class="panel-stat-container">
+                    <div class="panel panel-info panel-stat-sub-cont br-7">
+                        <div class="panel-heading clearfix br-7 center-container">
+                            <div class="col-sm-3 align-left">
+                                <h4><strong>History</strong></h4>
+                            </div>
+                            <div class="col-sm-9 align-right">
+                                <label for="from-day">From: </label>
+                                <input id="from-day" name="from-day" type="date" max="2025-01-01" min="2013-01-01"></input>
+                                <span> -  </span>
+                                <label for="to-day">To: </label>
+                                <input id="to-day" name="to-day" max="2030-01-01" min="2013-01-01" type="date"></input>
+                                <button id="apply-btn" class="btn-link">Apply</button>
+                            </div>
+                        </div>
+                        <div class="panel-body">
+                            <div class="stats-small-container">
+                                <strong>BSP usage statistics</strong>
+                            </div>
+                            <div id="google-analytics-div">
+                                <div class="clearfix">
+                                    <div class="img-container">
+                                        <div class="uc-t-box1" style="padding-top:10px;">
+                                            <p class="title-analytics" id="locations">Locations</p>
+                                            <figure class="hist-geo-boxes center-container hist-pl-cnt" style="width:99%;padding-top:15px;" id="embed-geo"></figure>
+                                        </div>
+                                    </div>
+                                    <div class="img-container">
+                                        <div class="uc-t-box" style="padding-top:10px;">
+                                            <p class="title-analytics">Number of sessions</p>
+                                            <figure class="hist-boxes vert-align hist-pl-cnt" id="session-num"></figure>
+                                        </div>
+                                    </div>
+                                    <div class="img-container">
+                                        <div class="uc-t-box" style="padding-top:10px;">
+                                            <p class="title-analytics">Number of users</p>
+                                            <figure class="hist-boxes vert-align hist-pl-cnt" id="user-num"></figure>
+                                            <ol class="Chartjs-legend" id="legend-plotUserNum-container" style="padding-top:3px;"></ol>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="img-container">
+                                    <div class="uc-t-box" style="padding-top:10px;">
+                                        <p class="title-analytics">Cumulative number of users</p>
+                                        <figure class="hist-boxes vert-align hist-pl-cnt" id="user-cum"></figure>
+                                        <ol class="Chartjs-legend" id="legend-plotUserCum-container" style="padding-top:3px;"></ol>
+                                    </div>
+                                </div>
+
+                                <div class="img-container two-thirds">
+                                    <div class="uc-t-box" style="padding-top:10px;">
+                                        <p class="title-analytics">Pageviews</p>
+                                        <figure class="hist-boxes vert-align hist-pl-cnt" id="page-view"></figure>
+                                        <ol class="Chartjs-legend" id="legend-plotPagesView-container" style="padding-top:3px;"></ol>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="stats-small-container">
+                            <strong>Use case execution</strong>
+                        </div>
+                        <div id="uc-hist-div">
+                            <div class="hist-pl-cnt chart col-sm-12" id="user-chart2"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </div>
+
+
+
+
+        <!-- Panel for the review - start -->
+        <!--
+        <div class="col-sm-12 align-center ">
+            <div class="uc-t-box">
+                <div class="title-analytics bck">
+                    visited pages
+                </div>
+                <div class="">
+                    <figure class="rt-boxes vert-align rt-pl-cnt" 
+                            style="position:relative; height:850px;" 
+                            id="chart-rt-pages-container-review"></figure>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="col-sm-12 align-center">
+            <div class="uc-t-box">
+                <div class="title-analytics bck">
+                    use cases
+                </div>
+                <div class="">
+                    <figure style="height:550px;" class="rt-boxes rt-pl-cnt" 
+                        id="chart-rt-uc-container-review"></figure>
+                </div>
+                <div class="center-container"><i>last 24h</i></div>
+            </div>
+        </div>
+
+
+        <div class="col-sm-12 align-center">
+            <div class="uc-t-box">
+                <div class="title-analytics bck">
+                    use cases
+                </div>
+                <div class="">
+                    <figure style="height:550px;" class="rt-boxes rt-pl-cnt" 
+                        id="exec-member-container-review"></figure>
+                </div>
+            </div>
+        </div>
+        -->
+
+        <!-- Panel for the review - end -->
+
+        <!-- HISTORY PANEL - START -->
+
+        <!-- "Please wait" message div -->
+        <div id="overlaywrapperwaitmon" class="overlay-wrapper">
+            <div id="overlaywaitmon" style="top:35%;" class="overlay-content">
+                <div class="center-container">
+                    <div class="row-center-container">
+                        <div style="margin:auto;" class="spinning lg"></div>
+                        <div id="waitdynamictextmon" class="please-wait-text"></div>
+                        <div class="please-wait-text">Please wait ...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- -->
+    </body>
+</html>

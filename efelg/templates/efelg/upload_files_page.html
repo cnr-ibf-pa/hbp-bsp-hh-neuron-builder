@@ -1,0 +1,88 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <script type="text/javascript" src="{% static 'bspganalytics.js' %}"></script>
+        <title>Feature extraction GUI</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width">
+
+        {# Bower Dependencies #}
+        <link rel="stylesheet" href="{% static 'hbp-collaboratory-theme/dist/css/bootstrap.css' %}">
+        <link rel="stylesheet" href="{% static 'css/cdp2.css' %}">
+        <script type="text/javascript" src="{% static 'jquery/dist/jquery.min.js' %}"></script>
+        <script type="text/javascript" src="{% static 'plotly-latest.min.js' %}"></script>
+    </head>
+    <body>
+        <div class="panel panel-info" width=100% id="input-groups">
+            <div class="panel-heading"><h3>Upload your trace file(s) for feature extraction</h3></div>
+        </div>
+        <br>
+        <!--
+        <form id="upload_files" name="upload_files_name" method="POST" enctype="multipart/form-data" action="/upload_files"> 
+            -->
+        <form id="upload_files" name="upload_files_name" method="POST" enctype="multipart/form-data" action="/select_files/">
+            <div class="panel panel-success" id="input-groups">
+                <div class="panel-heading">Upload your own file(s) and/or proceed to file selection</div>
+                <br>
+                <input type="file" name="user_files" multiple/>
+                <br>
+                <input type="submit" id="upload_button" name="upload_button_name" value="Upload" />
+                <br>
+            </div>
+        </form>
+    </body>
+    {# Bower Dependencies #}
+    <script>
+        //$("#mydiv").append("<p>crr</p>");
+        /* $.getJSON('/features_dict', function(data) {
+            orderedOuterKeys = Object.keys(data).sort(function(a,b){
+                return a.toLowerCase().localeCompare(b.toLowerCase());
+            });
+        });*/
+    </script>
+
+    <script>
+       /* 
+        $(document).on('submit', '#upload_files', function(e){
+            e.preventDefault();
+            var formData = new FormData($(this)[0]);
+            $.ajax({
+                type: 'POST', 
+                url:'/upload_files',
+                data: {
+                }
+            });
+        });
+        
+        */
+      /*  
+        $("form#upload_files").submit(function() {
+            var formData = new FormData($(this)[0]);
+
+            $.post([contentType:false; processData:false]);
+            $.post($(this).attr("action"), formData);
+            console.log(formData)
+            return false;
+        });
+        */
+    </script>
+    <!--
+    <script>
+        $("form#upload_files").submit(function() {
+        var formData = new FormData($(this)[0]);
+
+
+        $.post($(this).attr("action"), formData, function(data) {
+        alert(data);
+        }, false);
+        console.log(formData)
+        return false;
+        });
+    </script>
+    -->
+    <script type="text/javascript" src="{% static 'lodash/dist/lodash.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'angular/angular.min.js' %}"></script>
+</body>
+    </html>

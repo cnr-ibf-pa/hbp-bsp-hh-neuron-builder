@@ -1,0 +1,77 @@
+{% extends 'hh_neuron_builder/home_layout.html' %}
+{% load oidc_session %}
+{% load static  %}
+{% hbp_oidc_session_handler request.user %}
+
+{% block content %}
+
+<div id="home-main-div" class="fade-in-div">
+    <div class="center-container column-center-container main-page-panel"
+         style="background-image: url('{% static "hh_neuron_builder/img/hhnb_03.png" %}');
+         background-size: cover;
+         background-repeat: no-repeat; 
+         background-position: center;
+         ">
+        <button id="new-wf" type="button" class="btn btn-lg main-panel-btn" 
+                                          onclick=initNewWorkflow();>Initiate a new workflow</button>
+        <button id="fetch-wf-btn" type="button" 
+                                  class="btn btn-lg main-panel-btn" 
+                                  onclick=fetchWorkflows();>Select a completed/ongoing workflow
+        </button>
+    </div>
+</div>
+
+
+<!-- Fetched jobs div -->
+<div id="overlay-wrapper-wf" class="overlay-wrapper">
+    <div id="overlay-wf" class="overlay-content width-80p height-90p">
+        <div id="fetch-wf-storage-title" class="param-title-div">
+            <strong>Fetch workflows from storage</strong>
+        </div>
+        <div id="wf-storage-list-div" class="center-container row-center-container" style="max-height:30%;">
+        </div>
+        <div class="center-container row-center-container">
+            <button id="cancel-wf-job-list-btn" type="button" class="btn btn-default">Cancel</button>
+        </div>
+    </div>
+</div>
+<!-- -->
+
+<!-- "Please wait" message div -->
+<div id="home-overlay-wrapper-wait" class="overlay-wrapper">
+    <div id="home-overlay-wait" style="top:35%;" class="overlay-content">
+        <div class="center-container">
+            <div class="row-center-container">
+                <div style="margin: auto;" class="spinning lg"></div>
+                <br>
+                <div id="home-wait-dynamic-text" class="please-wait-text"></div>
+                <div class="please-wait-text">Please wait ...</div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- -->
+
+<!-- No Workflows on storage -->
+<div id="home-overlay-wrapper-nowf" class="overlay-wrapper">
+    <div id="home-overlay-nowf" style="top:35%;" class="overlay-content">
+        <div id="home-nowf-dynamictext" class="please-wait-text">
+            No workflow saved in the Storage of this collab
+        </div>
+        <br>
+        <button id="ok-nowf-btn" type="button" class="btn btn-default">Ok</button>
+    </div>
+</div>
+<!-- -->
+<script>
+var exc = "{{ exc }}";
+var ctx = "{{ ctx }}";
+sessionStorage.setItem("exc", exc);
+sessionStorage.setItem("ctx", ctx);
+console.log(sessionStorage.getItem("exc"));
+console.log(sessionStorage.getItem("ctx"));
+</script>
+
+<script type="text/javascript" src="{% static 'hh_neuron_builder/js/home.js' %}"></script>
+<script type="text/javascript" src="{% static 'hh_neuron_builder/js/common.js' %}"></script>
+{% endblock %}

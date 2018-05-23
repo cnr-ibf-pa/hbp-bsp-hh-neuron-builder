@@ -1,0 +1,16 @@
+*.log
+*.pyc
+*.swp
+*.swo
+*.swn
+
+packages
+venvbspg
+letsencrypt
+media
+db.sqlite3
+bower_components
+bspg/debug.py
+bspg/bspg_keys
+static_pool
+sitemap

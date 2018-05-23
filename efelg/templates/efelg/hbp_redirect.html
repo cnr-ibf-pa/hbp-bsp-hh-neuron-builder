@@ -1,0 +1,46 @@
+{% load static %}
+{% load oidc_session %}
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <script type="text/javascript" src="{% static 'bspganalytics.js' %}"></script>
+        <title>Feature extraction GUI - HBP redirect</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width">
+
+        <link rel="stylesheet" href="{% static 'hbp-collaboratory-theme/dist/css/bootstrap.css' %}">
+        <link rel="stylesheet" href="{% static 'bspg.css' %}">
+    </head>
+
+    <body>
+        {% hbp_oidc_session_handler request.user %}
+        <div id="hbp-redirect-main-div" class="center-container">
+            <div class="row-center-container" style="max-width: 60%; text-align:
+                center;">
+                <div style="margin: 20px; text-align: center; font-size: 18px;">
+                    <strong>WARNING</strong>
+                    <br>
+                    <br>
+                    Either your credentials have expired or you tried
+                    to run this application outside the <strong>Human Brain
+                        Project Collaboratory</strong> platform.
+                    <br>
+                    <br>
+                    Click the button below to be redirected.
+                </div>
+                <br>
+                <button id='hbp-button' class="btn btn-primary"
+                    onclick="top.location='https://collab.humanbrainproject.eu/#/collab/19/nav/6342'">
+                    HBP Collaboratory
+                </button>
+                <br>
+            </div>
+        </div>
+    </body>
+</html>
+
+<script type="text/javascript" 
+        src="{% static 'jquery/dist/jquery.min.js' %}">
+<script type="text/javascript" 
+        src="{% static 'efelg/js/hbp_redirect.js' %}"></script>

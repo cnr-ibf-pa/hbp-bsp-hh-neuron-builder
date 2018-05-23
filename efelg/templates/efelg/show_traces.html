@@ -1,0 +1,250 @@
+{% load static %}
+{% load oidc_session %}
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <script type="text/javascript" src="{% static 'bspganalytics.js' %}">
+        </script>
+
+        <title>Feature extraction GUI</title>
+
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width">
+
+        <link rel="stylesheet" 
+              href=
+              "{% static 'hbp-collaboratory-theme/dist/css/bootstrap.css' %}">
+        <link rel="stylesheet" href="{% static 'bspg.css' %}">
+        <link rel="stylesheet" href="{% static 'show_traces_custom.css' %}">
+    </head>
+
+    <body>
+        <div id="main-e-st-div">
+            <div class="fixed-page-title row center-container">
+                <div class="col-sm-4 align-left">Trace selection/upload</div>
+                <div class="col-sm-4 align-center"><h4>Feature Extraction</h4></div>
+                <div class="col-sm-4 align-right">
+                    <button id="home-btn" class="btn btn-link" style="color:white;" onclick="window.location.href='/efelg/overview/'">Home</button>
+                </div>
+            </div>
+            <br>
+            <div class="panel panel-success" id="data-groups">
+                <div class="panel panel-heading" id="filter-groups-title">
+                    Filter dataset files and select individual traces
+                </div>
+
+                <div class='ctrl_box'>
+                    <label>Cell properties:</label>
+                    <div id="container">
+                        <div id="contributorsTitle" class="tableTitle">
+                            <label>Contributors</label>
+                        </div>
+                        <div id="contributorsD">
+                            <form>
+                                <table id="contributors"></table>
+                            </form>
+                        </div>
+                        <div id="speciesTitle" class="tableTitle">
+                            <label>Species</label>
+                        </div>
+                        <div id="speciesD">
+                            <form>
+                                <table id="species"></table>
+                            </form>
+                        </div>
+                        <div id="structureTitle" class="tableTitle">
+                            <label>Structure</label>
+                        </div>
+                        <div id="structureD">
+                            <form>
+                                <table id="structures"></table>
+                            </form>
+                        </div>
+                        <div id="regionTitle" class="tableTitle">
+                            <label>Region</label>
+                        </div>
+                        <div id="regionD">
+                            <form>
+                                <table id="regions"></table>
+                            </form>
+                        </div>
+                        <div id="typeTitle" class="tableTitle">
+                            <label>Type</label>
+                        </div>
+                        <div id="typeD">
+                            <form>
+                                <table id="types"></table>
+                            </form>
+                        </div>
+                        <div id="etypeTitle" class="tableTitle">
+                            <label>EType</label>
+                        </div>
+                        <div id="etypeD">
+                            <form>
+                                <table id="etypes"></table>
+                            </form>
+                        </div>
+                        <br>
+                        <div class="center-container">
+                            <div id="buttonD" class="row-center-container">
+                                <div id="citation-text"></div>
+                                <div id="ref-citation-text"></div>
+                                <button type="button" class="btn btn-default" id="apply" onclick="applySelection()" disabled>Apply</button>
+                                <button type="button" class="btn btn-default" id="reset" onclick="resetFields()">Reset</button>
+                            </div>
+                        </div>
+                    </div>
+                    <br>
+                    <div id='charts'></div>
+                </div>
+                <br>
+
+                <form id="upload_files" 
+                      name="upload_files_name" 
+                      method="POST"
+                      enctype="multipart/form-data"
+                      action="/efelg/upload_files">
+                    {% csrf_token  %}
+                    <div class="panel panel-success" id="input-groups">
+                        <div class="panel-heading">
+                            Upload your own file(s) and then select 
+                            individual traces
+                        </div>
+                        <br>
+
+                        <div class="panel">
+
+                            <!-- File uploaded box -->
+                            <div id="loadfile_box" style="display:none">
+                                <div class="panel-heading">
+                                    <div id="loadfile_info"></div> 
+                                </div>
+                            </div>
+                            <!-- -->
+
+                            <!-- File rejected box -->
+                            <div id="loadfile_box_rejected" style="display:none">
+                                <div class="panel-heading">
+                                    <div id="loadfile_info_rejected"></div> 
+                                </div>
+                            </div>
+                            <!-- -->
+
+                            <label class="btn btn-default btn-file">
+                                Browse files...
+                                <input type="file" 
+                                       name="user_files" 
+                                       id="user_files" 
+                                       accept=".abf" 
+                                       multiple style="display:none;"/>
+                                <span class="custom-file-control"></span>
+                            </label>
+
+                            <input type="submit" 
+                                   id="upload_button" 
+                                   name="upload_button_name" 
+                                   class="btn btn-default" 
+                                   value="Upload" />
+                        </div>
+                    </div>
+                </form>
+                <div id='charts_upload'></div>
+
+            </div>
+            <form id='gonextform' method='POST'
+                                   action= '/efelg/select_features/'> {% csrf_token %} 
+                                   <input name='data' type='hidden'>
+
+                                   <button onclick='submitAll()' 
+                                   class="btn btn-primary">
+                                       Next
+                                   </button>
+            </form>
+
+        </div>
+
+
+        <!-- "No data selected" message div -->
+        <div id="e-st-warning-div" class="overlay-wrapper">
+            <div id="overlay-e-st-warn" style="top:35%;" class="overlay-content">
+                <div class="center-container">
+                    <div class="row-center-container">
+                        <div class="please-wait-text" 
+                             style="color:red; font-size: 18px;"> >> No data
+                             selected << </div>
+                        <br>
+                        <button id="e-st-warning-div-btn"
+                                type="button" 
+                                class="btn btn-default"
+                                onclick="closeMessageDiv('e-st-warning-div',
+                                'main-e-st-div')">
+                            Close
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- -->
+
+        <!-- Wait Message div -->
+        <div id="wait-message-div" class="overlay-wrapper">
+            <div style="top: 40%;" class="overlay-content">
+                <div class="center-container">
+                    <div class="row-center-container">
+                        <div style="margin: auto;" class="spinning lg"></div>
+                        <br>
+                        <div>
+                            <div id="wmd-first"></div>
+                            <div id="wmd-second"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- -->
+
+        <!-- User's choice div -->
+        <div id="e-st-user-choice-div" class="overlay-wrapper">
+            <div id="overlay-e-st-user-choice" class="overlay-content">
+                <div style="position: sticky;"><strong>List of selected traces. 
+                        <br>
+                        Click "Confirm" to continue.
+                        <br>
+                        <br>
+                        <p style="color: red;">WARNING: no average will be 
+                        computed for stimulus amplitudes
+                        selected only once</p></strong> 
+                    <br>
+                </div>
+                <div id="e-st-user-choice">
+                </div>
+                <br>
+                <button id="e-st-user-choice-accept-btn"
+                        type="button" 
+                        class="btn btn-default"
+                        style="margin:5px;"
+                        onclick="acceptUserChoiceList()">
+                    Confirm
+                </button>
+                <button id="e-st-user-choice-cancel-btn"
+                        type="button" 
+                        class="btn btn-default"
+                        style="margin:5px;"
+                        onclick="closeUserChoiceList()">
+                    Cancel
+                </button>
+            </div>
+        </div>
+        <!-- -->
+
+    </body>
+</html>
+<script type="text/javascript" 
+        src="{% static 'jquery/dist/jquery.min.js' %}"></script>
+<script type="text/javascript" 
+        src="{% static 'common/js/global.js' %}"></script>
+<script type="text/javascript" 
+        src="{% static 'efelg/js/show_traces.js' %}"></script>
+<script type="text/javascript" 
+        src="{% static 'plotlyjs/plotly.js' %}"></script>

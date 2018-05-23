@@ -1,0 +1,24 @@
+{% extends 'hh_neuron_builder/home_layout.html' %}
+{% load static  %}
+{% load oidc_session %}
+
+{% block content  %}
+
+<div id="efelgui-frame-div">
+    <iframe onload="checkLastPage(this)" frameborder="1" style="border-style:
+    solid;" id="efelgui-frame" class="object-iframe" type="text/html"
+                                                     onload="this.style.height=this.contentDocument.body.scrollHeight +'px';">
+    </iframe>
+</div>
+<div class="center-container">
+    <div class="center-container row-center-container">
+        <button type="button" id="back-to-workflow" style="float:right;" 
+            class="workflow-btn btn btn-default">Cancel</button>
+        <button type="button" id="save-feature-files" 
+            style="float:right;display:none" 
+            class="workflow-btn btn btn-default">Save to workflow</button>
+    </div>
+</div>
+<script type="text/javascript" src="{% static 'hh_neuron_builder/js/embedded_efel_gui.js' %}"></script>
+
+{% endblock  %}

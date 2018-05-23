@@ -1,0 +1,362 @@
+{% extends 'hh_neuron_builder/home_layout.html' %}
+{% load static  %}
+{% load oidc_session %}
+
+{% block content  %}
+
+<input type="hidden" id="refresh" value="no">
+<div id="mainDiv" class="center-container row-center-container">
+    <div class="param-title-div center-container row-center-container">
+        <div id="wf-title" class="inline-div-50 align-left wf-title"></div>
+        <div class="inline-div-50 align-right">
+            <button id="wf-btn-home" class="btn home-title-btn" 
+                                     onclick="window.location.href='/hh-neuron-builder/'">
+                Home</button>
+            <button id="wf-btn-new-wf" class="btn home-title-btn" 
+                                       title="Create a new workflow" 
+                                       onclick=initNewWorkflow();>
+                New</button>
+            <button id="wf-btn-clone-wf" class="btn home-title-btn" 
+                                         title="Clone current workflow">Clone</button>
+            <button id="wf-btn-save" class="btn home-title-btn" 
+                                     title="Save current workflow to Collab Storage">Save</button>
+        </div>
+    </div>
+
+    <div id="cell-opt-div"  class="center-container wf-page-panel">
+        <div class="bg-light-gb center-container">
+            <div>
+                <button class="btn-link"  
+                        onclick="$('#inner-opt-div').toggle(500);">
+                    <h2>Cell Optimization</h2></button>
+            </div>
+        </div>
+        <div id="inner-opt-div" style="display:none;" class="bg-light-gb center-container row-center-container">
+            <div class="center-container row-center-container">
+                <div class="step-panel">
+                    <div class="center-container">
+                        <h3>Feature extraction</h3> 
+                    </div>
+                    <div class="center-container">
+                        <button type="button" id="feat-efel-btn" class="btn btn-default" >Extract features</button>
+                        <button type="button" id="feat-up-btn" class="btn btn-default">Upload files</button>
+                    </div>
+                    <div class="center-container">
+                        <button id="del-feat-btn" title="Delete feature files" type="button" class="btn btn-link" disabled>Delete</button>
+                        <button id="down-feat-btn" title="Download feature files" type="button" class="btn btn-link">Download</button>
+                    </div>
+                    <div id="feat-bar" class="status-bar center-container row-center-container">
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="center-container row-center-container">
+                <div class="step-panel">
+                    <div class="center-container">
+                        <h3>Optimization files</h3> 
+                    </div>
+                    <div class="center-container">
+                        <button type="button" id="opt-db-hpc-btn" title="Use optimization files from the database" class="btn btn-default" >Choose from database</button>
+                        <button type="button" id="opt-up-btn" class="btn btn-default">Upload file</button>
+                    </div>
+                    <div class="center-container">
+                        <button id="del-opt" title="Delete optimization files" type="button" class="btn btn-link" disabled>Delete</button>
+                        <button id="down-opt-set-btn" title="Download optimization files" type="button" class="btn btn-link">Download</button>
+                    </div>
+                    <div id="opt-files-bar" class="center-container status-bar">
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="center-container row-center-container">
+                <div class="step-panel">
+                    <div class="center-container">
+                        <h3>Optimization settings</h3> 
+                    </div>
+                    <div class="center-container">
+                        <button type="button" id="opt-set-btn" class="btn btn-default"  title="Set Optimization parameters">Set parameters/Choose HPC</button>
+                    </div>
+                    <div id="opt-param-bar" class="status-bar center-container">
+                    </div>
+                </div>
+            </div>
+
+            <div id="optlaunchmessagediv" class="center-container row-center-container">
+                <img id="optlaunchimg" src="{% static "img/ko_red.png" %}" class="ok-ko-btn">
+                <span id="optlaunchtextspan">No optimization launched</span>
+            </div>
+            <div class="center-container">
+                <div class="center-container row-center-container">
+                    <button type="button" id="launch-opt-btn"
+                                          class="main-panel-btn btn btn-lg" 
+                                          class="main-panel-btn btn btn-lg" 
+                                          disabled>Launch optimization</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Single cell simulation run panel -->
+    <div id="run-sim-div" class="center-container  wf-page-panel">
+        <div class="bg-light-gb center-container">
+            <div class="">
+                <button class="btn-link" onclick="$('#inner-sim-div').toggle(500);"><h2>Single Cell Simulation Run</h2></button>
+            </div>
+        </div>
+
+        <div id="inner-sim-div" style="display:none;" class="center-container row-center-container">
+            <div class="bg-light-gb center-container row-center-container">
+                <div class="step-panel">
+                    <div class="center-container">
+                        <h3>Optimization results</h3> 
+                    </div>
+                    <div class="center-container">
+                        <button id="opt-fetch-btn" type="button" 
+                                                   class="btn btn-default">Fetch results</button>
+                        <button id="opt-res-up-btn" type="button" 
+                                                    class="btn btn-default">Upload file</button>
+                    </div>
+                    <div class="center-container">
+                        <button id="del-sim-btn" 
+                                title="Delete optimization results" 
+                                type="button" class="btn btn-link" disabled>Delete</button>
+
+                        <button id="down-opt-btn" title="Download optimization results" 
+                                                  type="button" 
+                                                  class="btn btn-link">Download results</button>
+                    </div>
+                    <div class="center-container">
+                        <button id="down-sim-btn" title="Download model files"
+                                                  type="button" 
+                                                  class="btn btn-link">Download model</button>
+                    </div>
+                    <div id="opt-res-bar" class="status-bar center-container">
+                    </div>
+                </div>
+                <div class="center-container">
+                    <button type="button" id="run-sim-btn" class="width-step-div main-panel-btn btn btn-lg" disabled>Run simulation</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- section containing divs for user insertions -->
+<div id="overlaywrapper" class="overlay-wrapper">
+    <div id="overlayparam" class="overlay-content">
+        <form id='submitRunParam' method='POST'>{% csrf_token %}
+            <div class="param-title-div">
+                <strong>Algorithm Parameters</strong>
+            </div>
+            <br>
+            <label for="gen-max">Number of generation (max 60)</label>
+            <br>
+            <input class="num-edit" type="number" name="gen-max" id="gen-max" step="1" min="1"><br>
+            <br>
+            <label for="offspring">Offspring size</label>
+            <br>
+            <input class="num-edit" type="number" name="offspring" id="offspring"step="1" min="1"><br>
+            <br>
+            <br>
+            <div class="param-title-div">
+                <strong>Optimization Run Parameters</strong>
+            </div>
+            <br>
+            <label for="node-num">Number of nodes (max 72)</label>
+            <br>
+            <input type="number" name="node-num" id="node-num" max="72" min="1"><br>
+            <br>
+            <label for="core-num">Number of cores (max 24)</label>
+            <br>
+            <input type="number" name="core-num" id="core-num" max="24" min="1"><br>
+            <br>
+            <label for="runtime">Runtime (max 48h)</label>
+            <br>
+            <input type="number" name="runtime" id="runtime" max="48" step="0.5" min="0.5"><br>
+            <br>
+            <br>
+            <br>
+            <div class="param-title-div">
+                <strong>HPC system</strong>
+            </div>
+            <br>
+            <!--
+                <input type="radio" name="hpc_sys" value="marconi" disabled>
+                <label for="marconi">MARCONI</label>
+                <br>
+                <br>
+                <input type="radio" name="hpc_sys" value="jureca" disabled>
+                <label for="jureca">JURECA</label>
+                <br>
+                <br>
+            -->
+            <input type="radio" name="hpc_sys" value="nsg" checked>
+            <label for="nsg">NeuroScience Gateway (NSG)</label>
+            <br>
+            <label for="username_submit">Username</label>
+            <input id="username_submit" required type="text" name="username_submit">
+            <br>
+            <label for="password_submit">Password</label>
+            <input id="password_submit" required type="password"
+                                                 name="password_submit">
+            <br>
+            <br>
+            <button id="cancel-param-btn" type="button" class="btn btn-primary closebtn">Cancel</button>
+            <button id="apply-param" class="btn btn-primary">Apply</button>
+        </form>
+    </div>
+</div>
+<!-- -->
+
+
+<!-- section containing divs for user fetch system insertions -->
+<div id="overlaywrapperfetch" class="overlay-wrapper">
+    <div id="overlayparamfetch" style="top:30%;" class="overlay-content">
+        <form id='submitFetchParam' method='POST'>{% csrf_token %}
+            <div class="param-title-div">
+                <strong>HPC system</strong>
+            </div>
+            <br>
+            <!--
+                <input type="radio" name="hpc_sys_fetch" value="marconi" disabled>
+                <label for="marconi">MARCONI</label>
+                <br>
+                <br>
+                <input type="radio" name="hpc_sys_fetch" value="jureca" disabled>
+                <label for="jureca">JURECA</label>
+                <br>
+                <br>
+            -->
+            <input type="radio" name="hpc_sys_fetch" value="nsg" checked>
+            <label for="nsg">NeuroScience Gateway (NSG)</label>
+            <br>
+            <label for="username_fetch">Username</label>
+            <input id="username_fetch" required type="text" name="username_fetch">
+            <br>
+            <label for="password">Password</label>
+            <input id="password_fetch" required type="password" name="password_fetch">
+            <br>
+            <br>
+            <button id="cancel-param-fetch-btn" type="button" class="btn btn-primary closebtn">Cancel</button>
+            <button id="apply-param-fetch" class="btn btn-primary">Apply</button>
+        </form>
+    </div>
+</div>
+<!-- -->
+
+
+<!-- "Please wait" message div -->
+<div id="overlaywrapperwait" class="overlay-wrapper">
+    <div id="overlaywait" style="top:35%;" class="overlay-content">
+        <div class="center-container">
+            <div class="row-center-container">
+                <div style="margin:auto;" class="spinning lg"></div>
+                <div id="waitdynamictext" class="please-wait-text"></div>
+                <div class="please-wait-text">Please wait ...</div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- -->
+
+
+<!-- "Error" message div -->
+<div id="overlaywrappererror" class="overlay-wrapper">
+    <div id="overlayerror" style="top:35%;" class="overlay-content">
+        <div class="center-container">
+            <div class="row-center-container">
+                <div id="errordynamictext" class="please-wait-text"></div>
+                <button id="ok-error-div-btn" class="btn btn-default
+                closebtn">Ok</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- -->
+
+
+<!-- "Expired Workflow" message div -->
+<div id="overlaywrapperexpiration" class="overlay-wrapper">
+    <div id="overlayexpired" style="top:35%;" class="overlay-content">
+        <div class="center-container">
+            <div class="row-center-container">
+                <div id="expirationdynamictext" class="please-wait-text"></div>
+                <button id="home-expiration-div-btn" class="btn btn-default
+                closebtn" onclick="window.location.href='/hh-neuron-builder/'">Home</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- -->
+
+<!-- Fetched jobs div -->
+<div id="overlaywrapperjobs" class="overlay-wrapper">
+    <div id="overlayjobs" class="overlay-content width-95p height-90p">
+        <div class="center-container row-center-container">
+            <div class="center-container row-center-container">
+                <div id="fetch-job-title">
+                    <h4><strong>Download job results</strong></h4>
+                </div>
+            </div>
+
+            <div class="center-container row-center-container">
+                <table id="job-list-table" class="sortable" cellpadding="10">
+                    <thead> 
+                        <tr> 
+                            <th id="wf-th" class="tth">Workflow ID</th> 
+                            <th id="job-th" class="tth">Job ID</th> 
+                            <th class="tth">Status</th> 
+                            <th class="tth">Date/Time (UTC)</th> 
+                            <th class="sorttable_nosort"></th> 
+                        </tr> 
+                        <tbody id="job-list-body">
+                        </tbody>
+                    </thead> 
+
+                </table>
+            </div>
+        </div>
+
+        <div id="job-list-div" class="center-container row-center-container"
+                               style="max-height:30%;">
+        </div>
+        <div class="center-container row-center-container">
+            <button id="cancel-job-list-btn" type="button" class="btn btn-default">Cancel</button>
+        </div>
+    </div>
+</div>
+<!-- -->
+
+<!-- Upload div -->
+<div id="overlaywrapperoptres" class="overlay-wrapper">
+    <div id="overlayoptres" style="top:20%;" class="overlay-content" >
+        <form id="uploadFileForm" action="" method="POST" enctype="multipart/form-data">{% csrf_token %}
+            <div id="uploadTitleDiv" class="param-title-div">
+            </div>
+        <br>
+        <div id="upload_sim_img_div">
+            <img src="{% static "hh_neuron_builder/img/expected_sim_zip.jpg"  %}"
+                 style="width:100%" alt="Expected sim zip file">
+            <br>
+            <br>
+        </div>
+        <label for="opt-res-file">
+            <input type="file" name="opt-res-file" id="opt-res-file" class="btn btn-default" accept=".zip"/>
+            <span class="custom-file-control"></span>
+        </label>
+        <br>
+        <button type="button" id="cancel-upload-file-btn" class="btn btn-primary">Cancel</button>
+        <input type="submit" id="upload-opt-res-btn" disabled name="upload_opt_res_button" class="btn btn-primary" value="Upload" />
+        </form>
+    </div>
+</div>
+<!-- --> 
+
+<script type="text/javascript" src="{% static 'hh_neuron_builder/js/workflow.js' %}"></script>
+<script type="text/javascript" src="{% static 'hh_neuron_builder/js/common.js' %}"></script>
+
+{% endblock  %}
