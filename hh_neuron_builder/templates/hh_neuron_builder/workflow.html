@@ -5,8 +5,8 @@
 {% block content  %}
 
 <input type="hidden" id="refresh" value="no">
-<div id="mainDiv" class="center-container row-center-container">
-    <div class="param-title-div center-container row-center-container">
+<div id="mainDiv" class="center-container">
+    <div class="param-title-div">
         <div id="wf-title" class="inline-div-50 align-left wf-title"></div>
         <div class="inline-div-50 align-right">
             <button id="wf-btn-home" class="btn home-title-btn" 
@@ -193,16 +193,25 @@
                 <label for="jureca">JURECA</label>
                 <br>
                 <br>
+                <input type="radio" name="hpc_sys_radio" value="NSG" checked>
+                <label for="NSG">NeuroScience Gateway (NSG)</label>
+                <br>
             -->
-            <input type="radio" name="hpc_sys" value="nsg" checked>
-            <label for="nsg">NeuroScience Gateway (NSG)</label>
+            <select id="hpc_sys" name="hpc_sys">
+                <option value="NSG" name="NSG">Neuroscience Gateway (NSG)</option>
+                <option  value="JURECA" name="JURECA">JURECA (JUELICH)</option>
+            </select>
             <br>
-            <label for="username_submit">Username</label>
-            <input id="username_submit" required type="text" name="username_submit">
             <br>
-            <label for="password_submit">Password</label>
-            <input id="password_submit" required type="password"
-                                                 name="password_submit">
+            <div id="un-div">
+                <label class="" for="username_submit">Username</label>
+                <input class="" id="username_submit" required type="text" name="username_submit">
+            </div>
+            <div id="pwd-div">
+                <label class="" for="password_submit">Password</label>
+                <input class="" id="password_submit" required type="password"
+                                                              name="password_submit">
+            </div>
             <br>
             <br>
             <button id="cancel-param-btn" type="button" class="btn btn-primary closebtn">Cancel</button>
@@ -230,16 +239,24 @@
                 <label for="jureca">JURECA</label>
                 <br>
                 <br>
+                <input type="radio" name="hpc_sys_fetch" value="NSG" checked>
+                <label for="NSG">NeuroScience Gateway (NSG)</label>
             -->
-            <input type="radio" name="hpc_sys_fetch" value="nsg" checked>
-            <label for="nsg">NeuroScience Gateway (NSG)</label>
+            <select id="hpc_sys_fetch" name="hpc_sys_fetch">
+                <option value="NSG" name="NSG">Neuroscience Gateway (NSG)</option>
+                <option value="JURECA" name="JURECA">JURECA (JUELICH)</option>
+            </select>
             <br>
-            <label for="username_fetch">Username</label>
-            <input id="username_fetch" required type="text" name="username_fetch">
             <br>
-            <label for="password">Password</label>
-            <input id="password_fetch" required type="password" name="password_fetch">
+            <div id="un-fetch-div">
+                <label for="username_fetch">Username</label>
+                <input id="username_fetch" required type="text" name="username_fetch">
+            </div>
             <br>
+            <div id="pwd-fetch-div">
+                <label for="password_fetch">Password</label>
+                <input id="password_fetch" required type="password" name="password_fetch">
+            </div>
             <br>
             <button id="cancel-param-fetch-btn" type="button" class="btn btn-primary closebtn">Cancel</button>
             <button id="apply-param-fetch" class="btn btn-primary">Apply</button>
