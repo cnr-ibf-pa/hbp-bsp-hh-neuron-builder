@@ -92,7 +92,7 @@ $(document).ready(function(){
     });
 
     // assign functions to buttons' click
-    
+
     // manage top bar buttons
     document.getElementById("wf-btn-home").onclick = goHome;
     document.getElementById("wf-btn-clone-wf").onclick = cloneWorkflow;
@@ -120,10 +120,12 @@ $(document).ready(function(){
     // manage upload optimization settings button
     document.getElementById("opt-up-btn").onclick = displayOptSetUploadDiv;
     document.getElementById("cancel-upload-file-btn").onclick = closeUploadDiv;
+    document.getElementById("hpc_sys").onchange = manageOptSetInput;
 
     // manage buttons for insertion of fetch parameters
     document.getElementById("opt-fetch-btn").onclick = displayFetchParamDiv;
     document.getElementById("cancel-param-fetch-btn").onclick = closeFetchParamDiv;
+    document.getElementById("hpc_sys_fetch").onchange = manageOptFetchInput;
 
     // manage optimization results upload button
     document.getElementById("opt-res-up-btn").onclick = displayOptResUploadDiv;
@@ -231,10 +233,10 @@ function closeExpirationDiv() {
 
 //
 function checkConditions(){
-    
+
     $.getJSON('/hh-neuron-builder/check-cond-exist/' + req_pattern, function(data){
         console.log(data)
-        var textnode = document.createTextNode("Workflow id: " + data["wf_id"]); 
+            var textnode = document.createTextNode("Workflow id: " + data["wf_id"]); 
         document.getElementById("wf-title").innerHTML = "";
         document.getElementById("wf-title").appendChild(textnode);
         if (data['expiration']){
@@ -303,7 +305,7 @@ function checkConditions(){
 
             // disable optimization settings buttons
             document.getElementById("opt-set-btn").disabled = true;
-            
+
             // if no optimization has been submitted
         } else {
             // enable feature extraction buttons
@@ -542,7 +544,7 @@ function displayJobInfo() {
         for (var i = 0; i < job_list_len; i++){
             (function(cnrt) {
                 crr_idx = 0;
-                $.getJSON("/hh-neuron-builder/get-nsg-job-details/" + job_key_list[cnrt] + "/" + req_pattern + "/", function(job_details){
+                $.getJSON("/hh-neuron-builder/get-nsg-job-details/" + encodeURIComponent(job_key_list[cnrt]) + "/" + req_pattern + "/", function(job_details){
                     if (cnrt+1 > crr_idx) {
                         print_idx = cnrt+1;
                         crr_idx = print_idx;
@@ -612,7 +614,8 @@ function displayJobInfo() {
                     cell5.appendChild(job_download_button2);
 
 
-                    if (crr_job_json['job_stage'] == "COMPLETED") {
+                    if (crr_job_json['job_stage'] == "COMPLETED" || 
+                            crr_job_json['job_stage'] == "SUCCESSFUL") {
                         cell3.style.color = "#00802b";
                         cell3.style.fontWeight = "bolder";
                         cell3.style.fontSize = "14px";
@@ -624,21 +627,19 @@ function displayJobInfo() {
                         job_download_button2.disabled = true;
                     }
 
-
-
                     //document.getElementById("job-list-div").prepend(crr_div);
                     if (cnrt == job_list_len - 1) {
                         setTimeout(function()
-                        {
-                            closePleaseWaitDiv();
-                            document.getElementById("overlaywrapperjobs").style.display = "block";
-                            document.getElementById("mainDiv").style.pointerEvents = "none";
-                            document.body.style.overflow = "hidden";
-                            var jobth = document.getElementById("job-th");
-                            jobth.click();
-                            var wfth = document.getElementById("wf-th");
-                            wfth.click();
-                        }, 2000);
+                                {
+                                    closePleaseWaitDiv();
+                                    document.getElementById("overlaywrapperjobs").style.display = "block";
+                                    document.getElementById("mainDiv").style.pointerEvents = "none";
+                                    document.body.style.overflow = "hidden";
+                                    var jobth = document.getElementById("job-th");
+                                    jobth.click();
+                                    var wfth = document.getElementById("wf-th");
+                                    wfth.click();
+                                }, 2000);
                     }
                 });
             })(i);
@@ -703,9 +704,9 @@ function downloadLocalOptSet(){
 function downloadLocalFeat(){
     downloadLocal("feat");
 }
+
 //
 function downloadLocal(filetype) {
-
     displayPleaseWaitDiv();
     window.location.href = "/hh-neuron-builder/download-zip/" + filetype + "/" +
         exc + "/" + ctx + "/";
@@ -733,4 +734,32 @@ function goHome() {
     displayPleaseWaitDiv(message="Loading ...");
     window.location.href='/hh-neuron-builder?ctx=' + ctx;
     closePleaseWaitDiv();
+}
+
+function manageOptSetInput(){
+    var dd = document.getElementById("hpc_sys");
+    var sys = dd.options[dd.selectedIndex].getAttribute("name");
+    var pwd = document.getElementById("password_submit");
+    var pwd_div = document.getElementById("pwd-div");
+    if (sys == "JURECA"){
+        pwd_div.setAttribute("style", "display:none");
+        pwd.setAttribute("value", "NONE");
+    } else if (sys == "NSG"){
+        pwd_div.setAttribute("style", "display:block;");
+        pwd.setAttribute("value", "");
+    }
+}
+
+function manageOptFetchInput(){
+    var dd = document.getElementById("hpc_sys_fetch");
+    var sys = dd.options[dd.selectedIndex].getAttribute("name");
+    var pwd = document.getElementById("password_fetch");
+    var pwd_div = document.getElementById("pwd-fetch-div");
+    if (sys == "JURECA"){
+        pwd_div.setAttribute("style", "display:none");
+        pwd.setAttribute("value", "NONE");
+    } else if (sys == "NSG"){
+        pwd_div.setAttribute("style", "display:block;");
+        pwd.setAttribute("value", "");
+    }
 }
