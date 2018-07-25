@@ -3,11 +3,29 @@
 {% load oidc_session %}
 
 {% block content  %}
-<div id=sub-title-div class="sub-title-div"><div class=center-div-container><div>Choose an optimization from the database</div></div></div>
+<div id="mainDivMod" class="center-container">
+    <div id=sub-title-div class="sub-title-div center-container row-center-container">
+        <div class=center-div-container>
+            <div>Choose an optimization from the database</div>
+        </div>
+    </div>
+    <button id="back-to-wf-btn" type="button" class="btn btn-default" onclick="window.location.href">Cancel</button>
+</div>
 
-<button id="back-to-wf-btn" type="button" class="btn btn-default" onclick="window.location.href">Cancel</button>
+<!-- "Please wait" message div -->
+<div id="overlaywrapperwaitmod" class="overlay-wrapper">
+    <div id="overlaywaitmod" style="top:35%;" class="overlay-content">
+        <div class="center-container">
+            <div class="row-center-container">
+                <div style="margin:auto;" class="spinning lg"></div>
+                <div id="waitdynamictextmod" class="please-wait-text"></div>
+                <div class="please-wait-text">Please wait ...</div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- -->
 <script type="text/javascript" src="{% static 'hh_neuron_builder/js/choose_opt_model.js' %}"></script>
 <script type="text/javascript" src="{% static 'hh_neuron_builder/js/common.js' %}"></script>
-
 {% endblock  %}
 
