@@ -345,7 +345,6 @@ def get_list(request):
 
     request.session["current_authorized_files"] = allfiles 
 
-
     output_json = manage_json.generate_json_output(allfiles, json_dir)
 
     user_dir = request.session['user_res_dir']
@@ -861,7 +860,7 @@ def upload_zip_file_to_storage(request):
             services['document_service']['prod']['url'], oidc_client)
 
     context = request.session['context']
-    logout(request)
+    #logout(request)
     nextUrl = urllib.quote('%s?ctx=%s' % (request.path, context))
 
     # extract project from collab_id

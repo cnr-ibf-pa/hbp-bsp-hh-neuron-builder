@@ -13,4 +13,4 @@ db.sqlite3
 bower_components
 bspg/debug.py
 bspg/bspg_keys
-static/bspganalytics.js
+static_pool

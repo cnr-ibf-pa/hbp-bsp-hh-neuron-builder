@@ -1,5 +1,5 @@
 // show "check permissions" message
-writeMessage("wmd-first", "Checking data permissions");
+writeMessage("wmd-first", "Checking data permissions. This may take 30s to 50s");
 writeMessage("wmd-second", "Please wait ...");
 openMessageDiv("wait-message-div", "main-e-st-div");
 
@@ -122,7 +122,6 @@ function closeUserChoiceList() {
 
 // Plotting class
 function TracePlot(container_id, cell_obj) {
-
     const SHOW_FADED = 0.15;
     const SHOW_CHECK = 0.65;
     const SHOW_HOVER = 1.0;
@@ -226,7 +225,6 @@ function TracePlot(container_id, cell_obj) {
         $.each(self.cell_obj['traces'], function(key, trace) {
             self.formbox.append('<input type="checkbox" name="' + key + '" />');
             var trace_len = trace.length;
-            console.log(trace_len);
             var a = Array.apply(null, {length: trace_len}).map(Number.call, Number);
             var b = a.map(x => x * 1000 / self.cell_obj['disp_sampling_rate']);
 
@@ -239,7 +237,7 @@ function TracePlot(container_id, cell_obj) {
                 hoverinfo: 'none',
                 opacity: SHOW_FADED,
             }
-            plotdata.push(newTrace);
+                plotdata.push(newTrace);
         })
 
         // Sorts the traces names (mathematical order)
@@ -272,7 +270,7 @@ function TracePlot(container_id, cell_obj) {
             margin: {l: 50, b: 35, t: 0} 
         }
 
-        Plotly.newPlot(self.plotbox.attr('id'), plotdata, layout, {displayModeBar: false}).then(manageLegend);
+            Plotly.newPlot(self.plotbox.attr('id'), plotdata, layout, {displayModeBar: false}).then(manageLegend);
         self.refresh();
     }
 
@@ -423,7 +421,6 @@ $(document).ready(function(){
     $('#charts').empty();
     var jqxhr = $.getJSON('/efelg/get_list', function(data) {
         json = data;
-        console.log(json)
         contrib_keys = Object.keys(json['Contributors']);
         for (var i = 0; i < contrib_keys.length; i++) {
             c = contrib_keys[i];
@@ -562,8 +559,8 @@ function applySelection() {
         var cell_name = contributor + ' > ' + specie + ' > ' + structure + ' > ' + region + ' > ' + type + ' > ' + etype + ' > ' + cell;
         var cell_container = $('<div class="cell panel panel-default" />');
         cell_container.append('<div class="panel-heading cell-heading"> \
-                <a href="#">Cell: ' + cell_name + '</a> \
-                <br><br> \
+                <a href="#">Cell: ' + cell_name + ' <br>Cell id: ' + cell + ' </a> \
+                <br> \
                 <button class="cell_selall btn-link pull-left cell-button">Select all traces</button> \
                 <button class="cell_dselall btn-link pull-left cell-button">Deselect all traces</button> \
                 <button class="cell_invsel btn-link pull-left cell-button">Invert selection</button> \
@@ -591,14 +588,12 @@ function applySelection() {
         file = Object.values(json['Contributors'][contributor][specie][structure][region][type][etype][cell]);
         file.forEach(function (el) {
             var fileName = el.split('.')[0];
-            console.log(fileName);
             $('#' + cell).append('<div id="' + fileName + '"></div>');
             $.getJSON('/efelg/get_data/' + fileName, function(data) {
                 writeMessage("wmd-first", "Cell " + (i + 1).toString() +
                         + " of " + (cells.length + 1).toString() +
                         + ". Loading traces for file " + (1 + 1).toString() +
                         + " of " + (file.length + 1).toString());
-                console.log(fileName);
                 new TracePlot(fileName, JSON.parse(data));
             })
         });
@@ -643,7 +638,14 @@ function deselectAllLabel() {
 function enableApplyButton() {
     if (contributor && specie && structure && region && type && etype) {
         document.getElementById('apply').disabled = false;
+        if (contributor.includes("Allen")){
+            document.getElementById("citation-text").innerHTML = 
+                "<p>Use the following general citation format for any Allen Institute resource<br>© [[year of first publication]] Allen Institute for Brain Science. [Name of Allen Institute Resource]. Available from: [Resource URL]<br>or<br>© [[year of first publication]] Allen Institute for Cell Science. [Name of Allen Institute Resource]. Available from: [Resource URL]<br><br>Fetch data info through the <a href='http://celltypes.brain-map.org/data' target='_blank'>data portal</a> via the cell id</p>Please read <a href='https://alleninstitute.org/legal/citation-policy/' target='_blank'>Citation Policy</a> and <a href='https://alleninstitute.org/legal/terms-use/' target='_blank'>Terms of use</a>"
+        }else{
+        document.getElementById("citation-text").innerHTML = ""
+        }
     } else {
+        document.getElementById("citation-text").innerHTML = ""
         document.getElementById('apply').disabled = true;
     }
 }
@@ -681,7 +683,7 @@ function selectLabel(label) {
             etype = label.title;
     }
     lookingForContributorPath()
-    autoSelectIfOne();
+        autoSelectIfOne();
     moveActivatedLabelOnTop();
     scrollTableOnTop();
     enableApplyButton();
@@ -829,8 +831,8 @@ function lookingForEtypePath(cc, cs, css, cr, ct) {
                 activatePath(cc, cs, css, cr, ct, currentEtype);
             }
         } else {
-                Object.keys(json['Contributors'][cc][cs][css][cr][ct][etype]);
-                activatePath(cc, cs, css, cr, ct, etype);
+            Object.keys(json['Contributors'][cc][cs][css][cr][ct][etype]);
+            activatePath(cc, cs, css, cr, ct, etype);
         }
     } catch(err) {
         return;

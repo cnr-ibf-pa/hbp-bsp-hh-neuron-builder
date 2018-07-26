@@ -53,12 +53,13 @@ $(document).ready(function(){
         plotRtUsecases();
 
         /* BLOCK USED FOR PLOT NEEDED FOR THE REVIEW
+         */
         //plotHistoryUsecasesReview();
         //plotHistPagesReview_02(IDS, FILTERS);
         plotHistUCReview(IDS, FILTERS);
         plotHistUCExecReview(IDS, FILTERS);
         plotHistUCExecReview(IDS, FILTERS);
-        */
+        /* */
 
     }
 
@@ -110,9 +111,9 @@ function executeHistoryStat(){
     plotPagesView(IDS, FILTERS); //
     plotHistoryUsecases();
     /* BLOCK USED FOR PLOT NEEDED FOR THE REVIEW
+       */
        plotHistPagesReview(IDS, FILTERS);
        plotHistUCReview(IDS, FILTERS);
-       */
 }
 
 function executeRealTimeStat(){

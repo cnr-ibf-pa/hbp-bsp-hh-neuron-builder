@@ -10,6 +10,7 @@ urlpatterns = [
     url(r'^$', views.overview),    
     url(r'^overview/$', views.overview),    
     url(r'^login/hbp', auth_views.login),
+    url(r'^logout/hbp', auth_views.logout),
     url(r'^show_traces/$', views.show_traces),
     url(r'^generate_json_data$', views.generate_json_data),
     url(r'^get_list$', views.get_list),
