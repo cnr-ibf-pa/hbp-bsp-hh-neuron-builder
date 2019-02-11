@@ -303,7 +303,6 @@ function checkConditions(){
 
             // disable optimization settings buttons
             document.getElementById("opt-set-btn").disabled = true;
-            //
             // if no optimization has been submitted
         } else {
             // enable feature extraction buttons
@@ -640,124 +639,124 @@ function displayJobInfo() {
                                 }, 2000);
                     }
                 });
-            })(i);
-        }
-    });
-    return true;
-}
-
-
-//
-function closeJobInfoDiv() {
-    document.getElementById("overlaywrapperjobs").style.display = "none";
-    document.getElementById("mainDiv").style.pointerEvents = "auto";
-    document.body.style.overflow = "auto";
-}
-
-
-//
-function downloadJob(jobid) {
-    displayPleaseWaitDiv();
-    closeJobInfoDiv();
-    changeMsgPleaseWaitDiv("Downloading job and analysing data.<br>This operation may take several minutes.");
-    $.getJSON('/hh-neuron-builder/download-job/' + jobid + '/' + req_pattern + '/', function(data){
-        if (data["response"] == "KO"){
-            closePleaseWaitDiv();
-            openErrorDiv(data["message"]);
-            return false;
-        }
-        $.getJSON('/hh-neuron-builder/modify-analysis-py/' + req_pattern, function(modifydata){
-            if (modifydata["response"] == "KO") {
-                closePleaseWaitDiv();
-                openErrorDiv(modifydata["message"]);
-                return false;
-            } else {
-                $.getJSON('/hh-neuron-builder/zip-sim/' + req_pattern, function(zip_data){
-                    closePleaseWaitDiv();
-                    checkConditions();
-                });
-            };
+                })(i);
+            }
         });
-    });
-}
-
-
-//
-function downloadLocalSim(){
-    downloadLocal("modsim");
-}
-
-
-//
-function downloadLocalOpt(){
-    downloadLocal("optres");
-}
-
-//
-function downloadLocalOptSet(){
-    downloadLocal("optset");
-}
-
-//
-function downloadLocalFeat(){
-    downloadLocal("feat");
-}
-
-//
-function downloadLocal(filetype) {
-    displayPleaseWaitDiv();
-    window.location.href = "/hh-neuron-builder/download-zip/" + filetype + "/" +
-        exc + "/" + ctx + "/";
-    checkConditions();
-    closePleaseWaitDiv();
-}
-
-function cloneWorkflow() {
-    displayPleaseWaitDiv();
-    $.getJSON('/hh-neuron-builder/create-wf-folders/cloned/' + req_pattern, function(zip_data){
-        checkConditions();
-        closePleaseWaitDiv();
-    });
-}
-
-function saveWorkflow() {
-    displayPleaseWaitDiv(message="Saving workflow to storage");
-    $.getJSON('/hh-neuron-builder/save-wf-to-storage/' + req_pattern, function(zip_data){
-        checkConditions();
-        closePleaseWaitDiv();
-    });
-}
-
-function goHome() {
-    displayPleaseWaitDiv(message="Loading ...");
-    window.location.href='/hh-neuron-builder?ctx=' + ctx;
-    closePleaseWaitDiv();
-}
-
-function manageOptSetInput(){
-    var dd = document.getElementById("hpc_sys");
-    var sys = dd.options[dd.selectedIndex].getAttribute("name");
-    var pwd = document.getElementById("password_submit");
-    var pwd_div = document.getElementById("pwd-div");
-    if (sys == "JURECA"){
-        pwd_div.setAttribute("style", "display:none");
-        pwd.setAttribute("value", "NONE");
-    } else if (sys == "NSG"){
-        pwd_div.setAttribute("style", "display:block;");
-        pwd.setAttribute("value", "");
+        return true;
     }
-}
 
-function manageOptFetchInput(){
-    var dd = document.getElementById("hpc_sys_fetch");
-    var sys = dd.options[dd.selectedIndex].getAttribute("name");
-    var pwd = document.getElementById("password_fetch");
-    var pwd_div = document.getElementById("pwd-fetch-div");
-    if (sys == "JURECA"){
-        pwd_div.setAttribute("style", "display:none");
-        pwd.setAttribute("value", "NONE");
-    } else if (sys == "NSG"){
-        pwd_div.setAttribute("style", "display:block;");
-        pwd.setAttribute("value", "");
+
+    //
+    function closeJobInfoDiv() {
+        document.getElementById("overlaywrapperjobs").style.display = "none";
+        document.getElementById("mainDiv").style.pointerEvents = "auto";
+        document.body.style.overflow = "auto";
     }
-}
+
+
+    //
+    function downloadJob(jobid) {
+        displayPleaseWaitDiv();
+        closeJobInfoDiv();
+        changeMsgPleaseWaitDiv("Downloading job and analysing data.<br>This operation may take several minutes.");
+        $.getJSON('/hh-neuron-builder/download-job/' + jobid + '/' + req_pattern + '/', function(data){
+            if (data["response"] == "KO"){
+                closePleaseWaitDiv();
+                openErrorDiv(data["message"]);
+                return false;
+            }
+            $.getJSON('/hh-neuron-builder/modify-analysis-py/' + req_pattern, function(modifydata){
+                if (modifydata["response"] == "KO") {
+                    closePleaseWaitDiv();
+                    openErrorDiv(modifydata["message"]);
+                    return false;
+                } else {
+                    $.getJSON('/hh-neuron-builder/zip-sim/' + req_pattern, function(zip_data){
+                        closePleaseWaitDiv();
+                        checkConditions();
+                    });
+                };
+            });
+        });
+    }
+
+
+    //
+    function downloadLocalSim(){
+        downloadLocal("modsim");
+    }
+
+
+    //
+    function downloadLocalOpt(){
+        downloadLocal("optres");
+    }
+
+    //
+    function downloadLocalOptSet(){
+        downloadLocal("optset");
+    }
+
+    //
+    function downloadLocalFeat(){
+        downloadLocal("feat");
+    }
+
+        //
+        function downloadLocal(filetype) {
+                        displayPleaseWaitDiv();
+                    window.location.href = "/hh-neuron-builder/download-zip/" + filetype + "/" +
+                        exc + "/" + ctx + "/";
+                    checkConditions();
+                    closePleaseWaitDiv();
+                }
+
+            function cloneWorkflow() {
+                displayPleaseWaitDiv();
+                $.getJSON('/hh-neuron-builder/create-wf-folders/cloned/' + req_pattern, function(zip_data){
+                    checkConditions();
+                    closePleaseWaitDiv();
+                });
+            }
+
+            function saveWorkflow() {
+                displayPleaseWaitDiv(message="Saving workflow to storage");
+                $.getJSON('/hh-neuron-builder/save-wf-to-storage/' + req_pattern, function(zip_data){
+                    checkConditions();
+                    closePleaseWaitDiv();
+                });
+            }
+
+            function goHome() {
+                displayPleaseWaitDiv(message="Loading ...");
+                window.location.href='/hh-neuron-builder?ctx=' + ctx;
+                closePleaseWaitDiv();
+            }
+
+                function manageOptSetInput(){
+                    var dd = document.getElementById("hpc_sys");
+                    var sys = dd.options[dd.selectedIndex].getAttribute("name");
+                    var pwd = document.getElementById("password_submit");
+                    var pwd_div = document.getElementById("pwd-div");
+                    if (sys == "JURECA"){
+                        pwd_div.setAttribute("style", "display:none");
+                        pwd.setAttribute("value", "NONE");
+                    } else if (sys == "NSG"){
+                        pwd_div.setAttribute("style", "display:block;");
+                        pwd.setAttribute("value", "");
+                    }
+                }
+
+            function manageOptFetchInput(){
+                var dd = document.getElementById("hpc_sys_fetch");
+                var sys = dd.options[dd.selectedIndex].getAttribute("name");
+                var pwd = document.getElementById("password_fetch");
+                var pwd_div = document.getElementById("pwd-fetch-div");
+                if (sys == "JURECA"){
+                    pwd_div.setAttribute("style", "display:none");
+                    pwd.setAttribute("value", "NONE");
+                } else if (sys == "NSG"){
+                    pwd_div.setAttribute("style", "display:block;");
+                    pwd.setAttribute("value", "");
+                }
+            }

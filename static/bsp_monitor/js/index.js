@@ -52,7 +52,9 @@ $(document).ready(function(){
         plotRtPages(IDS, RT_FILTERS, rt_pages_dim, rt_metrics);
         plotRtUsecases();
 
-        //plotHistoryUsecasesReview();
+        /* BLOCK USED FOR PLOT NEEDED FOR THE REVIEW
+         */
+        plotHistoryUsecasesReview();
         //plotHistPagesReview_02(IDS, FILTERS);
         //plotHistUCReview(IDS, FILTERS);
         //plotHistUCExecReview(IDS, FILTERS);
@@ -107,8 +109,6 @@ function executeHistoryStat(){
     plotUserCum(IDS, FILTERS); //
     plotPagesView(IDS, FILTERS); //
     plotHistoryUsecases();
-    //   plotHistPagesReview(IDS, FILTERS);
-    //   plotHistUCReview(IDS, FILTERS);
 }
 
 function executeRealTimeStat(){
