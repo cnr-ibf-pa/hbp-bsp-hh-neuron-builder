@@ -52,21 +52,11 @@ $(document).ready(function(){
         plotRtPages(IDS, RT_FILTERS, rt_pages_dim, rt_metrics);
         plotRtUsecases();
 
-        /* BLOCK USED FOR PLOT NEEDED FOR THE REVIEW
-<<<<<<< HEAD
-         */
-=======
->>>>>>> 219ceac7001dfab2d3cb5e0ecc1ae87aafbce317
         //plotHistoryUsecasesReview();
         //plotHistPagesReview_02(IDS, FILTERS);
-        plotHistUCReview(IDS, FILTERS);
-        plotHistUCExecReview(IDS, FILTERS);
-        plotHistUCExecReview(IDS, FILTERS);
-<<<<<<< HEAD
-        /* */
-=======
-        */
->>>>>>> 219ceac7001dfab2d3cb5e0ecc1ae87aafbce317
+        //plotHistUCReview(IDS, FILTERS);
+        //plotHistUCExecReview(IDS, FILTERS);
+        //plotHistUCExecReview(IDS, FILTERS);
 
     }
 
@@ -117,16 +107,8 @@ function executeHistoryStat(){
     plotUserCum(IDS, FILTERS); //
     plotPagesView(IDS, FILTERS); //
     plotHistoryUsecases();
-    /* BLOCK USED FOR PLOT NEEDED FOR THE REVIEW
-<<<<<<< HEAD
-       */
-       plotHistPagesReview(IDS, FILTERS);
-       plotHistUCReview(IDS, FILTERS);
-=======
-       plotHistPagesReview(IDS, FILTERS);
-       plotHistUCReview(IDS, FILTERS);
-       */
->>>>>>> 219ceac7001dfab2d3cb5e0ecc1ae87aafbce317
+       //plotHistPagesReview(IDS, FILTERS);
+       //plotHistUCReview(IDS, FILTERS);
 }
 
 function executeRealTimeStat(){

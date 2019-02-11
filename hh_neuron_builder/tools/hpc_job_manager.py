@@ -11,11 +11,7 @@ from shutil import copy2
 import pprint
 import collections
 import re
-<<<<<<< HEAD
 import unicore_client
-#import tools.unicore_client as unicore_client
-=======
->>>>>>> 219ceac7001dfab2d3cb5e0ecc1ae87aafbce317
 
 class Nsg:
     key = 'Application_Fitting-DA5A3D2F8B9B4A5D964D4D2285A49C57'

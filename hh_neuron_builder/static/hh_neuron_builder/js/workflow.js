@@ -92,11 +92,7 @@ $(document).ready(function(){
     });
 
     // assign functions to buttons' click
-<<<<<<< HEAD
-
-=======
-    
->>>>>>> 219ceac7001dfab2d3cb5e0ecc1ae87aafbce317
+    //
     // manage top bar buttons
     document.getElementById("wf-btn-home").onclick = goHome;
     document.getElementById("wf-btn-clone-wf").onclick = cloneWorkflow;
@@ -124,18 +120,12 @@ $(document).ready(function(){
     // manage upload optimization settings button
     document.getElementById("opt-up-btn").onclick = displayOptSetUploadDiv;
     document.getElementById("cancel-upload-file-btn").onclick = closeUploadDiv;
-<<<<<<< HEAD
     document.getElementById("hpc_sys").onchange = manageOptSetInput;
-=======
->>>>>>> 219ceac7001dfab2d3cb5e0ecc1ae87aafbce317
 
     // manage buttons for insertion of fetch parameters
     document.getElementById("opt-fetch-btn").onclick = displayFetchParamDiv;
     document.getElementById("cancel-param-fetch-btn").onclick = closeFetchParamDiv;
-<<<<<<< HEAD
     document.getElementById("hpc_sys_fetch").onchange = manageOptFetchInput;
-=======
->>>>>>> 219ceac7001dfab2d3cb5e0ecc1ae87aafbce317
 
     // manage optimization results upload button
     document.getElementById("opt-res-up-btn").onclick = displayOptResUploadDiv;
@@ -243,17 +233,10 @@ function closeExpirationDiv() {
 
 //
 function checkConditions(){
-<<<<<<< HEAD
 
     $.getJSON('/hh-neuron-builder/check-cond-exist/' + req_pattern, function(data){
         console.log(data)
             var textnode = document.createTextNode("Workflow id: " + data["wf_id"]); 
-=======
-    
-    $.getJSON('/hh-neuron-builder/check-cond-exist/' + req_pattern, function(data){
-        console.log(data)
-        var textnode = document.createTextNode("Workflow id: " + data["wf_id"]); 
->>>>>>> 219ceac7001dfab2d3cb5e0ecc1ae87aafbce317
         document.getElementById("wf-title").innerHTML = "";
         document.getElementById("wf-title").appendChild(textnode);
         if (data['expiration']){
@@ -322,11 +305,6 @@ function checkConditions(){
 
             // disable optimization settings buttons
             document.getElementById("opt-set-btn").disabled = true;
-<<<<<<< HEAD
-
-=======
-            
->>>>>>> 219ceac7001dfab2d3cb5e0ecc1ae87aafbce317
             // if no optimization has been submitted
         } else {
             // enable feature extraction buttons
@@ -565,11 +543,7 @@ function displayJobInfo() {
         for (var i = 0; i < job_list_len; i++){
             (function(cnrt) {
                 crr_idx = 0;
-<<<<<<< HEAD
                 $.getJSON("/hh-neuron-builder/get-nsg-job-details/" + encodeURIComponent(job_key_list[cnrt]) + "/" + req_pattern + "/", function(job_details){
-=======
-                $.getJSON("/hh-neuron-builder/get-nsg-job-details/" + job_key_list[cnrt] + "/" + req_pattern + "/", function(job_details){
->>>>>>> 219ceac7001dfab2d3cb5e0ecc1ae87aafbce317
                     if (cnrt+1 > crr_idx) {
                         print_idx = cnrt+1;
                         crr_idx = print_idx;
@@ -639,12 +613,8 @@ function displayJobInfo() {
                     cell5.appendChild(job_download_button2);
 
 
-<<<<<<< HEAD
                     if (crr_job_json['job_stage'] == "COMPLETED" || 
                             crr_job_json['job_stage'] == "SUCCESSFUL") {
-=======
-                    if (crr_job_json['job_stage'] == "COMPLETED") {
->>>>>>> 219ceac7001dfab2d3cb5e0ecc1ae87aafbce317
                         cell3.style.color = "#00802b";
                         cell3.style.fontWeight = "bolder";
                         cell3.style.fontSize = "14px";
@@ -656,7 +626,6 @@ function displayJobInfo() {
                         job_download_button2.disabled = true;
                     }
 
-<<<<<<< HEAD
                     //document.getElementById("job-list-div").prepend(crr_div);
                     if (cnrt == job_list_len - 1) {
                         setTimeout(function()
@@ -670,23 +639,6 @@ function displayJobInfo() {
                                     var wfth = document.getElementById("wf-th");
                                     wfth.click();
                                 }, 2000);
-=======
-
-
-                    //document.getElementById("job-list-div").prepend(crr_div);
-                    if (cnrt == job_list_len - 1) {
-                        setTimeout(function()
-                        {
-                            closePleaseWaitDiv();
-                            document.getElementById("overlaywrapperjobs").style.display = "block";
-                            document.getElementById("mainDiv").style.pointerEvents = "none";
-                            document.body.style.overflow = "hidden";
-                            var jobth = document.getElementById("job-th");
-                            jobth.click();
-                            var wfth = document.getElementById("wf-th");
-                            wfth.click();
-                        }, 2000);
->>>>>>> 219ceac7001dfab2d3cb5e0ecc1ae87aafbce317
                     }
                 });
             })(i);
@@ -751,15 +703,9 @@ function downloadLocalOptSet(){
 function downloadLocalFeat(){
     downloadLocal("feat");
 }
-<<<<<<< HEAD
 
 //
 function downloadLocal(filetype) {
-=======
-//
-function downloadLocal(filetype) {
-
->>>>>>> 219ceac7001dfab2d3cb5e0ecc1ae87aafbce317
     displayPleaseWaitDiv();
     window.location.href = "/hh-neuron-builder/download-zip/" + filetype + "/" +
         exc + "/" + ctx + "/";
@@ -788,7 +734,6 @@ function goHome() {
     window.location.href='/hh-neuron-builder?ctx=' + ctx;
     closePleaseWaitDiv();
 }
-<<<<<<< HEAD
 
 function manageOptSetInput(){
     var dd = document.getElementById("hpc_sys");
@@ -817,5 +762,3 @@ function manageOptFetchInput(){
         pwd.setAttribute("value", "");
     }
 }
-=======
->>>>>>> 219ceac7001dfab2d3cb5e0ecc1ae87aafbce317

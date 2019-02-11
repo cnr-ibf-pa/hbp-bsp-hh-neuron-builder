@@ -5,15 +5,11 @@
 {% block content  %}
 
 <input type="hidden" id="refresh" value="no">
-<<<<<<< HEAD
 <div id="mainDiv" class="center-container">
     <div class="param-title-div">
-=======
-<div id="mainDiv" class="center-container row-center-container">
-    <div class="param-title-div center-container row-center-container">
->>>>>>> 219ceac7001dfab2d3cb5e0ecc1ae87aafbce317
-        <div id="wf-title" class="inline-div-50 align-left wf-title"></div>
-        <div class="inline-div-50 align-right">
+        <div class="row">
+        <div id="wf-title" class="col-xs-6 align-left wf-title"></div>
+        <div class="col-xs-6 align-right">
             <button id="wf-btn-home" class="btn home-title-btn" 
                                      onclick="window.location.href='/hh-neuron-builder/'">
                 Home</button>
@@ -25,6 +21,7 @@
                                          title="Clone current workflow">Clone</button>
             <button id="wf-btn-save" class="btn home-title-btn" 
                                      title="Save current workflow to Collab Storage">Save</button>
+        </div>
         </div>
     </div>
 
@@ -198,14 +195,15 @@
                 <label for="jureca">JURECA</label>
                 <br>
                 <br>
-<<<<<<< HEAD
                 <input type="radio" name="hpc_sys_radio" value="NSG" checked>
                 <label for="NSG">NeuroScience Gateway (NSG)</label>
                 <br>
             -->
             <select id="hpc_sys" name="hpc_sys">
                 <option value="NSG" name="NSG">Neuroscience Gateway (NSG)</option>
+                <!--
                 <option  value="JURECA" name="JURECA">JURECA (JUELICH)</option>
+                -->
             </select>
             <br>
             <br>
@@ -218,18 +216,6 @@
                 <input class="" id="password_submit" required type="password"
                                                               name="password_submit">
             </div>
-=======
-            -->
-            <input type="radio" name="hpc_sys" value="nsg" checked>
-            <label for="nsg">NeuroScience Gateway (NSG)</label>
-            <br>
-            <label for="username_submit">Username</label>
-            <input id="username_submit" required type="text" name="username_submit">
-            <br>
-            <label for="password_submit">Password</label>
-            <input id="password_submit" required type="password"
-                                                 name="password_submit">
->>>>>>> 219ceac7001dfab2d3cb5e0ecc1ae87aafbce317
             <br>
             <br>
             <button id="cancel-param-btn" type="button" class="btn btn-primary closebtn">Cancel</button>
@@ -257,7 +243,6 @@
                 <label for="jureca">JURECA</label>
                 <br>
                 <br>
-<<<<<<< HEAD
                 <input type="radio" name="hpc_sys_fetch" value="NSG" checked>
                 <label for="NSG">NeuroScience Gateway (NSG)</label>
             -->
@@ -276,18 +261,6 @@
                 <label for="password_fetch">Password</label>
                 <input id="password_fetch" required type="password" name="password_fetch">
             </div>
-=======
-            -->
-            <input type="radio" name="hpc_sys_fetch" value="nsg" checked>
-            <label for="nsg">NeuroScience Gateway (NSG)</label>
-            <br>
-            <label for="username_fetch">Username</label>
-            <input id="username_fetch" required type="text" name="username_fetch">
-            <br>
-            <label for="password">Password</label>
-            <input id="password_fetch" required type="password" name="password_fetch">
-            <br>
->>>>>>> 219ceac7001dfab2d3cb5e0ecc1ae87aafbce317
             <br>
             <button id="cancel-param-fetch-btn" type="button" class="btn btn-primary closebtn">Cancel</button>
             <button id="apply-param-fetch" class="btn btn-primary">Apply</button>
