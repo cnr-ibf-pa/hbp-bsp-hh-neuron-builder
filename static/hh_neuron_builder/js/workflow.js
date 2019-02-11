@@ -92,7 +92,6 @@ $(document).ready(function(){
     });
 
     // assign functions to buttons' click
-
     // manage top bar buttons
     document.getElementById("wf-btn-home").onclick = goHome;
     document.getElementById("wf-btn-clone-wf").onclick = cloneWorkflow;
@@ -233,7 +232,6 @@ function closeExpirationDiv() {
 
 //
 function checkConditions(){
-
     $.getJSON('/hh-neuron-builder/check-cond-exist/' + req_pattern, function(data){
         console.log(data)
             var textnode = document.createTextNode("Workflow id: " + data["wf_id"]); 
@@ -305,7 +303,7 @@ function checkConditions(){
 
             // disable optimization settings buttons
             document.getElementById("opt-set-btn").disabled = true;
-
+            //
             // if no optimization has been submitted
         } else {
             // enable feature extraction buttons
