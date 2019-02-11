@@ -322,8 +322,6 @@ class Nsg:
                         foo.write(final_zip_fname, \
                             final_zip_fname.replace(fin_opt_folder, '', 1))
         foo.close()
-<<<<<<< HEAD
-        
 
 class Unicore:
 
@@ -683,8 +681,6 @@ class OptFolderManager:
             f.close()
             return [execname, joblaunchname]
 
-=======
->>>>>>> 219ceac7001dfab2d3cb5e0ecc1ae87aafbce317
 
 #
 class OptSettings:

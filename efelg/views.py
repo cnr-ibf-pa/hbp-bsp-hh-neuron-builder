@@ -883,7 +883,3 @@ def upload_zip_file_to_storage(request):
 
     # render to html page
     return HttpResponse("") 
-<<<<<<< HEAD
-=======
-
->>>>>>> 219ceac7001dfab2d3cb5e0ecc1ae87aafbce317
