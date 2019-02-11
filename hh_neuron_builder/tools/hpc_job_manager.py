@@ -323,10 +323,12 @@ class Nsg:
                         foo.write(final_zip_fname, \
                             final_zip_fname.replace(fin_opt_folder, '', 1))
         foo.close()
-        
+
 
 class Unicore:
-
+    """
+    Class for submitting jobs with Unicore
+    """
     @classmethod
     def checkLogin(cls, username, token, sys):                                           
         auth = unicore_client.get_oidc_auth(token=token) 
@@ -400,12 +402,10 @@ class Unicore:
         listofjobs = unicore_client.get_properties(base_url + '/jobs', auth)
         jobs = listofjobs['jobs']
         for i in jobs:
-            print(type(i))
             r = unicore_client.get_properties(i, auth) 
             job_list_dict[i] = collections.OrderedDict()
             job_list_dict[i]['url'] = i
             job_list_dict[i]['name'] = r['name']
-        print(job_list_dict)
         return job_list_dict
 
     @classmethod
@@ -441,7 +441,6 @@ class Unicore:
             wd = unicore_client.get_working_directory(job_url, auth)
             output_files = unicore_client.list_files(wd, auth)
             for file_path in output_files:
-                print(file_path)
                 _, f = os.path.split(file_path)
                 if (f!='') & (f!='stderr'):
                     content = unicore_client.get_file_content(wd + "/files" + file_path, auth)
@@ -534,10 +533,10 @@ class OptFolderManager:
                     or item.startswith('__MACOSX'):
                         os.remove(os.path.join(fin_dest_dir, item))
 
-        if sys == "nsg":
+        if sys.lower() == "nsg":
             OptFolderManager.add_exec_file(sys=sys, fin_dest_dir=fin_dest_dir, execname="init.py",\
                     gennum=gennum, offsize=offsize, mod_path="")
-        elif sys == "JURECA":
+        elif sys.lower() == "jureca":
             OptFolderManager.add_exec_file(sys=sys, fin_dest_dir=fin_dest_dir, execname=execname, \
                     gennum=gennum, offsize=offsize, mod_path="", joblaunchname=joblaunchname)
 
@@ -598,7 +597,7 @@ class OptFolderManager:
     def add_exec_file(cls, sys, fin_dest_dir="./", execname="fn", gennum=24, \
             offsize=12, mod_path="", joblaunchname="jln"):
         # Neuro Science Gateway
-        if sys == "NSG":
+        if sys.lower() == "nsg":
             with open(os.path.join(fin_dest_dir, execname),'w') as f:
                 f.write('import os')
                 f.write('\n')
@@ -610,7 +609,7 @@ class OptFolderManager:
             return execname
 
         # Juelich Jureca
-        elif sys == "JURECA":
+        elif sys.lower() == "jureca":
             with open(os.path.join(fin_dest_dir, execname),'w') as f:
                 f.write("#!/bin/bash -x")
                 f.write('\n')
@@ -682,7 +681,6 @@ class OptFolderManager:
                 f.write("sbatch " + execname)
             f.close()
             return [execname, joblaunchname]
-
 
 #
 class OptSettings:

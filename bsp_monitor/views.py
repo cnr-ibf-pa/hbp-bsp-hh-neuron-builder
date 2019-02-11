@@ -63,7 +63,7 @@ def get_uc(request, start_date="0", end_date="0"):
     uc_name = []
     uc_topics = []
 
-    dates = g.GoogleStatManager.convert_to_datetime(result[1:], "long")
+    dates = g.GoogleStatManager.convert_to_datetime(result[1:], "gsheet")
 
     if start_date == "0":
         last_day = datetime.datetime.today()

@@ -54,11 +54,11 @@ $(document).ready(function(){
 
         /* BLOCK USED FOR PLOT NEEDED FOR THE REVIEW
          */
-        //plotHistoryUsecasesReview();
+        plotHistoryUsecasesReview();
         //plotHistPagesReview_02(IDS, FILTERS);
-        plotHistUCReview(IDS, FILTERS);
-        plotHistUCExecReview(IDS, FILTERS);
-        plotHistUCExecReview(IDS, FILTERS);
+        //plotHistUCReview(IDS, FILTERS);
+        //plotHistUCExecReview(IDS, FILTERS);
+        //plotHistUCExecReview(IDS, FILTERS);
         /* */
 
     }
@@ -112,8 +112,6 @@ function executeHistoryStat(){
     plotHistoryUsecases();
     /* BLOCK USED FOR PLOT NEEDED FOR THE REVIEW
        */
-       plotHistPagesReview(IDS, FILTERS);
-       plotHistUCReview(IDS, FILTERS);
 }
 
 function executeRealTimeStat(){

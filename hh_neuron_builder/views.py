@@ -459,12 +459,12 @@ def run_optimization(request, exc="", ctx=""):
     zfName = os.path.join(dest_dir, opt_name + '.zip')
     fin_opt_folder = os.path.join(dest_dir, opt_name)
 
-    if hpc_sys == "nsg":
+    if hpc_sys.lower() == "nsg":
 
-	hpc_job_manager.Nsg.createzip(fin_opt_folder=fin_opt_folder, \
+	hpc_job_manager.OptFolderManager.createzip(fin_opt_folder=fin_opt_folder, \
                 source_opt_zip=source_opt_zip, opt_name=opt_name, \
                 source_feat=source_feat, gennum=gennum, offsize=offsize, \
-                zfName=zfName)
+                zfName=zfName, sys = hpc_sys.lower())
 
 	resp = hpc_job_manager.Nsg.runNSG(username_submit=username_submit, \
                 password_submit=password_submit, core_num=core_num, \
@@ -589,8 +589,10 @@ def submit_run_param(request, exc="", ctx=""):
     wf_id = request.session[exc]['wf_id']
     dest_dir = request.session[exc]['user_dir_data_opt_launch']
 
+    resp_dict = {'response':'KO', 'message':'Username and/or password \
+        are wrong'}
     # if chosen system is nsg
-    if form_data['hpc_sys'] == 'nsg':
+    if form_data['hpc_sys'].lower() == 'nsg':
         resp_check_login = hpc_job_manager.Nsg.checkNsgLogin(username=form_data['username_submit'],
                 password=form_data['password_submit'])
 
@@ -627,7 +629,7 @@ def submit_fetch_param(request, exc="", ctx=""):
     form_data = request.POST
 
     # if chosen system is nsg
-    if form_data['hpc_sys_fetch'] == 'nsg':
+    if form_data['hpc_sys_fetch'].lower() == 'nsg':
         request.session[exc]['hpc_sys_fetch'] = form_data['hpc_sys_fetch']
         resp_check_login = \
         hpc_job_manager.Nsg.checkNsgLogin(username=form_data['username_fetch'],
@@ -843,7 +845,7 @@ def get_nsg_job_list(request, exc="", ctx=""):
     """
     """
     hpc_sys_fetch = request.session[exc]['hpc_sys_fetch'] 
-    if hpc_sys_fetch == "nsg":
+    if hpc_sys_fetch.lower() == "nsg":
 	username_fetch = request.session[exc]['username_fetch']
 	password_fetch = request.session[exc]['password_fetch']
 	opt_res_dir = request.session[exc]['user_dir_results_opt']
@@ -884,7 +886,7 @@ def get_nsg_job_details(request, jobid="", exc="", ctx=""):
     #return HttpResponse(json.dumps({"job_id": jobid, "job_date_submitted":"2017-07-24T16:40:21-07:00", "job_stage":"COMPLETED"}), content_type="application/json") 
 
     hpc_sys_fetch = request.session[exc]['hpc_sys_fetch'] 
-    if hpc_sys_fetch == "nsg":
+    if hpc_sys_fetch.lower() == "nsg":
 	username_fetch = request.session[exc]['username_fetch']
 	password_fetch = request.session[exc]['password_fetch']
 
@@ -908,7 +910,7 @@ def download_job(request, job_id="", exc="", ctx=""):
             content_type="application/json") 
 
     hpc_sys_fetch = request.session[exc]['hpc_sys_fetch'] 
-    if hpc_sys_fetch == "nsg":
+    if hpc_sys_fetch.lower() == "nsg":
 	username_fetch = request.session[exc]['username_fetch']
 	password_fetch = request.session[exc]['password_fetch']
         wf_id = request.session[exc]['wf_id']

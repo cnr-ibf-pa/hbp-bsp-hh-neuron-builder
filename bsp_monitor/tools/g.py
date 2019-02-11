@@ -50,7 +50,14 @@ class GoogleStatManager:
                 if ftype == "long":
                     dates.append(datetime.datetime.strptime(i, '%m/%d/%Y %H:%M:%S'))
                 elif ftype == "short":
+                    #dates.append(datetime.datetime.strptime(i, '%d/%m/%Y %H:%M:%S'))
                     dates.append(datetime.datetime.strptime(i, '%Y-%m-%d'))
+                elif ftype == "gsheet":
+                    if i.find("/") == 4:
+                        dates.append(datetime.datetime.strptime(i, '%Y/%m/%d %H:%M:%S'))
+                    else:
+                        dates.append(datetime.datetime.strptime(i, '%m/%d/%Y %H:%M:%S'))
+
         return dates
 
 

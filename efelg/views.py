@@ -14,7 +14,6 @@ import math
 import matplotlib
 matplotlib.use('Agg')
 import requests
-#requests.packages.urllib3.disable_warnings()
 import json
 import re
 import logging
@@ -505,6 +504,7 @@ def extract_features(request):
 
         crr_file_dict = json.loads(crr_file_dict_read)
         crr_file_all_stim = crr_file_dict['traces'].keys()
+        crr_file_amp_unit = crr_file_dict['amp_unit']
         crr_file_sel_stim = selected_traces_rest_json[k]['stim']
 
         crr_cell_data_folder = os.path.join(full_crr_data_folder, crr_cell_name)
@@ -544,7 +544,8 @@ def extract_features(request):
         final_cell_dict[cell_dict[key]['cell_name']] = {'v_corr':v_corr, \
                 'ljp':0, 'experiments':{'step': {'location':'soma', 'files': \
                 [str(i) for i in crr_el['files']]}}, 'etype':'etype', \
-                'exclude':crr_exc}
+                'exclude':crr_exc, \
+                'exclude_unit': [crr_file_amp_unit for i in range(len(crr_exc))]}
 
     # build configuration dictionary
     config = {}
@@ -553,10 +554,29 @@ def extract_features(request):
     config['format'] = 'ibf_json'
     config['comment'] = []
     config['cells'] = final_cell_dict
-    config['options'] = {'relative': False, 'tolerance': 0.02, \
-            'target': target, 'delay': 500, 'nanmean': False, 'logging':False, \
-            'nangrace': 0, 'spike_threshold': 1, 'amp_min': 0,
-            'strict_stiminterval': {'base': True}}
+    config['options'] = {
+            'featconffile': './pt_conf.json',
+            'featzerotonan': True,
+            'relative': False, 
+            'tolerance': 0.02,
+            'target': target, 
+            'target_unit': 'nA',
+            'delay': 500, 
+            'nanmean': True, 
+            'logging':True, 
+            'nangrace': 0, 
+            'spike_threshold': 1, 
+            'amp_min': -1e22, 
+            'zero_std': True,
+            'trace_check': False,
+            'strict_stiminterval': {
+                'base': True
+                },
+            'print_table': {
+                    'flag': True,
+                    'num_events': 5,
+                    }
+            }
     try:
         extractor = bpefe.Extractor(full_crr_result_folder, config, use_git=False)
         extractor.create_dataset()
@@ -791,7 +811,7 @@ def upload_files(request):
                 upload_flag = True)) + '.json'
         outfilepath = os.path.join(u_up_dir, outfilename)
 
-        data = manage_json.gen_data_struct(name, "",  upload_flag = True)
+        data = manage_json.gen_data_struct(name, name,  upload_flag = True)
         if os.path.isfile(outfilepath):
             os.remove(outfilepath)        
         with open(outfilepath, 'w') as f:
