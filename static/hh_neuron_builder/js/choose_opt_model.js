@@ -84,3 +84,4 @@ function displayPleaseWaitDiv(message="") {
         document.getElementById("waitdynamictextmod").innerHTML = message;
     }
 }
+

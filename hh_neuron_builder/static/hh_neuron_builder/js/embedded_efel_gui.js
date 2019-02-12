@@ -2,19 +2,11 @@ document.getElementById("back-to-workflow").onclick = workflowPage;
 document.getElementById("save-feature-files").onclick = saveFeatures;
 
 $(document).ready(function(){
-
     var exc = sessionStorage.getItem("exc", exc) ?  sessionStorage.getItem("exc") : "";
     var ctx = sessionStorage.getItem("ctx", ctx) ? sessionStorage.getItem("ctx") : "";
     
     document.getElementById("efelgui-frame").setAttribute("src", 
                 "/efelg/?ctx=" + ctx);
-
-   // $.getJSON('/hh-neuron-builder/get-context/', function(data){
-   //     var context = data["context"];         
-   //     document.getElementById("efelgui-frame").setAttribute("src", 
-   //             "/efelg/?ctx=" + context);
-   // })
-
 });
 
 // activate save button if last page has been reached
@@ -25,7 +17,7 @@ function checkLastPage(iframe){
 
     // if the hiddendiv is present, display button 
     if(test != undefined) {
-        document.getElementById("save-feature-files").style.display = "block";
+        document.getElementById("save-feature-files").disabled = false;
     } else {
         console.log("UNDEFINED hidden div");
     }

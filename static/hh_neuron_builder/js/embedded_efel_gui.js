@@ -25,7 +25,7 @@ function checkLastPage(iframe){
 
     // if the hiddendiv is present, display button 
     if(test != undefined) {
-        document.getElementById("save-feature-files").style.display = "block";
+        document.getElementById("save-feature-files").disabled = false;
     } else {
         console.log("UNDEFINED hidden div");
     }
