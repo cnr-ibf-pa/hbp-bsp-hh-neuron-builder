@@ -1,0 +1,81 @@
+{% load static %}
+{% load oidc_session %}
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <script type="text/javascript" 
+                src="{% static 'bspganalytics.js' %}"></script>
+
+        <title>Feature extraction GUI</title>
+
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width">
+
+        <link rel="stylesheet" 
+              href= 
+              "{% static 'hbp-collaboratory-theme/dist/css/bootstrap.css' %}">
+        <link rel="stylesheet" 
+              href="{% static 'bspg.css' %}">
+    </head>
+
+    <body>
+        <div id="main-sf-div">
+            <div class="fixed-page-title row center-container">
+                <div class="col-sm-4 align-left">Feature Selection</div>
+                <div class="col-sm-4 align-center"><h4>Feature Extraction</h4></div>
+                <div class="col-sm-4 align-right">
+                    <button id="home-btn" class="btn btn-link" style="color:white;" onclick="window.location.href='/efelg/overview/'">Home</button>
+                </div>
+            </div>
+            <div class="panel panel-info">
+                <div class="panel-heading">
+                    For a complete description of the feature extraction python
+                    package adopted and for a list of feature definitions and
+                    implementation, please refer to this  
+                    <a href="http://bluebrain.github.io/eFEL/eFeatures.html"
+                       target="_blank">link</a>.
+                </div>
+            </div>
+            <form id="select_feature_form" 
+                  action="/efelg/results/" method="POST">{% csrf_token %}
+                  <fieldset id="field_set">
+                      <div id="mainDiv">
+                      </div>
+                      <button class="btn btn-primary"
+                              onclick="submitForm()">Next</button>
+                  </fieldset>
+            </form>
+        </div>
+
+        <!-- "No data selected" message div -->
+        <div id="e-sf-warning-div" class="overlay-wrapper">
+            <div id="overlay-e-sf-warn" 
+                 style="top:35%;" class="overlay-content">
+                <div class="center-container">
+                    <div class="row-center-container">
+                        <div class="please-wait-text" 
+                             style="color:red; font-size: 18px;"> >> No feature
+                             selected << </div>
+                        <br>
+                        <button id="e-st-warning-div-btn"
+                                type="button" 
+                                class="btn btn-default"
+                                onclick="closeMessageDiv('e-sf-warning-div',
+                                'main-sf-div')">
+                            Close
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- -->
+    </body>
+</html>
+
+<script type="text/javascript" src="{% static 'jquery/dist/jquery.min.js' %}">
+</script>
+<script type="text/javascript" src="{% static 'common/js/global.js' %}">
+</script>
+<script type="text/javascript" src="{% static 'efelg/js/select_features.js' %}">
+</script>

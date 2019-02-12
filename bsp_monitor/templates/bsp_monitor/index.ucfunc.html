@@ -1,0 +1,858 @@
+{% load static  %}
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width">
+        <link rel="stylesheet" type="text/css" href="{% static 'hbp-collaboratory-theme/dist/css/bootstrap.css' %}">
+        <link rel="stylesheet" type="text/css" href="{% static 'bspg.css' %}">
+        <title>Brain Simulation Platform Monitor</title>
+        <script type="text/javascript" src="{% static 'bsp_monitor/js/ga.js' %}"></script>
+        <script type="text/javascript" src="{% static 'moment-with-locales.js' %}"></script>
+        <script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.3.1.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.min.js"></script>
+    </head>
+
+    <body>
+        <div id="title-div-container" class="fixed-page-title bg-bordeaux">
+            <div id="title-div" class="row center-container">
+                <h3 id"title">Brain Simulation Platform Monitor</h3>
+            </div>
+        </div>
+        <!-- ********************************** -->
+        <!-- REAL TIME PANEL - START -->
+        <div class="" style="margin-bottom:4px;padding-bottom:5px;">
+            <div class="center-container" style="margin:5px;background-color: rgba(255, 195, 77, 0.6);border-radius:8px;">
+                <div class="col-sm-3 align-left">
+                    <h3>Real-time</h3>
+                </div>
+                <div class="col-sm-9 align-right">
+                    <button id=refresh-btn class="btn-link">Refresh</button>
+                </div>
+            </div>
+            <!-- main div - start-->
+            <div class="center-container">
+                <!-- google stat - start-->
+                <div class="col-sm-6 stats-big-container">
+                    <div class="col-sm-3 align-center">
+                        <div class="stats-small-container">
+                            <h4># users</h4>
+                            <p><i>(last 60s)</i></p>
+                        </div>
+                        <div id="active-users-container" class="center-container rt-boxes">
+                            <p id='active-users-value' class="rt-num vert-align">--</p>
+                        </div>
+                    </div>
+                    <div class="col-sm-9 align-center ">
+                        <div class="stats-small-container">
+                            <h4>visited pages</h4>
+                            <p><i>(last 5min)</i></p>
+                        </div>
+                        <div>
+                            <figure class="rt-boxes vert-align" style="position:relative" id="chart-rt-pages-container"></figure>
+                        </div>
+                    </div>
+                    <div class="col-sm-12 align-center bottom-bar">
+                        Source: google analytics
+                    </div>
+                </div>
+                <!-- google stat - end -->
+
+                <!-- bsp stat - start -->
+                <div class="col-sm-6 align-center stats-big-container">
+                    <div class="col-sm-3 align-center">
+                        <div class="stats-small-container">
+                            <h4># use cases</h4>
+                            <p><i>(last 24h)</i></p>
+                        </div>
+                        <div id="current-cloned-container" class="rt-boxes center-container">
+                            <p id='rt-uc-num' class="rt-num">--</p>
+                        </div>
+                    </div>
+                    <div class="col-sm-9 align-center">
+                        <div class="stats-small-container">
+                            <h4>use cases</h4>
+                            <p><i>(last 24h)</i></p>
+                        </div>
+                        <div>
+                            <figure class="rt-boxes" id="chart-rt-uc-container"></figure>
+                        </div>
+                    </div>
+                    <div class="col-sm-12 align-center bottom-bar">
+                        Source: BSP analytics
+                    </div>
+                </div>
+                <!-- bsp stat - end -->
+
+            </div>
+        </div>
+        <!-- main div - end -->
+        <!-- REAL TIME PANEL - END -->
+
+
+        <!-- HISTORY PANEL - START -->
+        <div class="" style="margin-bottom:4px;padding-bottom:5px;">
+            <div class="center-container" style="margin:5px;background-color: rgba(255, 195, 77, 0.6);border-radius:8px;">
+                <div class="col-sm-3 align-left">
+                    <h3>History</h3>
+                </div>
+                <div class="col-sm-9 align-right">
+                    <label for="from-day">From: </label>
+                    <input id="from-day" name="from-day" type="date" max="2030-01-01" min="2013-01-01"></input>
+                    <span> -  </span>
+                    <label for="to-day">To: </label>
+                    <input id="to-day" name="to-day" max="2030-01-01" min="2013-01-01" type="date"></input>
+                    <button id="apply-btn" class="btn-link">Apply</button>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-6 align-center">
+                    <div class="stats-small-container">
+                        <h4>Analytics</h4>
+                    </div>
+                    <div id="google-analytics-div">
+                        <div>
+                            <h4>Locations (by session)</h4>
+                            <figure class="hist-boxes" style="width:99%;" id="embed-geo"></figure>
+                        </div>
+                        <div>
+                            <h4># sessions</h4>
+                            <figure class="hist-boxes vert-align" id="session-num"></figure>
+                        </div>
+                        <div>
+                            <h4># users</h4>
+                            <figure class="hist-boxes vert-align" id="user-num"></figure>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 align-center">
+                    <div class="stats-small-container">
+                        <h4>Use case cloning</h4>
+                    </div>
+                    <div id="bps-analytics-div">
+                        <div class="chart col-sm-12" id="user-chart2"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- HISTORY PANEL - START -->
+
+        <script>
+var IDS = "ga:101800494";
+var FILTERS = 'ga:pagePath=~/collab/1655(\/.*|$)';
+var RT_FILTERS = 'rt:pagePath=~/collab/1655(\/.*|$)';
+var DIMENSIONS = 'rt:pagePath=~/collab/1655(\/.*|$)';
+
+document.getElementById("apply-btn").onclick = executeHistoryStat;
+document.getElementById("refresh-btn").onclick = executeRealTimeStat;
+
+
+function executeHistoryStat(){
+    plotGeo(IDS, FILTERS);
+    plotSessionNum(IDS, FILTERS);
+    plotUserNum(IDS, FILTERS)
+}
+
+function executeRealTimeStat(){
+    plotRtUsers(IDS, FILTERS);
+    plotRtPages(IDS, FILTERS);
+    plotRtUsecases();
+}
+
+/* get real time users - start */
+function plotRtUsers(IDS, FILTERS){
+    gapi.client.analytics.data.realtime.get({ids:IDS,metrics:"rt:activeUsers", filters:FILTERS}).then(function(t){
+        var element = document.getElementById("active-users-container");
+        var value_el = document.getElementById("active-users-value");
+        var active_users = t.result.totalResults?+t.result.rows[0][0]:0; 
+
+        crr_act_users = parseInt(value_el.innerHTML);
+        var delta = parseInt(active_users - crr_act_users);
+        var animationClass = "";
+        if (delta>0)
+            animationClass = 'is-increasing';
+        else if (delta < 0)
+            animationClass = 'is-decreasing';
+        element.className += (' ' + animationClass);
+
+        value_el.innerHTML = active_users;
+
+        setClassChangeTimeout(element)
+
+    });
+}
+/* get real time users - end */
+
+function rtNumChangeClass(element, firstValue, secondValue){
+
+}
+
+function setClassChangeTimeout(element){
+    setTimeout(function() {
+        element.className =
+            element.className.replace(/ is-(increasing|decreasing)/g, '');
+    }, 4000);
+}
+
+/* get real time pages- start */
+function plotRtPages(IDS, FILTERS){
+    gapi.client.analytics.data.realtime.get({ids:IDS, dimensions:"rt:pagePath,rt:pageTitle,rt:minutesAgo", metrics:"rt:pageviews", filters:FILTERS}).then(function(t){
+        if (!("result" in t) || !("rows" in t.result)){
+            data = {
+                datasets:[{data:[1]}],
+                labels:["No visit"]
+            }
+        }else{
+            var pages = {};
+            var labels = {};
+            var data = {};
+            t.result.rows.forEach(function(row, i) {
+                if (parseInt(row[2]) >= 0 && parseInt(row[2]) <= 5){
+                    pages[row[0]] = pages[row[0]] ? pages[row[0]]+(+row[3]):+row[3];
+                    labels[row[0]] = labels[row[0]] ? labels[row[0]]:row[1];
+                }
+            });
+            if (Object.getOwnPropertyNames(pages).length == 0){
+                data = {
+                    datasets:[{data:[1]}],
+                    labels:["No visit"]
+                }
+            } else {
+                var data_all = [];
+                var labels_str = [];
+                var tooltips = [];
+                Object.keys(labels).forEach(function(key, index) {
+                    data_all.push(pages[key]);
+                    labels_str.push(labels[key]);
+                    tooltips.push(labels[key].substr(0,labels[key].indexOf(' ')));
+                });  
+                data = { 
+                    datasets:[{data:data_all}],
+                    labels:tooltips,
+                };
+            }
+        }
+        var ctx = makeCanvas('chart-rt-pages-container');
+        var chart = new Chart(ctx, {
+            type: 'doughnut',
+            // The data for our dataset
+            data: data,
+            options: {
+                legend:{
+                    position: 'top',
+                    labels:{
+                        boxWidth: 10,
+                    }
+                }
+            },
+        });
+    });
+}
+/* plot  real time pages- end */
+
+
+function plotHistoryUsecases(){
+    var dates = getDates();
+    $.getJSON('/bsp-monitor/get-uc/' + dates[0] + '/' + dates[1] + '/', function (resp){
+        console.log(resp);
+    })
+}
+
+
+function plotRtUsecases(){
+    $.getJSON('/bsp-monitor/get-uc/0/0/', function (resp){
+        document.getElementById("rt-uc-num").innerHTML = resp["rt_uc_num"];
+        var data = {};
+        if (resp["rt_uc_num"] == 0){
+            data = {
+                datasets:[{data:[1]}],
+                labels:["No use case cloned"]
+            } 
+        }
+        else {
+            data = {
+                datasets:[{data:resp["uc_topics_count"]}],
+                labels:resp["uc_topics"]
+            } 
+        }
+        var ctx = makeCanvas('chart-rt-uc-container');
+        var chart = new Chart(ctx, {
+            type: 'doughnut',
+            // The data for our dataset
+            data: data,
+            options: {
+                legend:{
+                    position: 'top',
+                    labels:{
+                        boxWidth: 10,
+                    }
+                }
+            },
+        });
+    })
+}
+
+
+
+
+/* plot # of sessions */
+function plotSessionNum(IDS, FILTERS){
+    var dates = getDates();
+    var session_num = query({
+        'ids': IDS,
+        'filters': FILTERS,
+        'dimensions': 'ga:date',
+        'metrics': 'ga:sessions',
+        'start-date': dates[0],
+        'end-date': dates[1]
+    });
+    Promise.all([session_num]).then(function(results) {
+
+        var data1 = results[0].rows.map(function(row) { return +row[1]; });
+        var labels = results[0].rows.map(function(row) { return +row[0]; });
+        labels = labels.map(function(label) {
+            return moment(label, 'YYYYMMDD').format('DD-MM');
+        });
+
+        var data = {
+            labels : labels,
+            datasets : [
+            {
+                data : data1,
+                pointRadius : 1,
+                pointHoverRadius : 3,
+            },
+            ]
+        };
+        var ctx = makeCanvas('session-num');
+        var chart = new Chart(ctx, {
+            type: 'line',
+            // The data for our dataset
+            data: data,
+        });
+    });
+}
+/* plot # of users */
+function plotUserNum(IDS, FILTERS){
+    var dates = getDates();
+    var user_num = query({
+        'ids': IDS,
+        'filters': FILTERS,
+        'dimensions': 'ga:date',
+        'metrics': 'ga:users',
+        'start-date': dates[0],
+        'end-date': dates[1]
+    });
+    Promise.all([user_num]).then(function(results) {
+
+        var data1 = results[0].rows.map(function(row) { return +row[1]; });
+        var labels = results[0].rows.map(function(row) { return +row[0]; });
+        labels = labels.map(function(label) {
+            return moment(label, 'YYYYMMDD').format('DD-MM');
+        });
+
+        var data = {
+            labels : labels,
+            datasets : [
+            {
+                data : data1,
+                pointRadius : 1,
+                pointHoverRadius : 3,
+            },
+            ]
+        };
+        var ctx = makeCanvas('user-num');
+        var chart = new Chart(ctx, {
+            type: 'line',
+            // The data for our dataset
+            data: data,
+        });
+    });
+}
+
+/* get dates from html element */
+function getDates(){
+    var from_day = document.getElementById("from-day").value;
+    var to_day = document.getElementById("to-day").value;
+    return [from_day, to_day]
+}
+
+/**
+ * Extend the Embed APIs `gapi.analytics.report.Data` component to
+ * return a promise the is fulfilled with the value returned by the API.
+ * @param {Object} params The request parameters.
+ * @return {Promise} A promise.
+ */
+function query(params) {
+    if (!(params['filters'])){
+        params['filters'] = 'ga:pagePath=~/collab/1655(\/.*|$)';
+    }
+    return new Promise(function(resolve, reject) {
+        var data = new gapi.analytics.report.Data({query: params});
+        data.once('success', function(response) { resolve(response); })
+            .once('error', function(response) { reject(response); })
+            .execute();
+    });
+}
+
+/* plot Geography of sessions - start */
+function plotGeo(IDS, FILTERS){
+    var dates = getDates();
+    var dataChart = new gapi.analytics.googleCharts.DataChart({
+        query: {
+            ids: IDS,
+            metrics: 'ga:sessions',
+            dimensions: 'ga:country',
+            'sort': '-ga:sessions',
+            "start-date": dates[0],
+            "end-date": dates[1]
+        },
+        chart: {
+            container: 'embed-geo',
+            type: 'GEO',
+            options: {
+                width: '100%'
+            }
+        }
+    });
+    dataChart.execute();
+}
+/* plot Geography of sessions - end */
+
+/* set dates in calendar inputs - start */
+
+var todayUtc = moment.utc();
+var todayUtcFormat = todayUtc.format("YYYY-MM-DD");
+var todayToDate = moment.utc(todayUtcFormat).toDate();
+var today = moment(todayToDate).local().format("YYYY-MM-DD");
+
+var lastMonthUtc = moment.utc().subtract(1, "month");
+var lastMonthUtcFormat = lastMonthUtc.format("YYYY-MM-DD");
+var lastMonthToDate = moment.utc(lastMonthUtcFormat).toDate();
+var lastMonth = moment(lastMonthToDate).local().format("YYYY-MM-DD");
+
+var from_day = document.getElementById("from-day");
+var to_day = document.getElementById("to-day");
+
+from_day.setAttribute("value", lastMonth);
+to_day.setAttribute("value", today);
+
+// manage from_day.onchange function
+from_day.onchange = function(){
+    var from_day = document.getElementById("from-day");
+    var to_day = document.getElementById("to-day");
+    from_day.value = this.value;
+    var to_day_crr_value = to_day.value;
+    var to_day_crr_date = moment(to_day_crr_value);
+    var from_day_crr_value = this.value;
+    var from_day_crr_date = moment(from_day_crr_value);
+    var date_diff = to_day_crr_date.diff(from_day_crr_date, 'days');
+    if (date_diff < 0)
+        to_day.value = this.value;
+}
+
+
+// manage to_day.onchange function
+to_day.onchange = function(){
+    var from_day = document.getElementById("from-day");
+    var from_day_crr_value = from_day.value;
+    var from_day_crr_date = moment(from_day_crr_value);
+    to_day.setAttribute("value", this.value);
+    var to_day_crr_date = moment(this.value);
+    var date_diff = to_day_crr_date.diff(from_day_crr_date, 'days');
+    if (date_diff < 0){
+        from_day.value = this.value;
+    }
+}
+
+
+/**
+ * Create a new canvas inside the specified element. Set it to be the width
+ * and height of its container.
+ * @param {string} id The id attribute of the element to host the canvas.
+ * @return {RenderingContext} The 2D canvas context.
+ */
+function makeCanvas(id) {
+    var container = document.getElementById(id);
+    var canvas = document.createElement('canvas');
+    var ctx = canvas.getContext('2d');
+
+    container.innerHTML = '';
+    canvas.width = container.offsetWidth;
+    canvas.height = container.offsetHeight;
+    container.appendChild(canvas);
+
+    return ctx;
+}
+
+
+
+gapi.analytics.ready(function() {
+    $.getJSON("/bsp-monitor/get-access-token/ganalytics/", function(data){
+        gapi.analytics.auth.authorize({
+            'serverAuth': {
+                'access_token': data["access_token_ganalytics"]
+            }
+        });
+
+        plotRtUsers(IDS, RT_FILTERS);
+        plotRtPages(IDS, RT_FILTERS);
+        plotGeo(IDS, FILTERS);
+        plotSessionNum(IDS, FILTERS);
+        plotUserNum(IDS, FILTERS);
+        plotRtUsecases();
+        plotHistoryUsecases();
+
+
+        setInterval(function(){
+            plotRtUsers(IDS, RT_FILTERS);
+            plotRtPages(IDS, FILTERS);
+        }, 120000);
+    });
+
+    /**
+     * Create a new ActiveUsers instance to be rendered inside of an
+     * element with the id "active-users-container" and poll for changes every
+     * five seconds.
+     */
+    /**
+      var activeUsers = new gapi.analytics.ext.ActiveUsers({
+      container: 'active-users-container',
+      pollingInterval: 60,
+      });
+
+
+     */
+    /**
+     * Add CSS animation to visually show the when users come and go.
+     */
+    /**
+      activeUsers.once('success', function() {
+      var element = this.container.firstChild;
+      var timeout;
+
+      this.on('change', function(data) {
+      var element = this.container.firstChild;
+      var animationClass = data.delta > 0 ? 'is-increasing' : 'is-decreasing';
+      element.className += (' ' + animationClass);
+
+      clearTimeout(timeout);
+      timeout = setTimeout(function() {
+      element.className =
+      element.className.replace(/ is-(increasing|decreasing)/g, '');
+      }, 3000);
+      });
+      });
+
+
+     */
+
+    /**
+     * Create a new ViewSelector2 instance to be rendered inside of an
+     * element with the id "view-selector-container".
+     */
+    var viewSelector = new gapi.analytics.ext.ViewSelector2({
+        container: 'view-selector-container',
+    })
+    .execute();
+
+
+
+    /**
+     * Update the activeUsers component, the Chartjs charts, and the dashboard
+     * title whenever the user changes the view.
+     */
+    viewSelector.on('viewChange', function(data) {
+        var title = document.getElementById('view-name');
+        title.textContent = data.property.name + ' (' + data.view.name + ')';
+
+                // Start tracking active users for this view.
+                //activeUsers.set(data).execute();
+
+                // Render all the of charts for this view.
+                renderWeekOverWeekChart(data.ids);
+                renderYearOverYearChart(data.ids);
+                renderTopBrowsersChart(data.ids);
+                renderTopCountriesChart(data.ids);
+
+                });
+
+
+
+        /**
+         * Draw the a chart.js line chart with data from the specified view that
+         * overlays session data for the current week over session data for the
+         * previous week.
+         */
+        function renderWeekOverWeekChart(ids) {
+
+            // Adjust `now` to experiment with different days, for testing only...
+            var now = moment(); // .subtract(3, 'day');
+
+            var thisWeek = query({
+                'ids': ids,
+                'dimensions': 'ga:date,ga:nthDay',
+                'metrics': 'ga:sessions',
+                'start-date': moment(now).subtract(1, 'day').day(0).format('YYYY-MM-DD'),
+                'end-date': moment(now).format('YYYY-MM-DD')
+            });
+
+            var lastWeek = query({
+                'ids': ids,
+                'dimensions': 'ga:date,ga:nthDay',
+                'metrics': 'ga:sessions',
+                'start-date': moment(now).subtract(1, 'day').day(0).subtract(1, 'week')
+                    .format('YYYY-MM-DD'),
+                'end-date': moment(now).subtract(1, 'day').day(6).subtract(1, 'week')
+                    .format('YYYY-MM-DD')
+            });
+
+            Promise.all([thisWeek, lastWeek]).then(function(results) {
+
+                var data1 = results[0].rows.map(function(row) { return +row[2]; });
+                var data2 = results[1].rows.map(function(row) { return +row[2]; });
+                var labels = results[1].rows.map(function(row) { return +row[0]; });
+
+                labels = labels.map(function(label) {
+                    return moment(label, 'YYYYMMDD').format('ddd');
+                });
+
+                var data = {
+                    labels : labels,
+                    datasets : [
+                    {
+                        label: 'Last Week',
+                        fillColor : 'rgba(220,220,220,0.5)',
+                        strokeColor : 'rgba(220,220,220,1)',
+                        pointColor : 'rgba(220,220,220,1)',
+                        pointStrokeColor : '#fff',
+                        data : data2
+                    },
+                    {
+                        label: 'This Week',
+                        fillColor : 'rgba(151,187,205,0.5)',
+                        strokeColor : 'rgba(151,187,205,1)',
+                        pointColor : 'rgba(151,187,205,1)',
+                        pointStrokeColor : '#fff',
+                        data : data1
+                    }
+                    ]
+                };
+
+                new Chart(makeCanvas('chart-1-container')).Line(data);
+                generateLegend('legend-1-container', data.datasets);
+            });
+        }
+
+
+
+
+
+        /**
+         * Draw the a chart.js bar chart with data from the specified view that
+         * overlays session data for the current year over session data for the
+         * previous year, grouped by month.
+         */
+        function renderYearOverYearChart(ids) {
+
+            // Adjust `now` to experiment with different days, for testing only...
+            var now = moment(); // .subtract(3, 'day');
+
+            var thisYear = query({
+                'ids': ids,
+                'dimensions': 'ga:month,ga:nthMonth',
+                'metrics': 'ga:users',
+                'start-date': moment(now).date(1).month(0).format('YYYY-MM-DD'),
+                'end-date': moment(now).format('YYYY-MM-DD')
+            });
+
+            var lastYear = query({
+                'ids': ids,
+                'dimensions': 'ga:month,ga:nthMonth',
+                'metrics': 'ga:users',
+                'start-date': moment(now).subtract(1, 'year').date(1).month(0)
+                    .format('YYYY-MM-DD'),
+                'end-date': moment(now).date(1).month(0).subtract(1, 'day')
+                    .format('YYYY-MM-DD')
+            });
+
+            Promise.all([thisYear, lastYear]).then(function(results) {
+                var data1 = results[0].rows.map(function(row) { return +row[2]; });
+                var data2 = results[1].rows.map(function(row) { return +row[2]; });
+                var labels = ['Jan','Feb','Mar','Apr','May','Jun',
+                'Jul','Aug','Sep','Oct','Nov','Dec'];
+
+                // Ensure the data arrays are at least as long as the labels array.
+                // Chart.js bar charts don't (yet) accept sparse datasets.
+                for (var i = 0, len = labels.length; i < len; i++) {
+                    if (data1[i] === undefined) data1[i] = null;
+                    if (data2[i] === undefined) data2[i] = null;
+                }
+
+                var data = {
+                    labels : labels,
+                    datasets : [
+                    {
+                        label: 'Last Year',
+                        fillColor : 'rgba(220,220,220,0.5)',
+                        strokeColor : 'rgba(220,220,220,1)',
+                        data : data2
+                    },
+                    {
+                        label: 'This Year',
+                        fillColor : 'rgba(151,187,205,0.5)',
+                        strokeColor : 'rgba(151,187,205,1)',
+                        data : data1
+                    }
+                    ]
+                };
+
+                new Chart(makeCanvas('chart-2-container')).Bar(data);
+                generateLegend('legend-2-container', data.datasets);
+            })
+            .catch(function(err) {
+                console.error(err.stack);
+            });
+        }
+
+
+
+        /**
+         * Draw the a chart.js doughnut chart with data from the specified view that
+         * show the top 5 browsers over the past seven days.
+         */
+        function renderTopBrowsersChart(ids) {
+
+            query({
+                'ids': ids,
+                'dimensions': 'ga:browser',
+                'metrics': 'ga:pageviews',
+                'sort': '-ga:pageviews',
+                'max-results': 5
+            })
+            .then(function(response) {
+
+                var data = [];
+                var colors = ['#4D5360','#949FB1','#D4CCC5','#E2EAE9','#F7464A'];
+
+                response.rows.forEach(function(row, i) {
+                    data.push({ value: +row[1], color: colors[i], label: row[0] });
+                });
+
+                new Chart(makeCanvas('chart-3-container')).Doughnut(data);
+                generateLegend('legend-3-container', data);
+            });
+        }
+
+
+        /**
+         * Draw the a chart.js doughnut chart with data from the specified view that
+         * compares sessions from mobile, desktop, and tablet over the past seven
+         * days.
+         */
+        function renderTopCountriesChart(ids) {
+            query({
+                'ids': ids,
+                'dimensions': 'ga:country',
+                'metrics': 'ga:sessions',
+                'sort': '-ga:sessions',
+                'max-results': 5
+            })
+            .then(function(response) {
+
+                var data = [];
+                var colors = ['#4D5360','#949FB1','#D4CCC5','#E2EAE9','#F7464A'];
+
+                response.rows.forEach(function(row, i) {
+                    data.push({
+                        label: row[0],
+                        value: +row[1],
+                        color: colors[i]
+                    });
+                });
+
+                new Chart(makeCanvas('chart-4-container')).Doughnut(data);
+                generateLegend('legend-4-container', data);
+            });
+        }
+
+
+        /**
+         * Extend the Embed APIs `gapi.analytics.report.Data` component to
+         * return a promise the is fulfilled with the value returned by the API.
+         * @param {Object} params The request parameters.
+         * @return {Promise} A promise.
+         */
+        function query(params) {
+            if (!(params['filters'])){
+                params['filters'] = 'ga:pagePath=~/collab/1655(\/.*|$)';
+            }
+            return new Promise(function(resolve, reject) {
+                var data = new gapi.analytics.report.Data({query: params});
+                data.once('success', function(response) { resolve(response); })
+                    .once('error', function(response) { reject(response); })
+                    .execute();
+            });
+        }
+
+
+        /**
+         * Create a new canvas inside the specified element. Set it to be the width
+         * and height of its container.
+         * @param {string} id The id attribute of the element to host the canvas.
+         * @return {RenderingContext} The 2D canvas context.
+         */
+        function makeCanvas(id) {
+            var container = document.getElementById(id);
+            var canvas = document.createElement('canvas');
+            var ctx = canvas.getContext('2d');
+
+            container.innerHTML = '';
+            canvas.width = container.offsetWidth;
+            canvas.height = container.offsetHeight;
+            container.appendChild(canvas);
+
+            return ctx;
+        }
+
+
+        /**
+         * Create a visual legend inside the specified element based off of a
+         * Chart.js dataset.
+         * @param {string} id The id attribute of the element to host the legend.
+         * @param {Array.<Object>} items A list of labels and colors for the legend.
+         */
+        function generateLegend(id, items) {
+            var legend = document.getElementById(id);
+            legend.innerHTML = items.map(function(item) {
+                var color = item.color || item.fillColor;
+                var label = item.label;
+                return '<li><i style="background:' + color + '"></i>' +
+                    escapeHtml(label) + '</li>';
+            }).join('');
+        }
+
+
+        // Set some global Chart.js defaults.
+        Chart.defaults.global.animationSteps = 60;
+        Chart.defaults.global.animationEasing = 'easeInOutQuart';
+        Chart.defaults.global.responsive = true;
+        Chart.defaults.global.maintainAspectRatio = false;
+
+
+        /**
+         * Escapes a potentially unsafe HTML string.
+         * @param {string} str An string that may contain HTML entities.
+         * @return {string} The HTML-escaped string.
+         */
+        function escapeHtml(str) {
+            var div = document.createElement('div');
+            div.appendChild(document.createTextNode(str));
+            return div.innerHTML;
+        }
+});
+        </script>
+
+    </body>
+</html>

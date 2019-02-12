@@ -1,0 +1,63 @@
+{% extends 'hh_neuron_builder/home_layout.html' %}
+{% load static %}
+{% load oidc_session %}
+
+
+{% block content  %}
+<script type="text/javascript" src="{% static 'hh_neuron_builder/js/set_optimization_parameters.js' %}"></script>
+<button type="button" id="back-to-workflow" style="float:right;" class="workflow-btn">Back to workflow</button>
+<div class="center-div-container">
+    <div class="launch-optimization-div">
+        <div>Set optimization algorithm parameters</div>
+        <br>
+        <div>
+            <span class="input-span">Number of generation (max): <input id="gen_num" size=4px value="2" required type="text" name="gen_num"></span>
+            <span class="input-span">Offspring size: <input id="off_size" size=4px value="10" required type="text" name="off_size"></span>
+        </div>
+    </div>
+</div>
+
+<!-- -->
+
+<div class="center-div-container">
+    <div class="launch-optimization-div">
+        <div>Set optimization run parameters</div>
+        <br>
+        <span class="input-span">Number of nodes: <input id="node_num" size=4px value="2" required type="text" name="node_num"></span>
+        <span class="input-span">Number of cores: <input id="core_num" size=4px value="10" required type="text" name="core_num"></span>
+        <span class="input-span">Runtime: <input id="run_time" size=4px value="0.5" required type="text" name="runtime"></span>
+    </div>
+</div>
+
+<!-- -->
+
+
+<div class="center-div-container">
+    <div class="launch-optimization-div">
+        <div>Select HPC system</div>
+        <br>
+        <span class='input-span'>
+            <input checked id="checkBoxNSG" type="radio"> Neuroscience Gateway (NSG)
+        </span>
+        <span class='input-span'>
+            <input disabled id="checkBoxJURECA" type="radio"> JURECA
+        </span>
+        <span class='input-span'>
+            <input disabled id="checkBoxMARCONI" type="radio"> MARCONI
+        </span>
+        <div>
+            <br>
+            <span class="input-span">Username <input id="username" size=15px required type="text" name="node_num"></span>
+            <span class="input-span">Password <input id="password" size=15px required type="password" name="core_num"></span>
+            <span>            <button class="workflow-btn" id=op-btn type="button">Run optimization</button>
+            </span>
+
+        </div>
+    </div>
+</div>
+
+
+<span><button class="workflow-btn" id=hack-btn type="button" onclick="window.location='/hh-neuron-builder/set-optimization-parameters-fetch'">HACK</button>
+
+
+    {% endblock  %}

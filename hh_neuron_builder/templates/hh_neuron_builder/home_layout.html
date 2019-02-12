@@ -1,0 +1,28 @@
+{% load static %}
+{% load oidc_session %}
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <script type="text/javascript" src="{% static 'bspganalytics.js' %}"></script>
+        <script type="text/javascript" src="{% static 'jquery/dist/jquery.min.js' %}"></script>
+        <script type="text/javascript" src="{% static 'sorttable.js' %}"></script>
+        <script type="text/javascript" src="{% static 'moment-with-locales.js' %}"></script>
+        <link rel="stylesheet" type="text/css" href="{% static 'bspg.css' %}">
+        <title>Hodgkin-Huxley Neuron Builder</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width">
+        <link rel="stylesheet" type="text/css" href="{% static 'hbp-collaboratory-theme/dist/css/bootstrap.css' %}">
+    </head>
+
+    <body>
+        {% hbp_oidc_session_handler request.user %}
+        <div id="title-div-container">
+            <div id="title-div" class="fixed-page-title bg-bordeaux">
+                <h3 id"title">Hodgkin-Huxley Neuron Builder</h3>
+            </div>
+        </div>
+        {% block content %}{% endblock %}
+    </body>
+
+</html>

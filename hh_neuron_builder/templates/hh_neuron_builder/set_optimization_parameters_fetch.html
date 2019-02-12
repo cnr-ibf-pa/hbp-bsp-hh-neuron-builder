@@ -1,0 +1,148 @@
+{% extends 'hh_neuron_builder/home_layout.html' %}
+{% load static %}
+{% load oidc_session %}
+
+
+{% block content  %}
+<script type="text/javascript" src="{% static 'hh_neuron_builder/js/set_optimization_parameters.js' %}"></script>
+<button type="button" id="back-to-workflow" style="float:right;" class="workflow-btn">Back to workflow</button>
+<div class="center-div-container">
+	<div class="launch-optimization-div">
+		<div style="background-color: rgb(210, 210, 210); color: rgb(100,100,100)">Set optimization algorithm parameters</div>
+		<br>
+		<div>
+			<span class="input-span">Number of generation (max): <input id="gen_num" size=4px value="2" required type="text" name="gen_num"></span>
+			<span class="input-span">Offspring size: <input id="off_size" size=4px value="10" required type="text" name="off_size"></span>
+		</div>
+		<br>
+
+		<!-- -->
+
+		<div style="background-color: rgb(210, 210, 210); color: rgb(100, 100, 100)">Set optimization run parameters</div>
+		<br>
+		<span class="input-span">Number of nodes: <input id="node_num" size=4px value="2" required type="text" name="node_num"></span>
+		<span class="input-span">Number of cores: <input id="core_num" size=4px value="10" required type="text" name="core_num"></span>
+		<span class="input-span">Runtime: <input id="run_time" size=4px value="0.5" required type="text" name="runtime"></span>
+
+		<!-- -->
+		<br>
+		<br>
+
+		<div style="background-color: rgb(210, 210, 210); color: rgb(100, 100, 100)">Select HPC system</div>
+		<br>
+		<span class='input-span'>
+			<input checked id="checkBoxNSG" type="radio"> Neuroscience Gateway (NSG)
+		</span>
+		<span class='input-span'>
+			<input disabled id="checkBoxJURECA" type="radio"> JURECA
+		</span>
+		<span class='input-span'>
+			<input disabled id="checkBoxMARCONI" type="radio"> MARCONI
+		</span>
+		<div>
+			<br>
+			<span class="input-span">Username <input id="username" size=15px required type="text" name="node_num"></span>
+			<span class="input-span">Password <input id="password" size=15px required type="password" name="core_num"></span>
+			<br>
+			<span><button class="workflow-btn" id=op-btn type="button">Run optimization</button></span>
+
+		</div>
+	</div>
+</div>
+
+<!-- -->
+<div class=center-div-container>
+	<div class="launch-optimization-div">
+        <div style="background-color: rgb(210, 210, 210); color: rgb(100,100,100)">
+		Select a model from a folder on the server 
+        </div>
+        <br>
+        <select><option selected>/app/media/hh_neuron_builder/bsp_data_repository/optimizations</option></select>
+		<br />
+		<br />
+		<select id="select_local_opt">
+
+		</select>
+		<span><button class="workflow-btn" id="sim-btn" type="button">Run simulation</button></span>
+	</div>
+</div>                                                     
+
+<!-- -->
+<div class=center-div-container>
+	<div class="launch-optimization-div">
+        <div style="background-color: rgb(210, 210, 210); color: rgb(100,100,100)">
+		Select a model from a folder on your local machine 
+        </div>
+        <br>
+        <select><option selected>~/temp/optimizations</option></select>
+		<br />
+		<br />
+		<select id="select_local_opt">
+
+		</select>
+		<span><button class="workflow-btn" id="sim-btn" type="button">Run simulation</button></span>
+	</div>
+</div>                                                     
+
+
+<div class="center-div-container">
+	<div class="launch-optimization-div">
+		<div>Fetch optimizations from HPC system</div>
+		<br>
+		<span class='input-span'>
+			<input checked id="checkBoxNSG" type="radio"> Neuroscience Gateway (NSG)
+		</span>
+		<span class='input-span'>
+			<input disabled id="checkBoxJURECA" type="radio"> JURECA
+		</span>
+		<span class='input-span'>
+			<input disabled id="checkBoxMARCONI" type="radio"> MARCONI
+		</span>
+		<div>
+			<br>
+			<span class="input-span">Username <input id="usernamesim" size=15px required type="text" name="node_num"></span>
+			<span class="input-span">Password <input id="passwordsim" size=15px required type="password" name="core_num"></span>
+			<span><button class="workflow-btn" id="op-nsg-btn" type="button">Run simulation</button></span>
+		</div>
+	</div>
+</div>
+
+
+<script>
+$(document).ready(function(){
+	$.getJSON("/hh-neuron-builder/get_local_optimization_list", function(data){
+		$.each(data, function(idx, val){
+			//$("#select_local_opt" ).after("<div id=" + index + " class='model-info-div'>" + index + "</div>");
+			$("#select_local_opt").append("<option value=" + val + " id=" + val + ">"+ val + "</option>");
+		});
+	});
+	document.getElementById("sim-btn").onclick = runSimulation;
+	document.getElementById("op-nsg-btn").onclick = fetchResults;
+});
+
+function runSimulation() {
+	var sel_el = document.getElementById("select_local_opt");
+	var optimization_name = sel_el[sel_el.selectedIndex].value;
+    $.get("/hh-neuron-builder/set-optimization-name/" + optimization_name, function(){
+    $.getJSON("/hh-neuron-builder/upload-to-naas", function(){
+    window.location.href = "/hh-neuron-builder/embedded-naas/";
+    
+    });
+    
+    });
+}
+
+function fetchResults() {
+	var userRes = document.getElementById("usernamesim").value;
+	var passRes = document.getElementById("passwordsim").value;
+    $.get("/hh-neuron-builder/set-username/" + username);
+    $.get("/hh-neuron-builder/set-password/" + password);
+	$.getJSON("/hh-neuron-builder/get-nsg-job-list", function(data){
+        console.log(data)
+	});
+}
+
+
+
+</script>
+{% endblock  %}
