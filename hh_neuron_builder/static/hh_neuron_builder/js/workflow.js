@@ -738,7 +738,7 @@ function displayJobInfo() {
                     var sys = dd.options[dd.selectedIndex].getAttribute("name");
                     var pwd = document.getElementById("password_submit");
                     var pwd_div = document.getElementById("pwd-div");
-                    if (sys == "JURECA"){
+                    if (sys == "CSCS-PIZDAINT"){
                         pwd_div.setAttribute("style", "display:none");
                         pwd.setAttribute("value", "NONE");
                     } else if (sys == "NSG"){
@@ -752,7 +752,7 @@ function displayJobInfo() {
                 var sys = dd.options[dd.selectedIndex].getAttribute("name");
                 var pwd = document.getElementById("password_fetch");
                 var pwd_div = document.getElementById("pwd-fetch-div");
-                if (sys == "JURECA"){
+                if (sys == "CSCS-PIZDAINT"){
                     pwd_div.setAttribute("style", "display:none");
                     pwd.setAttribute("value", "NONE");
                 } else if (sys == "NSG"){
