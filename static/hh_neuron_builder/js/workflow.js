@@ -35,6 +35,7 @@ $(document).ready(function(){
     var $formrunparam = $('#submitRunParam');
     $formrunparam.submit(function(e){
         e.preventDefault();
+        console.log("entered");
         $.post('/hh-neuron-builder/submit-run-param/' + req_pattern + '/', $(this).serialize(), function(response){
             if (response['response'] == "KO"){
                 openErrorDiv("Username and/or password are wrong");

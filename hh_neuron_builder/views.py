@@ -607,11 +607,12 @@ def submit_run_param(request, exc="", ctx=""):
 
     wf_id = request.session[exc]['wf_id']
     dest_dir = request.session[exc]['user_dir_data_opt_launch']
+    userid = request.session[exc]['userid']
 
-    resp_dict = {'response':'KO', 'message':'Username and/or password \
-        are wrong'}
+    hpc = form_data['hpc_sys'].lower()
+
     # if chosen system is nsg
-    if form_data['hpc_sys'].lower() == 'nsg':
+    if hpc == 'nsg':
         resp_check_login = hpc_job_manager.Nsg.checkNsgLogin(username=form_data['username_submit'],
                 password=form_data['password_submit'])
 
@@ -634,6 +635,8 @@ def submit_run_param(request, exc="", ctx=""):
                     are wrong'}
             request.session[exc].pop('username_submit', None)
             request.session[exc].pop('password_submit', None)
+    elif hpc == "cscs-pizdaint":
+        request.session[exc]['hpc_sys_fetch'] = form_data['hpc_sys_fetch']
 
     request.session.save()
 
@@ -647,8 +650,10 @@ def submit_fetch_param(request, exc="", ctx=""):
     #selected_traces_rest = request.POST.get('csrfmiddlewaretoken')
     form_data = request.POST
 
+    hpc = form_data['hpc_sys_fetch'].lower()
+
     # if chosen system is nsg
-    if form_data['hpc_sys_fetch'].lower() == 'nsg':
+    if hpc == 'nsg':
         request.session[exc]['hpc_sys_fetch'] = form_data['hpc_sys_fetch']
         resp_check_login = \
         hpc_job_manager.Nsg.checkNsgLogin(username=form_data['username_fetch'],
@@ -661,6 +666,8 @@ def submit_fetch_param(request, exc="", ctx=""):
         else:
             request.session[exc].pop('username_fetch', None)
             request.session[exc].pop('password_fetch', None)
+    elif hpc == "cscs-pizdaint":
+        request.session[exc]['hpc_sys_fetch'] = form_data['hpc_sys_fetch']
 
     request.session.save()
 
