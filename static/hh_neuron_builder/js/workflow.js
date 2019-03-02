@@ -738,12 +738,32 @@ function displayJobInfo() {
                     var sys = dd.options[dd.selectedIndex].getAttribute("name");
                     var pwd = document.getElementById("password_submit");
                     var pwd_div = document.getElementById("pwd-div");
-                    if (sys == "CSCS-PIZDAINT"){
+                    var un_div = document.getElementById("un-div");
+                    var jobtitle_div = document.getElementById("jobtitle-div");
+					var hpc_param_container = document.getElementById("hpc-param");
+                    var apply_param_button = document.getElementById("apply-param");
+                
+                    if (sys == "--"){
                         pwd_div.setAttribute("style", "display:none");
+                        un_div.setAttribute("style", "display:none");
+                        jobtitle_div.setAttribute("style", "display:none");
+						hpc_param_container.classList = "collapse";
+                        apply_param_button.disabled = true;
+					}
+                    else if (sys == "CSCS-PIZDAINT"){
+                        pwd_div.setAttribute("style", "display:none");
+                        un_div.setAttribute("style", "display:none");
                         pwd.setAttribute("value", "NONE");
+                        jobtitle_div.setAttribute("style", "display:block");
+                        hpc_param_container.setAttribute("style", "display:block");
+                        apply_param_button.disabled = false;
                     } else if (sys == "NSG"){
                         pwd_div.setAttribute("style", "display:block;");
+                        un_div.setAttribute("style", "display:block;");
+                        jobtitle_div.setAttribute("style", "display:none");
                         pwd.setAttribute("value", "");
+                        hpc_param_container.setAttribute("style", "display:block");
+                        apply_param_button.disabled = false;
                     }
                 }
 

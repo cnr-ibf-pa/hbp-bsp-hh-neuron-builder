@@ -459,41 +459,60 @@ def run_optimization(request, exc="", ctx=""):
     zfName = os.path.join(dest_dir, opt_name + '.zip')
     fin_opt_folder = os.path.join(dest_dir, opt_name)
 
-    if hpc_sys.lower() == "nsg":
+    hpc_sys = hpc_sys.lower()
 
-	hpc_job_manager.OptFolderManager.createzip(fin_opt_folder=fin_opt_folder, \
-                source_opt_zip=source_opt_zip, opt_name=opt_name, \
-                source_feat=source_feat, gennum=gennum, offsize=offsize, \
-                zfName=zfName, sys = hpc_sys.lower())
+
+    if hpc_sys == "nsg":
+        execname = "init.py"
+        joblaunchname = ""
+
+        hpc_job_manager.OptFolderManager.createzip(fin_opt_folder=fin_opt_folder, \
+            source_opt_zip=source_opt_zip, opt_name=opt_name, \
+            source_feat=source_feat, gennum=gennum, offsize=offsize, \
+            zfName=zfName, hpc = hpc_sys, execname="init.py")
 
 	resp = hpc_job_manager.Nsg.runNSG(username_submit=username_submit, \
                 password_submit=password_submit, core_num=core_num, \
                 node_num=node_num, runtime=runtime, zfName=zfName)
 
-	if resp['status_code'] == 200:
-            opt_sub_flag_file = os.path.join(dest_dir,\
-                    request.session[exc]['opt_sub_flag_file'])
+    elif hpc_sys == "cscs-pizdaint":
+        execname = "zipfolder.py"
+        joblaunchname = "ipyparallel.sbatch"
+        hpc_job_manager.OptFolderManager.createzip(fin_opt_folder=fin_opt_folder, \
+            source_opt_zip=source_opt_zip, opt_name=opt_name, \
+            source_feat=source_feat, gennum=gennum, offsize=offsize, \
+            zfName=zfName, hpc = hpc_sys, execname=execname, \
+            joblaunchname=joblaunchname)
 
-            with open(opt_sub_flag_file, 'w') as f:
-                f.write("")
-            f.close()
+    #resp = hpc_job_manager.Nsg.runNSG(username_submit=username_submit, \
+    #        password_submit=password_submit, core_num=core_num, \
+    #        node_num=node_num, runtime=runtime, zfName=zfName)
+
+    if resp['status_code'] == 200:
+        opt_sub_flag_file = os.path.join(dest_dir,\
+                request.session[exc]['opt_sub_flag_file'])
+
+        with open(opt_sub_flag_file, 'w') as f:
+            f.write("")
+        f.close()
         
-            wf_job_ids = request.session[exc]['wf_job_ids']
-            wf_id = request.session[exc]['wf_id']
-            ids_file = os.path.join(workflows_dir, userid, wf_job_ids)
-            ids_dict = {"wf_id" : wf_id, "hpc_sys": hpc_sys}
+        wf_job_ids = request.session[exc]['wf_job_ids']
+        wf_id = request.session[exc]['wf_id']
+        ids_file = os.path.join(workflows_dir, userid, wf_job_ids)
+        ids_dict = {"wf_id" : wf_id, "hpc_sys": hpc_sys}
 
-            # update file containing 
-            if os.path.exists(ids_file):
-                with open(ids_file, "r") as fh:
-                    all_id = json.load(fh)
-            else:
-                all_id = {}
+        # update file containing 
+        if os.path.exists(ids_file):
+            with open(ids_file, "r") as fh:
+                all_id = json.load(fh)
+        else:
+            all_id = {}
 
-            all_id[resp["jobname"]] = ids_dict
+        all_id[resp["jobname"]] = ids_dict
                 
-            with open(ids_file, "w") as fh:
-                json.dump(all_id, fh)
+        with open(ids_file, "w") as fh:
+            json.dump(all_id, fh)
+
 
     request.session.save()
 

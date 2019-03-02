@@ -193,135 +193,135 @@ class Nsg:
 
         return ""
 
-    @classmethod
-    def createzip(cls, fin_opt_folder, source_opt_zip, \
-            opt_name, source_feat, gennum, offsize, zfName):
-        """
-        Create zip file to be submitted to NSG 
-        """
+    #@classmethod
+    #def createzip(cls, fin_opt_folder, source_opt_zip, \
+    #        opt_name, source_feat, gennum, offsize, zfName):
+    #    """
+    #    Create zip file to be submitted to NSG 
+    #    """
 
         # folder named as the optimization
-        if not os.path.exists(fin_opt_folder):
-            os.makedirs(fin_opt_folder)
-        else:
-            shutil.rmtree(fin_opt_folder)
-            os.makedirs(fin_opt_folder)
+     #   if not os.path.exists(fin_opt_folder):
+     #       os.makedirs(fin_opt_folder)
+     #   else:
+     #       shutil.rmtree(fin_opt_folder)
+     #       os.makedirs(fin_opt_folder)
 
         # unzip source optimization file 
-        z = zipfile.ZipFile(source_opt_zip, 'r')
-        z.extractall(path = fin_opt_folder)
-        z.close()
+     #   z = zipfile.ZipFile(source_opt_zip, 'r')
+     #   z.extractall(path = fin_opt_folder)
+     #   z.close()
 
         # change name to the optimization folder
-        source_opt_name = os.path.basename(source_opt_zip)[:-4]
-        crr_dest_dir = os.path.join(fin_opt_folder, source_opt_name)
-        fin_dest_dir = os.path.join(fin_opt_folder, opt_name)
-        shutil.move(crr_dest_dir, fin_dest_dir)
+     #   source_opt_name = os.path.basename(source_opt_zip)[:-4]
+     #   crr_dest_dir = os.path.join(fin_opt_folder, source_opt_name)
+     #   fin_dest_dir = os.path.join(fin_opt_folder, opt_name)
+     #   shutil.move(crr_dest_dir, fin_dest_dir)
 
         # copy feature files to the optimization folder
-        features_file = os.path.join(source_feat, 'features.json')
-        protocols_file = os.path.join(source_feat, 'protocols.json') 
-        fin_feat_path = os.path.join(fin_dest_dir, 'config', 'features.json')
-        fin_prot_path = os.path.join(fin_dest_dir, 'config', 'protocols.json')
-        if os.path.exists(fin_feat_path):
-            os.remove(fin_feat_path)
-        if os.path.exists(fin_prot_path):
-            os.remove(fin_prot_path)
-        shutil.copyfile(features_file, fin_feat_path)
-        shutil.copyfile(protocols_file, fin_prot_path)
+     #   features_file = os.path.join(source_feat, 'features.json')
+     #   protocols_file = os.path.join(source_feat, 'protocols.json') 
+     #   fin_feat_path = os.path.join(fin_dest_dir, 'config', 'features.json')
+     #   fin_prot_path = os.path.join(fin_dest_dir, 'config', 'protocols.json')
+     #   if os.path.exists(fin_feat_path):
+     #       os.remove(fin_feat_path)
+     #   if os.path.exists(fin_prot_path):
+     #       os.remove(fin_prot_path)
+     #   shutil.copyfile(features_file, fin_feat_path)
+     #   shutil.copyfile(protocols_file, fin_prot_path)
 
         # change feature files primary keys
-        fin_morph_path = os.path.join(fin_dest_dir, 'config', 'morph.json')
-        with open(fin_morph_path, 'r') as morph_file:
-            morph_json = json.load(morph_file, \
-                    object_pairs_hook=collections.OrderedDict)
-            morph_file.close()
-        with open(fin_feat_path, 'r') as feat_file:
-            feat_json = json.load(feat_file, \
-                    object_pairs_hook=collections.OrderedDict)
-            feat_file.close()
-        with open(fin_prot_path, 'r') as prot_file:
-            prot_json = json.load(prot_file, \
-                    object_pairs_hook=collections.OrderedDict)
-            prot_file.close()
+     #   fin_morph_path = os.path.join(fin_dest_dir, 'config', 'morph.json')
+     #   with open(fin_morph_path, 'r') as morph_file:
+     #       morph_json = json.load(morph_file, \
+     #               object_pairs_hook=collections.OrderedDict)
+     #       morph_file.close()
+     #   with open(fin_feat_path, 'r') as feat_file:
+     #       feat_json = json.load(feat_file, \
+     #               object_pairs_hook=collections.OrderedDict)
+     #       feat_file.close()
+     #   with open(fin_prot_path, 'r') as prot_file:
+     #       prot_json = json.load(prot_file, \
+     #               object_pairs_hook=collections.OrderedDict)
+     #       prot_file.close()
 
-        os.remove(fin_feat_path)
-        os.remove(fin_prot_path)
+     #   os.remove(fin_feat_path)
+     #   os.remove(fin_prot_path)
 
-        fin_key = morph_json.keys()[0]
-        feat_key = feat_json.keys()[0]
-        prot_key = prot_json.keys()[0]
+     #   fin_key = morph_json.keys()[0]
+     #   feat_key = feat_json.keys()[0]
+     #   prot_key = prot_json.keys()[0]
 
-        feat_json[fin_key] = feat_json.pop(feat_key)
-        prot_json[fin_key] = prot_json.pop(prot_key)
+     #   feat_json[fin_key] = feat_json.pop(feat_key)
+     #   prot_json[fin_key] = prot_json.pop(prot_key)
 
         # save feature files with changed keys
-        with open(fin_feat_path, 'w') as feat_file:
-            feat_file.write(json.dumps(feat_json, indent=4))
-            feat_file.close()
+     #   with open(fin_feat_path, 'w') as feat_file:
+     #       feat_file.write(json.dumps(feat_json, indent=4))
+     #       feat_file.close()
 
         # save protocol files with changed keys
-        with open(fin_prot_path, 'w') as prot_file:
-            prot_file.write(json.dumps(prot_json, indent=2))
-            prot_file.close()
+     #   with open(fin_prot_path, 'w') as prot_file:
+     #       prot_file.write(json.dumps(prot_json, indent=2))
+     #       prot_file.close()
 
 
         # remove unwanted files from the folder to be zipped
-        for item in os.listdir(fin_dest_dir):
-            if item.startswith('init') or item.endswith('.zip') \
-                    or item.startswith('__MACOSX'):
-                        os.remove(os.path.join(fin_dest_dir, item))
+     #   for item in os.listdir(fin_dest_dir):
+     #       if item.startswith('init') or item.endswith('.zip') \
+     #               or item.startswith('__MACOSX'):
+     #                   os.remove(os.path.join(fin_dest_dir, item))
 
-        with open(os.path.join(fin_dest_dir, 'init.py'),'w') as f:
-            f.write('import os')
-            f.write('\n')
-            f.write('os.system(\'python opt_neuron.py --max_ngen=' + str(gennum) + ' --offspring_size=' + str(offsize) + ' --start --checkpoint ./checkpoints/checkpoint.pkl\')')
-            f.write('\n')
-        f.close()
+     #   with open(os.path.join(fin_dest_dir, 'init.py'),'w') as f:
+     #       f.write('import os')
+     #       f.write('\n')
+     #       f.write('os.system(\'python opt_neuron.py --max_ngen=' + str(gennum) + ' --offspring_size=' + str(offsize) + ' --start --checkpoint ./checkpoints/checkpoint.pkl\')')
+     #       f.write('\n')
+     #   f.close()
 
         # build optimization folder name
-        crr_dir_opt = os.path.join(fin_opt_folder, opt_name)
+     #   crr_dir_opt = os.path.join(fin_opt_folder, opt_name)
 
-        foo = zipfile.ZipFile(zfName, 'w', zipfile.ZIP_DEFLATED)
+     #   foo = zipfile.ZipFile(zfName, 'w', zipfile.ZIP_DEFLATED)
 
-        checkpoints_dir = os.path.join(crr_dir_opt, 'checkpoints')
-        figures_dir = os.path.join(crr_dir_opt, 'figures')
-        r_0_dir = os.path.join(crr_dir_opt, 'r_0')
+     #   checkpoints_dir = os.path.join(crr_dir_opt, 'checkpoints')
+     #   figures_dir = os.path.join(crr_dir_opt, 'figures')
+     #   r_0_dir = os.path.join(crr_dir_opt, 'r_0')
 
-        if os.path.exists(checkpoints_dir):
-            shutil.rmtree(checkpoints_dir)
-            os.makedirs(checkpoints_dir)
-        if os.path.exists(figures_dir):
-            shutil.rmtree(figures_dir)
-            os.makedirs(figures_dir)
-        if os.path.exists(r_0_dir):
-            shutil.rmtree(r_0_dir)
+     #   if os.path.exists(checkpoints_dir):
+     #       shutil.rmtree(checkpoints_dir)
+     #       os.makedirs(checkpoints_dir)
+     #   if os.path.exists(figures_dir):
+     #       shutil.rmtree(figures_dir)
+     #       os.makedirs(figures_dir)
+     #   if os.path.exists(r_0_dir):
+     #       shutil.rmtree(r_0_dir)
 
-        for root, dirs, files in os.walk(fin_opt_folder):
-            if (root == os.path.join(crr_dir_opt, 'morphology')) or \
-                    (root == os.path.join(crr_dir_opt, 'config')) or \
-                    (root == os.path.join(crr_dir_opt, 'mechanisms')) or \
-                    (root == os.path.join(crr_dir_opt, 'model')):
+     #   for root, dirs, files in os.walk(fin_opt_folder):
+     #       if (root == os.path.join(crr_dir_opt, 'morphology')) or \
+     #               (root == os.path.join(crr_dir_opt, 'config')) or \
+     #               (root == os.path.join(crr_dir_opt, 'mechanisms')) or \
+     #               (root == os.path.join(crr_dir_opt, 'model')):
                 #
-                for f in files:
-                    final_zip_fname = os.path.join(root, f)
-                    foo.write(final_zip_fname, \
-                            final_zip_fname.replace(fin_opt_folder, '', 1))
+     #           for f in files:
+     #               final_zip_fname = os.path.join(root, f)
+     #               foo.write(final_zip_fname, \
+     #                       final_zip_fname.replace(fin_opt_folder, '', 1))
 
-            if (root == os.path.join(crr_dir_opt, 'checkpoints')) or \
-                    (root == os.path.join(crr_dir_opt, 'figures')):
-                        final_zip_fold_name = os.path.join(root)
-                        foo.write(final_zip_fold_name, \
-                                final_zip_fold_name.replace(fin_opt_folder, '',
-                                    1))
+     #       if (root == os.path.join(crr_dir_opt, 'checkpoints')) or \
+     #               (root == os.path.join(crr_dir_opt, 'figures')):
+     #                   final_zip_fold_name = os.path.join(root)
+     #                   foo.write(final_zip_fold_name, \
+     #                           final_zip_fold_name.replace(fin_opt_folder, '',
+     #                               1))
 
-            if (root == crr_dir_opt):
-                for f in files:
-                    if f.endswith('.py'):
-                        final_zip_fname = os.path.join(root, f)
-                        foo.write(final_zip_fname, \
-                            final_zip_fname.replace(fin_opt_folder, '', 1))
-        foo.close()
+     #       if (root == crr_dir_opt):
+     #           for f in files:
+     #               if f.endswith('.py'):
+     #                   final_zip_fname = os.path.join(root, f)
+     #                   foo.write(final_zip_fname, \
+     #                       final_zip_fname.replace(fin_opt_folder, '', 1))
+     #   foo.close()
 
 
 class Unicore:
@@ -329,7 +329,7 @@ class Unicore:
     Class for submitting jobs with Unicore
     """
     @classmethod
-    def checkLogin(cls, username, token, sys):                                           
+    def checkLogin(cls, username="", token="", hpc=""):                                           
         auth = unicore_client.get_oidc_auth(token=token) 
         base_url = unicore_client.get_sites()[sys]['url']
         role = unicore_client.get_properties(base_url, auth)['client']['role']['selected']
@@ -350,7 +350,7 @@ class Unicore:
     @classmethod
     def run_unicore_opt(cls, sys="", filename="", joblaunchname = "", \
              token = None, jobname = "UNICORE_Job", core_num = 4, \
-             node_num = 2, runtime = 4, username=""):
+             node_num = 2, runtime = 4, username="", hpc = ""):
 
         # build folder name
         basename = os.path.basename(filename)
@@ -366,10 +366,17 @@ class Unicore:
         # create inputs array
         inputs = [mod]
         
+        # define exec string depending on hpc system
+        if hpc == "cscs-pizdaint":
+            exec_str = "; chmod +rx *.sbatch; ./ipyparallel.sbatch"
+            hpc_sub = ["DAINT-CSCS"]
+        elif hpc == "jureca":
+            exec_str = "; chmod +rx *.sh; chmod +rx *.sbatch; sh " + joblaunchname + ";",
+            hpc_sub = "jureca"
+
         # create job to be submitted
         job = {}
-        job = {"Executable": "unzip " + basename + "; cd " + foldname + \
-                    "; chmod +rx *.sh; chmod +rx *.sbatch; sh " + joblaunchname + ";",
+        job = {"Executable": "unzip " + basename + "; cd " + foldname + exec_str,
                 "Name": jobname,
                 "Resources": {
                     "Nodes": str(node_num), \
@@ -381,7 +388,7 @@ class Unicore:
 
         auth = unicore_client.get_oidc_auth(token)
         auth['X-UNICORE-User-Preferences'] = 'uid:'+ username 
-        base_url = unicore_client.get_sites()[sys]['url']
+        base_url = unicore_client.get_sites()[hpc_sub]['url']
         job_url = unicore_client.submit(base_url + '/jobs', job, auth, inputs)
 
         return job_url
@@ -408,7 +415,7 @@ class Unicore:
         return job_list_dict
 
     @classmethod
-    def fetch_job_details(cls, site, job_res_url, token):
+    def fetch_job_details(cls, site="", job_res_url="", token=""):
         """
         """
         job_res_url = job_res_url.replace("https:/", "https://")
@@ -429,7 +436,7 @@ class Unicore:
         return job_info_dict
 
     @classmethod
-    def fetch_job_results(cls, job_url, token, dest_dir):
+    def fetch_job_results(cls, job_url="", token="", dest_dir=""):
         """
         """
         if not os.path.exists(dest_dir):
@@ -441,11 +448,10 @@ class Unicore:
             output_files = unicore_client.list_files(wd, auth)
             for file_path in output_files:
                 _, f = os.path.split(file_path)
-                if (f!='') & (f!='stderr'):
+                if (f=='stderr') or (f=="stdout") or (f=="output.zip"):
                     content = unicore_client.get_file_content(wd + "/files" + file_path, auth)
                     with open(os.path.join(dest_dir, f), "w") as local_file:
                         local_file.write(content)
-
                     local_file.close()
 
 
@@ -454,7 +460,7 @@ class OptFolderManager:
     """
     @classmethod
     def createzip(cls, fin_opt_folder, source_opt_zip, \
-            opt_name, source_feat, gennum, offsize, zfName, sys, execname="", \
+            opt_name, source_feat, gennum, offsize, zfName, hpc, execname="", \
             joblaunchname=""):
         """
         Create zip file to be submitted to HPC systems
@@ -526,17 +532,15 @@ class OptFolderManager:
             prot_file.close()
 
 
-        # remove unwanted files from the folder to be zipped
-        for item in os.listdir(fin_dest_dir):
-            if item.startswith('init') or item.endswith('.zip') \
-                    or item.startswith('__MACOSX'):
-                        os.remove(os.path.join(fin_dest_dir, item))
-
-        if sys.lower() == "nsg":
-            OptFolderManager.add_exec_file(sys=sys, fin_dest_dir=fin_dest_dir, execname="init.py",\
+        if hpc == "nsg":
+            OptFolderManager.remove_files_from_opt_folder(fin_dest_dir=fin_dest_dir, hpc=hpc)
+            OptFolderManager.add_exec_file(hpc=hpc, fin_dest_dir=fin_dest_dir, execname=execname,\
                     gennum=gennum, offsize=offsize, mod_path="")
-        elif sys.lower() == "jureca":
-            OptFolderManager.add_exec_file(sys=sys, fin_dest_dir=fin_dest_dir, execname=execname, \
+        elif hpc == "jureca":
+            OptFolderManager.add_exec_file(hpc, fin_dest_dir=fin_dest_dir, execname=execname, \
+                    gennum=gennum, offsize=offsize, mod_path="", joblaunchname=joblaunchname)
+        elif hpc == "cscs-pizdaint":
+            OptFolderManager.add_exec_file(hpc, fin_dest_dir=fin_dest_dir, execname=execname, \
                     gennum=gennum, offsize=offsize, mod_path="", joblaunchname=joblaunchname)
 
         # build optimization folder name
@@ -585,18 +589,40 @@ class OptFolderManager:
 
             if (root == crr_dir_opt):
                 for f in files:
-                    if f.endswith('.py'):
+                    if f.endswith('.py') or (f.endswith('.sbatch') and hpc=="cscs-pizdaint"):
                         final_zip_fname = os.path.join(root, f)
                         foo.write(final_zip_fname, \
                             final_zip_fname.replace(fin_opt_folder, '', 1))
         foo.close()
         
+    @classmethod
+    def remove_files_from_opt_folder(cls, fin_dest_dir, hpc):
+        """
+        Remove unwanted files from the folder to be zipped
+        """
+        # 'nsg'
+        if hpc == "nsg":
+            for item in os.listdir(fin_dest_dir):
+                if item.startswith('init') or item.endswith('.zip') \
+                    or item.startswith('__MACOSX'):
+                        os.remove(os.path.join(fin_dest_dir, item))
+        # 'cscs-pizdaint'
+        elif hpc == "cscs-pizdaint":
+            for item in os.listdir(fin_dest_dir):
+                if file.startswith("ipyparallel.sbatch") \
+                    or file.startswith("zipfolder.py") \
+                    or item.startswith('__MACOSX'):
+                        os.remove(os.path.join(fin_dest_dir, item))
+
+            
+
 
     @classmethod
-    def add_exec_file(cls, sys, fin_dest_dir="./", execname="fn", gennum=24, \
+    def add_exec_file(cls, hpc, fin_dest_dir="./", execname="fn", gennum=24, \
             offsize=12, mod_path="", joblaunchname="jln"):
+
         # Neuro Science Gateway
-        if sys.lower() == "nsg":
+        if hpc == "nsg":
             with open(os.path.join(fin_dest_dir, execname),'w') as f:
                 f.write('import os')
                 f.write('\n')
@@ -608,7 +634,7 @@ class OptFolderManager:
             return execname
 
         # Juelich Jureca
-        elif sys.lower() == "jureca":
+        elif hpc == "jureca":
             with open(os.path.join(fin_dest_dir, execname),'w') as f:
                 f.write("#!/bin/bash -x")
                 f.write('\n')
@@ -679,6 +705,56 @@ class OptFolderManager:
                 f.write('\n')
                 f.write("sbatch " + execname)
             f.close()
+            return [execname, joblaunchname]
+
+        # CSCS Pizdaint
+        elif hpc == "cscs-pizdaint":
+            with open(os.path.join(fin_dest_dir, execname),'w') as f:
+                f.write('import os\n')
+                f.write('import zipfile\n')
+                f.write('retval = os.getcwd()\n')
+                f.write('print "Current working directory %s" % retval\n')
+                f.write('os.chdir(\'..\')\n')
+                f.write('retval = os.getcwd()\n')
+                f.write('print "Current working directory %s" % retval\n')
+                f.write('def zipdir(path, ziph):\n')
+                f.write('    for root, dirs, files in os.walk(path):\n')
+                f.write('        for file in files:\n')
+                f.write('            ziph.write(os.path.join(root, file))\n')
+                f.write('zipf = zipfile.ZipFile(\'output.zip\', \'w\')\n')
+                f.write('zipdir(\''+foldernameOPTstring+'/\', zipf)\n')
+            f.close()
+
+            # create file for launching job 
+            with open(os.path.join(fin_dest_dir, joblaunchname), 'w') as f:
+                f.write('#!/bin/bash -l\n')
+                f.write('\n')
+                f.write('#SBATCH --job-name=bluepyopt_ipyparallel\n')
+                f.write('#SBATCH --error=logs/ipyparallel_%j.log\n')
+                f.write('#SBATCH --output=logs/ipyparallel_%j.log\n')
+                f.write('#SBATCH --partition=normal\n')
+                f.write('#SBATCH --constraint=mc\n')
+                f.write('\n')
+                f.write('set -e\n')
+                f.write('set -x\n')
+                f.write('\n')
+                f.write('export MODULEPATH=/users/bp000178/ich002/software/daint/'+\
+                    'local-20181022101238/share/modules:$MODULEPATH;module load bpopt\n')
+                f.write('\n')
+                f.write('export USEIPYP=1\n')
+                f.write('export IPYTHONDIR="`pwd`/.ipython"\n')
+                f.write('export IPYTHON_PROFILE=ipyparallel.${SLURM_JOBID}\n')
+                f.write('ipcontroller --init --sqlitedb --ip=\'*\' --profile=${IPYTHON_PROFILE} &\n')
+                f.write('sleep 30\n')
+                f.write('srun ipengine --profile=${IPYTHON_PROFILE} &\n')
+                f.write('CHECKPOINTS_DIR="checkpoints"\n')
+                f.write('nrnivmodl mechanisms\n')
+                f.write('python opt_neuron.py --offspring_size='+OS.value+\
+                    ' --max_ngen='+NGEN.value+' --start --checkpoint "${CHECKPOINTS_DIR}/checkpoint.pkl"\n') 
+                f.write('python zipfolder.py')
+                f.write('\n')
+            f.close()
+
             return [execname, joblaunchname]
 
 #
