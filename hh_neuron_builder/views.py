@@ -434,8 +434,6 @@ def run_optimization(request, exc="", ctx=""):
     """
 
     # fetch information from the session variable
-    username_submit = request.session[exc]['username_submit']
-    password_submit = request.session[exc]['password_submit']
     core_num = request.session[exc]['corenum']
     node_num = request.session[exc]['nodenum']
     runtime = request.session[exc]['runtime']
@@ -465,6 +463,9 @@ def run_optimization(request, exc="", ctx=""):
     if hpc_sys == "nsg":
         execname = "init.py"
         joblaunchname = ""
+        
+        username_submit = request.session[exc]['username_submit']
+        password_submit = request.session[exc]['password_submit']
 
         hpc_job_manager.OptFolderManager.createzip(fin_opt_folder=fin_opt_folder, \
             source_opt_zip=source_opt_zip, opt_name=opt_name, \
@@ -478,17 +479,27 @@ def run_optimization(request, exc="", ctx=""):
     elif hpc_sys == "cscs-pizdaint":
         execname = "zipfolder.py"
         joblaunchname = "ipyparallel.sbatch"
+
+        # retrieve access_token
+        access_token = get_access_token(request.user.social_auth.get())
+
         hpc_job_manager.OptFolderManager.createzip(fin_opt_folder=fin_opt_folder, \
             source_opt_zip=source_opt_zip, opt_name=opt_name, \
             source_feat=source_feat, gennum=gennum, offsize=offsize, \
             zfName=zfName, hpc = hpc_sys, execname=execname, \
             joblaunchname=joblaunchname)
 
-    #resp = hpc_job_manager.Nsg.runNSG(username_submit=username_submit, \
-    #        password_submit=password_submit, core_num=core_num, \
-    #        node_num=node_num, runtime=runtime, zfName=zfName)
+        # read job_title inserted by the user
+        jobname = request.session[exc]['hpc_job_title']
 
-    if resp['status_code'] == 200:
+        # launch job on cscs-pizdaint
+        resp = hpc_job_manager.Unicore.run_unicore_opt(hpc=hpc_sys, \
+                filename=source_opt_zip, joblaunchname = joblaunchname, \
+                token = access_token, jobname = jobname, \
+                core_num = core_num , node_num = node_num, runtime = runtime, \
+                foldernameOPTstring=opt_name)
+
+    if resp['response'] == "OK":
         opt_sub_flag_file = os.path.join(dest_dir,\
                 request.session[exc]['opt_sub_flag_file'])
 
@@ -620,23 +631,26 @@ def submit_run_param(request, exc="", ctx=""):
         if resp_check_login['response'] == 'OK':
             request.session[exc]['username_submit'] = form_data['username_submit']
             request.session[exc]['password_submit'] = form_data['password_submit']
-            opt_sub_param_file = os.path.join(dest_dir, \
-                    request.session[exc]["opt_sub_param_file"])
-
-            wfid = request.session[exc]['wf_id']
-            hpc_job_manager.OptSettings.print_opt_params(wf_id=wfid, \
-                    gennum=str(gennum), offsize=str(offsize),
-                    nodenum=str(nodenum), \
-                    corenum=str(corenum), runtime=str(runtime), \
-                    opt_sub_param_file=opt_sub_param_file, hpc_sys=hpc_sys)
             resp_dict = {'response':'OK', 'message':''}
         else:
             resp_dict = {'response':'KO', 'message':'Username and/or password \
                     are wrong'}
             request.session[exc].pop('username_submit', None)
             request.session[exc].pop('password_submit', None)
+
+            return HttpResponse(json.dumps(resp_dict), content_type="application/json")
+
     elif hpc == "cscs-pizdaint":
-        request.session[exc]['hpc_sys_fetch'] = form_data['hpc_sys_fetch']
+        request.session[exc]['hpc_job_title'] = form_data['jobtitle_submit']
+        resp_dict = {'response':'OK', 'message':'Set Job title'}
+        
+    opt_sub_param_file = os.path.join(dest_dir, \
+        request.session[exc]["opt_sub_param_file"])
+
+    hpc_job_manager.OptSettings.print_opt_params(wf_id=wf_id, \
+        gennum=str(gennum), offsize=str(offsize), nodenum=str(nodenum), \
+        corenum=str(corenum), runtime=str(runtime), \
+        opt_sub_param_file=opt_sub_param_file, hpc_sys=hpc_sys)
 
     request.session.save()
 
@@ -746,6 +760,7 @@ def check_cond_exist(request, exc="", ctx=""):
     opt_sub_param_dict = {}
     opt_sub_param_file = os.path.join(request.session[exc]['user_dir_data_opt_launch'], \
         request.session[exc]['opt_sub_param_file'])
+    
     # if parameter file exists, read values
     if os.path.exists(opt_sub_param_file):
         with open(opt_sub_param_file) as json_file:
@@ -754,10 +769,19 @@ def check_cond_exist(request, exc="", ctx=""):
         response['opt_set']['opt_sub_param_dict'] = opt_sub_param_dict
 
         rsk = request.session[exc].keys()
-        rules = [
-            'username_submit' in rsk,
-            'password_submit' in rsk,
-            ]
+        hpc = request.session[exc].get("hpc_sys", "NO-HPC-SELECTED")
+        hpc = hpc.lower()
+
+        if hpc == "nsg":
+            rules = [
+                'username_submit' in rsk,
+                'password_submit' in rsk,
+                ]
+        elif hpc == "cscs-pizdaint":
+            rules = ['hpc_job_title' in rsk]
+        else:
+            rules = [False]
+
 
         if all(rules):
 	    response['opt_set']['status'] = True 
@@ -849,8 +873,6 @@ def upload_files(request, filetype = "", exc = "", ctx = ""):
     if filetype == "optset":
         request.session[exc]['source_opt_name'] = os.path.splitext(filename)[0]
         request.session[exc]['source_opt_zip'] = final_res_file 
-        print(request.session[exc]['source_opt_zip'])
-        print(request.session[exc]['source_opt_name'])
     elif filetype == "modsim":
         user_dir_sim_run = request.session[exc]['user_dir_sim_run']
 
