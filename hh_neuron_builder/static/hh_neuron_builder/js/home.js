@@ -17,7 +17,7 @@ $(document).ready(function(){
 });
 
 function fetchWorkflows() {
-    openPleaseWaitDiv("Searching for workflows in your storage");
+    openPleaseWaitDiv("Searching for workflows in your current collab storage");
     var listDivEl = document.getElementById("wf-storage-list-div");
     listDivEl.innerHTML = "";
     $.getJSON("/hh-neuron-builder/wf-storage-list/" + req_pattern + "/", function(data){
@@ -29,22 +29,23 @@ function fetchWorkflows() {
             for (var i=0; i<list.length; i++) {
                 var crr_wf_div = document.createElement("DIV");
                 var crr_wf_span = document.createElement("SPAN");
-                var textnode = document.createTextNode(list[i]); 
                 var wf_download_button = document.createElement("button");
 
-                crr_wf_div.className = "center-container row-center";
-                crr_wf_span.className = "simple-span w-40pc center-container row-center-container";
-                crr_wf_span.appendChild(textnode);
+                crr_wf_div.className = "center-container";
+                crr_wf_span.className = "col-xs-7 simple-span";
+                crr_wf_span.innerHTML = list[i];
                 crr_wf_div.appendChild(crr_wf_span);
                 wf_download_button.id = list[i];
                 wf_download_button.innerHTML = "Download";
-                wf_download_button.className = "btn btn-default down-wf-btn";
+                wf_download_button.className = "col-xs-3 btn btn-link down-wf-btn";
                 crr_wf_div.appendChild(wf_download_button);
 
                 listDivEl.prepend(crr_wf_div);
             }
             closePleaseWaitDiv();
-            document.getElementById("overlay-wrapper-wf").style.display = "block";
+            var overdivwf = document.getElementById("overlay-wrapper-wf");
+            overdivwf.style.display = "block";
+            overdivwf.scrollTop = 0;
             document.getElementById("home-main-div").style.pointerEvents = "none";
             document.body.style.overflow = "hidden";
         };

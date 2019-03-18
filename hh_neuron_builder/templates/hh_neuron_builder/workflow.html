@@ -135,8 +135,9 @@
                         <h3>Optimization results</h3> 
                     </div>
                     <div class="col-xs-2"></div>
-                    <div class="glyphicon glyphicon-info-sign col-xs-1" data-toggle="popover" data-trigger="hover" data-content="Test" 
-                                                                                                                   title="Fetch optimization results from HPC systems by clicking the 'Fetch results' button. Alternative, you can upload a properly formatted .zip file containing the optimized  model folders/files ready for simulation. For further details, please refer to the HBP Brain Simulation Platform Guidebook" 
+                    <div class="glyphicon glyphicon-info-sign col-xs-1" data-toggle="popover" 
+                        data-trigger="hover" data-content="Test" 
+                        title="Fetch optimization results from HPC systems by clicking the 'Fetch results' button. Alternative, you can upload a properly formatted .zip file containing the optimized  model folders/files ready for simulation. For further details, please refer to the HBP Brain Simulation Platform Guidebook" 
                                                                                                                    style="padding:10px; color:#4a71bf; postion: relative; valign:middle">
                     </div>
                     <div class="center-container">
@@ -173,8 +174,36 @@
 
 <!-- section containing divs for user insertions -->
 <div id="overlaywrapper" class="overlay-wrapper">
-    <div id="overlayparam" class="overlay-content">
+        <br>
+    <div id="overlayparam" class="overlay-content overflow">
         <form id='submitRunParam' method='POST'>{% csrf_token %}
+            <div class="param-title-div">
+                <strong>HPC system</strong>
+            </div>
+            <br>
+            <select id="hpc_sys" name="hpc_sys">
+                <option value="--" name="--">Select a HPC system</option>
+                <option  value="DAINT-CSCS" name="DAINT-CSCS">Pizdaint (CSCS)</option>
+                <option value="NSG" name="NSG">Neuroscience Gateway (NSG)</option>
+            </select>
+            <br>
+            <div id="hpc-param" class="collapse">
+                <div id="un-div" style="display:block">
+                    <br>
+                    <label class="" for="username_submit">Username</label>
+                    <br>
+                    <input class="" id="username_submit" type="text" name="username_submit">
+                    <br>
+                    <br>
+                </div>
+                <div id="pwd-div" style="display:block">
+                    <label class="" for="password_submit">Password</label>
+                    <br>
+                    <input class="" id="password_submit" type="password"
+                                                         name="password_submit">
+                </div>
+            </div>
+            <br>
             <div class="param-title-div">
                 <strong>Algorithm Parameters</strong>
             </div>
@@ -192,55 +221,19 @@
                 <strong>Optimization Run Parameters</strong>
             </div>
             <br>
-            <label for="node-num">Number of nodes (max 72)</label>
+            <label for="node-num">Number of nodes</label>
             <br>
-            <input type="number" name="node-num" id="node-num" max="72" min="1"><br>
+            <input type="number" name="node-num" id="node-num"><br>
             <br>
-            <label for="core-num">Number of cores (max 24)</label>
+            <label for="core-num">Number of cores</label>
             <br>
-            <input type="number" name="core-num" id="core-num" max="24" min="1"><br>
+            <input type="number" name="core-num" id="core-num"><br>
             <br>
-            <label for="runtime">Runtime (max 48h)</label>
+            <label for="runtime">Runtime</label>
             <br>
-            <input type="number" name="runtime" id="runtime" max="48" step="0.5" min="0.5"><br>
-            <br>
-            <br>
-            <br>
-            <div class="param-title-div">
-                <strong>HPC system</strong>
-            </div>
-            <br>
-
-            <select id="hpc_sys" name="hpc_sys">
-                <option value="--" name="--">Select a HPC system</option>
-                <option value="NSG" name="NSG">Neuroscience Gateway (NSG)</option>
-                <option  value="CSCS-PIZDAINT" name="CSCS-PIZDAINT">PIZDAINT (CSCS)</option>
-            </select>
+            <input type="" name="runtime" id="runtime"><br>
             <br>
             <br>
-            <div id="hpc-param" class="collapse">
-                <div id="jobtitle-div" style="display:block">
-                    <label class="" for="jobtitle_submit">Job title</label>
-                    <br>
-                    <input class="" id="jobtitle_submit" type="text" name="jobtitle_submit">
-                    <br>
-                </div>
-                <div id="un-div" style="display:block">
-                    <label class="" for="username_submit">Username</label>
-                    <br>
-                    <input class="" id="username_submit" type="text" name="username_submit">
-                    <br>
-                    <br>
-                </div>
-                <div id="pwd-div" style="display:block">
-                    <label class="" for="password_submit">Password</label>
-                    <br>
-                    <input class="" id="password_submit" type="password"
-                                                                  name="password_submit">
-                    <br>
-                </div>
-                <br>
-            </div>
             <button id="cancel-param-btn" type="button" class="btn btn-primary closebtn">Cancel</button>
             <button id="apply-param" class="btn btn-primary" disabled>Apply</button>
         </form>
@@ -251,54 +244,52 @@
 
 <!-- section containing divs for user fetch system insertions -->
 <div id="overlaywrapperfetch" class="overlay-wrapper">
-    <div id="overlayparamfetch" style="top:30%;" class="overlay-content">
+    <div id="overlayparamfetch" style="top:30%;" 
+                                class="overlay-content standard-border">
         <form id='submitFetchParam' method='POST'>{% csrf_token %}
             <div class="param-title-div">
                 <strong>HPC system</strong>
             </div>
             <br>
             <select id="hpc_sys_fetch" name="hpc_sys_fetch">
+                <option value="--" name="--">Select a HPC system</option>
+                <option value="DAINT-CSCS" name="DAINT-CSCS">Pizdaint (CSCS)</option>
                 <option value="NSG" name="NSG">Neuroscience Gateway (NSG)</option>
-                <option value="CSCS-PIZDAINT" name="CSCS-PIZDAINT">PIZDAINT (CSCS)</option>
             </select>
-            <br>
-            <br>
-            <div id="un-fetch-div">
-                <label for="username_fetch">Username</label>
-                <input id="username_fetch" type="text" name="username_fetch">
+            <div id="hpc-param-fetch" class="collapse">
+                <div id="un-fetch-div">
+                    <br>
+                    <label for="username_fetch">Username</label>
+                    <input id="username_fetch" type="text" name="username_fetch">
+                </div>
+                <div id="pwd-fetch-div">
+                    <br>
+                    <label for="password_fetch">Password</label>
+                    <input id="password_fetch" type="password" name="password_fetch">
+                </div>
             </div>
             <br>
-            <div id="pwd-fetch-div">
-                <label for="password_fetch">Password</label>
-                <input id="password_fetch" type="password" name="password_fetch">
-            </div>
             <br>
             <button id="cancel-param-fetch-btn" type="button" class="btn btn-primary closebtn">Cancel</button>
-            <button id="apply-param-fetch" class="btn btn-primary">Apply</button>
+            <button id="apply-param-fetch" class="btn btn-primary" disabled>Apply</button>
         </form>
     </div>
 </div>
 <!-- -->
 
-
 <!-- "Please wait" message div -->
 <div id="overlaywrapperwait" class="overlay-wrapper">
-    <div id="overlaywait" style="top:35%;" class="overlay-content">
-        <div class="center-container">
-            <div class="row-center-container">
-                <div style="margin:auto;" class="spinning lg"></div>
-                <div id="waitdynamictext" class="please-wait-text"></div>
-                <div class="please-wait-text">Please wait ...</div>
-            </div>
-        </div>
+    <div id="overlaywait" style="top:35%;" class="overlay-content standard-border">
+        <div style="margin:auto;" class="spinning lg"></div>
+        <div id="waitdynamictext" class="please-wait-text"></div>
+        <div class="please-wait-text">Please wait ...</div>
     </div>
 </div>
 <!-- -->
 
-
 <!-- "Error" message div -->
 <div id="overlaywrappererror" class="overlay-wrapper">
-    <div id="overlayerror" style="top:35%;" class="overlay-content">
+    <div id="overlayerror" style="top:35%;" class="overlay-content standard-border">
         <div class="center-container">
             <div class="row-center-container">
                 <div id="errordynamictext" class="please-wait-text"></div>
@@ -327,38 +318,39 @@
 
 <!-- Fetched jobs div -->
 <div id="overlaywrapperjobs" class="overlay-wrapper">
-    <div id="overlayjobs" class="overlay-content width-95p height-90p">
+    <div id="overlayjobs" 
+         class="overlay-content overflow width-95p height-90p">
+        <div id="fetch-job-title" class="align-center">
+            <h4><strong>Download job results</strong></h4>
+        </div>
+
+        <table id="job-list-table" style="overflow:auto" 
+                                   class="sortable height-90p" cellpadding="10">
+            <thead> 
+                <tr> 
+                    <th id="wf-th" class="tth">Workflow ID</th> 
+                    <th id="job-th" class="tth">Job ID</th> 
+                    <th class="tth">Status</th> 
+                    <th id="dt-th" class="tth">Date/Time (UTC)</th> 
+                    <th class="sorttable_nosort"></th> 
+                </tr> 
+                <tbody id="job-list-body">
+                </tbody>
+            </thead> 
+
+        </table>
+
+        <div id="job-list-div" class="height-90p"
+                               style="overflow:auto;">
+        </div>
+        <br>
         <div class="center-container row-center-container">
-            <div class="center-container row-center-container">
-                <div id="fetch-job-title">
-                    <h4><strong>Download job results</strong></h4>
-                </div>
-            </div>
-
-            <div class="center-container row-center-container">
-                <table id="job-list-table" class="sortable" cellpadding="10">
-                    <thead> 
-                        <tr> 
-                            <th id="wf-th" class="tth">Workflow ID</th> 
-                            <th id="job-th" class="tth">Job ID</th> 
-                            <th class="tth">Status</th> 
-                            <th class="tth">Date/Time (UTC)</th> 
-                            <th class="sorttable_nosort"></th> 
-                        </tr> 
-                        <tbody id="job-list-body">
-                        </tbody>
-                    </thead> 
-
-                </table>
-            </div>
+            <button id="refresh-job-list-btn" type="button" 
+                                              class="btn btn-default col-xs-6">Refresh</button>
+            <button id="cancel-job-list-btn" type="button" 
+                                             class="btn btn-default col-xs-6">Cancel</button>
         </div>
-
-        <div id="job-list-div" class="center-container row-center-container"
-                               style="max-height:30%;">
-        </div>
-        <div class="center-container row-center-container">
-            <button id="cancel-job-list-btn" type="button" class="btn btn-default">Cancel</button>
-        </div>
+        <br>
     </div>
 </div>
 <!-- -->
