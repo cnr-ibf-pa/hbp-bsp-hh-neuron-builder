@@ -1,6 +1,7 @@
 """ Views"""
 
 import sys
+import traceback
 import pprint
 import json
 import logging
@@ -434,8 +435,6 @@ def run_optimization(request, exc="", ctx=""):
     """
 
     # fetch information from the session variable
-    username_submit = request.session[exc]['username_submit']
-    password_submit = request.session[exc]['password_submit']
     core_num = request.session[exc]['corenum']
     node_num = request.session[exc]['nodenum']
     runtime = request.session[exc]['runtime']
@@ -459,41 +458,71 @@ def run_optimization(request, exc="", ctx=""):
     zfName = os.path.join(dest_dir, opt_name + '.zip')
     fin_opt_folder = os.path.join(dest_dir, opt_name)
 
-    if hpc_sys.lower() == "nsg":
+    wf_id = request.session[exc]['wf_id']
+    
+    if hpc_sys == "NSG":
+        execname = "init.py"
+        joblaunchname = ""
+        
+        username_submit = request.session[exc]['username_submit']
+        password_submit = request.session[exc]['password_submit']
 
-	hpc_job_manager.OptFolderManager.createzip(fin_opt_folder=fin_opt_folder, \
-                source_opt_zip=source_opt_zip, opt_name=opt_name, \
-                source_feat=source_feat, gennum=gennum, offsize=offsize, \
-                zfName=zfName, sys = hpc_sys.lower())
+        hpc_job_manager.OptFolderManager.createzip(fin_opt_folder=fin_opt_folder, \
+            source_opt_zip=source_opt_zip, opt_name=opt_name, \
+            source_feat=source_feat, gennum=gennum, offsize=offsize, \
+            zfName=zfName, hpc = hpc_sys, execname="init.py")
 
 	resp = hpc_job_manager.Nsg.runNSG(username_submit=username_submit, \
                 password_submit=password_submit, core_num=core_num, \
                 node_num=node_num, runtime=runtime, zfName=zfName)
+        crr_job_name = resp['jobname']
 
-	if resp['status_code'] == 200:
-            opt_sub_flag_file = os.path.join(dest_dir,\
-                    request.session[exc]['opt_sub_flag_file'])
+    elif hpc_sys == "DAINT-CSCS":
+        execname = "zipfolder.py"
+        joblaunchname = "ipyparallel.sbatch"
 
-            with open(opt_sub_flag_file, 'w') as f:
-                f.write("")
-            f.close()
+        # retrieve access_token
+        access_token = "Bearer " + get_access_token(request.user.social_auth.get())
+
+        hpc_job_manager.OptFolderManager.createzip(fin_opt_folder=fin_opt_folder, \
+            source_opt_zip=source_opt_zip, opt_name=opt_name, \
+            source_feat=source_feat, gennum=gennum, offsize=offsize, \
+            zfName=zfName, hpc = hpc_sys, execname=execname, \
+            joblaunchname=joblaunchname)
+
+        # launch job on cscs-pizdaint
+        resp = hpc_job_manager.Unicore.run_unicore_opt(hpc=hpc_sys, \
+                filename=zfName, joblaunchname = joblaunchname, \
+                token = access_token, jobname = wf_id, \
+                core_num = core_num , node_num = node_num, runtime = runtime, \
+                foldname=opt_name)
+        crr_job_name = resp['jobname']
+
+    if resp['response'] == "OK":
+        opt_sub_flag_file = os.path.join(dest_dir,\
+                request.session[exc]['opt_sub_flag_file'])
+
+        with open(opt_sub_flag_file, 'w') as f:
+            f.write("")
+        f.close()
         
-            wf_job_ids = request.session[exc]['wf_job_ids']
-            wf_id = request.session[exc]['wf_id']
-            ids_file = os.path.join(workflows_dir, userid, wf_job_ids)
-            ids_dict = {"wf_id" : wf_id, "hpc_sys": hpc_sys}
+        wf_job_ids = request.session[exc]['wf_job_ids']
+        ids_file = os.path.join(workflows_dir, userid, wf_job_ids)
+        ids_dict = {"wf_id" : wf_id, "hpc_sys": hpc_sys, \
+                "time_info": time_info}
 
-            # update file containing 
-            if os.path.exists(ids_file):
-                with open(ids_file, "r") as fh:
-                    all_id = json.load(fh)
-            else:
-                all_id = {}
+        # update file containing 
+        if os.path.exists(ids_file):
+            with open(ids_file, "r") as fh:
+                all_id = json.load(fh)
+        else:
+            all_id = {}
 
-            all_id[resp["jobname"]] = ids_dict
+        all_id[crr_job_name] = ids_dict
                 
-            with open(ids_file, "w") as fh:
-                json.dump(all_id, fh)
+        with open(ids_file, "w") as fh:
+            json.dump(all_id, fh)
+
 
     request.session.save()
 
@@ -575,7 +604,6 @@ def submit_run_param(request, exc="", ctx=""):
     offsize = int(form_data['offspring'])
     nodenum = int(form_data['node-num']) 
     corenum = int(form_data['core-num'])  
-    runtime = float(form_data['runtime'])
     hpc_sys = form_data['hpc_sys']
 
     # 
@@ -583,16 +611,16 @@ def submit_run_param(request, exc="", ctx=""):
     request.session[exc]['offsize'] = offsize 
     request.session[exc]['nodenum'] = nodenum
     request.session[exc]['corenum'] = corenum
-    request.session[exc]['runtime'] = runtime
     request.session[exc]['hpc_sys'] = hpc_sys
 
     wf_id = request.session[exc]['wf_id']
     dest_dir = request.session[exc]['user_dir_data_opt_launch']
+    userid = request.session[exc]['userid']
 
-    resp_dict = {'response':'KO', 'message':'Username and/or password \
-        are wrong'}
+
     # if chosen system is nsg
-    if form_data['hpc_sys'].lower() == 'nsg':
+    if hpc_sys == 'NSG':
+        runtime = float(form_data['runtime'])
         resp_check_login = hpc_job_manager.Nsg.checkNsgLogin(username=form_data['username_submit'],
                 password=form_data['password_submit'])
 
@@ -600,21 +628,27 @@ def submit_run_param(request, exc="", ctx=""):
         if resp_check_login['response'] == 'OK':
             request.session[exc]['username_submit'] = form_data['username_submit']
             request.session[exc]['password_submit'] = form_data['password_submit']
-            opt_sub_param_file = os.path.join(dest_dir, \
-                    request.session[exc]["opt_sub_param_file"])
-
-            wfid = request.session[exc]['wf_id']
-            hpc_job_manager.OptSettings.print_opt_params(wf_id=wfid, \
-                    gennum=str(gennum), offsize=str(offsize),
-                    nodenum=str(nodenum), \
-                    corenum=str(corenum), runtime=str(runtime), \
-                    opt_sub_param_file=opt_sub_param_file, hpc_sys=hpc_sys)
             resp_dict = {'response':'OK', 'message':''}
         else:
             resp_dict = {'response':'KO', 'message':'Username and/or password \
                     are wrong'}
             request.session[exc].pop('username_submit', None)
             request.session[exc].pop('password_submit', None)
+
+            return HttpResponse(json.dumps(resp_dict), content_type="application/json")
+
+    elif hpc_sys == "DAINT-CSCS":
+        runtime = form_data['runtime']
+        resp_dict = {'response':'OK', 'message':'Set Job title'}
+        
+    request.session[exc]['runtime'] = runtime
+    opt_sub_param_file = os.path.join(dest_dir, \
+        request.session[exc]["opt_sub_param_file"])
+
+    hpc_job_manager.OptSettings.print_opt_params(wf_id=wf_id, \
+        gennum=str(gennum), offsize=str(offsize), nodenum=str(nodenum), \
+        corenum=str(corenum), runtime=str(runtime), \
+        opt_sub_param_file=opt_sub_param_file, hpc_sys=hpc_sys)
 
     request.session.save()
 
@@ -627,25 +661,29 @@ def submit_fetch_param(request, exc="", ctx=""):
     """
     #selected_traces_rest = request.POST.get('csrfmiddlewaretoken')
     form_data = request.POST
+    hpc_sys = form_data["hpc_sys_fetch"]
 
     # if chosen system is nsg
-    if form_data['hpc_sys_fetch'].lower() == 'nsg':
+    if hpc_sys == 'NSG':
         request.session[exc]['hpc_sys_fetch'] = form_data['hpc_sys_fetch']
-        resp_check_login = \
+        resp = \
         hpc_job_manager.Nsg.checkNsgLogin(username=form_data['username_fetch'],
                 password=form_data['password_fetch'])
 
         # check credentials correctness
-        if resp_check_login['response'] == 'OK':
+        if resp['response'] == 'OK':
             request.session[exc]['username_fetch'] = form_data['username_fetch']
             request.session[exc]['password_fetch'] = form_data['password_fetch']
         else:
             request.session[exc].pop('username_fetch', None)
             request.session[exc].pop('password_fetch', None)
+    elif hpc_sys == "DAINT-CSCS":
+        request.session[exc]['hpc_sys_fetch'] = form_data['hpc_sys_fetch']
+        resp = {'response' : 'OK', 'message': 'Job title correctly set'}
 
     request.session.save()
 
-    return HttpResponse(json.dumps(resp_check_login), content_type="application/json")
+    return HttpResponse(json.dumps(resp), content_type="application/json")
 
 def check_cond_exist(request, exc="", ctx=""):
     """
@@ -728,10 +766,17 @@ def check_cond_exist(request, exc="", ctx=""):
         response['opt_set']['opt_sub_param_dict'] = opt_sub_param_dict
 
         rsk = request.session[exc].keys()
-        rules = [
-            'username_submit' in rsk,
-            'password_submit' in rsk,
-            ]
+        hpc = request.session[exc].get("hpc_sys", "NO-HPC-SELECTED")
+
+        if hpc == "NSG":
+            rules = [
+                'username_submit' in rsk,
+                'password_submit' in rsk,
+                ]
+        elif hpc == "DAINT-CSCS":
+            rules = [True]
+        else:
+            rules = [False]
 
         if all(rules):
 	    response['opt_set']['status'] = True 
@@ -823,8 +868,6 @@ def upload_files(request, filetype = "", exc = "", ctx = ""):
     if filetype == "optset":
         request.session[exc]['source_opt_name'] = os.path.splitext(filename)[0]
         request.session[exc]['source_opt_zip'] = final_res_file 
-        print(request.session[exc]['source_opt_zip'])
-        print(request.session[exc]['source_opt_name'])
     elif filetype == "modsim":
         user_dir_sim_run = request.session[exc]['user_dir_sim_run']
 
@@ -841,52 +884,62 @@ def upload_files(request, filetype = "", exc = "", ctx = ""):
     return HttpResponse(json.dumps({"response":"OK", "message":""}), content_type="application/json") 
 
 
-def get_nsg_job_list(request, exc="", ctx=""):
+def get_job_list(request, exc="", ctx=""):
     """
     """
     hpc_sys_fetch = request.session[exc]['hpc_sys_fetch'] 
-    if hpc_sys_fetch.lower() == "nsg":
+
+    # read job id file
+    opt_res_dir = request.session[exc]['user_dir_results_opt']
+    workflows_dir = request.session[exc]['workflows_dir']
+    userid = request.session[exc]['userid']
+    wf_job_ids = request.session[exc]['wf_job_ids']
+    wf_id = request.session[exc]['wf_id']
+    ids_file = os.path.join(workflows_dir, userid, wf_job_ids)
+    if os.path.exists(ids_file):
+        with open(ids_file, "r") as fh:
+            all_id = json.load(fh)
+    else:
+        all_id = {}
+
+    if hpc_sys_fetch == "NSG":
 	username_fetch = request.session[exc]['username_fetch']
 	password_fetch = request.session[exc]['password_fetch']
-	opt_res_dir = request.session[exc]['user_dir_results_opt']
 
 	resp = hpc_job_manager.Nsg.fetch_job_list(username_fetch=username_fetch, \
                 password_fetch=password_fetch)
 
-        # read job id file
-        workflows_dir = request.session[exc]['workflows_dir']
-        userid = request.session[exc]['userid']
-        wf_job_ids = request.session[exc]['wf_job_ids']
-        wf_id = request.session[exc]['wf_id']
 
-        ids_file = os.path.join(workflows_dir, userid, wf_job_ids)
 
-        if os.path.exists(ids_file):
-            with open(ids_file, "r") as fh:
-                all_id = json.load(fh)
+    if hpc_sys_fetch == "DAINT-CSCS":
+        access_token = get_access_token(request.user.social_auth.get())
+        resp = hpc_job_manager.Unicore.fetch_job_list(hpc_sys_fetch, \
+               access_token)
+
+
+    # fetch workflow ids for all fetched jobs and add to response
+    for key in resp:
+        if key in all_id:
+            resp[key]["wf"] = all_id[key]
         else:
-            all_id = {}
+            resp[key]["wf"] = {"wf_id": "No workflow id associated", \
+                    "hpc_sys":hpc_sys_fetch}
 
-        # fetch workflow ids for all fetched jobs and add to response
-        for key in resp:
-            if key in all_id:
-                resp[key]["wf"] = all_id[key]
-            else:
-                resp[key]["wf"] = {"wf_id": "No workflow id associated", \
-                        "hpc_sys":"unknown"}
+    request.session[exc]['hpc_fetch_job_list'] = resp
 
     request.session.save()
 
     return HttpResponse(json.dumps(resp), content_type="application/json") 
 
 
-def get_nsg_job_details(request, jobid="", exc="", ctx=""):
+def get_job_details(request, jobid="", exc="", ctx=""):
     """
     """
-    #return HttpResponse(json.dumps({"job_id": jobid, "job_date_submitted":"2017-07-24T16:40:21-07:00", "job_stage":"COMPLETED"}), content_type="application/json") 
 
     hpc_sys_fetch = request.session[exc]['hpc_sys_fetch'] 
-    if hpc_sys_fetch.lower() == "nsg":
+    
+    # if job has to be fetched from NSG
+    if hpc_sys_fetch == "NSG":
 	username_fetch = request.session[exc]['username_fetch']
 	password_fetch = request.session[exc]['password_fetch']
 
@@ -894,6 +947,15 @@ def get_nsg_job_details(request, jobid="", exc="", ctx=""):
                 job_id = jobid, username_fetch=username_fetch, \
                 password_fetch=password_fetch) 
 
+    # if job has to be fetched from DAINT-CSCS
+    elif hpc_sys_fetch == "DAINT-CSCS":
+        fetch_job_list = request.session[exc]["hpc_fetch_job_list"]
+        job_url = fetch_job_list[jobid]["url"]
+        access_token = get_access_token(request.user.social_auth.get())
+        resp = hpc_job_manager.Unicore.fetch_job_details(hpc=hpc_sys_fetch, \
+                job_url=job_url, job_id=jobid, token = "Bearer " + access_token)
+
+    request.session.save()
 
     return HttpResponse(json.dumps(resp), content_type="application/json") 
 
@@ -903,22 +965,24 @@ def download_job(request, job_id="", exc="", ctx=""):
     """
 
     opt_res_dir = request.session[exc]['user_dir_results_opt']
+    wf_id = request.session[exc]['wf_id']
+    hpc_sys_fetch = request.session[exc]['hpc_sys_fetch'] 
+    fetch_job_list = request.session[exc]["hpc_fetch_job_list"]
+
+    #
     if not os.path.exists(opt_res_dir):
         return HttpResponse(json.dumps({"response":"KO", \
             "message": "The workflow folder does not exist anymore. \
             <br> Please start a new workflow or fetch a previous one."}), \
             content_type="application/json") 
+    # remove folder with current zip file
+    if os.listdir(opt_res_dir):
+        shutil.rmtree(opt_res_dir)
+        os.makedirs(opt_res_dir)
 
-    hpc_sys_fetch = request.session[exc]['hpc_sys_fetch'] 
-    if hpc_sys_fetch.lower() == "nsg":
+    if hpc_sys_fetch == "NSG":
 	username_fetch = request.session[exc]['username_fetch']
 	password_fetch = request.session[exc]['password_fetch']
-        wf_id = request.session[exc]['wf_id']
-
-	# remove folder with current zip file
-	if os.listdir(opt_res_dir):
-	    shutil.rmtree(opt_res_dir)
-	    os.makedirs(opt_res_dir)
 
 	resp_job_details = hpc_job_manager.Nsg.fetch_job_details( \
                 job_id = job_id, username_fetch=username_fetch, \
@@ -930,135 +994,173 @@ def download_job(request, job_id="", exc="", ctx=""):
                 password_fetch=password_fetch, opt_res_dir=opt_res_dir, \
                 wf_id=wf_id)
 
+    elif hpc_sys_fetch == "DAINT-CSCS":
+        job_url = fetch_job_list[job_id]["url"]
+        
+        # retrieve access_token
+        access_token = get_access_token(request.user.social_auth.get())
+
+	resp = hpc_job_manager.Unicore.fetch_job_results(job_url=job_url, \
+                dest_dir=opt_res_dir, token = "Bearer " + access_token)
+
     return HttpResponse(json.dumps(resp), content_type="application/json") 
 
 
-def modify_analysis_py(request, exc="", ctx=""):
+def run_analysis(request, exc="", ctx=""):
     msg = ""
     opt_res_folder = request.session[exc]['user_dir_results_opt']
-    output_fetched_file = os.path.join(opt_res_folder, "output.tar.gz")
 
+    hpc_sys_fetch = request.session[exc]['hpc_sys_fetch'] 
+    
+    if hpc_sys_fetch == "NSG":
+        opt_res_file = "output.tar.gz"
+    elif hpc_sys_fetch == "DAINT-CSCS":
+        opt_res_file = "output.zip"
+
+    output_fetched_file = os.path.join(opt_res_folder, opt_res_file)
+    
     if not os.path.exists(output_fetched_file):
         msg = "No ouptut file was generated in the optimization process. \
                 Check your optimization settings."    
         return HttpResponse(json.dumps({"response":"KO", "message": msg}), content_type="application/json")
 
-    tar = tarfile.open(os.path.join(opt_res_folder, "output.tar.gz"))
-    tar.extractall(path=opt_res_folder)
-    tar.close()
+    
+    if hpc_sys_fetch == "NSG":
+        tar = tarfile.open(os.path.join(opt_res_folder, "output.tar.gz"))
+        tar.extractall(path=opt_res_folder)
+        tar.close()
 
-    analysis_file_list = []
-    for (dirpath, dirnames, filenames) in os.walk(opt_res_folder):
-	for filename in filenames:
-	    if filename == "analysis.py":
-		analysis_file_list.append(os.path.join(dirpath,filename))
+        analysis_file_list = []
+        for (dirpath, dirnames, filenames) in os.walk(opt_res_folder):
+	    for filename in filenames:
+	        if filename == "analysis.py":
+		    analysis_file_list.append(os.path.join(dirpath,filename))
 
-    if len(analysis_file_list) != 1:
-        msg = "No (or multiple) analysis.py file(s) found. \
-                Check the .zip file submitted for the optimization."
-        resp = {"Status":"ERROR", "response":"KO", "message": msg}
-	return HttpResponse(json.dumps(resp), content_type="application/json") 
-    else:
-	full_file_path = analysis_file_list[0]
-	file_path = os.path.split(full_file_path)[0]
-	up_folder = os.path.split(file_path)[0]
-
-	# modify analysis.py file
-	f = open(full_file_path, 'r')
-
-	lines = f.readlines()
-	lines[228]='    traces=[]\n'
-	lines[238]='        traces.append(response.keys()[0])\n'
-	lines[242]='\n    stimord={} \n    for i in range(len(traces)): \n        stimord[i]=float(traces[i][traces[i].find(\'_\')+1:traces[i].find(\'.soma\')]) \n    import operator \n    sorted_stimord = sorted(stimord.items(), key=operator.itemgetter(1)) \n    traces2=[] \n    for i in range(len(sorted_stimord)): \n        traces2.append(traces[sorted_stimord[i][0]]) \n    traces=traces2 \n'
-        lines[243]='    plot_multiple_responses([responses], cp_filename, fig=model_fig, traces=traces)\n'
-	#lines[243]='    plot_multiple_responses([responses], fig=model_fig, traces=traces)\n'
-	#lines[366]="def plot_multiple_responses(responses, fig, traces):\n"
-        lines[366]="def plot_multiple_responses(responses, cp_filename, fig, traces):\n"
-	lines[369] = "\n"
-	lines[370] = "\n"
-	lines[371] = "\n"# n is the line number you want to edit; subtract 1 as indexing of list starts from 0
-	f.close()   # close the file and reopen in write mode to enable writing to file; you can also open in append mode and use "seek", but you will have some unwanted old data if the new data is shorter in length.
-
-	f = open(full_file_path, 'w')
-	f.writelines(lines)
-	f.close()
-
-        # modify evaluator.py if present
-        if not os.path.exists(os.path.join(file_path, 'evaluator.py')):
-            msg = "No evaluator.py file found. \
+        if len(analysis_file_list) != 1:
+            msg = "No (or multiple) analysis.py file(s) found. \
                 Check the .zip file submitted for the optimization."
             resp = {"Status":"ERROR", "response":"KO", "message": msg}
-            return HttpResponse(json.dumps(resp), \
-                    content_type="application/json") 
+	    return HttpResponse(json.dumps(resp), content_type="application/json") 
         else:
-	    f = open(os.path.join(file_path, 'evaluator.py'), 'r')    # pass an appropriate path of the required file
+	    full_file_path = analysis_file_list[0]
+	    file_path = os.path.split(full_file_path)[0]
+	    up_folder = os.path.split(file_path)[0]
+
+	    # modify analysis.py file
+	    f = open(full_file_path, 'r')
+
 	    lines = f.readlines()
-	    lines[167]='    #print param_names\n'
+	    lines[228]='    traces=[]\n'
+	    lines[238]='        traces.append(response.keys()[0])\n'
+	    lines[242]='\n    stimord={} \n    for i in range(len(traces)): \n        stimord[i]=float(traces[i][traces[i].find(\'_\')+1:traces[i].find(\'.soma\')]) \n    import operator \n    sorted_stimord = sorted(stimord.items(), key=operator.itemgetter(1)) \n    traces2=[] \n    for i in range(len(sorted_stimord)): \n        traces2.append(traces[sorted_stimord[i][0]]) \n    traces=traces2 \n'
+            lines[243]='    plot_multiple_responses([responses], cp_filename, fig=model_fig, traces=traces)\n'
+	    #lines[243]='    plot_multiple_responses([responses], fig=model_fig, traces=traces)\n'
+	    #lines[366]="def plot_multiple_responses(responses, fig, traces):\n"
+            lines[366]="def plot_multiple_responses(responses, cp_filename, fig, traces):\n"
+	    lines[369] = "\n"
+	    lines[370] = "\n"
+	    lines[371] = "\n"# n is the line number you want to edit; subtract 1 as indexing of list starts from 0
 	    f.close()   # close the file and reopen in write mode to enable writing to file; you can also open in append mode and use "seek", but you will have some unwanted old data if the new data is shorter in length.
-	    f = open(os.path.join(file_path, 'evaluator.py'), 'w')    # pass an appropriate path of the required file
+
+	    f = open(full_file_path, 'w')
 	    f.writelines(lines)
 	    f.close()
 
-        if up_folder not in sys.path:
-            sys.path.append(up_folder)
+            # modify evaluator.py if present
+            if not os.path.exists(os.path.join(file_path, 'evaluator.py')):
+                msg = "No evaluator.py file found. \
+                    Check the .zip file submitted for the optimization."
+                resp = {"Status":"ERROR", "response":"KO", "message": msg}
+                return HttpResponse(json.dumps(resp), \
+                    content_type="application/json") 
+            else:
+	        f = open(os.path.join(file_path, 'evaluator.py'), 'r')    # pass an appropriate path of the required file
+	        lines = f.readlines()
+	        lines[167]='    #print param_names\n'
+	        f.close()   # close the file and reopen in write mode to enable writing to file; you can also open in append mode and use "seek", but you will have some unwanted old data if the new data is shorter in length.
+	        f = open(os.path.join(file_path, 'evaluator.py'), 'w')    # pass an appropriate path of the required file
+	        f.writelines(lines)
+	        f.close()
 
-        import model
-	fig_folder = os.path.join(up_folder, 'figures')
+            if up_folder not in sys.path:
+                sys.path.append(up_folder)
 
-	if os.path.exists(fig_folder):
-	    shutil.rmtree(fig_folder)
-	os.makedirs(fig_folder)
+            import model
+	    fig_folder = os.path.join(up_folder, 'figures')
 
-	checkpoints_folder = os.path.join(up_folder, 'checkpoints')
+	    if os.path.exists(fig_folder):
+	        shutil.rmtree(fig_folder)
+	    os.makedirs(fig_folder)
 
-        try:
-	    if 'checkpoint.pkl' not in os.listdir(checkpoints_folder):
-	        for files in os.listdir(checkpoints_folder):
-		    if files.endswith('pkl'):
-		        shutil.copy(os.path.join(checkpoints_folder, files), \
+	    checkpoints_folder = os.path.join(up_folder, 'checkpoints')
+
+            try:
+	        if 'checkpoint.pkl' not in os.listdir(checkpoints_folder):
+	            for files in os.listdir(checkpoints_folder):
+		        if files.endswith('pkl'):
+		            shutil.copy(os.path.join(checkpoints_folder, files), \
 			        os.path.join(checkpoints_folder, 'checkpoint.pkl'))
-                        os.remove(os.path.join(up_folder, 'checkpoints', files))
+                            os.remove(os.path.join(up_folder, 'checkpoints', files))
                     # else:
                     #    if files.endswith('.hoc'):
                     #        os.remove(os.path.join(up_folder, 'checkpoints', files))
 
-            f = open(os.path.join(up_folder, 'opt_neuron.py'), 'r')
-            lines = f.readlines()
+                f = open(os.path.join(up_folder, 'opt_neuron.py'), 'r')
+                lines = f.readlines()
 
-            new_line = ["import matplotlib \n"]
-            new_line.append("matplotlib.use('Agg') \n")
-            for i in lines:
-                new_line.append(i)
-            f.close()
-            f = open(os.path.join(up_folder, 'opt_neuron.py'), 'w')
-            f.writelines(new_line)
-            f.close()
+                new_line = ["import matplotlib \n"]
+                new_line.append("matplotlib.use('Agg') \n")
+                for i in lines:
+                    new_line.append(i)
+                f.close()
+                f = open(os.path.join(up_folder, 'opt_neuron.py'), 'w')
+                f.writelines(new_line)
+                f.close()
 
-            subprocess.call(". /web/bspg/venvbspg/bin/activate; cd " \
+                subprocess.call(". /web/bspg/venvbspg/bin/activate; cd " \
                     + up_folder + "; nrnivmodl mechanisms", shell=True)
 
-            r_0_fold = os.path.join(up_folder, 'r_0')
-            if os.path.isdir(r_0_fold) == True:
-                shutil.rmtree(r_0_fold)
-            os.mkdir(r_0_fold)
-            subprocess.call(". /web/bspg/venvbspg/bin/activate; cd " \
+                r_0_fold = os.path.join(up_folder, 'r_0')
+                if os.path.isdir(r_0_fold) == True:
+                    shutil.rmtree(r_0_fold)
+                os.mkdir(r_0_fold)
+                subprocess.call(". /web/bspg/venvbspg/bin/activate; cd " \
                     + up_folder + "; python opt_neuron.py --analyse --checkpoint \
                     ./checkpoints > /dev/null 2>&1", shell=True)
 
+                # symlink to be removed
+                symlink_path = os.path.join(up_folder, "x86_64", "*.inc")
+                try:
+                    os.remove(symlink_path)
+                except:
+                    pass
+
+            except Exception as e:
+                msg = traceback.format_exception(*sys.exc_info())
+                return HttpResponse(json.dumps({"response":"KO", "message":msg}), content_type="application/json")
+
+    elif hpc_sys_fetch == "DAINT-CSCS":
+        try:
+            resp = hpc_job_manager.OptResultManager.create_analysis_files(\
+                opt_res_folder, opt_res_file)
+            up_folder = resp["up_folder"]
+            subprocess.call(". /web/bspg/venvbspg/bin/activate; cd " \
+                + up_folder + "; nrnivmodl mechanisms", shell=True)
+
+            subprocess.call(". /web/bspg/venvbspg/bin/activate; cd " \
+                + up_folder + "; python opt_neuron.py --analyse --checkpoint \
+                ./checkpoints > /dev/null 2>&1", shell=True)
+
             # symlink to be removed
             symlink_path = os.path.join(up_folder, "x86_64", "*.inc")
-            try:
-                os.remove(symlink_path)
-            except:
-                pass
-
+            
         except Exception as e:
             msg = traceback.format_exception(*sys.exc_info())
+            resp = {"response":"KO", "msg":msg}
+            return HttpResponse(json.dumps(resp), content_type="application/json")
 
-            return HttpResponse(json.dumps({"response":"KO", "message":msg}), content_type="application/json")
-
-    
-    return HttpResponse(json.dumps({"response":"OK", "message":msg}), content_type="application/json")
+    resp = {"response":"OK", "message":msg} 
+    return HttpResponse(json.dumps(resp), content_type="application/json")
 
 
 def zip_sim(request, exc="", ctx=""):
@@ -1092,6 +1194,14 @@ def zip_sim(request, exc="", ctx=""):
     else:
         crr_opt_folder = os.path.split(mec_folder_path[0])[0]
         crr_opt_name = os.path.split(crr_opt_folder)[1]
+        print(crr_opt_folder)
+        print(crr_opt_folder)
+        print(crr_opt_folder)
+        print(crr_opt_folder)
+        print(crr_opt_name)
+        print(crr_opt_name)
+        print(crr_opt_name)
+        print(crr_opt_name)
         sim_mod_folder = os.path.join(user_dir_sim_run, crr_opt_name)
         os.makedirs(sim_mod_folder)
         user_opt_logs = os.path.join(user_dir_sim_run, crr_opt_name, opt_logs_folder)

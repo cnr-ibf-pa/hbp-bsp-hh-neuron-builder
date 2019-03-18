@@ -8,20 +8,20 @@
 <div id="mainDiv" class="center-container">
     <div class="param-title-div">
         <div class="row">
-        <div id="wf-title" class="col-xs-6 align-left wf-title"></div>
-        <div class="col-xs-6 align-right">
-            <button id="wf-btn-home" class="btn home-title-btn" 
-                                     onclick="window.location.href='/hh-neuron-builder/'">
-                Home</button>
-            <button id="wf-btn-new-wf" class="btn home-title-btn" 
-                                       title="Create a new workflow" 
-                                       onclick=initNewWorkflow();>
-                New</button>
-            <button id="wf-btn-clone-wf" class="btn home-title-btn" 
-                                         title="Clone current workflow">Clone</button>
-            <button id="wf-btn-save" class="btn home-title-btn" 
-                                     title="Save current workflow to Collab Storage">Save</button>
-        </div>
+            <div id="wf-title" class="col-xs-6 align-left wf-title"></div>
+            <div class="col-xs-6 align-right">
+                <button id="wf-btn-home" class="btn home-title-btn" 
+                                         onclick="window.location.href='/hh-neuron-builder/'">
+                    Home</button>
+                <button id="wf-btn-new-wf" class="btn home-title-btn" 
+                                           title="Create a new workflow" 
+                                           onclick=initNewWorkflow();>
+                    New</button>
+                <button id="wf-btn-clone-wf" class="btn home-title-btn" 
+                                             title="Clone current workflow">Clone</button>
+                <button id="wf-btn-save" class="btn home-title-btn" 
+                                         title="Save current workflow to Collab Storage">Save</button>
+            </div>
         </div>
     </div>
 
@@ -36,8 +36,14 @@
         <div id="inner-opt-div" style="display:none;" class="bg-light-gb center-container row-center-container">
             <div class="center-container row-center-container">
                 <div class="step-panel">
-                    <div class="center-container">
+                    <div class="col-xs-3"></div>
+                    <div class="col-xs-6 center-container">
                         <h3>Feature extraction</h3> 
+                    </div>
+                    <div class="col-xs-2"></div>
+                    <div class="glyphicon glyphicon-info-sign col-xs-1" 
+                         title="Click the 'Extract features' button to compute electrophysiological features (from the HBP dataset or your own experimental files) to be used in your optimization process. You can also upload your own features.json and protocols.json files by clicking on 'Upload file'" 
+                         style="padding:10px; color:#4a71bf; postion: relative; valign:middle">
                     </div>
                     <div class="center-container">
                         <button type="button" id="feat-efel-btn" class="btn btn-default" >Extract features</button>
@@ -55,8 +61,14 @@
 
             <div class="center-container row-center-container">
                 <div class="step-panel">
-                    <div class="center-container">
+                    <div class="col-xs-3"></div>
+                    <div class="center-container col-xs-6">
                         <h3>Optimization files</h3> 
+                    </div>
+                    <div class="col-xs-2"></div>
+                    <div class="glyphicon glyphicon-info-sign col-xs-1" data-toggle="popover" data-trigger="hover" data-content="Test" 
+                                                                                                                   title="Choose a model from the HBP dataset by clicking the 'Choose from database' button. Alternative, you can upload a properly formatted .zip file containing the model folders/files. For further details, please refer to the HBP Brain Simulation Platform Guidebook" 
+                                                                                                                   style="padding:10px; color:#4a71bf; postion: relative; valign:middle">
                     </div>
                     <div class="center-container">
                         <button type="button" id="opt-db-hpc-btn" title="Use optimization files from the database" class="btn btn-default" >Choose from database</button>
@@ -74,8 +86,14 @@
 
             <div class="center-container row-center-container">
                 <div class="step-panel">
-                    <div class="center-container">
+                    <div class="col-xs-3"></div>
+                    <div class="center-container col-xs-6">
                         <h3>Optimization settings</h3> 
+                    </div>
+                    <div class="col-xs-2"></div>
+                    <div class="glyphicon glyphicon-info-sign col-xs-1" 
+                         title="Click the 'Set parameters/Choose HPC button' to set the optimization (i.e. BluePyOpt) and execution (e.g. number of cores, runtime, etc.) parameters" 
+                         style="padding:10px; color:#4a71bf; postion: relative; valign:middle">
                     </div>
                     <div class="center-container">
                         <button type="button" id="opt-set-btn" class="btn btn-default"  title="Set Optimization parameters">Set parameters/Choose HPC</button>
@@ -112,8 +130,15 @@
         <div id="inner-sim-div" style="display:none;" class="center-container row-center-container">
             <div class="bg-light-gb center-container row-center-container">
                 <div class="step-panel">
-                    <div class="center-container">
+                    <div class="col-xs-3"></div>
+                    <div class="center-container col-xs-6">
                         <h3>Optimization results</h3> 
+                    </div>
+                    <div class="col-xs-2"></div>
+                    <div class="glyphicon glyphicon-info-sign col-xs-1" data-toggle="popover" 
+                        data-trigger="hover" data-content="Test" 
+                        title="Fetch optimization results from HPC systems by clicking the 'Fetch results' button. Alternative, you can upload a properly formatted .zip file containing the optimized  model folders/files ready for simulation. For further details, please refer to the HBP Brain Simulation Platform Guidebook" 
+                                                                                                                   style="padding:10px; color:#4a71bf; postion: relative; valign:middle">
                     </div>
                     <div class="center-container">
                         <button id="opt-fetch-btn" type="button" 
@@ -149,8 +174,36 @@
 
 <!-- section containing divs for user insertions -->
 <div id="overlaywrapper" class="overlay-wrapper">
-    <div id="overlayparam" class="overlay-content">
+        <br>
+    <div id="overlayparam" class="overlay-content overflow">
         <form id='submitRunParam' method='POST'>{% csrf_token %}
+            <div class="param-title-div">
+                <strong>HPC system</strong>
+            </div>
+            <br>
+            <select id="hpc_sys" name="hpc_sys">
+                <option value="--" name="--">Select a HPC system</option>
+                <option  value="DAINT-CSCS" name="DAINT-CSCS">Pizdaint (CSCS)</option>
+                <option value="NSG" name="NSG">Neuroscience Gateway (NSG)</option>
+            </select>
+            <br>
+            <div id="hpc-param" class="collapse">
+                <div id="un-div" style="display:block">
+                    <br>
+                    <label class="" for="username_submit">Username</label>
+                    <br>
+                    <input class="" id="username_submit" type="text" name="username_submit">
+                    <br>
+                    <br>
+                </div>
+                <div id="pwd-div" style="display:block">
+                    <label class="" for="password_submit">Password</label>
+                    <br>
+                    <input class="" id="password_submit" type="password"
+                                                         name="password_submit">
+                </div>
+            </div>
+            <br>
             <div class="param-title-div">
                 <strong>Algorithm Parameters</strong>
             </div>
@@ -168,58 +221,21 @@
                 <strong>Optimization Run Parameters</strong>
             </div>
             <br>
-            <label for="node-num">Number of nodes (max 72)</label>
+            <label for="node-num">Number of nodes</label>
             <br>
-            <input type="number" name="node-num" id="node-num" max="72" min="1"><br>
+            <input type="number" name="node-num" id="node-num"><br>
             <br>
-            <label for="core-num">Number of cores (max 24)</label>
+            <label for="core-num">Number of cores</label>
             <br>
-            <input type="number" name="core-num" id="core-num" max="24" min="1"><br>
+            <input type="number" name="core-num" id="core-num"><br>
             <br>
-            <label for="runtime">Runtime (max 48h)</label>
+            <label for="runtime">Runtime</label>
             <br>
-            <input type="number" name="runtime" id="runtime" max="48" step="0.5" min="0.5"><br>
-            <br>
-            <br>
-            <br>
-            <div class="param-title-div">
-                <strong>HPC system</strong>
-            </div>
-            <br>
-            <!--
-                <input type="radio" name="hpc_sys" value="marconi" disabled>
-                <label for="marconi">MARCONI</label>
-                <br>
-                <br>
-                <input type="radio" name="hpc_sys" value="jureca" disabled>
-                <label for="jureca">JURECA</label>
-                <br>
-                <br>
-                <input type="radio" name="hpc_sys_radio" value="NSG" checked>
-                <label for="NSG">NeuroScience Gateway (NSG)</label>
-                <br>
-            -->
-            <select id="hpc_sys" name="hpc_sys">
-                <option value="NSG" name="NSG">Neuroscience Gateway (NSG)</option>
-                <!--
-                <option  value="JURECA" name="JURECA">JURECA (JUELICH)</option>
-                -->
-            </select>
-            <br>
-            <br>
-            <div id="un-div">
-                <label class="" for="username_submit">Username</label>
-                <input class="" id="username_submit" required type="text" name="username_submit">
-            </div>
-            <div id="pwd-div">
-                <label class="" for="password_submit">Password</label>
-                <input class="" id="password_submit" required type="password"
-                                                              name="password_submit">
-            </div>
+            <input type="" name="runtime" id="runtime"><br>
             <br>
             <br>
             <button id="cancel-param-btn" type="button" class="btn btn-primary closebtn">Cancel</button>
-            <button id="apply-param" class="btn btn-primary">Apply</button>
+            <button id="apply-param" class="btn btn-primary" disabled>Apply</button>
         </form>
     </div>
 </div>
@@ -228,68 +244,52 @@
 
 <!-- section containing divs for user fetch system insertions -->
 <div id="overlaywrapperfetch" class="overlay-wrapper">
-    <div id="overlayparamfetch" style="top:30%;" class="overlay-content">
+    <div id="overlayparamfetch" style="top:30%;" 
+                                class="overlay-content standard-border">
         <form id='submitFetchParam' method='POST'>{% csrf_token %}
             <div class="param-title-div">
                 <strong>HPC system</strong>
             </div>
             <br>
-            <!--
-                <input type="radio" name="hpc_sys_fetch" value="marconi" disabled>
-                <label for="marconi">MARCONI</label>
-                <br>
-                <br>
-                <input type="radio" name="hpc_sys_fetch" value="jureca" disabled>
-                <label for="jureca">JURECA</label>
-                <br>
-                <br>
-                <input type="radio" name="hpc_sys_fetch" value="NSG" checked>
-                <label for="NSG">NeuroScience Gateway (NSG)</label>
-            -->
             <select id="hpc_sys_fetch" name="hpc_sys_fetch">
+                <option value="--" name="--">Select a HPC system</option>
+                <option value="DAINT-CSCS" name="DAINT-CSCS">Pizdaint (CSCS)</option>
                 <option value="NSG" name="NSG">Neuroscience Gateway (NSG)</option>
-                <!--
-                <option value="JURECA" name="JURECA">JURECA (JUELICH)</option>
-                -->
             </select>
-            <br>
-            <br>
-            <div id="un-fetch-div">
-                <label for="username_fetch">Username</label>
-                <input id="username_fetch" required type="text" name="username_fetch">
+            <div id="hpc-param-fetch" class="collapse">
+                <div id="un-fetch-div">
+                    <br>
+                    <label for="username_fetch">Username</label>
+                    <input id="username_fetch" type="text" name="username_fetch">
+                </div>
+                <div id="pwd-fetch-div">
+                    <br>
+                    <label for="password_fetch">Password</label>
+                    <input id="password_fetch" type="password" name="password_fetch">
+                </div>
             </div>
             <br>
-            <div id="pwd-fetch-div">
-                <label for="password_fetch">Password</label>
-                <input id="password_fetch" required type="password" name="password_fetch">
-            </div>
             <br>
             <button id="cancel-param-fetch-btn" type="button" class="btn btn-primary closebtn">Cancel</button>
-            <button id="apply-param-fetch" class="btn btn-primary">Apply</button>
+            <button id="apply-param-fetch" class="btn btn-primary" disabled>Apply</button>
         </form>
     </div>
 </div>
 <!-- -->
 
-
 <!-- "Please wait" message div -->
 <div id="overlaywrapperwait" class="overlay-wrapper">
-    <div id="overlaywait" style="top:35%;" class="overlay-content">
-        <div class="center-container">
-            <div class="row-center-container">
-                <div style="margin:auto;" class="spinning lg"></div>
-                <div id="waitdynamictext" class="please-wait-text"></div>
-                <div class="please-wait-text">Please wait ...</div>
-            </div>
-        </div>
+    <div id="overlaywait" style="top:35%;" class="overlay-content standard-border">
+        <div style="margin:auto;" class="spinning lg"></div>
+        <div id="waitdynamictext" class="please-wait-text"></div>
+        <div class="please-wait-text">Please wait ...</div>
     </div>
 </div>
 <!-- -->
 
-
 <!-- "Error" message div -->
 <div id="overlaywrappererror" class="overlay-wrapper">
-    <div id="overlayerror" style="top:35%;" class="overlay-content">
+    <div id="overlayerror" style="top:35%;" class="overlay-content standard-border">
         <div class="center-container">
             <div class="row-center-container">
                 <div id="errordynamictext" class="please-wait-text"></div>
@@ -318,38 +318,39 @@
 
 <!-- Fetched jobs div -->
 <div id="overlaywrapperjobs" class="overlay-wrapper">
-    <div id="overlayjobs" class="overlay-content width-95p height-90p">
+    <div id="overlayjobs" 
+         class="overlay-content overflow width-95p height-90p">
+        <div id="fetch-job-title" class="align-center">
+            <h4><strong>Download job results</strong></h4>
+        </div>
+
+        <table id="job-list-table" style="overflow:auto" 
+                                   class="sortable height-90p" cellpadding="10">
+            <thead> 
+                <tr> 
+                    <th id="wf-th" class="tth">Workflow ID</th> 
+                    <th id="job-th" class="tth">Job ID</th> 
+                    <th class="tth">Status</th> 
+                    <th id="dt-th" class="tth">Date/Time (UTC)</th> 
+                    <th class="sorttable_nosort"></th> 
+                </tr> 
+                <tbody id="job-list-body">
+                </tbody>
+            </thead> 
+
+        </table>
+
+        <div id="job-list-div" class="height-90p"
+                               style="overflow:auto;">
+        </div>
+        <br>
         <div class="center-container row-center-container">
-            <div class="center-container row-center-container">
-                <div id="fetch-job-title">
-                    <h4><strong>Download job results</strong></h4>
-                </div>
-            </div>
-
-            <div class="center-container row-center-container">
-                <table id="job-list-table" class="sortable" cellpadding="10">
-                    <thead> 
-                        <tr> 
-                            <th id="wf-th" class="tth">Workflow ID</th> 
-                            <th id="job-th" class="tth">Job ID</th> 
-                            <th class="tth">Status</th> 
-                            <th class="tth">Date/Time (UTC)</th> 
-                            <th class="sorttable_nosort"></th> 
-                        </tr> 
-                        <tbody id="job-list-body">
-                        </tbody>
-                    </thead> 
-
-                </table>
-            </div>
+            <button id="refresh-job-list-btn" type="button" 
+                                              class="btn btn-default col-xs-6">Refresh</button>
+            <button id="cancel-job-list-btn" type="button" 
+                                             class="btn btn-default col-xs-6">Cancel</button>
         </div>
-
-        <div id="job-list-div" class="center-container row-center-container"
-                               style="max-height:30%;">
-        </div>
-        <div class="center-container row-center-container">
-            <button id="cancel-job-list-btn" type="button" class="btn btn-default">Cancel</button>
-        </div>
+        <br>
     </div>
 </div>
 <!-- -->
