@@ -910,7 +910,6 @@ def get_job_list(request, exc="", ctx=""):
                 password_fetch=password_fetch)
 
 
-
     if hpc_sys_fetch == "DAINT-CSCS":
         access_token = get_access_token(request.user.social_auth.get())
         resp = hpc_job_manager.Unicore.fetch_job_list(hpc_sys_fetch, \
