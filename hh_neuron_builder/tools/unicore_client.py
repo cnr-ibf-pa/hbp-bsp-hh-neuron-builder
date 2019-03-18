@@ -7,10 +7,6 @@ https://sourceforge.net/p/unicore/wiki/REST_API_Examples
 
 Author: Bernd Schuller
 """
-<<<<<<< HEAD
-import pprint
-=======
->>>>>>> fabdf50532cdb8b5d5bf2b6d57c0578cb238c923
 import requests
 import json
 import time
@@ -38,12 +34,9 @@ def get_sites():
                       'url': "https://grid.hpc.cineca.it:9111/CINECA-FERMI/rest/core" }
     sites['KIT'] = {'name': 'Cloud storage (KIT)', 'id': 'S3-KIT',
                     'url': "https://unicore.data.kit.edu:8080/HBP-KIT/rest/core" }
-<<<<<<< HEAD
-=======
     sites['DAINT-CSCS'] = {'name': 'PIZDAINT (CSCS)',
             'url': 'https://unicoregw.cscs.ch:8080/DAINT-CSCS/rest/core', 
              'id': 'CSCS'}
->>>>>>> fabdf50532cdb8b5d5bf2b6d57c0578cb238c923
     return sites
 
 
@@ -108,10 +101,7 @@ def submit(url, job, headers, inputs=[]):
         job['haveClientStageIn']='true'
         
     r = requests.post(url,data=json.dumps(job), headers=my_headers, verify=False)
-<<<<<<< HEAD
-=======
 
->>>>>>> fabdf50532cdb8b5d5bf2b6d57c0578cb238c923
     if r.status_code!=201:
         raise RuntimeError("Error submitting job: %s" % r.status_code)
     else:
