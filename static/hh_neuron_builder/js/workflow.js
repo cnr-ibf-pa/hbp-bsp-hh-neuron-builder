@@ -147,14 +147,10 @@ $(document).ready(function(){
 
     // manage error message ok button
     document.getElementById("ok-error-div-btn").onclick = closeErrorDiv;
-<<<<<<< HEAD
-    //
-=======
 
     //manage button for refreshing job list
     document.getElementById("refresh-job-list-btn").onclick = refreshJobInfoDiv;
 
->>>>>>> fabdf50532cdb8b5d5bf2b6d57c0578cb238c923
 });
 
 
