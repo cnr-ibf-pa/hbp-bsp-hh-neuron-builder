@@ -200,12 +200,8 @@ STATICFILES_FINDERS = (
 
 if LOGIN_URL == 'https://bspg.pa.ibf.cnr.it/login/hbp/':
     shutil.copyfile(os.path.join(STATIC_ROOT, 'ibf_bspg_analytics.js'), \
-            os.path.join(STATIC_POOL, 'bspganalytics.js'))
-    shutil.copyfile(os.path.join(STATIC_ROOT, 'ibf_bspg_analytics.js'), \
             os.path.join(STATIC_ROOT, 'bspganalytics.js'))
 elif LOGIN_URL == 'https://bspg.humanbrainproject.eu/login/hbp/':
-    shutil.copyfile(os.path.join(STATIC_ROOT, 'epfl_bspg_analytics.js'), \
-            os.path.join(STATIC_POOL, 'bspganalytics.js'))
     shutil.copyfile(os.path.join(STATIC_ROOT, 'epfl_bspg_analytics.js'), \
             os.path.join(STATIC_ROOT, 'bspganalytics.js'))
 
