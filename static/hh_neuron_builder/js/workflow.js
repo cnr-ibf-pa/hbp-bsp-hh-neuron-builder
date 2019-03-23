@@ -195,18 +195,24 @@ function openParameterDiv() {
 
 // open side div for optimization run parameter settings
 function openErrorDiv(message, messagetag) {
-    var msgdiv = document.getElementById("overlaywrappererror");
+    var contmsgdiv = document.getElementById("overlaywrappererror");
+    var msgdiv = document.getElementById("overlayerror");
+    var textdiv = document.getElementById("errordynamictext");
     document.getElementById("mainDiv").style.pointerEvents = "none";
     document.getElementById("overlaywrapper").style.pointerEvents = "none";
-    msgdiv.style.display = "block";
+    contmsgdiv.style.display = "block";
+    console.log(messagetag)
+    textdiv.innerHTML = message;
     if (messagetag == "error"){
+        console.log("changing color")
         msgdiv.style.borderColor = 'red';
     } else if (messagetag == "info"){
+        console.log("changing color")
         msgdiv.style.borderColor = 'blue';
     } else if (messagetag == "success") {
+        console.log("changing color")
         msgdiv.style.borderColor = 'green';
     }
-    document.getElementById("errordynamictext").innerHTML = message;
 }
 
 
@@ -430,9 +436,9 @@ function runOptimization() {
         checkConditions();
         closePleaseWaitDiv();
         if (data['response'] != "OK"){
-            openErrorDiv("Submission ended with error: " + data['message'], 'success');
+            openErrorDiv("Submission ended with error: " + data['message'], 'error');
         } else {
-            openErrorDiv("Submission ended without errors", 'error');
+            openErrorDiv("Submission ended without errors", 'success');
         }
     });
 }

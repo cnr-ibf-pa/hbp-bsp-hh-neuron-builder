@@ -32,8 +32,7 @@ class Nsg:
 
         root = xml.etree.ElementTree.fromstring(r.text)                                 
         flag = "OK"
-
-        if root.tag == "error":                                                         
+        if r.status_code != 200 or root.tag == "error":                                                         
             msg = root.find("displayMessage").text                                      
             flag = "KO"
         else:                                                                           
@@ -208,17 +207,17 @@ class Unicore:
     MAX_SIZE = 20240000
 
     @classmethod
-    def checkLogin(cls, username="", token="", hpc=""):                                           
+    def checkLogin(cls, username="", token="", hpc="", proxies={}):
         auth = unicore_client.get_oidc_auth(token=token) 
         base_url = unicore_client.get_sites()[hpc]['url']
-        role = unicore_client.get_properties(base_url, auth)['client']['role']['selected']
+        role = unicore_client.get_properties(base_url, auth, proxies)['client']['role']['selected']
 
         resp = {"response" : "KO", "message" : "This account is not " + \
                     "allowed to submit job on " + hpc + " booster partition"}
         #
         if role == "user":
-            info = unicore_client.get_properties(base_url, auth)['client']['xlogin']['UID']
-            UIDs = unicore_client.get_properties(base_url, auth)['client']['xlogin']['availableUIDs']
+            info = unicore_client.get_properties(base_url, auth, proxies=proxies)['client']['xlogin']['UID']
+            UIDs = unicore_client.get_properties(base_url, auth, proxies=proxies)['client']['xlogin']['availableUIDs']
             if username in UIDs and username[0:3] == "vsk":
                 resp = {"response" : "OK", "message" : "Successful authentication"}
             
@@ -229,7 +228,7 @@ class Unicore:
     @classmethod
     def run_unicore_opt(cls, hpc="", filename="", joblaunchname = "", \
              token = None, core_num = 4, jobname="UNICORE_Job", \
-             node_num = 2, runtime = 4, username="", foldname = ""):
+             node_num = 2, runtime = 4, username="", foldname = "", proxies={}):
 
         basename = os.path.basename(filename)
 
@@ -268,7 +267,8 @@ class Unicore:
             exec_str = "; chmod +rx *.sh; chmod +rx *.sbatch; sh " + joblaunchname + ";",
             hpc_sub = "jureca"
         try:
-            job_url = unicore_client.submit(base_url + '/jobs', job, auth, inputs)
+            job_url = unicore_client.submit(base_url + '/jobs', job, auth, \
+                    inputs, proxies=proxies)
             jobname = job_url.split('/')[-1]
             resp = {'response':'OK', 'joburl':job_url, 'jobname': jobname, \
                     'job_id': jobname,
@@ -282,7 +282,7 @@ class Unicore:
 
 
     @classmethod
-    def fetch_job_list(cls, hpc, token):
+    def fetch_job_list(cls, hpc, token, proxies={}):
         """
         Retrieve job list from Unicore systems
         """
@@ -292,7 +292,8 @@ class Unicore:
         auth = unicore_client.get_oidc_auth(token="Bearer " + token)
         # auth['X-UNICORE-User-Preferences'] = 'uid:'+ username 
         base_url = unicore_client.get_sites()[hpc]['url']
-        listofjobs = unicore_client.get_properties(base_url + '/jobs', auth)
+        listofjobs = unicore_client.get_properties(base_url + '/jobs', auth, \
+                proxies=proxies)
         jobs = listofjobs['jobs']
 
         for i in jobs:
@@ -303,13 +304,14 @@ class Unicore:
         return job_list_dict
 
     @classmethod
-    def fetch_job_details(cls, hpc="", job_url="", job_id="", token=""):
+    def fetch_job_details(cls, hpc="", job_url="", job_id="", token="", 
+            proxies={}):
         """
         """
         # base_url = unicore_client.get_sites()[hpc]['url']
         auth = unicore_client.get_oidc_auth(token=token)
 
-        job_details = unicore_client.get_properties(job_url, auth)
+        job_details = unicore_client.get_properties(job_url, auth, proxies=proxies)
 
         job_info_dict = collections.OrderedDict()
         job_info_dict["job_date_submitted"] = job_details['submissionTime']
@@ -322,26 +324,26 @@ class Unicore:
         return job_info_dict
 
     @classmethod
-    def fetch_job_results(cls, job_url="", token="", dest_dir=""):
+    def fetch_job_results(cls, job_url="", token="", dest_dir="", proxies={}):
         """
         """
         if not os.path.exists(dest_dir):
             os.mkdir(dest_dir)
         auth = unicore_client.get_oidc_auth(token=token)
-        r = unicore_client.get_properties(job_url, auth)
+        r = unicore_client.get_properties(job_url, auth, proxies=proxies)
 
         # create destination dir if not existing
         if not os.path.exists(dest_dir):
             os.mkdir(dest_dir)
 
         if (r['status']=='SUCCESSFUL') or (r['status']=='FAILED'):
-            wd = unicore_client.get_working_directory(job_url, auth)
-            output_files = unicore_client.list_files(wd, auth)
+            wd = unicore_client.get_working_directory(job_url, auth, proxies=proxies)
+            output_files = unicore_client.list_files(wd, auth, proxies=proxies)
             for file_path in output_files:
                 _, f = os.path.split(file_path)
                 if (f=='stderr') or (f=="stdout") or (f=="output.zip"):
                     content = unicore_client.get_file_content(wd + "/files" + \
-                            file_path, auth, MAX_SIZE=cls.MAX_SIZE)
+                            file_path, auth, MAX_SIZE=cls.MAX_SIZE, proxies=proxies)
                     with open(os.path.join(dest_dir, f), "w") as local_file:
                         local_file.write(content)
                     local_file.close()
@@ -724,14 +726,6 @@ class OptFolderManager:
 
         # CSCS Pizdaint
         elif hpc == "DAINT-CSCS":
-            print('foldernameOPTstring')
-            print('foldernameOPTstring')
-            print('foldernameOPTstring')
-            print('foldernameOPTstring')
-            print(foldernameOPTstring)
-            print(foldernameOPTstring)
-            print(foldernameOPTstring)
-            print(foldernameOPTstring)
             with open(os.path.join(fin_dest_dir, execname),'w') as f:
                 f.write('import os\n')
                 f.write('import zipfile\n')

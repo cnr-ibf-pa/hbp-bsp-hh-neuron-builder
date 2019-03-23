@@ -44,48 +44,48 @@ def get_site(name):
     return get_sites().get(name, None)
 
 
-def get_properties(resource, headers={}):
+def get_properties(resource, headers={}, proxies={}):
     """ get JSON properties of a resource """
-    print("resource")
-    print(resource)
     my_headers = headers.copy()
     my_headers['Accept']="application/json"
-    r = requests.get(resource, headers=my_headers, verify=False)
+    r = requests.get(resource, headers=my_headers, verify=False, proxies=proxies)
     if r.status_code!=200:
         raise RuntimeError("Error getting properties: %s" % r.status_code)
     else:
         return r.json()
 
     
-def get_working_directory(job, headers={}, properties=None):
+def get_working_directory(job, headers={}, properties=None, proxies={}):
     """ returns the URL of the working directory resource of a job """
     if properties is None:
-        properties = get_properties(job,headers)
+        properties = get_properties(job,headers, proxies=proxies)
     return properties['_links']['workingDirectory']['href']
 
 
-def invoke_action(resource, action, headers, data={}):
+def invoke_action(resource, action, headers, data={},proxies={}):
     my_headers = headers.copy()
     my_headers['Content-Type']="application/json"
-    action_url = get_properties(resource, headers)['_links']['action:'+action]['href']
-    r = requests.post(action_url,data=json.dumps(data), headers=my_headers, verify=False)
+    action_url = get_properties(resource, headers, proxies=proxies)['_links']['action:'+action]['href']
+    r = requests.post(action_url,data=json.dumps(data), headers=my_headers, \
+            verify=False, proxies=proxies)
     if r.status_code!=200:
         raise RuntimeError("Error invoking action: %s" % r.status_code)
     return r.json()
 
 
-def upload(destination, file_desc, headers):
+def upload(destination, file_desc, headers, proxies={}):
     my_headers = headers.copy()
     my_headers['Content-Type']="application/octet-stream"
     name = file_desc['To']
     data = file_desc['Data']
     # TODO file_desc could refer to local file
-    r = requests.put(destination+"/"+name, data=data, headers=my_headers, verify=False)
+    r = requests.put(destination+"/"+name, data=data, headers=my_headers, \
+            verify=False, proxies=proxies)
     if r.status_code!=204:
         raise RuntimeError("Error uploading data: %s" % r.status_code)
 
 
-def submit(url, job, headers, inputs=[]):
+def submit(url, job, headers, inputs=[], proxies={}):
     """
     Submits a job to the given URL, which can be the ".../jobs" URL
     or a ".../sites/site_name/" URL
@@ -100,7 +100,8 @@ def submit(url, job, headers, inputs=[]):
         # before we have uploaded data
         job['haveClientStageIn']='true'
         
-    r = requests.post(url,data=json.dumps(job), headers=my_headers, verify=False)
+    r = requests.post(url,data=json.dumps(job), headers=my_headers, \
+            verify=False, proxies=proxies)
 
     if r.status_code!=201:
         raise RuntimeError("Error submitting job: %s" % r.status_code)
@@ -117,9 +118,9 @@ def submit(url, job, headers, inputs=[]):
     return jobURL
 
     
-def is_running(job, headers={}):
+def is_running(job, headers={}, proxies={}):
     """ check status for a job """
-    properties = get_properties(job,headers)
+    properties = get_properties(job,headers, proxies=proxies)
     status = properties['status']
     return ("SUCCESSFUL"!=status) and ("FAILED"!=status)
 
@@ -143,32 +144,33 @@ def wait_for_completion(job, headers={}, refresh_function=None, refresh_interval
             count=0
 
 
-def file_exists(wd, name, headers):
+def file_exists(wd, name, headers, proxies={}):
     """ check if a file with the given name exists
         if yes, return its URL
         of no, return None
     """
-    files_url = get_properties(wd, headers)['_links']['files']['href']
-    children = get_properties(files_url, headers)['children']
+    files_url = get_properties(wd, headers, proxies=proxies)['_links']['files']['href']
+    children = get_properties(files_url, headers, proxies=proxies)['children']
     return name in children or "/"+name in children
 
 
-def get_file_content(file_url, headers, check_size_limit=True, MAX_SIZE=2048000):
+def get_file_content(file_url, headers, check_size_limit=True,\
+        MAX_SIZE=2048000, proxies={}):
     """ download binary file data """
     if check_size_limit:
-        size = get_properties(file_url, headers)['size']
+        size = get_properties(file_url, headers, proxies=proxies)['size']
         if size>MAX_SIZE:
             raise RuntimeError("File size too large!")
     my_headers = headers.copy()
     my_headers['Accept']="application/octet-stream"
-    r = requests.get(file_url, headers=my_headers, verify=False)
+    r = requests.get(file_url, headers=my_headers, verify=False, proxies=proxies)
     if r.status_code!=200:
         raise RuntimeError("Error getting file data: %s" % r.status_code)
     else:
         return r.content
 
-def list_files(dir_url, auth, path="/"):
-    return get_properties(dir_url+"/files"+path, auth)['children']
+def list_files(dir_url, auth, path="/", proxies={}):
+    return get_properties(dir_url+"/files"+path, auth, proxies=proxies)['children']
 
 def get_oidc_auth(token=None):
     """ returns HTTP headers containing OIDC bearer token """
