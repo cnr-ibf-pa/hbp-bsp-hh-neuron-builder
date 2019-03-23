@@ -478,9 +478,10 @@ def run_optimization(request, exc="", ctx=""):
         crr_job_name = resp['jobname']
 
     elif hpc_sys == "DAINT-CSCS":
+        PROXIES = settings.PROXIES
         execname = "zipfolder.py"
         joblaunchname = "ipyparallel.sbatch"
-
+        
         # retrieve access_token
         access_token = "Bearer " + get_access_token(request.user.social_auth.get())
 
@@ -495,7 +496,7 @@ def run_optimization(request, exc="", ctx=""):
                 filename=zfName, joblaunchname = joblaunchname, \
                 token = access_token, jobname = wf_id, \
                 core_num = core_num , node_num = node_num, runtime = runtime, \
-                foldname=opt_name)
+                foldname=opt_name, proxies=PROXIES)
         crr_job_name = resp['jobname']
 
     if resp['response'] == "OK":
@@ -912,9 +913,10 @@ def get_job_list(request, exc="", ctx=""):
 
 
     if hpc_sys_fetch == "DAINT-CSCS":
+        PROXIES=settings.PROXIES
         access_token = get_access_token(request.user.social_auth.get())
         resp = hpc_job_manager.Unicore.fetch_job_list(hpc_sys_fetch, \
-               access_token)
+               access_token, proxies=PROXIES)
 
 
     # fetch workflow ids for all fetched jobs and add to response
@@ -949,11 +951,13 @@ def get_job_details(request, jobid="", exc="", ctx=""):
 
     # if job has to be fetched from DAINT-CSCS
     elif hpc_sys_fetch == "DAINT-CSCS":
+        PROXIES=settings.PROXIES
         fetch_job_list = request.session[exc]["hpc_fetch_job_list"]
         job_url = fetch_job_list[jobid]["url"]
         access_token = get_access_token(request.user.social_auth.get())
         resp = hpc_job_manager.Unicore.fetch_job_details(hpc=hpc_sys_fetch, \
-                job_url=job_url, job_id=jobid, token = "Bearer " + access_token)
+                job_url=job_url, job_id=jobid, \
+                token = "Bearer " + access_token, proxies=PROXIES)
 
     request.session.save()
 
@@ -995,13 +999,15 @@ def download_job(request, job_id="", exc="", ctx=""):
                 wf_id=wf_id)
 
     elif hpc_sys_fetch == "DAINT-CSCS":
+        PROXIES=settings.PROXIES
         job_url = fetch_job_list[job_id]["url"]
         
         # retrieve access_token
         access_token = get_access_token(request.user.social_auth.get())
 
 	resp = hpc_job_manager.Unicore.fetch_job_results(job_url=job_url, \
-                dest_dir=opt_res_dir, token = "Bearer " + access_token)
+                dest_dir=opt_res_dir, \
+                token = "Bearer " + access_token, proxies=PROXIES)
 
     return HttpResponse(json.dumps(resp), content_type="application/json") 
 
@@ -1140,6 +1146,7 @@ def run_analysis(request, exc="", ctx=""):
                 return HttpResponse(json.dumps({"response":"KO", "message":msg}), content_type="application/json")
 
     elif hpc_sys_fetch == "DAINT-CSCS":
+        PROXIES=settings.PROXIES
         try:
             resp = hpc_job_manager.OptResultManager.create_analysis_files(\
                 opt_res_folder, opt_res_file)
@@ -1194,14 +1201,6 @@ def zip_sim(request, exc="", ctx=""):
     else:
         crr_opt_folder = os.path.split(mec_folder_path[0])[0]
         crr_opt_name = os.path.split(crr_opt_folder)[1]
-        print(crr_opt_folder)
-        print(crr_opt_folder)
-        print(crr_opt_folder)
-        print(crr_opt_folder)
-        print(crr_opt_name)
-        print(crr_opt_name)
-        print(crr_opt_name)
-        print(crr_opt_name)
         sim_mod_folder = os.path.join(user_dir_sim_run, crr_opt_name)
         os.makedirs(sim_mod_folder)
         user_opt_logs = os.path.join(user_dir_sim_run, crr_opt_name, opt_logs_folder)
