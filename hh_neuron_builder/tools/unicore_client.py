@@ -12,6 +12,7 @@ Modified by: Luca Leonardo Bologna
 import requests
 import json
 import time
+import os
 requests.packages.urllib3.disable_warnings()
 
 
