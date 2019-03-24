@@ -6,6 +6,8 @@ https://sourceforge.net/p/unicore/wiki/REST_API
 https://sourceforge.net/p/unicore/wiki/REST_API_Examples
 
 Author: Bernd Schuller
+Modified by: Luca Leonardo Bologna
+
 """
 import requests
 import json
@@ -99,7 +101,9 @@ def submit(url, job, headers, inputs=[], proxies={}):
         # make sure UNICORE does not start the job 
         # before we have uploaded data
         job['haveClientStageIn']='true'
-        
+    
+    if proxies:
+        os.environ["no_proxy"] = ""
     r = requests.post(url,data=json.dumps(job), headers=my_headers, \
             verify=False, proxies=proxies)
 

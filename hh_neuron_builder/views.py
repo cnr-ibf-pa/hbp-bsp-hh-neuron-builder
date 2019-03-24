@@ -475,7 +475,6 @@ def run_optimization(request, exc="", ctx=""):
 	resp = hpc_job_manager.Nsg.runNSG(username_submit=username_submit, \
                 password_submit=password_submit, core_num=core_num, \
                 node_num=node_num, runtime=runtime, zfName=zfName)
-        crr_job_name = resp['jobname']
 
     elif hpc_sys == "DAINT-CSCS":
         PROXIES = settings.PROXIES
@@ -497,9 +496,10 @@ def run_optimization(request, exc="", ctx=""):
                 token = access_token, jobname = wf_id, \
                 core_num = core_num , node_num = node_num, runtime = runtime, \
                 foldname=opt_name, proxies=PROXIES)
-        crr_job_name = resp['jobname']
 
     if resp['response'] == "OK":
+        crr_job_name = resp['jobname']
+
         opt_sub_flag_file = os.path.join(dest_dir,\
                 request.session[exc]['opt_sub_flag_file'])
 
