@@ -14,8 +14,7 @@
                                          onclick="window.location.href='/hh-neuron-builder/'">
                     Home</button>
                 <button id="wf-btn-new-wf" class="btn home-title-btn" 
-                                           title="Create a new workflow" 
-                                           onclick=initNewWorkflow();>
+                                           title="Create a new workflow">
                     New</button>
                 <button id="wf-btn-clone-wf" class="btn home-title-btn" 
                                              title="Clone current workflow">Clone</button>
@@ -301,6 +300,21 @@
 </div>
 <!-- -->
 
+
+<!-- "Reload" message div -->
+<div id="overlaywrapperreload" class="overlay-wrapper">
+    <div id="overlayrelod" style="top:35%;" class="overlay-content standard-border">
+        <div class="center-container">
+            <div class="row-center-container">
+                <div id="reloaddynamictext" class="please-wait-text"></div>
+                <br>
+                <button id="reload-div-btn" class="btn btn-default
+                closebtn">Reload</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- -->
 
 <!-- "Expired Workflow" message div -->
 <div id="overlaywrapperexpiration" class="overlay-wrapper">

@@ -79,9 +79,33 @@ def home(request):
     #exc = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
     #request.session[exc] = {}
 
+def set_exc_tags(request, exc="", ctx=""):
+    request.session[exc] = {}
+    request.session[exc]['ctx'] = ctx
+    request.session.save()
+    if exc not in request.session:
+        exc=""
+    if "ctx" not in request.session[exc]:
+        ctx = ""
+       
+    if exc=="" or ctx=="":
+        resp = {"response":"KO", \
+                "message":"An error occurred while loading the Collab.<br>" + \
+                "Please reload."}
+    else:
+        resp = {"response":"OK", "message":""}
+
+    return HttpResponse(json.dumps(resp), content_type="application/json")
+
+#
 def initialize(request, exc = "", ctx = ""):
 
-    request.session[exc] = {}
+    if exc not in request.session.keys():
+        return HttpResponse(json.dumps({"response":"KO", \
+                "message":"An error occured while loading the Collab.<br> " + \
+                "Please reload."}), \
+                content_type="application/json")
+
 
     my_url = settings.HBP_MY_USER_URL
     collab_context_url = settings.HBP_COLLAB_SERVICE_URL + "collab/context/"
@@ -91,7 +115,7 @@ def initialize(request, exc = "", ctx = ""):
 
     res = requests.get(my_url, headers = headers)
     collab_res = requests.get(collab_context_url + ctx, headers = headers)
-        
+       
     if res.status_code != 200 or collab_res.status_code != 200:
         manage_auth.Token.renewToken(request)
             
@@ -137,14 +161,21 @@ def initialize(request, exc = "", ctx = ""):
     accesslogger.info(resources.string_for_log('home', request))
 
     request.session.save()
-    
-    return HttpResponse(json.dumps({"response":"OK"}), content_type="application/json")
+
+    response = {"response":"OK", "message":""} 
+    return HttpResponse(json.dumps(response), content_type="application/json")
 
 
 def create_wf_folders(request, wf_type="new", exc="", ctx=""):
     """
     Create folders for current workflow
     """
+
+    if exc not in request.session.keys() or \
+            "workflows_dir" not in request.session[exc]:
+        response = {"response":"KO", "message":"An error occurred while " + \
+                "loading the Collab.<br>Please reload."}
+        return HttpResponse(json.dumps(response), content_type="application/json")
 
     time_info = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
     workflows_dir = request.session[exc]['workflows_dir']
@@ -1135,11 +1166,11 @@ def run_analysis(request, exc="", ctx=""):
                     ./checkpoints > /dev/null 2>&1", shell=True)
 
                 # symlink to be removed
-                symlink_path = os.path.join(up_folder, "x86_64", "*.inc")
-                try:
-                    os.remove(symlink_path)
-                except:
-                    pass
+                #symlink_path = os.path.join(up_folder, "x86_64", "*.inc")
+                #try:
+                #    os.remove(symlink_path)
+                #except:
+                #    pass
 
             except Exception as e:
                 msg = traceback.format_exception(*sys.exc_info())
@@ -1151,15 +1182,15 @@ def run_analysis(request, exc="", ctx=""):
             resp = hpc_job_manager.OptResultManager.create_analysis_files(\
                 opt_res_folder, opt_res_file)
             up_folder = resp["up_folder"]
-            subprocess.call(". /web/bspg/venvbspg/bin/activate; cd " \
+            subprocess.check_call(". /web/bspg/venvbspg/bin/activate; cd " \
                 + up_folder + "; nrnivmodl mechanisms", shell=True)
 
-            subprocess.call(". /web/bspg/venvbspg/bin/activate; cd " \
+            subprocess.check_call(". /web/bspg/venvbspg/bin/activate; cd " \
                 + up_folder + "; python opt_neuron.py --analyse --checkpoint \
-                ./checkpoints > /dev/null 2>&1", shell=True)
+                ./checkpoints", shell=True)
 
             # symlink to be removed
-            symlink_path = os.path.join(up_folder, "x86_64", "*.inc")
+            #symlink_path = os.path.join(up_folder, "x86_64", "*.inc")
             
         except Exception as e:
             msg = traceback.format_exception(*sys.exc_info())

@@ -86,7 +86,7 @@
 
 .error-border{
     border-style: solid;
-    border-color: rgba(246,211,215,0.99);
+    border-color: rgba(255,0,0,0.8);
     border-width: 6px;
 }
 

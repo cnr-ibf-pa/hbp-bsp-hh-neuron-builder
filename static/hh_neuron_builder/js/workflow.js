@@ -94,6 +94,7 @@ $(document).ready(function(){
     // assign functions to buttons' click
     // manage top bar buttons
     document.getElementById("wf-btn-home").onclick = goHome;
+    document.getElementById("wf-btn-new-wf").onclick = newWorkflow;
     document.getElementById("wf-btn-clone-wf").onclick = cloneWorkflow;
     document.getElementById("wf-btn-save").onclick = saveWorkflow;
 
@@ -147,6 +148,9 @@ $(document).ready(function(){
 
     // manage error message ok button
     document.getElementById("ok-error-div-btn").onclick = closeErrorDiv;
+   
+    // manage reload message ok button
+    document.getElementById("reload-div-btn").onclick = closeReloadDiv;
 
     //manage button for refreshing job list
     document.getElementById("refresh-job-list-btn").onclick = refreshJobInfoDiv;
@@ -202,16 +206,16 @@ function openErrorDiv(message, messagetag) {
     document.getElementById("overlaywrapper").style.pointerEvents = "none";
     contmsgdiv.style.display = "block";
     console.log(messagetag)
-    textdiv.innerHTML = message;
+        textdiv.innerHTML = message;
     if (messagetag == "error"){
         console.log("changing color")
-        msgdiv.style.borderColor = 'red';
+            msgdiv.style.borderColor = 'red';
     } else if (messagetag == "info"){
         console.log("changing color")
-        msgdiv.style.borderColor = 'blue';
+            msgdiv.style.borderColor = 'blue';
     } else if (messagetag == "success") {
         console.log("changing color")
-        msgdiv.style.borderColor = 'green';
+            msgdiv.style.borderColor = 'green';
     }
 }
 
@@ -414,6 +418,24 @@ function displayPleaseWaitDiv(message="") {
     if (message || !(message.length === 0)){
         document.getElementById("waitdynamictext").innerHTML = message;
     }
+}
+
+// Display reload div
+function openReloadDiv(message="") {
+    document.getElementById("overlaywrapperreload").style.display = "block";
+    document.getElementById("mainDiv").style.pointerEvents = "none";
+    document.body.style.overflow = "hidden";
+    if (message || !(message.length === 0)){
+        document.getElementById("waitdynamictext").innerHTML = message;
+    }
+}
+
+// Close reload div
+function closeReloadDiv() {
+    document.getElementById("overlaywrapperreload").style.display = "none";
+    document.getElementById("mainDiv").style.pointerEvents = "auto";
+    document.body.style.overflow = "auto";
+    window.location="/hh-neuron-builder/"
 }
 
 // Hide please wait message div
@@ -699,6 +721,19 @@ function downloadLocal(filetype) {
         exc + "/" + ctx + "/";
     checkConditions();
     closePleaseWaitDiv();
+}
+
+function newWorkflow() {
+    displayPleaseWaitDiv();
+    $.getJSON("/hh-neuron-builder/create-wf-folders/new/" + exc + "/" + ctx, function(data){
+        if (data["response"] == "KO"){
+            closePleaseWaitDiv();
+            openReloadDiv();
+        } else {
+            closePleaseWaitDiv();
+            window.location.href = "/hh-neuron-builder/workflow/";
+        }
+    });
 }
 
 function cloneWorkflow() {
