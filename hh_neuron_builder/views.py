@@ -90,7 +90,7 @@ def set_exc_tags(request, exc="", ctx=""):
        
     if exc=="" or ctx=="":
         resp = {"response":"KO", \
-                "message":"An error occurred while loading the Collab.<br>" + \
+                "message":"An error occurred while loading the application.<br><br>" + \
                 "Please reload."}
     else:
         resp = {"response":"OK", "message":""}
@@ -102,7 +102,7 @@ def initialize(request, exc = "", ctx = ""):
 
     if exc not in request.session.keys():
         return HttpResponse(json.dumps({"response":"KO", \
-                "message":"An error occured while loading the Collab.<br> " + \
+                "message":"An error occured while loading the application.<br><br> " + \
                 "Please reload."}), \
                 content_type="application/json")
 
@@ -174,7 +174,7 @@ def create_wf_folders(request, wf_type="new", exc="", ctx=""):
     if exc not in request.session.keys() or \
             "workflows_dir" not in request.session[exc]:
         response = {"response":"KO", "message":"An error occurred while " + \
-                "loading the Collab.<br>Please reload."}
+                "loading the application.<br><br>Please reload."}
         return HttpResponse(json.dumps(response), content_type="application/json")
 
     time_info = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
@@ -717,12 +717,22 @@ def submit_fetch_param(request, exc="", ctx=""):
 
     return HttpResponse(json.dumps(resp), content_type="application/json")
 
+def status(request):
+    return HttpResponse(json.dumps({"hh-neuron-builder-status" : 1}), content_type="application/json")
+    
+
 def check_cond_exist(request, exc="", ctx=""):
     """
     Check if conditions for performing steps are present.
     The function checks on current workflow folders whether files are present to go on with the workflow.
     The presence of simulation parameters are also checked.
     """
+
+    if exc not in request.session or "user_dir" not in request.session[exc]:
+        resp = {"response":"KO", \
+                "message":"An error occurred while loading the application.<br><br>" + \
+                "Please reload."}
+        return HttpResponse(json.dumps(resp), content_type="application/json")
 
     # set responses dictionary
     response = { \

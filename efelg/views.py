@@ -206,6 +206,9 @@ def overview(request):
     return render(request, 'efelg/overview.html')
 
 
+def status(request):
+    return HttpResponse(json.dumps({"efel-gui-status" : 1}), content_type="application/json")
+
 @login_required(login_url='/login/hbp/')
 def select_features(request):
     '''
