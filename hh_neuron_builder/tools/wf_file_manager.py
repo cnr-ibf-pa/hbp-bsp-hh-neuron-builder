@@ -13,7 +13,55 @@ import re
 
 class CheckConditions:
     @classmethod
-    def checkSimFiles(cls, sim_path=""):                                           
+    def checkSimFolders(cls, folder_path=""):
+
+        if not os.path.isdir(folder_path):
+            resp = {"response":"KO", "message": "Optimization result " + \
+                    "does not exist. Check your files"}
+            return resp
+        #
+        check_folder = os.path.join(folder_path, 'checkpoints')
+        mec_folder = os.path.join(folder_path, 'mechanisms')
+        morph_folder = os.path.join(folder_path, 'morphology')
+
+        # check checkpoints folder
+        if not os.path.isdir(check_folder):
+            resp = {"response":"KO", "message":"'checkpoints' folder " + \
+                    "NOT present"}
+            return resp
+        list_hoc_files = \
+            [cf for cf in os.listdir(check_folder) if cf.endswith(".hoc")]
+        if not list_hoc_files:
+            resp = {"response":"KO", "message":"No .hoc file is present \
+                            in the final simulation folder"}
+            return resp
+
+        # check morphology folder
+        if not os.path.isdir(morph_folder):
+            resp = {"response":"KO", "message":"'morphology' folder NOT present"}
+            return resp
+        elif not os.listdir(morph_folder):
+            resp = {"response":"KO", "message":"The folder 'morphology' is \
+                    empty"}
+            return resp
+        
+        # check mechanisms folder
+        if not os.path.isdir(mec_folder):
+            resp = {"response":"KO", "message":"'mechanisms' folder NOT present"}
+            return resp
+        else:
+            mec_list_dir = os.listdir(mec_folder)
+            list_mod = [i for i in mec_list_dir if i.endswith('.mod')] 
+            if not list_mod:
+                resp = {"response":"KO", "message":"The folder 'mechanisms'\
+                        does NOT contain any .mod file'"}
+                return resp
+
+        return {"response":"OK", "message":"Folders and files structure are correct."}
+        
+
+    @classmethod
+    def checkSimFiles(cls, sim_path=""):
         sim_name = ''
         list_dir = os.listdir(sim_path) 
         for i in list_dir:
