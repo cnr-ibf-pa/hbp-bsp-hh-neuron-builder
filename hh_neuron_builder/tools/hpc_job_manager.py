@@ -461,8 +461,6 @@ class OptResultManager:
                 resp = {"response":"KO", \
                         "msg":msg}
 
-
-
             return {"response": "OK", "up_folder": up_folder}
 
 class OptFolderManager:
