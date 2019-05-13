@@ -67,25 +67,18 @@ def home(request):
         context = {"exc":exc, "ctx":str(ctx)}
         return render(request, 'hh_neuron_builder/home.html', context)
 
-    # read context
-    #if "context" not in request.session:
-    #    context = request.GET.get('ctx', None)
-    #else:
-    #    context = request.session["context"]
-    # if not ctx exit the application 
-    #if not context:
-    #    return render(request, 'efelg/hbp_redirect.html')
-    #
-    #exc = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
-    #request.session[exc] = {}
 
+@login_required(login_url="/login/hbp/")
 def set_exc_tags(request, exc="", ctx=""):
-    request.session[exc] = {}
-    request.session[exc]['ctx'] = ctx
-    request.session.save()
+    if exc in request.session:
+        exc = ""
+    else:
+        request.session[exc] = {}
+        request.session[exc]['ctx'] = ctx
+        request.session.save()
     if exc not in request.session:
-        exc=""
-    if "ctx" not in request.session[exc]:
+        exc = ""
+    if exc == "" or "ctx" not in request.session[exc]:
         ctx = ""
        
     if exc=="" or ctx=="":
@@ -1101,13 +1094,11 @@ def run_analysis(request, exc="", ctx=""):
 	    lines[238]='        traces.append(response.keys()[0])\n'
 	    lines[242]='\n    stimord={} \n    for i in range(len(traces)): \n        stimord[i]=float(traces[i][traces[i].find(\'_\')+1:traces[i].find(\'.soma\')]) \n    import operator \n    sorted_stimord = sorted(stimord.items(), key=operator.itemgetter(1)) \n    traces2=[] \n    for i in range(len(sorted_stimord)): \n        traces2.append(traces[sorted_stimord[i][0]]) \n    traces=traces2 \n'
             lines[243]='    plot_multiple_responses([responses], cp_filename, fig=model_fig, traces=traces)\n'
-	    #lines[243]='    plot_multiple_responses([responses], fig=model_fig, traces=traces)\n'
-	    #lines[366]="def plot_multiple_responses(responses, fig, traces):\n"
             lines[366]="def plot_multiple_responses(responses, cp_filename, fig, traces):\n"
 	    lines[369] = "\n"
 	    lines[370] = "\n"
 	    lines[371] = "\n"# n is the line number you want to edit; subtract 1 as indexing of list starts from 0
-	    f.close()   # close the file and reopen in write mode to enable writing to file; you can also open in append mode and use "seek", but you will have some unwanted old data if the new data is shorter in length.
+	    f.close()
 
 	    f = open(full_file_path, 'w')
 	    f.writelines(lines)
@@ -1124,7 +1115,7 @@ def run_analysis(request, exc="", ctx=""):
 	        f = open(os.path.join(file_path, 'evaluator.py'), 'r')    # pass an appropriate path of the required file
 	        lines = f.readlines()
 	        lines[167]='    #print param_names\n'
-	        f.close()   # close the file and reopen in write mode to enable writing to file; you can also open in append mode and use "seek", but you will have some unwanted old data if the new data is shorter in length.
+	        f.close() 
 	        f = open(os.path.join(file_path, 'evaluator.py'), 'w')    # pass an appropriate path of the required file
 	        f.writelines(lines)
 	        f.close()
@@ -1148,9 +1139,6 @@ def run_analysis(request, exc="", ctx=""):
 		            shutil.copy(os.path.join(checkpoints_folder, files), \
 			        os.path.join(checkpoints_folder, 'checkpoint.pkl'))
                             os.remove(os.path.join(up_folder, 'checkpoints', files))
-                    # else:
-                    #    if files.endswith('.hoc'):
-                    #        os.remove(os.path.join(up_folder, 'checkpoints', files))
 
                 f = open(os.path.join(up_folder, 'opt_neuron.py'), 'r')
                 lines = f.readlines()
@@ -1171,16 +1159,11 @@ def run_analysis(request, exc="", ctx=""):
                 if os.path.isdir(r_0_fold) == True:
                     shutil.rmtree(r_0_fold)
                 os.mkdir(r_0_fold)
+
+
                 subprocess.call(". /web/bspg/venvbspg/bin/activate; cd " \
                     + up_folder + "; python opt_neuron.py --analyse --checkpoint \
                     ./checkpoints > /dev/null 2>&1", shell=True)
-
-                # symlink to be removed
-                #symlink_path = os.path.join(up_folder, "x86_64", "*.inc")
-                #try:
-                #    os.remove(symlink_path)
-                #except:
-                #    pass
 
             except Exception as e:
                 msg = traceback.format_exception(*sys.exc_info())
@@ -1199,28 +1182,37 @@ def run_analysis(request, exc="", ctx=""):
                 + up_folder + "; python opt_neuron.py --analyse --checkpoint \
                 ./checkpoints", shell=True)
 
-            # symlink to be removed
-            #symlink_path = os.path.join(up_folder, "x86_64", "*.inc")
-            
         except Exception as e:
             msg = traceback.format_exception(*sys.exc_info())
-            resp = {"response":"KO", "msg":msg}
+            resp = {"response":"KO", "msg": \
+                    "An error occurred while analysis results. Check your files."}
             return HttpResponse(json.dumps(resp), content_type="application/json")
 
     resp = {"response":"OK", "message":msg} 
+    request.session["opt_res_mod_folder"] = up_folder
+    request.session.save()
+
     return HttpResponse(json.dumps(resp), content_type="application/json")
 
 
 def zip_sim(request, exc="", ctx=""):
     user_dir_res_opt = request.session[exc]['user_dir_results_opt']
     user_dir_sim_run = request.session[exc]['user_dir_sim_run']
+    opt_res_mod_folder = request.session.get("opt_res_mod_folder", "")
+
+    resp_opt_res = \
+            wf_file_manager.CheckConditions.checkSimFolders(\
+            folder_path=opt_res_mod_folder)
+    if resp_opt_res["response"] == "KO":
+        return HttpResponse(json.dumps({"response":"KO", \
+            "message":resp_opt_res["message"]}), \
+            content_type="application/json")
 
     opt_logs_folder = 'opt_logs'
 
-    # folder named as the optimization
+    # create simulation folder
     if os.path.exists(user_dir_sim_run):
         shutil.rmtree(user_dir_sim_run)
-
     os.makedirs(user_dir_sim_run)
         
     # extract the name of the model folder
@@ -1234,13 +1226,18 @@ def zip_sim(request, exc="", ctx=""):
             config_folder_path.append(root)
 
     if len(mec_folder_path) != 1 or len(config_folder_path) !=1:
-        return HttpResponse(json.dumps({"response":"ERROR", "message":"Optimization result folder is not consistent. Check your data."}), content_type="application/json")
+        return HttpResponse(json.dumps({"response":"KO", \
+                "message":"Optimization result folder is not consistent. " + \
+                "Check your data."}), content_type="application/json")
     
     if os.path.split(mec_folder_path[0])[0] != os.path.split(config_folder_path[0])[0]:
-        return HttpResponse(json.dumps({"response":"ERROR", "message":"Optimization result folder is not consistent. Check your data."}), content_type="application/json")
+        return HttpResponse(json.dumps({"response":"KO", \
+                "message":"Optimization result folder is not consistent. " + \
+                "Check your data."}), content_type="application/json")
 
     else:
-        crr_opt_folder = os.path.split(mec_folder_path[0])[0]
+        crr_opt_folder = opt_res_mod_folder
+        checkpoint_folder = os.path.join(crr_opt_folder, "checkpoints")
         crr_opt_name = os.path.split(crr_opt_folder)[1]
         sim_mod_folder = os.path.join(user_dir_sim_run, crr_opt_name)
         os.makedirs(sim_mod_folder)

@@ -686,7 +686,13 @@ function downloadJob(jobid) {
                 return false;
             } else {
                 $.getJSON('/hh-neuron-builder/zip-sim/' + req_pattern, function(zip_data){
-                    closePleaseWaitDiv();
+                    if (zip_data["response"] == "KO") {
+                        closePleaseWaitDiv();
+                        openErrorDiv(zip_data["message"], 'error');
+                        return false;
+                    } else {
+                        closePleaseWaitDiv();
+                    }
                     checkConditions();
                 });
             };
