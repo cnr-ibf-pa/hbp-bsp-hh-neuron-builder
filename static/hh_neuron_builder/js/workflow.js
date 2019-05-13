@@ -202,20 +202,17 @@ function openErrorDiv(message, messagetag) {
     var contmsgdiv = document.getElementById("overlaywrappererror");
     var msgdiv = document.getElementById("overlayerror");
     var textdiv = document.getElementById("errordynamictext");
+    textdiv.innerHTML = "";
     document.getElementById("mainDiv").style.pointerEvents = "none";
     document.getElementById("overlaywrapper").style.pointerEvents = "none";
     contmsgdiv.style.display = "block";
-    console.log(messagetag)
-        textdiv.innerHTML = message;
+    textdiv.innerHTML = message;
     if (messagetag == "error"){
-        console.log("changing color")
-            msgdiv.style.borderColor = 'red';
+        msgdiv.style.borderColor = 'red';
     } else if (messagetag == "info"){
-        console.log("changing color")
-            msgdiv.style.borderColor = 'blue';
+        msgdiv.style.borderColor = 'blue';
     } else if (messagetag == "success") {
-        console.log("changing color")
-            msgdiv.style.borderColor = 'green';
+        msgdiv.style.borderColor = 'green';
     }
 }
 
@@ -416,11 +413,13 @@ function deleteSimFiles() {
 
 // Display please wait div
 function displayPleaseWaitDiv(message="") {
+    var msgtext = document.getElementById("waitdynamictext");
+    msgtext.innerHTML = "";
     document.getElementById("overlaywrapperwait").style.display = "block";
     document.getElementById("mainDiv").style.pointerEvents = "none";
     document.body.style.overflow = "hidden";
     if (message || !(message.length === 0)){
-        document.getElementById("waitdynamictext").innerHTML = message;
+        msgtext.innerHTML = message;
     }
 }
 
@@ -519,10 +518,9 @@ function displayOptSetUploadDiv() {
 //
 function openUploadDiv(type, msg) {
     var uploadForm = document.getElementById("uploadFileForm");
+    var uploadTitleDiv = document.getElementById("uploadTitleDiv");
 
     uploadForm.setAttribute("action", "/hh-neuron-builder/upload-files/" + type + "/" + exc + "/" + ctx + "/");
-
-    var uploadTitleDiv = document.getElementById("uploadTitleDiv");
     uploadTitleDiv.innerHTML = "<strong>" + msg + "</strong>";
 
     // display image if uploading simulztion .zip file
@@ -688,7 +686,13 @@ function downloadJob(jobid) {
                 return false;
             } else {
                 $.getJSON('/hh-neuron-builder/zip-sim/' + req_pattern, function(zip_data){
-                    closePleaseWaitDiv();
+                    if (zip_data["response"] == "KO") {
+                        closePleaseWaitDiv();
+                        openErrorDiv(zip_data["message"], 'error');
+                        return false;
+                    } else {
+                        closePleaseWaitDiv();
+                    }
                     checkConditions();
                 });
             };
