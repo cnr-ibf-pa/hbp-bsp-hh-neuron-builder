@@ -17,7 +17,7 @@ import requests
 import json
 import re
 import logging
-import bluepyextract as bpext
+#import bluepyextract as bpext
 import bluepyefe as bpefe
 
 # import django libs

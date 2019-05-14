@@ -12,6 +12,7 @@ if not settings.DEBUG:
     from hbp_app_python_auth.auth import get_auth_header
 # create logger
 import logging
+import bluepyefe.formats.axon as fa
 
 # set logging up
 logging.basicConfig(stream=sys.stdout)
@@ -46,13 +47,15 @@ def check_file_validity(filepath):
     try:
         if extension == '.abf':
             data = neo.io.AxonIO(filepath)
-            segments = data.read_block(lazy=False, cascade=True).segments
-
+            bl = data.read_block()
+            segments = bl.segments
             volt_unit = segments[0].analogsignals[0].units
             volt_unit = str(volt_unit.dimensionality)
             assert volt_unit == 'mV'
-            
-            stim_res = stimulus_extraction.stim_feats_from_header(data.read_header()) 
+            data._parse_header()
+            header = data._axon_info
+            stim_res = \
+               fa.stim_feats_from_header(header)
             assert stim_res[0]
 
             return True
