@@ -1,18 +1,31 @@
 var exc = sessionStorage.getItem("exc", exc) ?  sessionStorage.getItem("exc") : "";
 var ctx = sessionStorage.getItem("ctx", ctx) ? sessionStorage.getItem("ctx") : "";
 var req_pattern = exc + '/' + ctx;
+console.log(exc);
+console.log(ctx);
 
 $(document).ready(function(){
-    openPleaseWaitDiv("Initializing");
     document.getElementById("cancel-wf-job-list-btn").onclick = closeFetchWfStorageDiv;
     document.getElementById("ok-nowf-btn").onclick = closeNoWfDiv;
     document.getElementById("new-wf").onclick = initNewWorkflow;
+    document.getElementById("home-reload-btn").onclick = closeReloadDiv;
     $('#wf-storage-list-div').on('click', '.down-wf-btn', function(){
         downloadWf(this.id);
     });
-
-    $.getJSON("/hh-neuron-builder/initialize/" + exc + "/" + ctx + "", function(data){
-    closePleaseWaitDiv();
+    openPleaseWaitDiv("Initializing");
+    $.getJSON("/hh-neuron-builder/set-exc-tags/" + req_pattern, function(exc_data){
+        if (exc_data["response"]=="KO"){
+            closePleaseWaitDiv();
+            openReloadDiv(exc_data["message"]);
+        } else {
+            $.getJSON("/hh-neuron-builder/initialize/" + exc + "/" + ctx + "", function(data){
+                if (data["response"]=="KO"){
+                    closePleaseWaitDiv();
+                    openReloadDiv(data["message"]);
+                }
+                closePleaseWaitDiv();
+            });
+        }
     });
 });
 
@@ -72,6 +85,20 @@ function openPleaseWaitDiv(message) {
     document.getElementById("home-wait-dynamic-text").innerHTML = message;
 }
 
+function openReloadDiv(message, ctx) {
+    document.getElementById("home-overlay-wrapper-reload").style.display = "block";
+    document.getElementById("home-main-div").style.pointerEvents = "none";
+    document.body.style.overflow = "auto";
+    document.getElementById("home-reload-dynamic-text").innerHTML = message;
+}
+
+function closeReloadDiv(message) {
+    document.getElementById("home-overlay-wrapper-reload").style.display = "none";
+    document.getElementById("home-main-div").style.pointerEvents = "auto";
+    document.body.style.overflow = "auto";
+    location.reload();
+}
+
 function closePleaseWaitDiv(){
     document.getElementById("home-overlay-wrapper-wait").style.display = "none";
     document.getElementById("home-main-div").style.pointerEvents = "auto";
@@ -82,6 +109,19 @@ function closeFetchWfStorageDiv() {
     document.getElementById("overlay-wrapper-wf").style.display = "none";
     document.getElementById("home-main-div").style.pointerEvents = "auto";
     document.body.style.overflow = "auto";
+}
+
+function initNewWorkflow() {
+    openPleaseWaitDiv("Initializing worklow.");
+    $.getJSON("/hh-neuron-builder/create-wf-folders/new/" + exc + "/" + ctx, function(data){
+        if (data["response"] == "KO"){
+            closePleaseWaitDiv();
+            openReloadDiv(data["message"]);
+        }else{ 
+
+            window.location.href = "/hh-neuron-builder/workflow/";
+        }
+    });
 }
 
 function downloadWf(wfid) {

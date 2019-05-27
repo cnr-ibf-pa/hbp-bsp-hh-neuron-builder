@@ -17,7 +17,7 @@ import requests
 import json
 import re
 import logging
-import bluepyextract as bpext
+#import bluepyextract as bpext
 import bluepyefe as bpefe
 
 # import django libs
@@ -205,6 +205,9 @@ def overview(request):
     # render to html 
     return render(request, 'efelg/overview.html')
 
+
+def status(request):
+    return HttpResponse(json.dumps({"efel-gui-status" : 1}), content_type="application/json")
 
 @login_required(login_url='/login/hbp/')
 def select_features(request):

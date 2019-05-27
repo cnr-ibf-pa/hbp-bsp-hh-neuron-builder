@@ -19,6 +19,7 @@ urlpatterns = [
     url(r'^select_features/$', views.select_features),
     url(r'^extract-features$', views.extract_features),
     url(r'^results/$', views.results),
+    url(r'^status/$', views.status),
     url(r'^download_zip', views.download_zip),
     url(r'^features_dict', views.features_dict),
     url(r'^features_json_path', views.features_json_path),

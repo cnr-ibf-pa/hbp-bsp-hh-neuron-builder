@@ -94,6 +94,7 @@ $(document).ready(function(){
     // assign functions to buttons' click
     // manage top bar buttons
     document.getElementById("wf-btn-home").onclick = goHome;
+    document.getElementById("wf-btn-new-wf").onclick = newWorkflow;
     document.getElementById("wf-btn-clone-wf").onclick = cloneWorkflow;
     document.getElementById("wf-btn-save").onclick = saveWorkflow;
 
@@ -148,6 +149,9 @@ $(document).ready(function(){
     // manage error message ok button
     document.getElementById("ok-error-div-btn").onclick = closeErrorDiv;
 
+    // manage reload message ok button
+    document.getElementById("reload-div-btn").onclick = closeReloadDiv;
+
     //manage button for refreshing job list
     document.getElementById("refresh-job-list-btn").onclick = refreshJobInfoDiv;
 
@@ -198,19 +202,16 @@ function openErrorDiv(message, messagetag) {
     var contmsgdiv = document.getElementById("overlaywrappererror");
     var msgdiv = document.getElementById("overlayerror");
     var textdiv = document.getElementById("errordynamictext");
+    textdiv.innerHTML = "";
     document.getElementById("mainDiv").style.pointerEvents = "none";
     document.getElementById("overlaywrapper").style.pointerEvents = "none";
     contmsgdiv.style.display = "block";
-    console.log(messagetag)
     textdiv.innerHTML = message;
     if (messagetag == "error"){
-        console.log("changing color")
         msgdiv.style.borderColor = 'red';
     } else if (messagetag == "info"){
-        console.log("changing color")
         msgdiv.style.borderColor = 'blue';
     } else if (messagetag == "success") {
-        console.log("changing color")
         msgdiv.style.borderColor = 'green';
     }
 }
@@ -250,127 +251,131 @@ function closeExpirationDiv() {
 //
 function checkConditions(){
     $.getJSON('/hh-neuron-builder/check-cond-exist/' + req_pattern, function(data){
-        console.log(data)
+        if (data["response"] == "KO"){
+            closePleaseWaitDiv();
+            openReloadDiv();
+        } else {
             var textnode = document.createTextNode("Workflow id: " + data["wf_id"]); 
-        document.getElementById("wf-title").innerHTML = "";
-        document.getElementById("wf-title").appendChild(textnode);
-        if (data['expiration']){
-            openExpirationDiv("The workflow directory tree is expired on the server.<br>Please go to the Home page and start a new workflow.<br>");
-            return false
-        }
-        if (data['feat']['status']){
-            document.getElementById('feat-bar').style.background = "green";
-            document.getElementById('feat-bar').innerHTML = "";
-            document.getElementById("del-feat-btn").disabled = false;
-            document.getElementById('down-feat-btn').disabled = false;
-        } else {
-            document.getElementById('feat-bar').style.background = "red";
-            document.getElementById("feat-bar").innerHTML = data['feat']['message'];  
-            document.getElementById("del-feat-btn").disabled = true;
-            document.getElementById('down-feat-btn').disabled = true;
-        };
-
-        if (data['opt_files']['status']){
-            document.getElementById('opt-files-bar').style.background = "green";
-            document.getElementById('del-opt').disabled = false;
-            document.getElementById('down-opt-set-btn').disabled = false;
-            document.getElementById('opt-files-bar').innerHTML = "";
-        } else {
-            document.getElementById('opt-files-bar').style.background = "red";
-            document.getElementById('del-opt').disabled = true;
-            document.getElementById('down-opt-set-btn').disabled = true;
-            document.getElementById('opt-files-bar').innerHTML = data['opt_files']['message'];  
-            document.getElementById('opt-files-bar').innerHTML = "Optimization files NOT present";
-        };
-
-        if (data['opt_set']['status']){
-            document.getElementById('opt-param-bar').style.background = "green";
-            document.getElementById('opt-param-bar').innerHTML = "";
-        } else {
-            document.getElementById('opt-param-bar').style.background = "red";
-            document.getElementById('opt-param-bar').innerHTML = data['opt_set']['message'];
-        };
-        document.getElementById("node-num").value = data["opt_set"]["opt_sub_param_dict"]["number_of_nodes"]; 
-        document.getElementById("core-num").value = data["opt_set"]["opt_sub_param_dict"]["number_of_cores"]; 
-        document.getElementById("offspring").value = data["opt_set"]["opt_sub_param_dict"]["offspring_size"]; 
-        document.getElementById("runtime").value = data["opt_set"]["opt_sub_param_dict"]["runtime"]; 
-        document.getElementById("gen-max").value = data["opt_set"]["opt_sub_param_dict"]["number_of_generations"]; 
-
-        if (data['opt_res']['status']){
-            document.getElementById('down-opt-btn').disabled = false;
-        } else {
-            document.getElementById('down-opt-btn').disabled = true;
-        }
-
-        // if optimization has been submitted
-        if (data['opt_flag']['status']){
-            document.getElementById("optlaunchimg").src = "/static/img/ok_red.png";
-            document.getElementById("optlaunchtextspan").innerHTML = "Optimization job submitted";
-            document.getElementById("launch-opt-btn").disabled = true;  
-
-            // disable feature extraction buttons
-            document.getElementById("feat-efel-btn").disabled = true;
-            document.getElementById("feat-up-btn").disabled = true;
-            document.getElementById("del-feat-btn").disabled = true;
-
-            //disable optimization buttons
-            document.getElementById("opt-db-hpc-btn").disabled = true;
-            document.getElementById("opt-up-btn").disabled = true;
-            document.getElementById("del-opt").disabled = true;
-
-            // disable optimization settings buttons
-            document.getElementById("opt-set-btn").disabled = true;
-            // if no optimization has been submitted
-        } else {
-            // enable feature extraction buttons
-            document.getElementById("feat-efel-btn").disabled = false;
-            document.getElementById("feat-up-btn").disabled = false;
-
-            //enable optimization buttons
-            document.getElementById("opt-db-hpc-btn").disabled = false;
-            document.getElementById("opt-up-btn").disabled = false;
-
-            // disable optimization settings buttons
-            document.getElementById("opt-set-btn").disabled = false;
-
-            document.getElementById("optlaunchimg").src = "/static/img/ko_red.png";
-            document.getElementById("optlaunchtextspan").innerHTML = "No job submitted";
-            document.getElementById("cell-opt-div").style.backgroundColor='rgba(255, 255, 255,0.0)';
-
-            // if ready for submission, enable launch optimization button
-            if (data['feat']['status'] & data['opt_files']['status'] & data['opt_set']['status']){
-                document.getElementById("launch-opt-btn").disabled = false;  
-            } else {
-                document.getElementById("launch-opt-btn").disabled = true;  
+            document.getElementById("wf-title").innerHTML = "";
+            document.getElementById("wf-title").appendChild(textnode);
+            if (data['expiration']){
+                openExpirationDiv("The workflow directory tree is expired on the server.<br>Please go to the Home page and start a new workflow.<br>");
+                return false
             }
-        }
-
-        // Simulation panel
-        if (data['run_sim']['status']){
-            $('#inner-sim-div').show();
-            document.getElementById("opt-res-bar").style.background = "green";  
-            document.getElementById("opt-res-bar").innerHTML = data['run_sim']['message'];  
-            document.getElementById("down-sim-btn").disabled = false;  
-            document.getElementById("run-sim-btn").disabled = false;  
-
-            if (data['sim_flag']['status']){
-                document.getElementById("del-sim-btn").disabled = true;  
-                document.getElementById("opt-fetch-btn").disabled = true;  
-                document.getElementById("opt-res-up-btn").disabled = true;  
+            if (data['feat']['status']){
+                document.getElementById('feat-bar').style.background = "green";
+                document.getElementById('feat-bar').innerHTML = "";
+                document.getElementById("del-feat-btn").disabled = false;
+                document.getElementById('down-feat-btn').disabled = false;
             } else {
-                document.getElementById("del-sim-btn").disabled = false;  
+                document.getElementById('feat-bar').style.background = "red";
+                document.getElementById("feat-bar").innerHTML = data['feat']['message'];  
+                document.getElementById("del-feat-btn").disabled = true;
+                document.getElementById('down-feat-btn').disabled = true;
+            };
+
+            if (data['opt_files']['status']){
+                document.getElementById('opt-files-bar').style.background = "green";
+                document.getElementById('del-opt').disabled = false;
+                document.getElementById('down-opt-set-btn').disabled = false;
+                document.getElementById('opt-files-bar').innerHTML = "";
+            } else {
+                document.getElementById('opt-files-bar').style.background = "red";
+                document.getElementById('del-opt').disabled = true;
+                document.getElementById('down-opt-set-btn').disabled = true;
+                document.getElementById('opt-files-bar').innerHTML = data['opt_files']['message'];  
+                document.getElementById('opt-files-bar').innerHTML = "Optimization files NOT present";
+            };
+
+            if (data['opt_set']['status']){
+                document.getElementById('opt-param-bar').style.background = "green";
+                document.getElementById('opt-param-bar').innerHTML = "";
+            } else {
+                document.getElementById('opt-param-bar').style.background = "red";
+                document.getElementById('opt-param-bar').innerHTML = data['opt_set']['message'];
+            };
+            document.getElementById("node-num").value = data["opt_set"]["opt_sub_param_dict"]["number_of_nodes"]; 
+            document.getElementById("core-num").value = data["opt_set"]["opt_sub_param_dict"]["number_of_cores"]; 
+            document.getElementById("offspring").value = data["opt_set"]["opt_sub_param_dict"]["offspring_size"]; 
+            document.getElementById("runtime").value = data["opt_set"]["opt_sub_param_dict"]["runtime"]; 
+            document.getElementById("gen-max").value = data["opt_set"]["opt_sub_param_dict"]["number_of_generations"]; 
+
+            if (data['opt_res']['status']){
+                document.getElementById('down-opt-btn').disabled = false;
+            } else {
+                document.getElementById('down-opt-btn').disabled = true;
+            }
+
+            // if optimization has been submitted
+            if (data['opt_flag']['status']){
+                document.getElementById("optlaunchimg").src = "/static/img/ok_red.png";
+                document.getElementById("optlaunchtextspan").innerHTML = "Optimization job submitted";
+                document.getElementById("launch-opt-btn").disabled = true;  
+
+                // disable feature extraction buttons
+                document.getElementById("feat-efel-btn").disabled = true;
+                document.getElementById("feat-up-btn").disabled = true;
+                document.getElementById("del-feat-btn").disabled = true;
+
+                //disable optimization buttons
+                document.getElementById("opt-db-hpc-btn").disabled = true;
+                document.getElementById("opt-up-btn").disabled = true;
+                document.getElementById("del-opt").disabled = true;
+
+                // disable optimization settings buttons
+                document.getElementById("opt-set-btn").disabled = true;
+                // if no optimization has been submitted
+            } else {
+                // enable feature extraction buttons
+                document.getElementById("feat-efel-btn").disabled = false;
+                document.getElementById("feat-up-btn").disabled = false;
+
+                //enable optimization buttons
+                document.getElementById("opt-db-hpc-btn").disabled = false;
+                document.getElementById("opt-up-btn").disabled = false;
+
+                // disable optimization settings buttons
+                document.getElementById("opt-set-btn").disabled = false;
+
+                document.getElementById("optlaunchimg").src = "/static/img/ko_red.png";
+                document.getElementById("optlaunchtextspan").innerHTML = "No job submitted";
+                document.getElementById("cell-opt-div").style.backgroundColor='rgba(255, 255, 255,0.0)';
+
+                // if ready for submission, enable launch optimization button
+                if (data['feat']['status'] & data['opt_files']['status'] & data['opt_set']['status']){
+                    document.getElementById("launch-opt-btn").disabled = false;  
+                } else {
+                    document.getElementById("launch-opt-btn").disabled = true;  
+                }
+            }
+
+            // Simulation panel
+            if (data['run_sim']['status']){
+                $('#inner-sim-div').show();
+                document.getElementById("opt-res-bar").style.background = "green";  
+                document.getElementById("opt-res-bar").innerHTML = data['run_sim']['message'];  
+                document.getElementById("down-sim-btn").disabled = false;  
+                document.getElementById("run-sim-btn").disabled = false;  
+
+                if (data['sim_flag']['status']){
+                    document.getElementById("del-sim-btn").disabled = true;  
+                    document.getElementById("opt-fetch-btn").disabled = true;  
+                    document.getElementById("opt-res-up-btn").disabled = true;  
+                } else {
+                    document.getElementById("del-sim-btn").disabled = false;  
+                    document.getElementById("opt-fetch-btn").disabled = false;  
+                    document.getElementById("opt-res-up-btn").disabled = false;  
+                } 
+            } else {
+                document.getElementById("opt-res-bar").style.background = "red";  
+                document.getElementById("opt-res-bar").innerHTML = data['run_sim']['message'];  
+                document.getElementById("run-sim-div").style.backgroundColor='rgba(255, 255, 255, 0.06)';
+                document.getElementById("down-sim-btn").disabled = true;  
+                document.getElementById("del-sim-btn").disabled = true;  
+                document.getElementById("run-sim-btn").disabled = true;  
                 document.getElementById("opt-fetch-btn").disabled = false;  
                 document.getElementById("opt-res-up-btn").disabled = false;  
-            } 
-        } else {
-            document.getElementById("opt-res-bar").style.background = "red";  
-            document.getElementById("opt-res-bar").innerHTML = data['run_sim']['message'];  
-            document.getElementById("run-sim-div").style.backgroundColor='rgba(255, 255, 255, 0.06)';
-            document.getElementById("down-sim-btn").disabled = true;  
-            document.getElementById("del-sim-btn").disabled = true;  
-            document.getElementById("run-sim-btn").disabled = true;  
-            document.getElementById("opt-fetch-btn").disabled = false;  
-            document.getElementById("opt-res-up-btn").disabled = false;  
+            };
         };
     })
 }
@@ -408,12 +413,32 @@ function deleteSimFiles() {
 
 // Display please wait div
 function displayPleaseWaitDiv(message="") {
+    var msgtext = document.getElementById("waitdynamictext");
+    msgtext.innerHTML = "";
     document.getElementById("overlaywrapperwait").style.display = "block";
+    document.getElementById("mainDiv").style.pointerEvents = "none";
+    document.body.style.overflow = "hidden";
+    if (message || !(message.length === 0)){
+        msgtext.innerHTML = message;
+    }
+}
+
+// Display reload div
+function openReloadDiv(message="") {
+    document.getElementById("overlaywrapperreload").style.display = "block";
     document.getElementById("mainDiv").style.pointerEvents = "none";
     document.body.style.overflow = "hidden";
     if (message || !(message.length === 0)){
         document.getElementById("waitdynamictext").innerHTML = message;
     }
+}
+
+// Close reload div
+function closeReloadDiv() {
+    document.getElementById("overlaywrapperreload").style.display = "none";
+    document.getElementById("mainDiv").style.pointerEvents = "auto";
+    document.body.style.overflow = "auto";
+    window.location="/hh-neuron-builder/"
 }
 
 // Hide please wait message div
@@ -493,10 +518,9 @@ function displayOptSetUploadDiv() {
 //
 function openUploadDiv(type, msg) {
     var uploadForm = document.getElementById("uploadFileForm");
+    var uploadTitleDiv = document.getElementById("uploadTitleDiv");
 
     uploadForm.setAttribute("action", "/hh-neuron-builder/upload-files/" + type + "/" + exc + "/" + ctx + "/");
-
-    var uploadTitleDiv = document.getElementById("uploadTitleDiv");
     uploadTitleDiv.innerHTML = "<strong>" + msg + "</strong>";
 
     // display image if uploading simulztion .zip file
@@ -662,7 +686,13 @@ function downloadJob(jobid) {
                 return false;
             } else {
                 $.getJSON('/hh-neuron-builder/zip-sim/' + req_pattern, function(zip_data){
-                    closePleaseWaitDiv();
+                    if (zip_data["response"] == "KO") {
+                        closePleaseWaitDiv();
+                        openErrorDiv(zip_data["message"], 'error');
+                        return false;
+                    } else {
+                        closePleaseWaitDiv();
+                    }
                     checkConditions();
                 });
             };
@@ -699,6 +729,19 @@ function downloadLocal(filetype) {
         exc + "/" + ctx + "/";
     checkConditions();
     closePleaseWaitDiv();
+}
+
+function newWorkflow() {
+    displayPleaseWaitDiv();
+    $.getJSON("/hh-neuron-builder/create-wf-folders/new/" + exc + "/" + ctx, function(data){
+        if (data["response"] == "KO"){
+            closePleaseWaitDiv();
+            openReloadDiv();
+        } else {
+            closePleaseWaitDiv();
+            window.location.href = "/hh-neuron-builder/workflow/";
+        }
+    });
 }
 
 function cloneWorkflow() {

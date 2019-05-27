@@ -34,6 +34,8 @@ urlpatterns = [
     url(r'^run-analysis/' + req_pattern  + '$', views.run_analysis),
     url(r'^run-optimization/' + req_pattern  + '/$', views.run_optimization),    
     url(r'^save-wf-to-storage/' +  req_pattern  + '$', views.save_wf_to_storage),
+    url(r'^set-exc-tags/' + req_pattern  + '$', views.set_exc_tags),
+    url(r'^status/$', views.status),
     url(r'^submit-run-param/' + req_pattern  + '/$', views.submit_run_param),    
     url(r'^submit-fetch-param/' + req_pattern  + '/$', views.submit_fetch_param),    
     url(r'^upload-files/(?P<filetype>feat|modsim|optset)/' + req_pattern + '/$', views.upload_files),

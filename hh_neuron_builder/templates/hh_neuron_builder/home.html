@@ -55,6 +55,20 @@
 </div>
 <!-- -->
 
+<!-- "Messagelease wait" message div -->
+<div id="home-overlay-wrapper-reload" class="overlay-wrapper">
+    <div id="home-overlay-reload" style="top:35%;" 
+        class="overlay-content error-border">
+        <div class="center-container">
+            <div class="row-center-container">
+                <div id="home-reload-dynamic-text" class="please-wait-text"></div>
+                <br>
+                <button id="home-reload-btn" type="button" class="btn btn-default">Reload</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- -->
 <!-- No Workflows on storage -->
 <div id="home-overlay-wrapper-nowf" class="overlay-wrapper">
     <div id="home-overlay-nowf" style="top:35%;" class="overlay-content">
@@ -76,5 +90,4 @@ console.log(sessionStorage.getItem("ctx"));
 </script>
 
 <script type="text/javascript" src="{% static 'hh_neuron_builder/js/home.js' %}"></script>
-<script type="text/javascript" src="{% static 'hh_neuron_builder/js/common.js' %}"></script>
 {% endblock %}
