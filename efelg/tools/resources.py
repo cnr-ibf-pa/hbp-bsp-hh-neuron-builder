@@ -51,9 +51,11 @@ def check_file_validity(filepath):
             segments = bl.segments
             volt_unit = segments[0].analogsignals[0].units
             volt_unit = str(volt_unit.dimensionality)
+            pprint.pprint(volt_unit)
             assert volt_unit == 'mV'
             data._parse_header()
             header = data._axon_info
+            pprint.pprint(header)
             stim_res = \
                fa.stim_feats_from_header(header)
             assert stim_res[0]

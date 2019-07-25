@@ -1,21 +1,13 @@
 #! /bin/sh
 
-if [ -d "/app/media/hhnb/bsp_data_repository" ]
+if [ -d "/app/media/hhnb/" ]
 then
-    cd "/app/media/hhnb/bsp_data_repository"
-elif [ -d "/apps/media/hhnb/bsp_data_repository" ]
+    cd "/app/media/hhnb/"
+elif [ -d "/apps/media/hhnb/" ]
 then
-    cd "/apps/media/hhnb/bsp_data_repository"
+    cd "/apps/media/hhnb/"
 fi
 
-UPSTREAM=${1:-'@{u}'}
-LOCAL=$(git rev-parse @)
-REMOTE=$(git rev-parse "$UPSTREAM")
-BASE=$(git merge-base @ "$UPSTREAM")
-
-if [ ! $LOCAL = $REMOTE ]
-then
-    date
-    git pull
-    python create_singlecellmodeling_structure_v2.py optimizations/ singlecellmodeling_structure.json
-fi
+date
+. /web/bspg/venvbspg/bin/activate
+python /web/bspg/deployment/create_singlecellmodeling_structure.py . 
