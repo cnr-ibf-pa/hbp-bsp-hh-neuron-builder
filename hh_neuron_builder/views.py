@@ -460,7 +460,8 @@ def fetch_opt_set_file(request, source_opt_name="", exc="", ctx=""):
             zip_url = k[crr_k]['meta']['zip_url']
             break
 
-    r = requests.get(zip_url)
+    PROXIES=settings.PROXIES
+    r = requests.get(zip_url, proxies=PROXIES)
     opt_zip_path = os.path.join(user_dir_data_opt, source_opt_name + '.zip')
     with open(opt_zip_path, 'wb') as f:
         f.write(r.content)
