@@ -11,7 +11,70 @@ from shutil import copy2
 import collections
 import re
 
+
 class CheckConditions:
+    @classmethod
+    def checkUploadedModel(cls, file_path="", folder_path=""):
+        '''
+        Check that the uploaded model .zip file contains all necessary 
+        files and folder
+        '''
+
+        if not file_path.endswith(".zip"):
+            return {"KO", "The uploaded file is not a .zip file"}
+        
+        # unzip file
+        zip_ref = zipfile.ZipFile(file_path, 'r')                           
+        zip_ref.extractall(folder_path)
+        zip_ref.close() 
+
+        basename = os.path.basename(str(file_path))
+        filename_noext = os.path.splitext(basename)
+        opt_folder = os.path.join(folder_path, filename_noext)        
+        print(opt_folder)
+        print(opt_folder)
+        print(opt_folder)
+        if not os.path.exists(opt_folder):
+            return {"KO", "The unzipped folder has not the same name as the \
+                    .zip file. Please upload a well formatted .zip"}
+        else:
+            # check that all folders exist
+            folder_list = ["checkpoints", "config", "figures", "mechanisms", \
+                    "model", "morphology", "tools"]
+            for f in folder_list:
+                if not os.path.exists(os.paht.joint(opt_folder, f)):
+                    return {"KO", "Folder " + f + " does not exist in the \
+                            optimization folder. Please upload a well formatted \
+                            .zip file"}
+
+            # validate json files in config
+            jsonfile_list = ["features.json", "morph.json", "parameters.json", \
+                    "protocols.json"]
+            for j in jsonlist_file:
+                c_filename = os.path.join(opt_folder, "config", j)
+                try:
+                    json_data = json.load(c_filename)
+                except ValueError as error:
+                    return {"KO", "File " + c_filename + " is either not \
+                            present or not readable in 'config' folder. Please \
+                            check your .zip file"}
+
+
+
+
+                    
+            return {"OK", "Folder exists"}
+
+
+            
+        
+        # check 
+
+        #### unzip first
+
+    
+
+
     @classmethod
     def checkSimFolders(cls, folder_path=""):
 

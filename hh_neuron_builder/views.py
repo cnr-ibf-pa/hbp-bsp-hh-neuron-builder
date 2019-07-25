@@ -138,7 +138,8 @@ def initialize(request, exc = "", ctx = ""):
     
     # build directory names
     workflows_dir = os.path.join(settings.MEDIA_ROOT, 'hhnb', 'workflows')
-    scm_structure_path = os.path.join(settings.MEDIA_ROOT, 'hhnb', 'bsp_data_repository', 'singlecellmodeling_structure.json')
+    #scm_structure_path = os.path.join(settings.MEDIA_ROOT, 'hhnb', 'bsp_data_repository', 'singlecellmodeling_structure.json')
+    scm_structure_path = os.path.join(settings.MEDIA_ROOT, 'hhnb', 'hippocampus_models.json')
     opt_model_path = os.path.join(settings.MEDIA_ROOT, 'hhnb', 'bsp_data_repository', 'optimizations')
 
     # create global variables in request.session
@@ -435,7 +436,7 @@ def fetch_opt_set_file(request, source_opt_name="", exc="", ctx=""):
     """
     response = {"response": "OK", "message":""}
 
-    opt_model_path = request.session[exc]['optimization_model_path']
+    #opt_model_path = request.session[exc]['optimization_model_path']
     user_dir_data_opt = request.session[exc]['user_dir_data_opt_set']
 
     if not os.path.exists(user_dir_data_opt):
@@ -445,9 +446,26 @@ def fetch_opt_set_file(request, source_opt_name="", exc="", ctx=""):
 
     shutil.rmtree(user_dir_data_opt)
     os.makedirs(user_dir_data_opt)
+
+    model_file = request.session[exc]["singlecellmodeling_structure_path"]
+    with open(model_file) as json_file:
+	model_file_dict = json.load(json_file)
+
     request.session[exc]['source_opt_name'] = source_opt_name
-    request.session[exc]['source_opt_zip'] = os.path.join(opt_model_path, source_opt_name, source_opt_name + '.zip')
-    shutil.copy(request.session[exc]['source_opt_zip'], user_dir_data_opt)
+    #request.session[exc]['source_opt_zip'] = os.path.join(opt_model_path, source_opt_name, source_opt_name + '.zip')
+
+    for k in model_file_dict:
+        crr_k = str(k.keys()[0])
+        if crr_k == source_opt_name:
+            zip_url = k[crr_k]['meta']['zip_url']
+            break
+
+    r = requests.get(zip_url)
+    opt_zip_path = os.path.join(user_dir_data_opt, source_opt_name + '.zip')
+    with open(opt_zip_path, 'wb') as f:
+        f.write(r.content)
+    request.session[exc]['source_opt_zip'] = opt_zip_path
+    #shutil.copy(request.session[exc]['source_opt_zip'], user_dir_data_opt)
 
     request.session.save()
     return HttpResponse("")
@@ -483,7 +501,7 @@ def run_optimization(request, exc="", ctx=""):
     fin_opt_folder = os.path.join(dest_dir, opt_name)
 
     wf_id = request.session[exc]['wf_id']
-    
+
     if hpc_sys == "NSG":
         execname = "init.py"
         joblaunchname = ""
@@ -904,6 +922,9 @@ def upload_files(request, filetype = "", exc = "", ctx = ""):
     if filetype == "optset":
         request.session[exc]['source_opt_name'] = os.path.splitext(filename)[0]
         request.session[exc]['source_opt_zip'] = final_res_file 
+        #wf_file_manager.CheckConditions.checkUploadedModel(\
+        #    file_path=final_res_file, folder_path=final_res_folder)
+
     elif filetype == "modsim":
         user_dir_sim_run = request.session[exc]['user_dir_sim_run']
 
