@@ -31,7 +31,7 @@ $(document).ready(function(){
                 img_div.append(spk_img);
                 img_div.append(mor_img);
                 $("#" + index + 'a').append(img_div);
-                $('#' + index + 'a').append("<div style='max-width:40%;padding:5px'>" + formatDescription(e['meta']['description']) + "</div>");
+                $('#' + index + 'a').append("<div style='max-width:40%;padding:5px;font-size:13px'>" + formatDescription(e['meta']['description']) + "</div>");
                 spk_img.onload = function(){
                     counter += 1;
                     if (counter == 2 * data.length){
@@ -95,12 +95,16 @@ function displayPleaseWaitDiv(message="") {
 function formatDescription(description = ""){
     var indexes = [];
     var all_strings = [];
-    var final_string = "<br><strong>Description</strong><br>";
-    var allowed_tag = [
-        "affiliations", "brain_structure", "cell_soma_location", 
-        "cell_type", "channels", "contributors", "e_type", 
-        "email", "morphology"
+    var final_string = "";
+    var final_string_meta_app = "";
+    var final_string_author_app = "";
+    var final_string_meta_title = "<span style='font-size:16px'><br>Description<br></span>";
+    var final_string_author_title = "<span style='font-size:16px'><br><br><br>Credits<br></span>";
+    var allowed_tag_meta = [
+        "brain_structure", "cell_soma_location", 
+        "cell_type", "channels", "e_type", "morphology"
     ];
+    var allowed_tag_author = ["contributors", "email", "affiliations"]
     var res = description.replace(/\\\_/g, "_");
 
     var index = 0;
@@ -118,12 +122,25 @@ function formatDescription(description = ""){
         }
     }
     for (var i = 0; i < all_strings.length; i++){
-        for (var j = 0; j < allowed_tag.length; j++){
-            if (all_strings[i].indexOf(allowed_tag[j]) > -1){
-                final_string =  final_string + "<br>" + all_strings[i];
+        for (var j = 0; j < allowed_tag_meta.length; j++){
+            if (all_strings[i].indexOf(allowed_tag_meta[j]) > -1){
+                final_string_meta_app =  final_string_meta_app + "<br>" + all_strings[i];
+                break
+            }
+        }
+        for (var z = 0; z < allowed_tag_author.length; z++){
+            if (all_strings[i].indexOf(allowed_tag_author[z]) > -1){
+                final_string_author_app =  final_string_author_app + "<br>" + all_strings[i];
                 break
             }
         }
     }
+    if (final_string_meta_app.length > 1){
+        final_string = final_string + final_string_meta_title + final_string_meta_app;
+    }
+    if (final_string_author_app.length > 1){
+        final_string = final_string + final_string_author_title + final_string_author_app;
+    }
+
     return final_string
 }
