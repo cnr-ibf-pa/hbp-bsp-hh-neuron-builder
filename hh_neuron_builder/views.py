@@ -922,8 +922,13 @@ def upload_files(request, filetype = "", exc = "", ctx = ""):
     if filetype == "optset":
         request.session[exc]['source_opt_name'] = os.path.splitext(filename)[0]
         request.session[exc]['source_opt_zip'] = final_res_file 
-        #wf_file_manager.CheckConditions.checkUploadedModel(\
-        #    file_path=final_res_file, folder_path=final_res_folder)
+        check_resp = wf_file_manager.CheckConditions.checkUploadedModel(\
+            file_path=final_res_file, folder_path=final_res_folder)
+        if check_resp["response"] == "KO":
+            shutil.rmtree(final_res_folder)
+            os.mkdir(final_res_folder)
+            return HttpResponse(json.dumps(check_resp), content_type="application/json") 
+
 
     elif filetype == "modsim":
         user_dir_sim_run = request.session[exc]['user_dir_sim_run']
@@ -934,6 +939,8 @@ def upload_files(request, filetype = "", exc = "", ctx = ""):
             z.extractall(path = user_dir_sim_run)
         except Exception as e:
             msg = "Unable to unzip the uploaded file. Check file integrity"
+            for k in filename_list:
+                os.remove(os.path.join(final_res_folder, k.name))
             return HttpResponse(json.dumps({"response":"KO", "message":msg}), content_type="application/json") 
 
     request.session.save()
