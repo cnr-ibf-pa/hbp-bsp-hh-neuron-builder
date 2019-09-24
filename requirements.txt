@@ -53,7 +53,7 @@ ipykernel==4.6.1
 ipyparallel==6.0.2
 ipython==5.4.1
 ipython-genutils==0.2.0
-Jinja2==2.9.6
+Jinja2==2.10.1
 jsonschema==3.0.2
 jupyter-client==5.3.1
 jupyter-core==4.5.0
@@ -101,7 +101,7 @@ pytz==2016.7
 PyYAML==3.10
 pyzmq==16.0.2
 quantities==0.12.3
-requests==2.21.0
+requests==2.22.0
 requests-oauthlib==0.7.0
 rsa==3.4.2
 scandir==1.5
@@ -120,7 +120,7 @@ testpath==0.4.2
 tornado==4.5.2
 traitlets==4.3.2
 uritemplate==3.0.0
-urllib3==1.24.1
+urllib3==1.25.6
 uWSGI==2.0.14
 validators==0.12.0
 wcwidth==0.1.7
