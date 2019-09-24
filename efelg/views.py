@@ -559,7 +559,7 @@ def extract_features(request):
     config['cells'] = final_cell_dict
     config['options'] = {
             'featconffile': './pt_conf.json',
-            'featzerotonan': True,
+            'featzerotonan': False,
             'relative': False, 
             'tolerance': 0.02,
             'target': target, 
@@ -570,7 +570,7 @@ def extract_features(request):
             'nangrace': 0, 
             'spike_threshold': 1, 
             'amp_min': -1e22, 
-            'zero_std': True,
+            'zero_std': False,
             'trace_check': False,
             'strict_stiminterval': {
                 'base': True
