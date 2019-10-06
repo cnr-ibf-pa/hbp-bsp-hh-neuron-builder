@@ -1204,10 +1204,10 @@ def run_analysis(request, exc="", ctx=""):
             resp = hpc_job_manager.OptResultManager.create_analysis_files(\
                 opt_res_folder, opt_res_file)
             up_folder = resp["up_folder"]
-            subprocess.check_call(". /web/bspg/venvbspg/bin/activate; cd " \
+            subprocess.call(". /web/bspg/venvbspg/bin/activate; cd " \
                 + up_folder + "; nrnivmodl mechanisms", shell=True)
 
-            subprocess.check_call(". /web/bspg/venvbspg/bin/activate; cd " \
+            subprocess.call(". /web/bspg/venvbspg/bin/activate; cd " \
                 + up_folder + "; python opt_neuron.py --analyse --checkpoint \
                 ./checkpoints", shell=True)
 
