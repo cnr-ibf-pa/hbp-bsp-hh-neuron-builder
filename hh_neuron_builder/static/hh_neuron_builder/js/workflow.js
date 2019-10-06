@@ -808,7 +808,8 @@ function manageOptSetInput(){
             runtime.required = false;
         }
     }
-    else if (sys == "DAINT-CSCS"){
+    else if (sys == "DAINT-CSCS" || sys == "SA-CSCS"){
+        rt_sys = {"DAINT-CSCS":"120m", "SA-CSCS":2}
         pwd_div.setAttribute("style", "display:none");
         un_div.setAttribute("style", "display:none");
         pwd.setAttribute("value", "NONE");
@@ -820,7 +821,8 @@ function manageOptSetInput(){
             corenum.value = 24;
             nodenum.value = 6;
             runtime.type = "string";
-            runtime.value = "120m";
+            //runtime.value = "120m";
+            runtime.value = rt_sys[sys];
             corenum.required = true;
             nodenum.required = true;
             runtime.required = true;

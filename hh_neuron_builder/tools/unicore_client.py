@@ -40,6 +40,9 @@ def get_sites():
     sites['DAINT-CSCS'] = {'name': 'PIZDAINT (CSCS)',
             'url': 'https://unicoregw.cscs.ch:8080/DAINT-CSCS/rest/core', 
              'id': 'CSCS'}
+    sites['SA-CSCS'] = {'name': 'SERVICE ACCOUNT PIZDAINT (CSCS)',
+            'url': 'https://bspsa.cineca.it', 
+            'id': 'SA-CSCS'}
     return sites
 
 
