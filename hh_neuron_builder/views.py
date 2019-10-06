@@ -702,7 +702,7 @@ def submit_run_param(request, exc="", ctx=""):
 
             return HttpResponse(json.dumps(resp_dict), content_type="application/json")
 
-    elif hpc_sys == "DAINT-CSCS":
+    elif hpc_sys == "DAINT-CSCS" or hpc_sys == "SA-CSCS":
         runtime = form_data['runtime']
         resp_dict = {'response':'OK', 'message':'Set Job title'}
         
@@ -742,7 +742,7 @@ def submit_fetch_param(request, exc="", ctx=""):
         else:
             request.session[exc].pop('username_fetch', None)
             request.session[exc].pop('password_fetch', None)
-    elif hpc_sys == "DAINT-CSCS":
+    elif hpc_sys == "DAINT-CSCS" or hpc_sys == "SA-CSCS":
         request.session[exc]['hpc_sys_fetch'] = form_data['hpc_sys_fetch']
         resp = {'response' : 'OK', 'message': 'Job title correctly set'}
 
@@ -849,7 +849,7 @@ def check_cond_exist(request, exc="", ctx=""):
                 'username_submit' in rsk,
                 'password_submit' in rsk,
                 ]
-        elif hpc == "DAINT-CSCS":
+        elif hpc == "DAINT-CSCS" or hpc == "SA-CSCS":
             rules = [True]
         else:
             rules = [False]
@@ -996,7 +996,7 @@ def get_job_list(request, exc="", ctx=""):
                 password_fetch=password_fetch)
 
 
-    if hpc_sys_fetch == "DAINT-CSCS":
+    if hpc_sys_fetch == "DAINT-CSCS" or hpc_sys_fetch == "SA-CSCS":
         PROXIES=settings.PROXIES
         access_token = get_access_token(request.user.social_auth.get())
         resp = hpc_job_manager.Unicore.fetch_job_list(hpc_sys_fetch, \
@@ -1034,7 +1034,7 @@ def get_job_details(request, jobid="", exc="", ctx=""):
                 password_fetch=password_fetch) 
 
     # if job has to be fetched from DAINT-CSCS
-    elif hpc_sys_fetch == "DAINT-CSCS":
+    elif hpc_sys_fetch == "DAINT-CSCS" or hpc_sys_fetch == "SA-CSCS":
         PROXIES=settings.PROXIES
         fetch_job_list = request.session[exc]["hpc_fetch_job_list"]
         job_url = fetch_job_list[jobid]["url"]
@@ -1093,6 +1093,26 @@ def download_job(request, job_id="", exc="", ctx=""):
                 dest_dir=opt_res_dir, \
                 token = "Bearer " + access_token, proxies=PROXIES)
 
+    elif hpc_sys_fetch == "SA-CSCS":
+        if not os.path.exists(opt_res_dir):
+	    os.mkdir(opt_res_dir)
+	    # retrieve access_token
+            access_token = get_access_token(request.user.social_auth.get())
+            token = {"Authorization" : "Bearer " + access_token}
+            #job_url = fetch_job_list[job_id]["url"]
+            job_url_base = "https://bspsa.cineca.it/files/pizdaint/bsp_pizdaint_01/"
+            job_url = job_url_base + job_id 
+            r = requests.get(url=job_url, headers=token)
+            filelist = r.json()
+            for i in filelist:
+                filename = i[1:]
+                fname, extension = os.path.splitext(filename)
+
+                r = requests.get(url=job_url + "/" + i, headers=token)
+                if r.status_code == 200:
+                    with open(os.path.join(opt_res_dir,filename), 'w') as local_file:
+                        local_file.write(r.content)
+                    local_file.close()
     return HttpResponse(json.dumps(resp), content_type="application/json") 
 
 
