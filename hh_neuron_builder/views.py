@@ -540,6 +540,30 @@ def run_optimization(request, exc="", ctx=""):
                 core_num = core_num , node_num = node_num, runtime = runtime, \
                 foldname=opt_name, proxies=PROXIES)
 
+	elif hpc_sys == "SA-CSCS":
+		PROXIES = settings.PROXIES
+		execname = "zipfolder.py"
+		joblaunchname = "ipyparallel.sbatch"
+
+		# retrieve access_token
+		access_token = "Bearer " + get_access_token(request.user.social_auth.get())
+
+		hpc_job_manager.OptFolderManager.createzip(fin_opt_folder=fin_opt_folder, \
+			source_opt_zip=source_opt_zip, opt_name=opt_name, \
+			source_feat=source_feat, gennum=gennum, offsize=offsize, \
+			zfName=zfName, hpc = hpc_sys, execname=execname, \
+			joblaunchname=joblaunchname)
+
+		# launch job on cscs-pizdaint
+		resp = hpc_job_manager.Unicore.run_unicore_opt(hpc=hpc_sys, \
+			filename=zfName, joblaunchname = joblaunchname, \
+			token = access_token, jobname = wf_id, \
+			core_num = core_num , node_num = node_num, runtime = runtime, \
+			foldname=opt_name, proxies=PROXIES) 
+
+
+
+
     if resp['response'] == "OK":
         crr_job_name = resp['jobname']
 

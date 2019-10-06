@@ -294,7 +294,7 @@ class Unicore:
                 job_url = 'https://bspsa.cineca.it/jobs/pizdaint/bsp_pizdaint_01/' + jobname + '/'
             else:
                 job_url = unicore_client.submit(base_url + '/jobs', job, auth, \
-                inputs, proxies=proxies)
+                    inputs, proxies=proxies)
                 jobname = job_url.split('/')[-1]
 
             resp = {'response':'OK', 'joburl':job_url, 'jobname': jobname, \
