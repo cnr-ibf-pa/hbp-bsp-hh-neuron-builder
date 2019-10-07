@@ -1067,7 +1067,6 @@ def download_job(request, job_id="", exc="", ctx=""):
     if os.listdir(opt_res_dir):
         shutil.rmtree(opt_res_dir)
         os.makedirs(opt_res_dir)
-
     if hpc_sys_fetch == "NSG":
 	username_fetch = request.session[exc]['username_fetch']
 	password_fetch = request.session[exc]['password_fetch']
@@ -1104,10 +1103,14 @@ def download_job(request, job_id="", exc="", ctx=""):
             job_url = job_url_base + job_id 
             r = requests.get(url=job_url, headers=token)
             filelist = r.json()
+            pprint.pprint(filelist)
+            pprint.pprint(filelist)
+            pprint.pprint(filelist)
+            pprint.pprint(filelist)
+            pprint.pprint(filelist)
             for i in filelist:
                 filename = i[1:]
                 fname, extension = os.path.splitext(filename)
-
                 r = requests.get(url=job_url + "/" + i, headers=token)
                 if r.status_code == 200:
                     with open(os.path.join(opt_res_dir,filename), 'w') as local_file:

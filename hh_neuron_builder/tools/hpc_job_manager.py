@@ -672,7 +672,7 @@ class OptFolderManager:
             if (root == crr_dir_opt):
                 for f in files:
                     if f.endswith('.py') or (f.endswith('.sbatch') and \
-                            (hpc=="DAINT-CSCS" of hpc == "SA-CSCS")):
+                            (hpc=="DAINT-CSCS" or hpc == "SA-CSCS")):
                         final_zip_fname = os.path.join(root, f)
                         foo.write(final_zip_fname, \
                             final_zip_fname.replace(fin_opt_folder, '', 1))
