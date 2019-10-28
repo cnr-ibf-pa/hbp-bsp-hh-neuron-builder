@@ -205,6 +205,8 @@ class Unicore:
     """
 
     MAX_SIZE = 20240000
+    SA_CSCS_JOBS_URL = "https://bspsa.cineca.it/jobs/pizdaint/bsp_pizdaint_01/"
+    SA_CSCS_FILES_URL = "https://bspsa.cineca.it/files/pizdaint/bsp_pizdaint_01/"
 
     @classmethod
     def checkLogin(cls, username="", token="", hpc="", proxies={}):
@@ -276,16 +278,12 @@ class Unicore:
             job_file = {'file': open(filename, 'rb')}
             auth = unicore_client.get_oidc_auth(token=token)
             auth.update({'Content-Disposition':'attachment;filename=' + basename})
-            #auth.update({'Content-Disposition':'attachment;filename=' + filename})
             auth.update({'payload':json.dumps(payload)})
 
         elif hpc == "jureca":
             exec_str = "; chmod +rx *.sh; chmod +rx *.sbatch; sh " + joblaunchname + ";",
             hpc_sub = "jureca"
         try:
-            #job_url = unicore_client.submit(base_url + '/jobs', job, auth, \
-            #        inputs, proxies=proxies)
-            #jobname = job_url.split('/')[-1]
             if hpc == "SA-CSCS":
                 SUBMIT_URL = 'https://bspsa.cineca.it/jobs/pizdaint/'
                 r = requests.post(url=SUBMIT_URL, headers=auth, files=job_file)
@@ -317,16 +315,7 @@ class Unicore:
         job_list_dict = collections.OrderedDict()
 
         auth = unicore_client.get_oidc_auth(token="Bearer " + token)
-        # auth['X-UNICORE-User-Preferences'] = 'uid:'+ username 
         base_url = unicore_client.get_sites()[hpc]['url']
-        #listofjobs = unicore_client.get_properties(base_url + '/jobs', auth, \
-        #        proxies=proxies)
-        #jobs = listofjobs['jobs']
-
-        #for i in jobs:
-        #    job_title = i.split('/')[-1]
-        #    job_list_dict[job_title] = collections.OrderedDict()
-        #    job_list_dict[job_title]['url'] = i
 
         if hpc == "DAINT-CSCS":
             listofjobs = unicore_client.get_properties(base_url + '/jobs', auth, \
@@ -344,7 +333,6 @@ class Unicore:
                 job_title = i["job_id"]
                 job_list_dict[job_title] = collections.OrderedDict()
                 job_list_dict[job_title]['url'] = base_url + '/jobs/pizdaint/bsp_pizdaint_01/' + job_title 
-                pprint.pprint(job_list_dict)
 
         return job_list_dict
 
@@ -375,29 +363,18 @@ class Unicore:
                 "SA-CSCS":"stage"},
         } 
 
-
-
-
-
         job_details = unicore_client.get_properties(job_url, auth, proxies=proxies)
-
         job_info_dict = collections.OrderedDict()
-        #job_info_dict["job_date_submitted"] = job_details['submissionTime']
-        #job_info_dict["job_stage"] = job_details['status']
         job_info_dict["job_date_submitted"] = job_details[mapfield["job_date_submitted"][hpc]]
         job_info_dict["job_stage"] = job_details[mapfield["job_stage"][hpc]]
         job_info_dict["job_id"] = job_id
         job_info_dict["job_res_url"] = job_url
-        #job_info_dict["job_name"] = job_details["name"]
-        #job_info_dict["status_message"] = job_details["statusMessage"]
-
         job_info_dict["job_name"] = job_details[mapfield["job_name"][hpc]]
         job_info_dict["status_message"] = job_details[mapfield["status_message"][hpc]]
-        pprint.pprint(job_info_dict)
         return job_info_dict
 
     @classmethod
-    def fetch_job_results(cls, job_url="", token="", dest_dir="", proxies={}):
+    def fetch_job_results(cls, hpc="", job_url="", token="", dest_dir="", proxies={}):
         """
         """
         # create destination dir if not existing
@@ -406,17 +383,38 @@ class Unicore:
         auth = unicore_client.get_oidc_auth(token=token)
         r = unicore_client.get_properties(job_url, auth, proxies=proxies)
 
-        if (r['status']=='SUCCESSFUL') or (r['status']=='FAILED'):
-            wd = unicore_client.get_working_directory(job_url, auth, proxies=proxies)
-            output_files = unicore_client.list_files(wd, auth, proxies=proxies)
-            for file_path in output_files:
-                _, f = os.path.split(file_path)
-                if (f=='stderr') or (f=="stdout") or (f=="output.zip"):
-                    content = unicore_client.get_file_content(wd + "/files" + \
+        # job retrieving from SA-CSCS
+        if hpc == "SA-CSCS":
+            r = requests.get(url=job_url, headers=auth)
+            if r.status_code == 200:
+                job = r.json()
+                job_id = job_url.split("/")[-1]
+                job_files_url = cls.SA_CSCS_FILES_URL + job_id + "/"
+                r = requests.get(url=job_files_url, headers=auth)
+                if r.status_code == 200:
+                    files_list = r.json()
+                    for f in files_list:
+                        if f == '/stderr' or f == '/stdout' or f == '/output.zip':
+			    filename = f[1:]
+            		    fname, extension = os.path.splitext(filename)
+                            crr_file_url = job_files_url + filename + '/'
+                            r = requests.get(url=crr_file_url, headers=auth)
+                            if r.status_code == 200:
+                                with open(os.path.join(dest_dir, filename), 'w') as local_file:
+                                    local_file.write(r.content)
+            
+        elif hpc == "DAINT-CSCS":
+            if (r['status']=='SUCCESSFUL') or (r['status']=='FAILED'):
+                wd = unicore_client.get_working_directory(job_url, auth, proxies=proxies)
+                output_files = unicore_client.list_files(wd, auth, proxies=proxies)
+                for file_path in output_files:
+                    _, f = os.path.split(file_path)
+                    if (f=='stderr') or (f=="stdout") or (f=="output.zip"):
+                        content = unicore_client.get_file_content(wd + "/files" + \
                             file_path, auth, MAX_SIZE=cls.MAX_SIZE, proxies=proxies)
-                    with open(os.path.join(dest_dir, f), "w") as local_file:
-                        local_file.write(content)
-                    local_file.close()
+                        with open(os.path.join(dest_dir, f), "w") as local_file:
+                            local_file.write(content)
+                        local_file.close()
 
         return ""
     

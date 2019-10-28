@@ -1088,34 +1088,19 @@ def download_job(request, job_id="", exc="", ctx=""):
         # retrieve access_token
         access_token = get_access_token(request.user.social_auth.get())
 
-	resp = hpc_job_manager.Unicore.fetch_job_results(job_url=job_url, \
-                dest_dir=opt_res_dir, \
+	resp = hpc_job_manager.Unicore.fetch_job_results(hpc = hpc_sys_fetch, \
+                job_url=job_url, dest_dir=opt_res_dir, \
                 token = "Bearer " + access_token, proxies=PROXIES)
 
     elif hpc_sys_fetch == "SA-CSCS":
-        if not os.path.exists(opt_res_dir):
-	    os.mkdir(opt_res_dir)
-	    # retrieve access_token
-            access_token = get_access_token(request.user.social_auth.get())
-            token = {"Authorization" : "Bearer " + access_token}
-            #job_url = fetch_job_list[job_id]["url"]
-            job_url_base = "https://bspsa.cineca.it/files/pizdaint/bsp_pizdaint_01/"
-            job_url = job_url_base + job_id 
-            r = requests.get(url=job_url, headers=token)
-            filelist = r.json()
-            pprint.pprint(filelist)
-            pprint.pprint(filelist)
-            pprint.pprint(filelist)
-            pprint.pprint(filelist)
-            pprint.pprint(filelist)
-            for i in filelist:
-                filename = i[1:]
-                fname, extension = os.path.splitext(filename)
-                r = requests.get(url=job_url + "/" + i, headers=token)
-                if r.status_code == 200:
-                    with open(os.path.join(opt_res_dir,filename), 'w') as local_file:
-                        local_file.write(r.content)
-                    local_file.close()
+        PROXIES=settings.PROXIES
+        job_url = fetch_job_list[job_id]["url"]
+
+        access_token = get_access_token(request.user.social_auth.get())
+	resp = hpc_job_manager.Unicore.fetch_job_results(hpc = hpc_sys_fetch, \
+                job_url=str(job_url), dest_dir=opt_res_dir, \
+                token = "Bearer " + access_token, proxies=PROXIES)
+
     return HttpResponse(json.dumps(resp), content_type="application/json") 
 
 
@@ -1127,7 +1112,7 @@ def run_analysis(request, exc="", ctx=""):
     
     if hpc_sys_fetch == "NSG":
         opt_res_file = "output.tar.gz"
-    elif hpc_sys_fetch == "DAINT-CSCS":
+    elif hpc_sys_fetch == "DAINT-CSCS" or hpc_sys_fetch == "SA-CSCS":
         opt_res_file = "output.zip"
 
     output_fetched_file = os.path.join(opt_res_folder, opt_res_file)
@@ -1242,7 +1227,7 @@ def run_analysis(request, exc="", ctx=""):
                 msg = traceback.format_exception(*sys.exc_info())
                 return HttpResponse(json.dumps({"response":"KO", "message":msg}), content_type="application/json")
 
-    elif hpc_sys_fetch == "DAINT-CSCS":
+    elif hpc_sys_fetch == "DAINT-CSCS" or hpc_sys_fetch == "SA-CSCS":
         PROXIES=settings.PROXIES
         try:
             resp = hpc_job_manager.OptResultManager.create_analysis_files(\
