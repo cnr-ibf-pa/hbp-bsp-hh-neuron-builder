@@ -25,7 +25,6 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DEV = debug.DEV
 DEBUG = debug.DEBUG 
 
-
 SESSION_COOKIE_AGE = 86400 
 SESSION_SAVE_EVERY_REQUEST = True
 

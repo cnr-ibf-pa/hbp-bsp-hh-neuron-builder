@@ -207,6 +207,7 @@ def create_wf_folders(request, wf_type="new", exc="", ctx=""):
                 userid, wf_id, 'results', 'opt')
         request.session[exc]['user_dir_sim_run'] = os.path.join(workflows_dir,\
                 userid, wf_id, 'sim')
+        request.session[exc]["analysis_id"] = []
 
 
         # create folders for global data and json files if not existing
@@ -240,6 +241,7 @@ def create_wf_folders(request, wf_type="new", exc="", ctx=""):
                 'data', 'opt_settings')
         request.session[exc]['user_dir_data_opt_launch'] = os.path.join(new_user_dir,\
                 'data', 'opt_launch')
+        request.session[exc]["analysis_id"] = []
 
         # remove old optimization launch folder and create a new one
         shutil.rmtree(request.session[exc]['user_dir_data_opt_launch'])
@@ -1110,6 +1112,7 @@ def run_analysis(request, exc="", ctx=""):
 
     hpc_sys_fetch = request.session[exc]['hpc_sys_fetch'] 
     
+    # set output file name
     if hpc_sys_fetch == "NSG":
         opt_res_file = "output.tar.gz"
     elif hpc_sys_fetch == "DAINT-CSCS" or hpc_sys_fetch == "SA-CSCS":
@@ -1221,7 +1224,7 @@ def run_analysis(request, exc="", ctx=""):
 
                 subprocess.call(". /web/bspg/venvbspg/bin/activate; cd " \
                     + up_folder + "; python opt_neuron.py --analyse --checkpoint \
-                    ./checkpoints > /dev/null 2>&1", shell=True)
+                    ./checkpoints", shell=True)
 
             except Exception as e:
                 msg = traceback.format_exception(*sys.exc_info())
@@ -1233,12 +1236,24 @@ def run_analysis(request, exc="", ctx=""):
             resp = hpc_job_manager.OptResultManager.create_analysis_files(\
                 opt_res_folder, opt_res_file)
             up_folder = resp["up_folder"]
-            subprocess.call(". /web/bspg/venvbspg/bin/activate; cd " \
-                + up_folder + "; nrnivmodl mechanisms", shell=True)
+            #subprocess.call(". /web/bspg/venvbspg/bin/activate; cd " \
+            #    + up_folder + "; nrnivmodl mechanisms; python opt_neuron.py --analyse --checkpoint ./checkpoints", shell=True)
+            #subprocess.call(". /web/bspg/venvbspg/bin/activate; cd " \
+            #    + up_folder + "; python opt_neuron.py --analyse --checkpoint \
+            #    ./checkpoints", shell=True)
+            #proc_01 = subprocess.Popen([". /web/bspg/venvbspg/bin/activate; cd " + up_folder + "; nrnivmodl mechanisms; python opt_neuron.py --analyse --checkpoint ./checkpoints"], shell=True)
+            #os.system(". /web/bspg/venvbspg/bin/activate; cd " + up_folder + "; nrnivmodl mechanisms; python opt_neuron.py --analyse --checkpoint ./checkpoints")
+            tempresp = subprocess.call(". /web/bspg/venvbspg/bin/activate; cd " + up_folder + "; nrnivmodl mechanisms; python opt_neuron.py --analyse --checkpoint ./checkpoints", shell=True)
 
-            subprocess.call(". /web/bspg/venvbspg/bin/activate; cd " \
-                + up_folder + "; python opt_neuron.py --analyse --checkpoint \
-                ./checkpoints", shell=True)
+            #os.system(". /web/bspg/venvbspg/bin/activate; cd " \
+            #    + up_folder + "; nrnivmodl mechanisms")
+            #subprocess.call([". /web/bspg/venvbspg/bin/activate;", " cd " \
+            #    + up_folder, "; nrnivmodl mechanisms", ";python opt_neuron.py --analyse --checkpoint ./checkpoints"], \
+            #    shell=False)
+
+            #os.system(". /web/bspg/venvbspg/bin/activate; cd " \
+            #    + up_folder + "; python opt_neuron.py --analyse --checkpoint \
+            #    ./checkpoints")
 
         except Exception as e:
             msg = traceback.format_exception(*sys.exc_info())

@@ -679,7 +679,7 @@ function downloadJob(jobid) {
             openErrorDiv(data["message"], 'error');
             return false;
         }
-        $.getJSON('/hh-neuron-builder/run-analysis/' + req_pattern, function(modifydata){
+        var p = $.getJSON('/hh-neuron-builder/run-analysis/' + req_pattern, function(modifydata){
             if (modifydata["response"] == "KO") {
                 closePleaseWaitDiv();
                 openErrorDiv(modifydata["message"], 'error');
@@ -697,6 +697,11 @@ function downloadJob(jobid) {
                 });
             };
         });
+        setTimeout(function(){ 
+            p.abort();
+            closePleaseWaitDiv();
+            openErrorDiv("Your request has expired.<br>Please verify that you are not behind a firewall and/or your data are not too big to be processed in less than 10 minutes", 'error')
+        }, 600000);
     });
 }
 

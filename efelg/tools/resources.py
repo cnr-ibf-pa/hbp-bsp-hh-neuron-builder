@@ -59,9 +59,10 @@ def check_file_validity(filepath):
             stim_res = \
                fa.stim_feats_from_header(header)
             assert stim_res[0]
-
+            pprint.pprint(stim_res)
             return True
-    except:
+    except Exception as e: 
+        print(e)
         return False
 
 
