@@ -680,27 +680,32 @@ function downloadJob(jobid) {
             return false;
         }
         var p = $.getJSON('/hh-neuron-builder/run-analysis/' + req_pattern, function(modifydata){
-            if (modifydata["response"] == "KO") {
-                closePleaseWaitDiv();
-                openErrorDiv(modifydata["message"], 'error');
-                return false;
-            } else {
-                $.getJSON('/hh-neuron-builder/zip-sim/' + req_pattern, function(zip_data){
-                    if (zip_data["response"] == "KO") {
-                        closePleaseWaitDiv();
-                        openErrorDiv(zip_data["message"], 'error');
-                        return false;
-                    } else {
-                        closePleaseWaitDiv();
-                    }
-                    checkConditions();
-                });
-            };
+            var resp_flag = false
+                if (modifydata["response"] == "KO") {
+                    closePleaseWaitDiv();
+                    openErrorDiv(modifydata["message"], 'error');
+                    return false;
+                } else {
+                    var resp_flag = true
+                        $.getJSON('/hh-neuron-builder/zip-sim/' + req_pattern, function(zip_data){
+                            if (zip_data["response"] == "KO") {
+                                closePleaseWaitDiv();
+                                openErrorDiv(zip_data["message"], 'error');
+                                return false;
+                            } else {
+                                closePleaseWaitDiv();
+                            }
+                            checkConditions();
+                        });
+                };
         });
         setTimeout(function(){ 
-            p.abort();
-            closePleaseWaitDiv();
-            openErrorDiv("Your request has expired.<br>Please verify that you are not behind a firewall and/or your data are not too big to be processed in less than 10 minutes", 'error')
+            if (resp_flag) {
+            } else { 
+                p.abort();
+                closePleaseWaitDiv();
+                openErrorDiv("Your request has expired.<br>Please verify that you are not behind a firewall and/or your data are not too big to be processed in less than 10 minutes", 'error')
+            }
         }, 600000);
     });
 }
