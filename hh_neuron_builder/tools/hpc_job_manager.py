@@ -205,6 +205,8 @@ class Unicore:
     """
 
     MAX_SIZE = 20240000
+    SA_CSCS_JOBS_URL = "https://bspsa.cineca.it/jobs/pizdaint/bsp_pizdaint_01/"
+    SA_CSCS_FILES_URL = "https://bspsa.cineca.it/files/pizdaint/bsp_pizdaint_01/"
 
     @classmethod
     def checkLogin(cls, username="", token="", hpc="", proxies={}):
@@ -263,13 +265,36 @@ class Unicore:
             # auth['X-UNICORE-User-Preferences'] = 'uid:'+ username 
             base_url = unicore_client.get_sites()[hpc_sub]['url']
 
+
+        elif hpc == "SA-CSCS":
+            exec_str = "; chmod +rx *.sbatch; ./ipyparallel.sbatch"
+            command = "unzip "+basename+"; cd "+ foldname + exec_str
+            payload = {
+                'command': command, 
+                'node_number': str(node_num),
+                'core_number': str(core_num),
+                'runtime': str(runtime),
+            }
+            job_file = {'file': open(filename, 'rb')}
+            auth = unicore_client.get_oidc_auth(token=token)
+            auth.update({'Content-Disposition':'attachment;filename=' + basename})
+            auth.update({'payload':json.dumps(payload)})
+
         elif hpc == "jureca":
             exec_str = "; chmod +rx *.sh; chmod +rx *.sbatch; sh " + joblaunchname + ";",
             hpc_sub = "jureca"
         try:
-            job_url = unicore_client.submit(base_url + '/jobs', job, auth, \
+            if hpc == "SA-CSCS":
+                SUBMIT_URL = 'https://bspsa.cineca.it/jobs/pizdaint/'
+                r = requests.post(url=SUBMIT_URL, headers=auth, files=job_file)
+                job = r.json()
+                jobname = job['job_id']
+                job_url = 'https://bspsa.cineca.it/jobs/pizdaint/bsp_pizdaint_01/' + jobname + '/'
+            else:
+                job_url = unicore_client.submit(base_url + '/jobs', job, auth, \
                     inputs, proxies=proxies)
-            jobname = job_url.split('/')[-1]
+                jobname = job_url.split('/')[-1]
+
             resp = {'response':'OK', 'joburl':job_url, 'jobname': jobname, \
                     'job_id': jobname,
                     'message':'Job submitted with success', 'status_code':200}
@@ -290,16 +315,24 @@ class Unicore:
         job_list_dict = collections.OrderedDict()
 
         auth = unicore_client.get_oidc_auth(token="Bearer " + token)
-        # auth['X-UNICORE-User-Preferences'] = 'uid:'+ username 
         base_url = unicore_client.get_sites()[hpc]['url']
-        listofjobs = unicore_client.get_properties(base_url + '/jobs', auth, \
-                proxies=proxies)
-        jobs = listofjobs['jobs']
 
-        for i in jobs:
-            job_title = i.split('/')[-1]
-            job_list_dict[job_title] = collections.OrderedDict()
-            job_list_dict[job_title]['url'] = i
+        if hpc == "DAINT-CSCS":
+            listofjobs = unicore_client.get_properties(base_url + '/jobs', auth, \
+                proxies=proxies)
+            jobs = listofjobs['jobs']
+            for i in jobs:
+                job_title = i.split('/')[-1]
+                job_list_dict[job_title] = collections.OrderedDict()
+                job_list_dict[job_title]['url'] = i
+        elif hpc == "SA-CSCS":
+            listofjobs = unicore_client.get_properties(base_url + '/jobs/pizdaint/bsp_pizdaint_01/', auth, \
+                proxies=proxies)
+            jobs = listofjobs
+            for i in jobs:
+                job_title = i["job_id"]
+                job_list_dict[job_title] = collections.OrderedDict()
+                job_list_dict[job_title]['url'] = base_url + '/jobs/pizdaint/bsp_pizdaint_01/' + job_title 
 
         return job_list_dict
 
@@ -311,42 +344,77 @@ class Unicore:
         # base_url = unicore_client.get_sites()[hpc]['url']
         auth = unicore_client.get_oidc_auth(token=token)
 
-        job_details = unicore_client.get_properties(job_url, auth, proxies=proxies)
+        # mapping for DAINT-CSCS and SA-CSCS fields
+        mapfield = {    
+            "job_date_submitted":
+                {"DAINT-CSCS":'submissionTime',\
+                "SA-CSCS":"init_date"},
+            "job_stage":
+                {"DAINT-CSCS":'status',\
+                "SA-CSCS":"stage"},
+            "job_res_url":
+                {"DAINT-CSCS":job_url,\
+                "SA-CSCS":"https://bspsa.cineca.it/files/pizdaint/bsp_pizdaint_01/" + job_url},
+            "job_name":
+                {"DAINT-CSCS":'name',\
+                "SA-CSCS":"title"},
+            "status_message":
+                {"DAINT-CSCS":'statusMessage',\
+                "SA-CSCS":"stage"},
+        } 
 
+        job_details = unicore_client.get_properties(job_url, auth, proxies=proxies)
         job_info_dict = collections.OrderedDict()
-        job_info_dict["job_date_submitted"] = job_details['submissionTime']
-        job_info_dict["job_stage"] = job_details['status']
+        job_info_dict["job_date_submitted"] = job_details[mapfield["job_date_submitted"][hpc]]
+        job_info_dict["job_stage"] = job_details[mapfield["job_stage"][hpc]]
         job_info_dict["job_id"] = job_id
         job_info_dict["job_res_url"] = job_url
-        job_info_dict["job_name"] = job_details["name"]
-        job_info_dict["status_message"] = job_details["statusMessage"]
-
+        job_info_dict["job_name"] = job_details[mapfield["job_name"][hpc]]
+        job_info_dict["status_message"] = job_details[mapfield["status_message"][hpc]]
         return job_info_dict
 
     @classmethod
-    def fetch_job_results(cls, job_url="", token="", dest_dir="", proxies={}):
+    def fetch_job_results(cls, hpc="", job_url="", token="", dest_dir="", proxies={}):
         """
         """
+        # create destination dir if not existing
         if not os.path.exists(dest_dir):
             os.mkdir(dest_dir)
         auth = unicore_client.get_oidc_auth(token=token)
         r = unicore_client.get_properties(job_url, auth, proxies=proxies)
 
-        # create destination dir if not existing
-        if not os.path.exists(dest_dir):
-            os.mkdir(dest_dir)
-
-        if (r['status']=='SUCCESSFUL') or (r['status']=='FAILED'):
-            wd = unicore_client.get_working_directory(job_url, auth, proxies=proxies)
-            output_files = unicore_client.list_files(wd, auth, proxies=proxies)
-            for file_path in output_files:
-                _, f = os.path.split(file_path)
-                if (f=='stderr') or (f=="stdout") or (f=="output.zip"):
-                    content = unicore_client.get_file_content(wd + "/files" + \
+        # job retrieving from SA-CSCS
+        if hpc == "SA-CSCS":
+            r = requests.get(url=job_url, headers=auth)
+            if r.status_code == 200:
+                job = r.json()
+                job_id = job_url.split("/")[-1]
+                job_files_url = cls.SA_CSCS_FILES_URL + job_id + "/"
+                r = requests.get(url=job_files_url, headers=auth)
+                if r.status_code == 200:
+                    files_list = r.json()
+                    for f in files_list:
+                        if f == '/stderr' or f == '/stdout' or f == '/output.zip':
+			    filename = f[1:]
+            		    fname, extension = os.path.splitext(filename)
+                            crr_file_url = job_files_url + filename + '/'
+                            r = requests.get(url=crr_file_url, headers=auth)
+                            if r.status_code == 200:
+                                with open(os.path.join(dest_dir, filename), 'w') as local_file:
+                                    local_file.write(r.content)
+            
+        elif hpc == "DAINT-CSCS":
+            if (r['status']=='SUCCESSFUL') or (r['status']=='FAILED'):
+                wd = unicore_client.get_working_directory(job_url, auth, proxies=proxies)
+                output_files = unicore_client.list_files(wd, auth, proxies=proxies)
+                for file_path in output_files:
+                    _, f = os.path.split(file_path)
+                    if (f=='stderr') or (f=="stdout") or (f=="output.zip"):
+                        content = unicore_client.get_file_content(wd + "/files" + \
                             file_path, auth, MAX_SIZE=cls.MAX_SIZE, proxies=proxies)
-                    with open(os.path.join(dest_dir, f), "w") as local_file:
-                        local_file.write(content)
-                    local_file.close()
+                        with open(os.path.join(dest_dir, f), "w") as local_file:
+                            local_file.write(content)
+                        local_file.close()
 
         return ""
     
@@ -548,7 +616,7 @@ class OptFolderManager:
             OptFolderManager.remove_files_from_opt_folder(fin_dest_dir=fin_dest_dir, hpc=hpc)
             OptFolderManager.add_exec_file(hpc, fin_dest_dir=fin_dest_dir, execname=execname, \
                     gennum=gennum, offsize=offsize, mod_path="", joblaunchname=joblaunchname)
-        elif hpc == "DAINT-CSCS":
+        elif hpc == "DAINT-CSCS" or hpc == "SA-CSCS":
             OptFolderManager.remove_files_from_opt_folder(fin_dest_dir=fin_dest_dir, hpc=hpc)
             OptFolderManager.add_exec_file(hpc, fin_dest_dir=fin_dest_dir, \
                     execname=execname, gennum=gennum, offsize=offsize, 
@@ -602,7 +670,7 @@ class OptFolderManager:
             if (root == crr_dir_opt):
                 for f in files:
                     if f.endswith('.py') or (f.endswith('.sbatch') and \
-                            hpc=="DAINT-CSCS"):
+                            (hpc=="DAINT-CSCS" or hpc == "SA-CSCS")):
                         final_zip_fname = os.path.join(root, f)
                         foo.write(final_zip_fname, \
                             final_zip_fname.replace(fin_opt_folder, '', 1))
@@ -620,7 +688,7 @@ class OptFolderManager:
                     or item.startswith('__MACOSX'):
                         os.remove(os.path.join(fin_dest_dir, item))
         # 'DAINT-CSCS'
-        elif hpc == "DAINT-CSCS":
+        elif hpc == "DAINT-CSCS" or hpc == "SA-CSCS":
             for item in os.listdir(fin_dest_dir):
                 if item.startswith("ipyparallel.sbatch") \
                     or item.startswith("zipfolder.py") \
@@ -723,7 +791,7 @@ class OptFolderManager:
             return [execname, joblaunchname]
 
         # CSCS Pizdaint
-        elif hpc == "DAINT-CSCS":
+        elif hpc == "DAINT-CSCS" or hpc == "SA-CSCS":
             with open(os.path.join(fin_dest_dir, execname),'w') as f:
                 f.write('import os\n')
                 f.write('import zipfile\n')

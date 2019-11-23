@@ -40,6 +40,9 @@ def get_sites():
     sites['DAINT-CSCS'] = {'name': 'PIZDAINT (CSCS)',
             'url': 'https://unicoregw.cscs.ch:8080/DAINT-CSCS/rest/core', 
              'id': 'CSCS'}
+    sites['SA-CSCS'] = {'name': 'SERVICE ACCOUNT PIZDAINT (CSCS)',
+            'url': 'https://bspsa.cineca.it', 
+            'id': 'SA-CSCS'}
     return sites
 
 
@@ -160,7 +163,7 @@ def file_exists(wd, name, headers, proxies={}):
 
 
 def get_file_content(file_url, headers, check_size_limit=True,\
-        MAX_SIZE=2048000, proxies={}):
+        MAX_SIZE=30240000, proxies={}):
     """ download binary file data """
     if check_size_limit:
         size = get_properties(file_url, headers, proxies=proxies)['size']

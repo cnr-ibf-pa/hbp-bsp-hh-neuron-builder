@@ -207,6 +207,7 @@ def create_wf_folders(request, wf_type="new", exc="", ctx=""):
                 userid, wf_id, 'results', 'opt')
         request.session[exc]['user_dir_sim_run'] = os.path.join(workflows_dir,\
                 userid, wf_id, 'sim')
+        request.session[exc]["analysis_id"] = []
 
 
         # create folders for global data and json files if not existing
@@ -240,6 +241,7 @@ def create_wf_folders(request, wf_type="new", exc="", ctx=""):
                 'data', 'opt_settings')
         request.session[exc]['user_dir_data_opt_launch'] = os.path.join(new_user_dir,\
                 'data', 'opt_launch')
+        request.session[exc]["analysis_id"] = []
 
         # remove old optimization launch folder and create a new one
         shutil.rmtree(request.session[exc]['user_dir_data_opt_launch'])
@@ -540,6 +542,27 @@ def run_optimization(request, exc="", ctx=""):
                 core_num = core_num , node_num = node_num, runtime = runtime, \
                 foldname=opt_name, proxies=PROXIES)
 
+    elif hpc_sys == "SA-CSCS":
+        PROXIES = settings.PROXIES
+    	execname = "zipfolder.py"
+	joblaunchname = "ipyparallel.sbatch"
+
+	# retrieve access_token
+	access_token = "Bearer " + get_access_token(request.user.social_auth.get())
+
+	hpc_job_manager.OptFolderManager.createzip(fin_opt_folder=fin_opt_folder, \
+		source_opt_zip=source_opt_zip, opt_name=opt_name, \
+		source_feat=source_feat, gennum=gennum, offsize=offsize, \
+		zfName=zfName, hpc = hpc_sys, execname=execname, \
+		joblaunchname=joblaunchname)
+
+	# launch job on cscs-pizdaint
+	resp = hpc_job_manager.Unicore.run_unicore_opt(hpc=hpc_sys, \
+		filename=zfName, joblaunchname = joblaunchname, \
+		token = access_token, jobname = wf_id, \
+		core_num = core_num , node_num = node_num, runtime = runtime, \
+		foldname=opt_name, proxies=PROXIES) 
+
     if resp['response'] == "OK":
         crr_job_name = resp['jobname']
 
@@ -681,7 +704,7 @@ def submit_run_param(request, exc="", ctx=""):
 
             return HttpResponse(json.dumps(resp_dict), content_type="application/json")
 
-    elif hpc_sys == "DAINT-CSCS":
+    elif hpc_sys == "DAINT-CSCS" or hpc_sys == "SA-CSCS":
         runtime = form_data['runtime']
         resp_dict = {'response':'OK', 'message':'Set Job title'}
         
@@ -721,7 +744,7 @@ def submit_fetch_param(request, exc="", ctx=""):
         else:
             request.session[exc].pop('username_fetch', None)
             request.session[exc].pop('password_fetch', None)
-    elif hpc_sys == "DAINT-CSCS":
+    elif hpc_sys == "DAINT-CSCS" or hpc_sys == "SA-CSCS":
         request.session[exc]['hpc_sys_fetch'] = form_data['hpc_sys_fetch']
         resp = {'response' : 'OK', 'message': 'Job title correctly set'}
 
@@ -827,7 +850,7 @@ def check_cond_exist(request, exc="", ctx=""):
                 'username_submit' in rsk,
                 'password_submit' in rsk,
                 ]
-        elif hpc == "DAINT-CSCS":
+        elif hpc == "DAINT-CSCS" or hpc == "SA-CSCS":
             rules = [True]
         else:
             rules = [False]
@@ -974,7 +997,7 @@ def get_job_list(request, exc="", ctx=""):
                 password_fetch=password_fetch)
 
 
-    if hpc_sys_fetch == "DAINT-CSCS":
+    if hpc_sys_fetch == "DAINT-CSCS" or hpc_sys_fetch == "SA-CSCS":
         PROXIES=settings.PROXIES
         access_token = get_access_token(request.user.social_auth.get())
         resp = hpc_job_manager.Unicore.fetch_job_list(hpc_sys_fetch, \
@@ -1012,7 +1035,7 @@ def get_job_details(request, jobid="", exc="", ctx=""):
                 password_fetch=password_fetch) 
 
     # if job has to be fetched from DAINT-CSCS
-    elif hpc_sys_fetch == "DAINT-CSCS":
+    elif hpc_sys_fetch == "DAINT-CSCS" or hpc_sys_fetch == "SA-CSCS":
         PROXIES=settings.PROXIES
         fetch_job_list = request.session[exc]["hpc_fetch_job_list"]
         job_url = fetch_job_list[jobid]["url"]
@@ -1045,7 +1068,6 @@ def download_job(request, job_id="", exc="", ctx=""):
     if os.listdir(opt_res_dir):
         shutil.rmtree(opt_res_dir)
         os.makedirs(opt_res_dir)
-
     if hpc_sys_fetch == "NSG":
 	username_fetch = request.session[exc]['username_fetch']
 	password_fetch = request.session[exc]['password_fetch']
@@ -1067,8 +1089,17 @@ def download_job(request, job_id="", exc="", ctx=""):
         # retrieve access_token
         access_token = get_access_token(request.user.social_auth.get())
 
-	resp = hpc_job_manager.Unicore.fetch_job_results(job_url=job_url, \
-                dest_dir=opt_res_dir, \
+	resp = hpc_job_manager.Unicore.fetch_job_results(hpc = hpc_sys_fetch, \
+                job_url=job_url, dest_dir=opt_res_dir, \
+                token = "Bearer " + access_token, proxies=PROXIES)
+
+    elif hpc_sys_fetch == "SA-CSCS":
+        PROXIES=settings.PROXIES
+        job_url = fetch_job_list[job_id]["url"]
+
+        access_token = get_access_token(request.user.social_auth.get())
+	resp = hpc_job_manager.Unicore.fetch_job_results(hpc = hpc_sys_fetch, \
+                job_url=str(job_url), dest_dir=opt_res_dir, \
                 token = "Bearer " + access_token, proxies=PROXIES)
 
     return HttpResponse(json.dumps(resp), content_type="application/json") 
@@ -1080,9 +1111,10 @@ def run_analysis(request, exc="", ctx=""):
 
     hpc_sys_fetch = request.session[exc]['hpc_sys_fetch'] 
     
+    # set output file name
     if hpc_sys_fetch == "NSG":
         opt_res_file = "output.tar.gz"
-    elif hpc_sys_fetch == "DAINT-CSCS":
+    elif hpc_sys_fetch == "DAINT-CSCS" or hpc_sys_fetch == "SA-CSCS":
         opt_res_file = "output.zip"
 
     output_fetched_file = os.path.join(opt_res_folder, opt_res_file)
@@ -1191,24 +1223,19 @@ def run_analysis(request, exc="", ctx=""):
 
                 subprocess.call(". /web/bspg/venvbspg/bin/activate; cd " \
                     + up_folder + "; python opt_neuron.py --analyse --checkpoint \
-                    ./checkpoints > /dev/null 2>&1", shell=True)
+                    ./checkpoints", shell=True)
 
             except Exception as e:
                 msg = traceback.format_exception(*sys.exc_info())
                 return HttpResponse(json.dumps({"response":"KO", "message":msg}), content_type="application/json")
 
-    elif hpc_sys_fetch == "DAINT-CSCS":
+    elif hpc_sys_fetch == "DAINT-CSCS" or hpc_sys_fetch == "SA-CSCS":
         PROXIES=settings.PROXIES
         try:
             resp = hpc_job_manager.OptResultManager.create_analysis_files(\
                 opt_res_folder, opt_res_file)
             up_folder = resp["up_folder"]
-            subprocess.check_call(". /web/bspg/venvbspg/bin/activate; cd " \
-                + up_folder + "; nrnivmodl mechanisms", shell=True)
-
-            subprocess.check_call(". /web/bspg/venvbspg/bin/activate; cd " \
-                + up_folder + "; python opt_neuron.py --analyse --checkpoint \
-                ./checkpoints", shell=True)
+            tempresp = subprocess.call(". /web/bspg/venvbspg/bin/activate; cd " + up_folder + "; nrnivmodl mechanisms; python opt_neuron.py --analyse --checkpoint ./checkpoints > /dev/null 2>&1 ", shell=True)
 
         except Exception as e:
             msg = traceback.format_exception(*sys.exc_info())

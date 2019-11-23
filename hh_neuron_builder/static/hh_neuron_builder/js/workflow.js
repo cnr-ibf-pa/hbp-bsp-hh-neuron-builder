@@ -679,24 +679,34 @@ function downloadJob(jobid) {
             openErrorDiv(data["message"], 'error');
             return false;
         }
-        $.getJSON('/hh-neuron-builder/run-analysis/' + req_pattern, function(modifydata){
-            if (modifydata["response"] == "KO") {
-                closePleaseWaitDiv();
-                openErrorDiv(modifydata["message"], 'error');
-                return false;
-            } else {
-                $.getJSON('/hh-neuron-builder/zip-sim/' + req_pattern, function(zip_data){
-                    if (zip_data["response"] == "KO") {
-                        closePleaseWaitDiv();
-                        openErrorDiv(zip_data["message"], 'error');
-                        return false;
-                    } else {
-                        closePleaseWaitDiv();
-                    }
-                    checkConditions();
-                });
-            };
+        var p = $.getJSON('/hh-neuron-builder/run-analysis/' + req_pattern, function(modifydata){
+            var resp_flag = false
+                if (modifydata["response"] == "KO") {
+                    closePleaseWaitDiv();
+                    openErrorDiv(modifydata["message"], 'error');
+                    return false;
+                } else {
+                    var resp_flag = true
+                        $.getJSON('/hh-neuron-builder/zip-sim/' + req_pattern, function(zip_data){
+                            if (zip_data["response"] == "KO") {
+                                closePleaseWaitDiv();
+                                openErrorDiv(zip_data["message"], 'error');
+                                return false;
+                            } else {
+                                closePleaseWaitDiv();
+                            }
+                            checkConditions();
+                        });
+                };
         });
+        setTimeout(function(){ 
+            if (resp_flag) {
+            } else { 
+                p.abort();
+                closePleaseWaitDiv();
+                openErrorDiv("Your request has expired.<br>Please verify that you are not behind a firewall and/or your data are not too big to be processed in less than 10 minutes", 'error')
+            }
+        }, 600000);
     });
 }
 
@@ -808,7 +818,8 @@ function manageOptSetInput(){
             runtime.required = false;
         }
     }
-    else if (sys == "DAINT-CSCS"){
+    else if (sys == "DAINT-CSCS" || sys == "SA-CSCS"){
+        rt_sys = {"DAINT-CSCS":"120m", "SA-CSCS":2}
         pwd_div.setAttribute("style", "display:none");
         un_div.setAttribute("style", "display:none");
         pwd.setAttribute("value", "NONE");
@@ -820,7 +831,8 @@ function manageOptSetInput(){
             corenum.value = 24;
             nodenum.value = 6;
             runtime.type = "string";
-            runtime.value = "120m";
+            //runtime.value = "120m";
+            runtime.value = rt_sys[sys];
             corenum.required = true;
             nodenum.required = true;
             runtime.required = true;
