@@ -219,15 +219,13 @@ function plotRtPages(IDS, FILTERS, crr_dimensions, rt_metrics){
             });
         });
 }
-
-
 /* plot  real time pages- end */
 function plotHistoryUsecases(){
     var dates = getDates();
     $.getJSON('/bsp-monitor/get-uc/' + dates[0] + '/' + dates[1] + '/', function (resp){
         var uc_hist_div = document.getElementById("uc-hist-div");
         uc_hist_div.innerHTML = "";
-        var count_use=0;
+
         var all_data = resp["uc_topics_full"];
         for (var key in all_data){
             var crr_global_container=document.createElement("div");
@@ -243,7 +241,7 @@ function plotHistoryUsecases(){
             crr_figure.setAttribute('id', key);
             crr_figure.setAttribute("class", "hist-boxes hist-pl-cnt");
             //
-           
+
             crr_legend.setAttribute("class", "Chartjs-legend");
             crr_legend.setAttribute("class", "Chartjs-legend center-container legends hist-leg-cnt");
             crr_legend.setAttribute("id", crr_legend_id);
@@ -251,12 +249,13 @@ function plotHistoryUsecases(){
 
             crr_container.appendChild(crr_figure);
             crr_container.appendChild(crr_legend);
-            crr_global_container.appendChild(crr_container); 
+            crr_global_container.appendChild(crr_container);
+
             uc_hist_div.appendChild(crr_global_container);
 
-            var crr_t_labels_all = [];
+            var crr_t_labels = [];
             var crr_t_plot_labels = [];
-            var crr_t_data_all = [];
+            var crr_t_data = [];
             var data = {};
             var ctx = makeCanvas(key);
             if (resp["Response"] == "KO"){
@@ -266,31 +265,16 @@ function plotHistoryUsecases(){
                 } 
             } else {
                 for (var yy in resp["uc_topics_full"][key]){
-                    crr_t_labels_all.push(yy);
+                    crr_t_labels.push(yy);
                     crr_t_plot_labels.push("");
-                    crr_t_data_all.push(resp["uc_topics_full"][key][yy]);
+                    crr_t_data.push(resp["uc_topics_full"][key][yy]);
                 }
             }
-             if((crr_t_data_all.reduce((a,b)=>a+b,0))==0){
-              document.getElementsByClassName('use-case-box')[count_use].style.display='none';
-             }
-             if((crr_t_data_all.reduce((a,b)=>a+b,0))>0){ 
-		var crr_t_data=[];
-		var crr_t_labels=[];
-            	for(x=0; x<crr_t_data_all.length; x++){
-			
-                	if(crr_t_data_all[x]!=0){
-				crr_t_data.push(crr_t_data_all[x]);
-				crr_t_labels.push(crr_t_labels_all[x]);	
-			}
-		}
-            }
-	              
             data = {
                 labels: crr_t_labels,
                 datasets: [{data: crr_t_data,
                     label: key, 
-                    backgroundColor: palette('tol', crr_t_data_all.length).map(function(hex) {
+                    backgroundColor: palette('tol', crr_t_data.length).map(function(hex) {
                         return '#' + hex;
                     })
                 }]
@@ -320,18 +304,8 @@ function plotHistoryUsecases(){
                         },
                 }
             });
-                         
             generateLegend2(crr_legend_id, data, crr_t_labels);
-            count_use+=1;
-        }	    
-      
-        /* all_2=document.getElementsByClassName("uc-t-box");
-        
-         all=document.getElementsByClassName("use-case-box");
-         console.log(all);
-         for(x=8;x<count_use_box; x++){
-            resizeGridItem(all[x]);
-          }*/
+        }
     });
 }
 
@@ -794,7 +768,7 @@ function plotGeo(IDS, FILTERS){
                 'dimensions': 'ga:country',
                 "start-date": dates[0],
                 "end-date": dates[1],
-                'max-results': 10000,
+                'max-results': 10000000000,
             },
             chart: {
                 container: 'embed-geo',
