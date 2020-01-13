@@ -22,8 +22,13 @@
     display: inline-block;
     position: relative;
     margin: auto;
-    vertical-align: baseline;
+    vertical-align: top;
     display: inline-block;
+}
+.grid{
+  display:grid;
+  grid-gap: 10px;
+  grid-template-columns: repeat(auto-fill,minmax(591px,1fr));
 }
 .clearfix::after {
     content: "";
@@ -819,6 +824,7 @@ div.justify-class:after {
 
 .panel-stat-container{
     padding: 20px;
+    min-width: 668px;
 }
 
 .br-7{
@@ -849,6 +855,7 @@ div.justify-class:after {
     text-align:center;
     margin-bottom: 30px;
     margin-top: 30px;
+    min-width: 60px;
 }
 
 .stats-small-container{
@@ -869,6 +876,8 @@ div.justify-class:after {
     font-size:18px;
     font-weight:bold;
     color:#666;
+    white-space: nowrap;
+    overflow: hidden;
 }
 
 .title-analytics.bck{
