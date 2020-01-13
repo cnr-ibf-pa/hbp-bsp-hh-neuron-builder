@@ -26,7 +26,6 @@ from tools import g
 def index(request):
     return render(request, 'bsp_monitor/index.html')
 
-
 @login_required(login_url='/login/hbp/')
 def get_access_token(request, token_type=""):
     '''
@@ -49,7 +48,7 @@ def get_gs(request):
     client = g.GoogleStatManager.get_gs_client()
     sheet = client.open('Usecases - Collabs (Responses)').sheet1
     usecases = sheet.get_all_records()
-    return HttpResponse(json.dumps({"Response":"OK"}), content_type="application/json")
+    return HttpResponse(json.dumps({"Response":"OK"}), content_type="application/json") 
 
 @login_required(login_url='/login/hbp/')
 def get_uc(request, start_date="0", end_date="0"):
@@ -59,12 +58,33 @@ def get_uc(request, start_date="0", end_date="0"):
 
     sheet = g.GoogleStatManager.get_gs_sheet()
     result = sheet.col_values(1)
-
+    
+    col_id=sheet.col_values(6)
+    res=[]
+    result_no_alex=[]
+    
+    del col_id[0]
+    del result[0] 
+    i=0
+    count_alex=0
+    for u_id in col_id:
+	if u_id!='305933' and  u_id!='305664' and  u_id!='305650':
+		res.append(u_id)
+                result_no_alex.append(result[i])
+    		i=i+1
+	else:
+                count_alex+=1
+		i=i+1
+                 
     uc_name = []
     uc_topics = []
-
-    dates = g.GoogleStatManager.convert_to_datetime(result[1:], "gsheet")
-
+    print("###########################")
+    print("no alex:", len(result_no_alex))
+    print("alex:", len(result))
+    print("count alex:", count_alex)
+    print("###########################") 
+    dates = g.GoogleStatManager.convert_to_datetime(result_no_alex[1:], "gsheet")
+    
     if start_date == "0":
         last_day = datetime.datetime.today()
         first_day = last_day - datetime.timedelta(days=1)

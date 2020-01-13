@@ -768,7 +768,7 @@ function plotGeo(IDS, FILTERS){
                 'dimensions': 'ga:country',
                 "start-date": dates[0],
                 "end-date": dates[1],
-                'max-results': 10000,
+                'max-results': 10000000000,
             },
             chart: {
                 container: 'embed-geo',
