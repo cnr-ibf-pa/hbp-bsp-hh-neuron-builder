@@ -57,7 +57,7 @@ def _check_models_modification(new_models, file_name):
 
 
 def filter_meta(model_info):
-    fields_to_save = ('name', 'author', 'cell_type', 'brain_region', 'species', 'description')
+    fields_to_save = ('name', 'author', 'cell_type', 'brain_region', 'species', 'description', 'id')
     x = {k: model_info[k] for k in fields_to_save}
 
     instance_to_zip = model_info['instances'][0]['source']
