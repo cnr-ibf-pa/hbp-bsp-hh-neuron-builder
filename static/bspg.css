@@ -219,7 +219,7 @@ width: 100%;
 /**************/
 
 /* links */
-.no-decoration {
+.no-decoration a:hover{
     text-decoration: none;
 }
 
