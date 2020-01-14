@@ -215,6 +215,17 @@ width: 100%;
     color: rgba(204, 122, 0, 0.7);
     background-color: rgba(204, 122, 0, 0.7);
 }
+
+/**************/
+
+/* links */
+.no-decoration {
+    text-decoration: none;
+}
+
+/**************/
+
+
 /**************/
 
 /* buttons */
