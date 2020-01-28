@@ -535,6 +535,25 @@ class OptFolderManager:
     """
     """
     @classmethod
+    def create_res_zip(cls, fin_folderi = "", filetype = ""):
+        """
+        Create a to-be-downloaded zip in results folder
+        """
+        print("zipping results")
+        # if a zip file is already present do nothing
+        if filetype == "optres":
+            listdir = os.listdir(fin_folder) 
+            fin_list = [i for i in listdir if not i.endswith(".zip")]
+            if len(listdir) == len(fin_list):
+                zipname == os.path.join(fin_folder, "opt_res.zip")
+                foo = zipfile.ZipFile(zipname, 'w', zipfile.ZIP_DEFLATED)
+                for j in fin_list:
+                    foo.write(os.path.join(fin_folder, j), j)
+                    foo.close()
+        return 
+            
+        
+    @classmethod
     def createzip(cls, fin_opt_folder, source_opt_zip, \
             opt_name, source_feat, gennum, offsize, zfName, hpc, execname="", \
             joblaunchname=""):

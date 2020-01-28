@@ -35,14 +35,15 @@
         <div id="inner-opt-div" style="display:none;" class="bg-light-gb center-container row-center-container">
             <div class="center-container row-center-container">
                 <div class="step-panel">
-                    <div class="col-xs-3"></div>
-                    <div class="col-xs-6 center-container">
-                        <h3>Feature extraction</h3> 
-                    </div>
-                    <div class="col-xs-2"></div>
-                    <div class="glyphicon glyphicon-info-sign col-xs-1" 
-                         title="Click the 'Extract features' button to compute electrophysiological features (from the HBP dataset or your own experimental files) to be used in your optimization process. You can also upload your own features.json and protocols.json files by clicking on 'Upload file'" 
-                         style="padding:10px; color:#4a71bf; postion: relative; valign:middle">
+                    <div style="margin-bottom:20px">
+                        <div class="col-xs-3"></div>
+                        <div class="col-xs-6" style="text-align:center">
+                            <h3>Feature extraction</h3> 
+                        </div>
+                        <div class="glyphicon glyphicon-info-sign col-xs-3" 
+                             title="Click the 'Extract features' button to compute electrophysiological features (from the HBP dataset or your own experimental files) to be used in your optimization process. You can also upload your own features.json and protocols.json files by clicking on 'Upload file'" 
+                             style="padding:10px; color:#4a71bf; postion: relative; valign:middle; text-align:right">
+                        </div>
                     </div>
                     <div class="center-container">
                         <button type="button" id="feat-efel-btn" class="btn btn-default" >Extract features</button>
@@ -57,17 +58,18 @@
                 </div>
             </div>
 
-
             <div class="center-container row-center-container">
                 <div class="step-panel">
-                    <div class="col-xs-3"></div>
-                    <div class="center-container col-xs-6">
-                        <h3>Optimization files</h3> 
-                    </div>
-                    <div class="col-xs-2"></div>
-                    <div class="glyphicon glyphicon-info-sign col-xs-1" data-toggle="popover" data-trigger="hover" data-content="Test" 
-                                                                                                                   title="Choose a model from the HBP dataset by clicking the 'Choose from database' button. Alternative, you can upload a properly formatted .zip file containing the model folders/files. For further details, please refer to the HBP Brain Simulation Platform Guidebook" 
-                                                                                                                   style="padding:10px; color:#4a71bf; postion: relative; valign:middle">
+                    <div>
+                        <div class="col-xs-3"></div>
+                        <div class="col-xs-6" style="text-align:center">
+                            <h3>Optimization files</h3> 
+                        </div>
+                        <div class="glyphicon glyphicon-info-sign col-xs-3" data-toggle="popover" 
+                                                                            data-trigger="hover" data-content="Test" 
+                                                                                                 title="Choose a model from the HBP dataset by clicking the 'Choose from database' button. Alternative, you can upload a properly formatted .zip file containing the model folders/files. For further details, please refer to the HBP Brain Simulation Platform Guidebook" 
+                                                                                                 style="padding:10px; color:#4a71bf; postion: relative; valign:middle; text-align:right">
+                        </div>
                     </div>
                     <div class="center-container">
                         <button type="button" id="opt-db-hpc-btn" title="Use optimization files from the database" class="btn btn-default" >Choose from database</button>
@@ -85,14 +87,15 @@
 
             <div class="center-container row-center-container">
                 <div class="step-panel">
-                    <div class="col-xs-3"></div>
-                    <div class="center-container col-xs-6">
-                        <h3>Optimization settings</h3> 
-                    </div>
-                    <div class="col-xs-2"></div>
-                    <div class="glyphicon glyphicon-info-sign col-xs-1" 
-                         title="Click the 'Set parameters/Choose HPC button' to set the optimization (i.e. BluePyOpt) and execution (e.g. number of cores, runtime, etc.) parameters" 
-                         style="padding:10px; color:#4a71bf; postion: relative; valign:middle">
+                    <div>
+                        <div class="col-xs-3"></div>
+                        <div class="col-xs-6">
+                            <h3>Optimization settings</h3> 
+                        </div>
+                        <div class="glyphicon glyphicon-info-sign col-xs-3" 
+                             title="Click the 'Set parameters/Choose HPC button' to set the optimization (i.e. BluePyOpt) and execution (e.g. number of cores, runtime, etc.) parameters" 
+                             style="padding:10px; color:#4a71bf; postion: relative; valign:middle; text-align:right">
+                        </div>
                     </div>
                     <div class="center-container">
                         <button type="button" id="opt-set-btn" class="btn btn-default"  title="Set Optimization parameters">Set parameters/Choose HPC</button>
@@ -129,15 +132,17 @@
         <div id="inner-sim-div" style="display:none;" class="center-container row-center-container">
             <div class="bg-light-gb center-container row-center-container">
                 <div class="step-panel">
-                    <div class="col-xs-3"></div>
-                    <div class="center-container col-xs-6">
-                        <h3>Optimization results</h3> 
-                    </div>
-                    <div class="col-xs-2"></div>
-                    <div class="glyphicon glyphicon-info-sign col-xs-1" data-toggle="popover" 
-                        data-trigger="hover" data-content="Test" 
-                        title="Fetch optimization results from HPC systems by clicking the 'Fetch results' button. Alternative, you can upload a properly formatted .zip file containing the optimized  model folders/files ready for simulation. For further details, please refer to the HBP Brain Simulation Platform Guidebook" 
-                                                                                                                   style="padding:10px; color:#4a71bf; postion: relative; valign:middle">
+                    <div>
+                        <div class="col-xs-3"></div>
+                        <div class="col-xs-6" style="text-align:center">
+                            <h3>Optimization results</h3> 
+                        </div>
+                        <div class="glyphicon glyphicon-info-sign col-xs-3" 
+                             data-toggle="popover" 
+                             data-trigger="hover" data-content="Test" 
+                                                  title="Fetch optimization results from HPC systems by clicking the 'Fetch results' button. Alternative, you can upload a properly formatted .zip file containing the optimized  model folders/files ready for simulation. For further details, please refer to the HBP Brain Simulation Platform Guidebook" 
+                                                  style="padding:10px; color:#4a71bf; postion: relative; valign:middle; text-align:right">
+                        </div>
                     </div>
                     <div class="center-container">
                         <button id="opt-fetch-btn" type="button" 
@@ -173,7 +178,7 @@
 
 <!-- section containing divs for user insertions -->
 <div id="overlaywrapper" class="overlay-wrapper">
-        <br>
+    <br>
     <div id="overlayparam" class="overlay-content overflow">
         <form id='submitRunParam' method='POST'>{% csrf_token %}
             <div class="param-title-div">
