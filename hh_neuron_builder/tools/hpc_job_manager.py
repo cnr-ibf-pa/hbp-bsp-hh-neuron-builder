@@ -402,6 +402,7 @@ class Unicore:
                             if r.status_code == 200:
                                 with open(os.path.join(dest_dir, filename), 'w') as local_file:
                                     local_file.write(r.content)
+                    OptFolderManager.create_res_zip(fin_folder=dest_dir, filetype="optres")
             
         elif hpc == "DAINT-CSCS":
             if (r['status']=='SUCCESSFUL') or (r['status']=='FAILED'):
@@ -535,21 +536,21 @@ class OptFolderManager:
     """
     """
     @classmethod
-    def create_res_zip(cls, fin_folderi = "", filetype = ""):
+    def create_res_zip(cls, fin_folder = "", filetype = ""):
         """
         Create a to-be-downloaded zip in results folder
         """
-        print("zipping results")
+
         # if a zip file is already present do nothing
         if filetype == "optres":
             listdir = os.listdir(fin_folder) 
             fin_list = [i for i in listdir if not i.endswith(".zip")]
-            if len(listdir) == len(fin_list):
-                zipname == os.path.join(fin_folder, "opt_res.zip")
+            if len(listdir) == len(fin_list) and len(listdir) > 0:
+                zipname = os.path.join(fin_folder, "opt_res.zip")
                 foo = zipfile.ZipFile(zipname, 'w', zipfile.ZIP_DEFLATED)
                 for j in fin_list:
                     foo.write(os.path.join(fin_folder, j), j)
-                    foo.close()
+                foo.close()
         return 
             
         
