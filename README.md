@@ -8,4 +8,4 @@ The project is implemented via the Django framework and consists of two applicat
   - efelg: to extract electrophysiological features from recorded and/or simulated traces
   - hh-neuron-builder: to go through the neuron builder pipeline. This app integrates efelg in the feature extraction step
   
-The project also contains the bsp_monitor web app aiming at visualizing the Brain Simulation Platform usage statistics.
+The project also contains the bsp_monitor web app aiming at visualizing the Brain Simulation Platform usage statistics. 
