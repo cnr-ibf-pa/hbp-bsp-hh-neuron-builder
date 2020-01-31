@@ -43,6 +43,7 @@ urlpatterns = [
     url(r'^wf-storage-list/' + req_pattern  + '/$', views.wf_storage_list),
     url(r'^workflow/$', views.workflow),    
     url(r'^zip-sim/' + req_pattern  + '$', views.zip_sim),
+    url(r'^register-model-catalog/' + req_pattern  + '$', views.register_model_catalog),
 ]
 
 if settings.DEBUG:

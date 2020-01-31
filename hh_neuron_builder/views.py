@@ -31,6 +31,7 @@ import hbp_service_client.storage_service.api as service_api_client
 from hbp_service_client.document_service.service_locator import ServiceLocator
 from hbp_service_client.document_service.client import Client
 from hbp_service_client.document_service.requestor import DocNotFoundException, DocException
+from hbp_validation_framework import ModelCatalog
 
 # import local tools
 from tools import hpc_job_manager
@@ -1480,3 +1481,18 @@ def wf_storage_list(request, exc="", ctx=""):
 
     return HttpResponse(json.dumps({"list":storage_list}), content_type="application/json")
 
+
+def register_model_catalog(request, exc="", ctx=""):
+    # TODO: Shailesh
+
+    # retrieve access_token
+    access_token = get_access_token(request.user.social_auth.get())
+    
+    mc = ModelCatalog(username="shailesh")
+    mc.register_model(app_id="395557", name="IGNORE - Test Model - Model_1",
+                author={"family_name": "Appukuttan", "given_name": "Shailesh"}, organization="HBP-SP6",
+                private=False, cell_type="hippocampus CA1 pyramidal cell", model_scope="single cell",
+                abstraction_level="spiking neurons", brain_region="basal ganglia", species="Mus musculus",
+                owner={"family_name": "Appukuttan", "given_name": "Shailesh"}, project="SP 6.4", license="BSD 3-Clause",
+                description="This is a test entry",
+                instances=[{"source":"<<model_CSCS_download_url>>","version":"1.0", "parameters":""}])

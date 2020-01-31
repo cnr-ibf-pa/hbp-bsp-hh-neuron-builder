@@ -2,13 +2,14 @@ var exc = sessionStorage.getItem("exc", exc) ?  sessionStorage.getItem("exc") : 
 var ctx = sessionStorage.getItem("ctx", ctx) ? sessionStorage.getItem("ctx") : "";
 var req_pattern = exc + '/' + ctx;
 
-$(window).bind("pageshow", function() { 
+$(window).bind("pageshow", function() {
     checkConditions();
     closeParameterDiv();
     closeFetchParamDiv();
     closeUploadDiv();
     closePleaseWaitDiv();
     closeJobInfoDiv();
+    closeModelRegistrationDiv();
 });
 
 $( "#mainDiv" ).focus(function() {
@@ -91,6 +92,22 @@ $(document).ready(function(){
         closePleaseWaitDiv();
     });
 
+    //manage form to register model in model catalog
+    var $modelRegisterForm = $('#modelRegisterForm');
+    $formrunparam.submit(function(e){
+        e.preventDefault();
+        $.post('/hh-neuron-builder/register-model-catalog/' + req_pattern + '/', $(this).serialize(), function(response){
+            if (response['response'] == "KO"){
+                openErrorDiv("There was some error! (What error?!)", 'error');
+                checkConditions();
+            } else {
+                checkConditions();
+                closeModelRegistrationDiv();
+            }
+        },'json');
+        return false;
+    });
+
     // assign functions to buttons' click
     // manage top bar buttons
     document.getElementById("wf-btn-home").onclick = goHome;
@@ -155,6 +172,9 @@ $(document).ready(function(){
     //manage button for refreshing job list
     document.getElementById("refresh-job-list-btn").onclick = refreshJobInfoDiv;
 
+    //manage model catalog registration
+    document.getElementById("cancel-model-register-btn").onclick = closeModelRegistrationDiv;
+    document.getElementById("register-model-btn").onclick = closeReloadDiv;
 });
 
 
@@ -244,6 +264,13 @@ function closeParameterDiv() {
 // close expiration div 
 function closeExpirationDiv() {
     document.getElementById("overlaywrapperexpiration").style.display = "none";
+    document.getElementById("mainDiv").style.pointerEvents = "auto";
+    document.body.style.overflow = "auto";
+} 
+
+// close div for model catalog registration
+function closeModelRegistrationDiv() {
+    document.getElementById("overlaywrappermodelregister").style.display = "none";
     document.getElementById("mainDiv").style.pointerEvents = "auto";
     document.body.style.overflow = "auto";
 } 
@@ -856,4 +883,3 @@ function manageOptSetInput(){
         }
     }
 }
-

@@ -400,7 +400,239 @@
         </form>
     </div>
 </div>
-<!-- --> 
+<!-- -->
+
+<!-- ModelCatalog div -->
+<div id="overlaywrappermodelregister" class="overlay-wrapper">
+    <br>
+    <div id="overlaymodelregister" class="overlay-content overflow">
+        <form id='modelRegisterForm' method='POST'>{% csrf_token %}
+            <div class="param-title-div">
+                <strong>Register Model in Model Catalog</strong>
+            </div>
+            <br>
+            <table style="border-spacing:1em;">
+                <tr>
+                    <td>
+                        <label for="modelName">Model Name: </label>
+                    </td>
+                    <td colspan=3>
+                        <input type="text" id="modelName" style="width:100%;">
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>
+                        <label for="authorFirstName">Author FirstName: </label>
+                    </td>
+                    <td>
+                        <input type="text" id="authorFirstName">
+                    </td>
+                    <td>
+                        <label for="authorLastName">Author LastName: </label>
+                    </td>
+                    <td>
+                        <input type="text" id="authorLastName">
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>
+                        <label for="ownerFirstName">Owner FirstName: </label>
+                    </td>
+                    <td>
+                        <input type="text" id="ownerFirstName">
+                    </td>
+                    <td>
+                        <label for="ownerLastName">Owner LastName: </label>
+                    </td>
+                    <td>
+                        <input type="text" id="ownerLastName">
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>
+                        <label for="modelLicense">Model License: </label>
+                    </td>
+                    <td>
+                        <select id="modelLicense">
+                            <option>CC BY</option>
+                            <option>CC BY-SA</option>
+                            <option>CC BY-ND</option>
+                            <option>CC BY-NC</option>
+                            <option>CC BY-NC-SA</option>
+                            <option>CC BY-NC-ND</option>
+                        </select>
+                        <a href="https://appukuttan-shailesh.github.io/testData/image.png" target="_blank">&#9432;</a>
+                    </td>
+                    <td>
+                        <label for="modelPublic">Public/Private: </label>
+                    </td>
+                    <td>
+                        <select id="modelPublic">
+                            <option>Public</option>
+                            <option>Private</option>
+                        </select>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>
+                        <label for="modelOrganization">Organization: </label>
+                    </td>
+                    <td>
+                        <select id="modelOrganization">
+                            <option>&#60;&#60;empty&#62;&#62;</option>
+                            <option>Allen Institute</option>
+                            <option>Blue Brain Project</option>
+                            <option>Destexhe Lab</option>
+                            <option>HBP-SP1</option>
+                            <option>HBP-SP10</option>
+                            <option>HBP-SP11</option>
+                            <option>HBP-SP12</option>
+                            <option>HBP-SP2</option>
+                            <option>HBP-SP3</option>
+                            <option>HBP-SP4</option>
+                            <option>HBP-SP5</option>
+                            <option>HBP-SP6</option>
+                            <option>HBP-SP7</option>
+                            <option>HBP-SP8</option>
+                            <option>HBP-SP9</option>
+                            <option>KOKI-UNIC</option>
+                            <option>KTH-UNIC</option>
+                            <option>Other</option>
+                        </select>
+                    </td>
+                    <td>
+                        <label for="modelSpecies">Species: </label>
+                    </td>
+                    <td>
+                        <select id="modelSpecies">
+                            <option>Rattus norvegicus</option>
+                            <option>Callithrix jacchus</option>
+                            <option>Homo sapiens</option>
+                            <option>Macaca mulatta</option>
+                            <option>Monodelphis domestica</option>
+                            <option>Mus musculus</option>
+                            <option>Other</option>
+                            <option>Rodentia</option>
+                            <option>Undefined</option>
+                        </select>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>
+                        <label for="modelBrainRegion">Brain Region: </label>
+                    </td>
+                    <td>
+                        <select id="modelBrainRegion">
+                            <option>hippocampus</option>
+                            <option>basal ganglia</option>
+                            <option>brainstem</option>
+                            <option>cerebellum</option>
+                            <option>cerebral cortex</option>
+                            <option>other</option>
+                            <option>somatosensory cortex</option>
+                            <option>spinal cord</option>
+                            <option>striatum</option>
+                            <option>thalamocortical</option>
+                            <option>thalamus</option>
+                            <option>whole brain</option>
+                        </select>
+                    </td>
+                    <td>
+                        <label for="modelCellType">Cell Type: </label>
+                    </td>
+                    <td>
+                        <select id="modelCellType">
+                            <option>interneuron</option>
+                            <option>hippocampus CA1 pyramidal cell</option>
+                            <option>Golgi cell</option>
+                            <option>L1 neurogliaform cell</option>
+                            <option>L2 inverted pyramidal cell</option>
+                            <option>L2/3 chandelier cell</option>
+                            <option>L2/3 pyramidal cell</option>
+                            <option>L4 Martinotti cell</option>
+                            <option>L5 tufted pyramidal cell</option>
+                            <option>L6 inverted pyramidal cell</option>
+                            <option>Purkinje cell</option>
+                            <option>cholinergic interneuron</option>
+                            <option>fast spiking interneuron</option>
+                            <option>granule cell</option>
+                            <option>hippocampus CA1 basket cell</option>
+                            <option>hippocampus CA1 ivy neuron</option>
+                            <option>hippocampus CA1 lacunosum moleculare neuron</option>
+                            <option>hippocampus CA3 pyramidal cell</option>
+                            <option>medium spiny neuron</option>
+                            <option>medium spiny neuron (D1 type)</option>
+                            <option>medium spiny neuron (D2 type)</option>
+                            <option>not applicable</option>
+                            <option>other</option>
+                            <option>pyramidal cell</option>
+                            <option>spiny stellate neuron</option>
+                        </select>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>
+                        <label for="modelScope">Model Scope: </label>
+                    </td>
+                    <td>
+                        <select id="modelScope">
+                            <option>single cell</option>
+                            <option>network</option>
+                            <option>network: brain region</option>
+                            <option>network: microcircuit</option>
+                            <option>network: whole brain</option>
+                            <option>other</option>
+                            <option>subcellular</option>
+                            <option>subcellular: ion channel</option>
+                            <option>subcellular: molecular</option>
+                            <option>subcellular: signalling</option>
+                            <option>subcellular: spine</option>
+                        </select>
+                    </td>
+                    <td>
+                        <label for="modelAbstraction">Abstraction Level: </label>
+                    </td>
+                    <td>
+                        <select id="modelAbstraction">
+                            <option>spiking neurons: biophysical</option>
+                            <option>cognitive modelling</option>
+                            <option>other</option>
+                            <option>population modelling</option>
+                            <option>population modelling: neural field</option>
+                            <option>population modelling: neural mass</option>
+                            <option>protein structure</option>
+                            <option>rate neuron</option>
+                            <option>spiking neurons</option>
+                            <option>spiking neurons: point neuron</option>
+                            <option>systems biology</option>
+                            <option>systems biology: continuous</option>
+                            <option>systems biology: discrete</option>
+                            <option>systems biology: flux balance</option>
+                        </select>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>
+                        <label for="modelDescription">Model Description: </label>
+                    </td>
+                    <td colspan=3>
+                        <textarea id="modelDescription" style="width:100%;"></textarea>
+                    </td>
+                </tr>
+            </table>
+            <button id="cancel-model-register-btn" type="button" class="btn btn-primary closebtn">Cancel</button>
+            <button id="register-model-btn" class="btn btn-primary" disabled>Apply</button>
+        </form>
+    </div>
+</div>
+<!-- -->
 
 <script type="text/javascript" src="{% static 'hh_neuron_builder/js/workflow.js' %}"></script>
 <script type="text/javascript" src="{% static 'hh_neuron_builder/js/common.js' %}"></script>
