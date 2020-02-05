@@ -274,6 +274,28 @@ function displayModelRegistrationDiv() {
     document.getElementById("overlaywrappermodelregister").style.display = "block";
     document.getElementById("mainDiv").style.pointerEvents = "none";
     document.body.style.overflow = "hidden";
+
+    $.getJSON("/hh-neuron-builder/get-data-model-catalog/" + req_pattern, function(data){
+        if (data['response'] != "OK"){
+            openErrorDiv("There was some error here! (What error?!)", 'error');
+        } else {
+            // TODO: populate default values for form fields with returned model JSON info
+            document.getElementById("modelName").value = data["name"]
+            document.getElementById("authorFirstName").value = data["author"]["given_name"]
+            document.getElementById("authorLastName").value = data["author"]["family_name"]
+            document.getElementById("ownerFirstName").value = data["owner"]["given_name"]
+            document.getElementById("ownerLastName").value = data["owner"]["famile_name"]
+            // document.getElementById("modelLicense").value = data[""] # not returned from API
+            document.getElementById("modelPrivate").value = data["private"]
+            document.getElementById("modelOrganization").value = data["organization"]
+            document.getElementById("modelSpecies").value = data["species"]
+            document.getElementById("modelBrainRegion").value = data["brain_region"]
+            document.getElementById("modelCellType").value = data["cell_type"]
+            document.getElementById("modelScope").value = data["model_scope"]
+            document.getElementById("modelAbstraction").value = data["abstraction_level"]
+            document.getElementById("modelDescription").value = data["description"]
+        }
+    });
 } 
 
 // close div for model catalog registration

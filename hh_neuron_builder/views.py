@@ -1482,27 +1482,36 @@ def wf_storage_list(request, exc="", ctx=""):
     return HttpResponse(json.dumps({"list":storage_list}), content_type="application/json")
 
 
-def register_model_catalog(request, exc="", ctx=""):
-    # TODO: Shailesh
+def get_data_model_catalog(request, exc="", ctx=""):
+    # retrieve access_token
+    access_token = get_access_token(request.user.social_auth.get())
+    
+    mc = ModelCatalog(token=access_token)
+    
+    # retrieve UUID of chosen optimized model
+    opt_mod_uuid = "01284a1d-6fd3-4cc0-8fa7-41eada65d9d9"    # as example
+    
+    opt_model = mc.get_model(model_id=opt_mod_uuid)
+    # TODO: use above output to populate form fields
 
+
+def register_model_catalog(request, exc="", ctx=""):
     # retrieve access_token
     access_token = get_access_token(request.user.social_auth.get())
     
     # specify target Collab ID to be used for storage
     TARGET_COLLAB_ID = "8123"   # as example
     
-    # retrieve UUID of chosen optimized model
-    opt_mod_uui = "01284a1d-6fd3-4cc0-8fa7-41eada65d9d9"    # as example
+    mc = ModelCatalog(token=access_token)
+    MCapp_navID = mc.exists_in_collab_else_create(collab_id=TARGET_COLLAB_ID)
     
-    mc = ModelCatalog(tokeb=access_token)    
-    mc.exists_in_collab_else_create(collab_id=TARGET_COLLAB_ID)
-    
-    opt_model = mc.get_model(model_id=opt_mod_uui)
-    
-    mc.register_model(app_id="395557", name="IGNORE - Test Model - Model_1",
+    # TODO: fetch data from form fields and populate below
+    model_id = mc.register_model(app_id="395557", name="IGNORE - Test Model - Model_1",
                 author={"family_name": "Appukuttan", "given_name": "Shailesh"}, organization="HBP-SP6",
                 private=False, cell_type="hippocampus CA1 pyramidal cell", model_scope="single cell",
                 abstraction_level="spiking neurons", brain_region="basal ganglia", species="Mus musculus",
                 owner={"family_name": "Appukuttan", "given_name": "Shailesh"}, project="SP 6.4", license="BSD 3-Clause",
                 description="This is a test entry",
                 instances=[{"source":"<<model_CSCS_download_url>>","version":"1.0", "parameters":""}])
+    
+    print("https://collab.humanbrainproject.eu/#/collab/{}/nav/{}?state=model.{}".format(str(TARGET_COLLAB_ID),str(MCapp_navID), model_id))
