@@ -1488,7 +1488,17 @@ def register_model_catalog(request, exc="", ctx=""):
     # retrieve access_token
     access_token = get_access_token(request.user.social_auth.get())
     
-    mc = ModelCatalog(username="shailesh")
+    # specify target Collab ID to be used for storage
+    TARGET_COLLAB_ID = "8123"   # as example
+    
+    # retrieve UUID of chosen optimized model
+    opt_mod_uui = "01284a1d-6fd3-4cc0-8fa7-41eada65d9d9"    # as example
+    
+    mc = ModelCatalog(tokeb=access_token)    
+    mc.exists_in_collab_else_create(collab_id=TARGET_COLLAB_ID)
+    
+    opt_model = mc.get_model(model_id=opt_mod_uui)
+    
     mc.register_model(app_id="395557", name="IGNORE - Test Model - Model_1",
                 author={"family_name": "Appukuttan", "given_name": "Shailesh"}, organization="HBP-SP6",
                 private=False, cell_type="hippocampus CA1 pyramidal cell", model_scope="single cell",

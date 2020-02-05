@@ -173,8 +173,9 @@ $(document).ready(function(){
     document.getElementById("refresh-job-list-btn").onclick = refreshJobInfoDiv;
 
     //manage model catalog registration
+    document.getElementById("reg-model-btn").onclick = displayModelRegistrationDiv;
     document.getElementById("cancel-model-register-btn").onclick = closeModelRegistrationDiv;
-    document.getElementById("register-model-btn").onclick = closeReloadDiv;
+    document.getElementById("register-model-btn").onclick = registerModel;
 });
 
 
@@ -266,6 +267,13 @@ function closeExpirationDiv() {
     document.getElementById("overlaywrapperexpiration").style.display = "none";
     document.getElementById("mainDiv").style.pointerEvents = "auto";
     document.body.style.overflow = "auto";
+} 
+
+// open div for model catalog registration
+function displayModelRegistrationDiv() {
+    document.getElementById("overlaywrappermodelregister").style.display = "block";
+    document.getElementById("mainDiv").style.pointerEvents = "none";
+    document.body.style.overflow = "hidden";
 } 
 
 // close div for model catalog registration
@@ -382,6 +390,7 @@ function checkConditions(){
                 document.getElementById("opt-res-bar").style.background = "green";  
                 document.getElementById("opt-res-bar").innerHTML = data['run_sim']['message'];  
                 document.getElementById("down-sim-btn").disabled = false;  
+                document.getElementById("reg-model-btn").disabled = false;
                 document.getElementById("run-sim-btn").disabled = false;  
 
                 if (data['sim_flag']['status']){
@@ -398,6 +407,7 @@ function checkConditions(){
                 document.getElementById("opt-res-bar").innerHTML = data['run_sim']['message'];  
                 document.getElementById("run-sim-div").style.backgroundColor='rgba(255, 255, 255, 0.06)';
                 document.getElementById("down-sim-btn").disabled = true;  
+                document.getElementById("reg-model-btn").disabled = true;
                 document.getElementById("del-sim-btn").disabled = true;  
                 document.getElementById("run-sim-btn").disabled = true;  
                 document.getElementById("opt-fetch-btn").disabled = false;  
@@ -882,4 +892,8 @@ function manageOptSetInput(){
             runtime.required = true;
         }
     }
+}
+
+function registerModel() {
+    // TODO: Move lines 95 to 109 here?
 }
