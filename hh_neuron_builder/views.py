@@ -1489,6 +1489,7 @@ def get_data_model_catalog(request, exc="", ctx=""):
     mc = ModelCatalog(token=access_token)
     
     # retrieve UUID of chosen optimized model
+    # TODO for Luca
     opt_mod_uuid = "01284a1d-6fd3-4cc0-8fa7-41eada65d9d9"    # as example
     
     opt_model = mc.get_model(model_id=opt_mod_uuid)
@@ -1505,8 +1506,17 @@ def register_model_catalog(request, exc="", ctx=""):
     mc = ModelCatalog(token=access_token)
     MCapp_navID = mc.exists_in_collab_else_create(collab_id=TARGET_COLLAB_ID)
     
-    # TODO: fetch data from form fields and populate below
-    model_id = mc.register_model(app_id="395557", name="IGNORE - Test Model - Model_1",
+    # move local model zip file to collab storage - if required
+    collab_folder = "HHNB_UseCase/{}/{}_{}".format(datetime.now().strftime("%Y-%m-%d"),model_name.replace(" ", "_"), datetime.now().strftime("%Y%m%d-%H%M%S"))
+    data_store = CollabDataStore(collab_id=storage_collab_id,
+                                 base_folder=collab_folder,
+                                 auth=test_library.auth)
+    data_store.authorize(mc.auth)
+    data_store.collab_id = TARGET_COLLAB_ID
+    collab_path = data_store.upload_data([local_model_zip_path]) # keep as list
+    
+    # TODO: fetch data from form fields and populate below - similar to lines 268 to 281 of workflow.js
+    model_id = mc.register_model(app_id=MCapp_navID, name="IGNORE - Test Model - Model_1",
                 author={"family_name": "Appukuttan", "given_name": "Shailesh"}, organization="HBP-SP6",
                 private=False, cell_type="hippocampus CA1 pyramidal cell", model_scope="single cell",
                 abstraction_level="spiking neurons", brain_region="basal ganglia", species="Mus musculus",
@@ -1514,4 +1524,5 @@ def register_model_catalog(request, exc="", ctx=""):
                 description="This is a test entry",
                 instances=[{"source":"<<model_CSCS_download_url>>","version":"1.0", "parameters":""}])
     
-    print("https://collab.humanbrainproject.eu/#/collab/{}/nav/{}?state=model.{}".format(str(TARGET_COLLAB_ID),str(MCapp_navID), model_id))
+    model_path_on_catalog = "https://collab.humanbrainproject.eu/#/collab/{}/nav/{}?state=model.{}".format(str(TARGET_COLLAB_ID),str(MCapp_navID), model_id)
+    # TODO: display above path to user on Success

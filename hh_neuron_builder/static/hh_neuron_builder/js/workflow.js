@@ -92,21 +92,6 @@ $(document).ready(function(){
         closePleaseWaitDiv();
     });
 
-    //manage form to register model in model catalog
-    var $modelRegisterForm = $('#modelRegisterForm');
-    $formrunparam.submit(function(e){
-        e.preventDefault();
-        $.post('/hh-neuron-builder/register-model-catalog/' + req_pattern + '/', $(this).serialize(), function(response){
-            if (response['response'] == "KO"){
-                openErrorDiv("There was some error! (What error?!)", 'error');
-                checkConditions();
-            } else {
-                checkConditions();
-                closeModelRegistrationDiv();
-            }
-        },'json');
-        return false;
-    });
 
     // assign functions to buttons' click
     // manage top bar buttons
@@ -917,5 +902,19 @@ function manageOptSetInput(){
 }
 
 function registerModel() {
-    // TODO: Move lines 95 to 109 here?
+    //manage form to register model in model catalog
+    var $modelRegisterForm = $('#modelRegisterForm');
+    $formrunparam.submit(function(e){
+        e.preventDefault();
+        $.post('/hh-neuron-builder/register-model-catalog/' + req_pattern + '/', $(this).serialize(), function(response){
+            if (response['response'] == "KO"){
+                openErrorDiv("There was some error! (What error?!)", 'error');
+                checkConditions();
+            } else {
+                checkConditions();
+                closeModelRegistrationDiv();
+            }
+        },'json');
+        return false;
+    });
 }
