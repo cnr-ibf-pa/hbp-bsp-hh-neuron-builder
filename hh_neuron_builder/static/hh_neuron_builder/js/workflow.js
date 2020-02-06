@@ -270,7 +270,7 @@ function displayModelRegistrationDiv() {
             document.getElementById("authorLastName").value = data["author"]["family_name"]
             document.getElementById("ownerFirstName").value = data["owner"]["given_name"]
             document.getElementById("ownerLastName").value = data["owner"]["famile_name"]
-            // document.getElementById("modelLicense").value = data[""] # not returned from API
+            document.getElementById("modelLicense").value = "CC BY" // default license
             document.getElementById("modelPrivate").value = data["private"]
             document.getElementById("modelOrganization").value = data["organization"]
             document.getElementById("modelSpecies").value = data["species"]
