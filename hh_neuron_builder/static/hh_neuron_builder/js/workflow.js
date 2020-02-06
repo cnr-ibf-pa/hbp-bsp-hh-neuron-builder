@@ -904,7 +904,7 @@ function manageOptSetInput(){
 function registerModel() {
     //manage form to register model in model catalog
     var $modelRegisterForm = $('#modelRegisterForm');
-    $formrunparam.submit(function(e){
+    $modelRegisterForm.submit(function(e){
         e.preventDefault();
         $.post('/hh-neuron-builder/register-model-catalog/' + req_pattern + '/', $(this).serialize(), function(response){
             if (response['response'] == "KO"){
