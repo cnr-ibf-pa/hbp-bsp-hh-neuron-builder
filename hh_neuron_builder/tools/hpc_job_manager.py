@@ -257,7 +257,8 @@ class Unicore:
                         "Nodes": str(node_num), \
                         "CPUsPerNode": str(core_num), \
                         "Runtime": runtime, \
-                        "NodeConstraints": "mc",
+                        "Memory": "4G", \
+                        "NodeConstraints": "mc"
                     },
                 }
 
@@ -831,6 +832,7 @@ class OptFolderManager:
             with open(os.path.join(fin_dest_dir, joblaunchname), 'w') as f:
                 f.write('#!/bin/bash -l\n')
                 f.write('\n')
+                f.write('mkdir logs\n')
                 f.write('#SBATCH --job-name=bluepyopt_ipyparallel\n')
                 f.write('#SBATCH --error=logs/ipyparallel_%j.log\n')
                 f.write('#SBATCH --output=logs/ipyparallel_%j.log\n')
@@ -845,7 +847,7 @@ class OptFolderManager:
                 f.write('set -e\n')
                 f.write('set -x\n')
                 f.write('\n')
-                f.write('module purge all;export MODULEPATH=/users/bp000178/ich002/software/daint/'+\
+                f.write('export MODULEPATH=/users/bp000178/ich002/software/daint/'+\
                     'local-20191129103029/share/modules:$MODULEPATH;module load bpopt\n')
                 f.write('\n')
                 f.write('export USEIPYP=1\n')
