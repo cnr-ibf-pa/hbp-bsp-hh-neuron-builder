@@ -300,7 +300,7 @@ function checkConditions(){
             document.getElementById("runtime").value = data["opt_set"]["opt_sub_param_dict"]["runtime"]; 
             document.getElementById("gen-max").value = data["opt_set"]["opt_sub_param_dict"]["number_of_generations"]; 
 
-            if (data['opt_res']['status']){
+            if (data['opt_res_files']['status']){
                 document.getElementById('down-opt-btn').disabled = false;
             } else {
                 document.getElementById('down-opt-btn').disabled = true;
