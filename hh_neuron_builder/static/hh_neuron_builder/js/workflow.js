@@ -624,11 +624,16 @@ function displayJobInfo() {
 
 
                     if (crr_job_json['job_stage'] == "COMPLETED" || 
-                            crr_job_json['job_stage'] == "SUCCESSFUL") {
+                            crr_job_json['job_stage'] == "SUCCESSFUL" || 
+                            crr_job_json['job_stage'] == "FAILED") {
+                        console.log(crr_job_json['job_stage'])
                         cell3.style.color = "#00802b";
                         cell3.style.fontWeight = "bolder";
                         cell3.style.fontSize = "14px";
                         job_download_button2.disabled = false;
+                        if (crr_job_json['job_stage'] == "FAILED"){
+                            cell3.style.color = "#DD9900";
+                        }
                     } else {
                         cell3.style.color = "#DD9900";
                         cell3.style.fontWeight = "bolder";
@@ -672,7 +677,7 @@ function closeJobInfoDiv() {
 function downloadJob(jobid) {
     displayPleaseWaitDiv();
     closeJobInfoDiv();
-    changeMsgPleaseWaitDiv("Downloading job and analysing data.<br>This operation may take several minutes.");
+    changeMsgPleaseWaitDiv("Downloading job results.<br>This operation may take several minutes.");
     $.getJSON('/hh-neuron-builder/download-job/' + jobid + '/' + req_pattern + '/', function(data){
         if (data["response"] == "KO"){
             closePleaseWaitDiv();

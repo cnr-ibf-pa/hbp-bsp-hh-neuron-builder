@@ -781,7 +781,7 @@ def check_cond_exist(request, exc="", ctx=""):
             "run_sim":{"status": False, "message":""}, \
             "opt_flag":{"status": False}, \
             "sim_flag":{"status": False}, \
-            'opt_res': {"status": False}, \
+     #       'opt_res': {"status": False}, \
             'opt_res_files': {"status": False}, \
             }
 
@@ -817,13 +817,13 @@ def check_cond_exist(request, exc="", ctx=""):
         response['run_sim']['message'] = resp_sim['message']
 
     # check if optimization results zip file exists
-    for i in os.listdir(res_dir):
-        if i.endswith('.zip'):
-            response['opt_res']['status'] = True
-            break
+    #for i in os.listdir(res_dir):
+    #    if i.endswith('.zip'):
+    #        response['opt_res']['status'] = True
+    #        break
 
     # check if ANY optimization results zip file exists
-    for i in os.listdir(os.path.dirname(res_dir)):
+    for i in os.listdir(res_dir):
         if i.endswith('_opt_res.zip'):
             response['opt_res_files']['status'] = True
             break
