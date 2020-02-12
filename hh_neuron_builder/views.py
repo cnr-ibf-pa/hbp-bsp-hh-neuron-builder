@@ -781,7 +781,8 @@ def check_cond_exist(request, exc="", ctx=""):
             "run_sim":{"status": False, "message":""}, \
             "opt_flag":{"status": False}, \
             "sim_flag":{"status": False}, \
-            'opt_res': {"status": False}, \
+     #       'opt_res': {"status": False}, \
+            'opt_res_files': {"status": False}, \
             }
 
     if not os.path.exists(request.session[exc]['user_dir']):
@@ -816,10 +817,17 @@ def check_cond_exist(request, exc="", ctx=""):
         response['run_sim']['message'] = resp_sim['message']
 
     # check if optimization results zip file exists
+    #for i in os.listdir(res_dir):
+    #    if i.endswith('.zip'):
+    #        response['opt_res']['status'] = True
+    #        break
+
+    # check if ANY optimization results zip file exists
     for i in os.listdir(res_dir):
-        if i.endswith('.zip'):
-            response['opt_res']['status'] = True
+        if i.endswith('_opt_res.zip'):
+            response['opt_res_files']['status'] = True
             break
+
 
     # check if optimization has been submitted
     if os.path.exists(os.path.join(dest_dir, \
@@ -1092,7 +1100,7 @@ def download_job(request, job_id="", exc="", ctx=""):
 
 	resp = hpc_job_manager.Unicore.fetch_job_results(hpc = hpc_sys_fetch, \
                 job_url=job_url, dest_dir=opt_res_dir, \
-                token = "Bearer " + access_token, proxies=PROXIES)
+                token = "Bearer " + access_token, proxies=PROXIES, wf_id=wf_id)
 
     elif hpc_sys_fetch == "SA-CSCS":
         PROXIES=settings.PROXIES
@@ -1101,7 +1109,7 @@ def download_job(request, job_id="", exc="", ctx=""):
         access_token = get_access_token(request.user.social_auth.get())
 	resp = hpc_job_manager.Unicore.fetch_job_results(hpc = hpc_sys_fetch, \
                 job_url=str(job_url), dest_dir=opt_res_dir, \
-                token = "Bearer " + access_token, proxies=PROXIES)
+                token = "Bearer " + access_token, proxies=PROXIES, wf_id=wf_id)
 
     return HttpResponse(json.dumps(resp), content_type="application/json") 
 
