@@ -260,7 +260,6 @@ class Unicore:
                         "Nodes": str(node_num), \
                         "CPUsPerNode": str(core_num), \
                         "Runtime": runtime, \
-                        "Memory": "4G", \
                         "NodeConstraints": "mc"
                     },
                 }
