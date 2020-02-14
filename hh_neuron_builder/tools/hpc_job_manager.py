@@ -195,6 +195,9 @@ class Nsg:
             shutil.remove(fname)
 
         shutil.make_archive(fname, 'zip', opt_res_dir)
+        
+        OptFolderManager.create_opt_res_zip(fin_folder=opt_res_dir, \
+                filetype="", wf_id=wf_id)
 
         return ""
 
@@ -257,7 +260,7 @@ class Unicore:
                         "Nodes": str(node_num), \
                         "CPUsPerNode": str(core_num), \
                         "Runtime": runtime, \
-                        "NodeConstraints": "mc",
+                        "NodeConstraints": "mc"
                     },
                 }
 
@@ -374,7 +377,8 @@ class Unicore:
         return job_info_dict
 
     @classmethod
-    def fetch_job_results(cls, hpc="", job_url="", token="", dest_dir="", proxies={}):
+    def fetch_job_results(cls, hpc="", job_url="", token="", dest_dir="", \
+            proxies={}, wf_id=""):
         """
         """
         # create destination dir if not existing
@@ -415,6 +419,8 @@ class Unicore:
                         with open(os.path.join(dest_dir, f), "w") as local_file:
                             local_file.write(content)
                         local_file.close()
+        OptFolderManager.create_opt_res_zip(fin_folder=dest_dir, \
+                filetype="optres", wf_id=wf_id)
 
         return ""
     
@@ -535,22 +541,28 @@ class OptFolderManager:
     """
     """
     @classmethod
-    def create_res_zip(cls, fin_folderi = "", filetype = ""):
+    def create_opt_res_zip(cls, fin_folder="", filetype="", wf_id=""):
         """
         Create a to-be-downloaded zip in results folder
         """
-        print("zipping results")
+
         # if a zip file is already present do nothing
-        if filetype == "optres":
-            listdir = os.listdir(fin_folder) 
-            fin_list = [i for i in listdir if not i.endswith(".zip")]
-            if len(listdir) == len(fin_list):
-                zipname == os.path.join(fin_folder, "opt_res.zip")
-                foo = zipfile.ZipFile(zipname, 'w', zipfile.ZIP_DEFLATED)
-                for j in fin_list:
-                    foo.write(os.path.join(fin_folder, j), j)
-                    foo.close()
-        return 
+        listdir = os.listdir(fin_folder) 
+        archive_to = os.path.join(fin_folder, "..", wf_id + "_opt_res")
+        
+        if len(listdir) > 0:
+            parent_folder = os.path.dirname(fin_folder)
+            opt_fold = os.path.basename(fin_folder)
+            zfFileName = wf_id + "_opt_res"
+            zfName = os.path.join(parent_folder, zfFileName + ".zip")
+            zipf = zipfile.ZipFile(zfName, 'w', zipfile.ZIP_DEFLATED)
+            for root, dirs, files in os.walk(fin_folder):
+                for f in files:
+                    f_wrt = os.path.join(root, f)
+                    f_wrt_fin = f_wrt.replace(fin_folder, os.path.join(parent_folder, zfFileName))
+                    zipf.write(f_wrt, f_wrt_fin.replace(parent_folder, '', 1))
+            return True
+        return False
             
         
     @classmethod
@@ -831,17 +843,23 @@ class OptFolderManager:
             with open(os.path.join(fin_dest_dir, joblaunchname), 'w') as f:
                 f.write('#!/bin/bash -l\n')
                 f.write('\n')
+                f.write('mkdir logs\n')
                 f.write('#SBATCH --job-name=bluepyopt_ipyparallel\n')
                 f.write('#SBATCH --error=logs/ipyparallel_%j.log\n')
                 f.write('#SBATCH --output=logs/ipyparallel_%j.log\n')
                 f.write('#SBATCH --partition=normal\n')
                 f.write('#SBATCH --constraint=mc\n')
+                #f.write('#SBATCH --mem=10GB\n')
+                f.write('\n')
+                f.write('export PMI_NO_FORK=1\n')
+                f.write('export PMI_NO_PREINITIALIZE=1\n')
+                f.write('export PMI_MMAP_SYNC_WAIT_TIME=300\n')
                 f.write('\n')
                 f.write('set -e\n')
                 f.write('set -x\n')
                 f.write('\n')
                 f.write('export MODULEPATH=/users/bp000178/ich002/software/daint/'+\
-                    'local-20181022101238/share/modules:$MODULEPATH;module load bpopt\n')
+                    'local-20191129103029/share/modules:$MODULEPATH;module load bpopt\n')
                 f.write('\n')
                 f.write('export USEIPYP=1\n')
                 f.write('export IPYTHONDIR="`pwd`/.ipython"\n')
