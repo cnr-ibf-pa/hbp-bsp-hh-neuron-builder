@@ -31,7 +31,7 @@ $(document).ready(function(){
                 img_div.append(spk_img);
                 img_div.append(mor_img);
                 $("#" + index + 'a').append(img_div);
-                $('#' + index + 'a').append("<div style='max-width:40%;padding:5px;font-size:13px'>" + formatDescription(e['meta']['description']) + "</div>");
+                $('#' + index + 'a').append("<div style='max-width:40%;padding:5px;font-size:13px'>" + formatDescription(e['meta']) + "</div>");
                 spk_img.onload = function(){
                     counter += 1;
                     if (counter == 2 * data.length){
@@ -92,7 +92,8 @@ function displayPleaseWaitDiv(message="") {
 }
 
 // Format description
-function formatDescription(description = ""){
+function formatDescription(meta = ""){
+    var description = meta['description']
     var indexes = [];
     var all_strings = [];
     var final_string = "";
@@ -135,6 +136,7 @@ function formatDescription(description = ""){
             }
         }
     }
+    final_string_meta_app = final_string_meta_app + "<br><strong>" + "id : " + "</strong>" + meta["id"]
     if (final_string_meta_app.length > 1){
         final_string = final_string + final_string_meta_title + final_string_meta_app;
     }
