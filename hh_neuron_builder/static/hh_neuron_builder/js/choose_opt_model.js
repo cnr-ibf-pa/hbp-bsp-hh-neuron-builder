@@ -10,10 +10,12 @@ $(document).ready(function(){
         var counter = 0;
         $.each(data, function(idx, val){
             $.each(val, function(index, e){
-                $("#sub-title-div" ).after("<div  id=" + index + 
-                        " class='model-info-div' style='width:100%;cursor:pointer'></div>");
-                $("#" + index).append("<div id=" + index + " class='model-info-div-title'>" + e['meta']['species'] + ' > ' + e['meta']['brain_region'] + ' > ' +  e['meta']['cell_type'] + "</div>");
-                $("#" + index).append("<div style='display:flex;' id=" + index + 'a' + " ></div>");
+                var model_uuid = e['meta']["id"];
+                var model_name = index;
+                $("#sub-title-div" ).after("<div  id=" + model_uuid + " name=" +
+                        model_name + " class='model-info-div' style='width:100%; cursor:pointer'></div>");
+                $("#" + model_uuid).append("<div id=" + model_uuid + " class='model-info-div-title'>" + e['meta']['species'] + ' > ' + e['meta']['brain_region'] + ' > ' +  e['meta']['cell_type'] + "</div>");
+                $("#" + model_uuid).append("<div style='display:flex;' id=" + model_uuid + 'a' + " ></div>");
                 var img_div = document.createElement("DIV");
                 var spk_img = document.createElement("IMG");
                 var mor_img = document.createElement("IMG");
@@ -30,8 +32,8 @@ $(document).ready(function(){
                 mor_img.setAttribute("src", mor_url);
                 img_div.append(spk_img);
                 img_div.append(mor_img);
-                $("#" + index + 'a').append(img_div);
-                $('#' + index + 'a').append("<div style='max-width:40%;padding:5px;font-size:13px'>" + formatDescription(e['meta']) + "</div>");
+                $("#" + model_uuid + 'a').append(img_div);
+                $('#' + model_uuid + 'a').append("<div style='max-width:40%;padding:5px;font-size:13px'>" + formatDescription(e['meta']) + "</div>");
                 spk_img.onload = function(){
                     counter += 1;
                     if (counter == 2 * data.length){
@@ -53,10 +55,11 @@ $(document).ready(function(){
 $('body').on('click', '.model-info-div', function(){
     var exc = sessionStorage.getItem("exc", exc) ?  sessionStorage.getItem("exc") : "";
     var ctx = sessionStorage.getItem("ctx", ctx) ? sessionStorage.getItem("ctx") : "";
-    var optimization_name = $(this).attr('id');
+    var optimization_name = $(this).attr('name');
+    var optimization_id = $(this).attr('id');
     displayPleaseWaitDiv(message="Fetching model from the HBP Model Catalog");
     $.get("/hh-neuron-builder/fetch-opt-set-file/" + optimization_name +
-            "/" + exc + "/" + ctx + "/", function(){
+            "/" + optimization_id + "/" + exc + "/" + ctx + "/", function(){
                 closePleaseWaitDiv();
                 window.location.href = "/hh-neuron-builder/workflow/";
             });

@@ -192,6 +192,7 @@ def create_wf_folders(request, wf_type="new", exc="", ctx=""):
         request.session[exc].pop('username_fetch', None)
         request.session[exc].pop('password_fetch', None)
         request.session[exc].pop('hpc_sys_fetch', None)
+        request.session[exc].pop('source_opt_id', None)
         request.session[exc]['user_dir'] = os.path.join(workflows_dir, userid, wf_id)
         request.session[exc]['user_dir_data'] = os.path.join(workflows_dir, \
                 userid, wf_id, 'data')
@@ -432,7 +433,7 @@ def copy_feature_files(request, featurefolder = "", exc = "", ctx = ""):
     return HttpResponse(json.dumps(response), content_type="application/json")
 
 # fetch model from dataset
-def fetch_opt_set_file(request, source_opt_name="", exc="", ctx=""):
+def fetch_opt_set_file(request, source_opt_name="", source_opt_id="", exc="", ctx=""):
     """
     Set optimization setting file
     """
@@ -468,6 +469,7 @@ def fetch_opt_set_file(request, source_opt_name="", exc="", ctx=""):
     with open(opt_zip_path, 'wb') as f:
         f.write(r.content)
     request.session[exc]['source_opt_zip'] = opt_zip_path
+    request.session[exc]['source_opt_id'] = source_opt_id
     #shutil.copy(request.session[exc]['source_opt_zip'], user_dir_data_opt)
 
     request.session.save()
@@ -486,6 +488,7 @@ def run_optimization(request, exc="", ctx=""):
     gennum = request.session[exc]['gennum']
     time_info = request.session[exc]['time_info']
     offsize = request.session[exc]['offsize']
+    source_opt_id = request.session[exc]['source_opt_id']
     source_opt_name = request.session[exc]['source_opt_name']
     source_opt_zip = request.session[exc]['source_opt_zip']
     dest_dir = request.session[exc]['user_dir_data_opt_launch']
@@ -576,7 +579,7 @@ def run_optimization(request, exc="", ctx=""):
         wf_job_ids = request.session[exc]['wf_job_ids']
         ids_file = os.path.join(workflows_dir, userid, wf_job_ids)
         ids_dict = {"wf_id" : wf_id, "hpc_sys": hpc_sys, \
-                "time_info": time_info}
+                "time_info": time_info, "source_opt_id": source_opt_id}
 
         # update file containing 
         if os.path.exists(ids_file):
@@ -960,6 +963,8 @@ def upload_files(request, filetype = "", exc = "", ctx = ""):
             shutil.rmtree(final_res_folder)
             os.mkdir(final_res_folder)
             return HttpResponse(json.dumps(check_resp), content_type="application/json") 
+        request.session[exc].pop('source_opt_id', None)
+        request.session[exc]['source_opt_id'] = ""
 
 
     elif filetype == "modsim":

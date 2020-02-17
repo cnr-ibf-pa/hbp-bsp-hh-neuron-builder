@@ -23,7 +23,7 @@ urlpatterns = [
     url(r'^download-zip/(?P<filetype>feat|modsim|optset|optres)/' + req_pattern  +'/$', views.download_zip),
     url(r'^embedded-efel-gui/$', views.embedded_efel_gui),    
     url(r'^embedded-naas/' + req_pattern  + '/$', views.embedded_naas),
-    url(r'^fetch-opt-set-file/(?P<source_opt_name>[_a-zA-Z0-9\-.]*)/' + req_pattern  + '/$', views.fetch_opt_set_file),
+    url(r'^fetch-opt-set-file/(?P<source_opt_name>[_a-zA-Z0-9\-.]*)/(?P<source_opt_id>[_a-zA-Z0-9\-.]*)/' + req_pattern  + '/$', views.fetch_opt_set_file),
     url(r'^fetch-wf-from-storage/(?P<wfid>[0-9]{14}_[0-9]+)/' + req_pattern  + '/$', views.fetch_wf_from_storage),
     url(r'^get_local_optimization_list$', views.get_local_optimization_list),
     url(r'^get_model_list/' + req_pattern  + '$', views.get_model_list),    
