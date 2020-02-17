@@ -2,13 +2,14 @@ var exc = sessionStorage.getItem("exc", exc) ?  sessionStorage.getItem("exc") : 
 var ctx = sessionStorage.getItem("ctx", ctx) ? sessionStorage.getItem("ctx") : "";
 var req_pattern = exc + '/' + ctx;
 
-$(window).bind("pageshow", function() { 
+$(window).bind("pageshow", function() {
     checkConditions();
     closeParameterDiv();
     closeFetchParamDiv();
     closeUploadDiv();
     closePleaseWaitDiv();
     closeJobInfoDiv();
+    closeModelRegistrationDiv();
 });
 
 $( "#mainDiv" ).focus(function() {
@@ -91,6 +92,7 @@ $(document).ready(function(){
         closePleaseWaitDiv();
     });
 
+
     // assign functions to buttons' click
     // manage top bar buttons
     document.getElementById("wf-btn-home").onclick = goHome;
@@ -155,6 +157,10 @@ $(document).ready(function(){
     //manage button for refreshing job list
     document.getElementById("refresh-job-list-btn").onclick = refreshJobInfoDiv;
 
+    //manage model catalog registration
+    document.getElementById("reg-model-btn").onclick = displayModelRegistrationDiv;
+    document.getElementById("cancel-model-register-btn").onclick = closeModelRegistrationDiv;
+    document.getElementById("register-model-btn").onclick = registerModel;
 });
 
 
@@ -244,6 +250,42 @@ function closeParameterDiv() {
 // close expiration div 
 function closeExpirationDiv() {
     document.getElementById("overlaywrapperexpiration").style.display = "none";
+    document.getElementById("mainDiv").style.pointerEvents = "auto";
+    document.body.style.overflow = "auto";
+} 
+
+// open div for model catalog registration
+function displayModelRegistrationDiv() {
+    document.getElementById("overlaywrappermodelregister").style.display = "block";
+    document.getElementById("mainDiv").style.pointerEvents = "none";
+    document.body.style.overflow = "hidden";
+
+    $.getJSON("/hh-neuron-builder/get-data-model-catalog/" + req_pattern, function(data){
+        if (data['response'] != "OK"){
+            openErrorDiv("There was some error here! (What error?!)", 'error');
+        } else {
+            // TODO: populate default values for form fields with returned model JSON info
+            document.getElementById("modelName").value = data["name"]
+            document.getElementById("authorFirstName").value = data["author"]["given_name"]
+            document.getElementById("authorLastName").value = data["author"]["family_name"]
+            document.getElementById("ownerFirstName").value = data["owner"]["given_name"]
+            document.getElementById("ownerLastName").value = data["owner"]["famile_name"]
+            document.getElementById("modelLicense").value = "CC BY" // default license
+            document.getElementById("modelPrivate").value = data["private"]
+            document.getElementById("modelOrganization").value = data["organization"]
+            document.getElementById("modelSpecies").value = data["species"]
+            document.getElementById("modelBrainRegion").value = data["brain_region"]
+            document.getElementById("modelCellType").value = data["cell_type"]
+            document.getElementById("modelScope").value = data["model_scope"]
+            document.getElementById("modelAbstraction").value = data["abstraction_level"]
+            document.getElementById("modelDescription").value = data["description"]
+        }
+    });
+} 
+
+// close div for model catalog registration
+function closeModelRegistrationDiv() {
+    document.getElementById("overlaywrappermodelregister").style.display = "none";
     document.getElementById("mainDiv").style.pointerEvents = "auto";
     document.body.style.overflow = "auto";
 } 
@@ -355,6 +397,7 @@ function checkConditions(){
                 document.getElementById("opt-res-bar").style.background = "green";  
                 document.getElementById("opt-res-bar").innerHTML = data['run_sim']['message'];  
                 document.getElementById("down-sim-btn").disabled = false;  
+                document.getElementById("reg-model-btn").disabled = false;
                 document.getElementById("run-sim-btn").disabled = false;  
 
                 if (data['sim_flag']['status']){
@@ -371,6 +414,7 @@ function checkConditions(){
                 document.getElementById("opt-res-bar").innerHTML = data['run_sim']['message'];  
                 document.getElementById("run-sim-div").style.backgroundColor='rgba(255, 255, 255, 0.06)';
                 document.getElementById("down-sim-btn").disabled = true;  
+                document.getElementById("reg-model-btn").disabled = true;
                 document.getElementById("del-sim-btn").disabled = true;  
                 document.getElementById("run-sim-btn").disabled = true;  
                 document.getElementById("opt-fetch-btn").disabled = false;  
@@ -862,3 +906,20 @@ function manageOptSetInput(){
     }
 }
 
+function registerModel() {
+    //manage form to register model in model catalog
+    var $modelRegisterForm = $('#modelRegisterForm');
+    $modelRegisterForm.submit(function(e){
+        e.preventDefault();
+        $.post('/hh-neuron-builder/register-model-catalog/' + req_pattern + '/', $(this).serialize(), function(response){
+            if (response['response'] == "KO"){
+                openErrorDiv("There was some error! (What error?!)", 'error');
+                checkConditions();
+            } else {
+                checkConditions();
+                closeModelRegistrationDiv();
+            }
+        },'json');
+        return false;
+    });
+}
