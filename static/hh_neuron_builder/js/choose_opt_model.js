@@ -11,7 +11,7 @@ $(document).ready(function(){
         $.each(data, function(idx, val){
             $.each(val, function(index, e){
                 $("#sub-title-div" ).after("<div  id=" + index + 
-                        " class='model-info-div' style='width:100%;'></div>");
+                        " class='model-info-div' style='width:100%;cursor:pointer'></div>");
                 $("#" + index).append("<div id=" + index + " class='model-info-div-title'>" + e['meta']['species'] + ' > ' + e['meta']['brain_region'] + ' > ' +  e['meta']['cell_type'] + "</div>");
                 $("#" + index).append("<div style='display:flex;' id=" + index + 'a' + " ></div>");
                 var img_div = document.createElement("DIV");
