@@ -86,14 +86,14 @@ def string_for_log(page_name, request, page_spec_string = ''):
         HC = request.META['HTTP_COOKIE']
         SN = request.META['SERVER_NAME']
         RA = request.META['REMOTE_ADDR']
-        CC = request.META['CSRF_COOKIE']
+        #CC = request.META['CSRF_COOKIE']
         final_dict['PAGE'] = PAGE_NAME
         final_dict['QS'] = QS
         final_dict['HUA'] = HUA
         final_dict['HC'] = HC
         final_dict['SN'] = SN
         final_dict['RA'] = RA
-        final_dict['CC'] = CC
+        #final_dict['CC'] = CC
     else:
         PAGE_NAME = RU
         final_dict['PAGE'] = PAGE_NAME
