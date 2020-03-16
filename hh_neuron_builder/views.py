@@ -12,6 +12,8 @@ import shutil
 import tarfile
 import datetime
 import requests
+import inspect
+import time
 
 # import django libs
 from django.conf import settings
@@ -52,13 +54,11 @@ accesslogger = logging.getLogger('hhnb_access.log')
 accesslogger.addHandler(logging.FileHandler('/var/log/bspg/hhnb_access.log'))
 accesslogger.setLevel(logging.DEBUG)
 
-
 @login_required(login_url="/login/hbp/")
 def home(request):
     """
     Serving home page for "hh neuron builder" application
     """
-    
     ctx = request.GET.get('ctx', None)
 
     if not ctx:
@@ -152,7 +152,11 @@ def initialize(request, exc = "", ctx = ""):
     request.session[exc]['opt_sub_param_file'] = 'opt_sub_param.json'
     request.session[exc]['sim_run_flag_file'] = 'sim_run_flag.txt'
     request.session[exc]['wf_job_ids'] = 'wf_job_ids.json'
-
+    request.session[exc]['mod_clb_id'] = '79183'
+    request.session[exc]['mod_clb_url'] = \
+            'https://collab.humanbrainproject.eu/#/collab/79183/nav/535962?state=uuid%3D'
+    request.session[exc]['mod_clb_user'] = 'test116'
+    
     accesslogger.info(resources.string_for_log('home', request))
 
     request.session.save()
@@ -194,6 +198,7 @@ def create_wf_folders(request, wf_type="new", exc="", ctx=""):
         request.session[exc].pop('password_fetch', None)
         request.session[exc].pop('hpc_sys_fetch', None)
         request.session[exc].pop('source_opt_id', None)
+        request.session[exc].pop('fetch_opt_uuid', None)
         request.session[exc]['user_dir'] = os.path.join(workflows_dir, userid, wf_id)
         request.session[exc]['user_dir_data'] = os.path.join(workflows_dir, \
                 userid, wf_id, 'data')
@@ -964,8 +969,8 @@ def upload_files(request, filetype = "", exc = "", ctx = ""):
             shutil.rmtree(final_res_folder)
             os.mkdir(final_res_folder)
             return HttpResponse(json.dumps(check_resp), content_type="application/json") 
-        request.session[exc].pop('source_opt_id', None)
         request.session[exc]['source_opt_id'] = ""
+        request.session.save()
 
 
     elif filetype == "modsim":
@@ -980,6 +985,7 @@ def upload_files(request, filetype = "", exc = "", ctx = ""):
             for k in filename_list:
                 os.remove(os.path.join(final_res_folder, k.name))
             return HttpResponse(json.dumps({"response":"KO", "message":msg}), content_type="application/json") 
+        request.session['fetch_opt_uuid'] = ""
 
     request.session.save()
     
@@ -1076,7 +1082,7 @@ def download_job(request, job_id="", exc="", ctx=""):
     #
     if not os.path.exists(opt_res_dir):
         return HttpResponse(json.dumps({"response":"KO", \
-            "message": "The workflow folder does not exist anymore. \
+            "message": "The workflow session has expired. \
             <br> Please start a new workflow or fetch a previous one."}), \
             content_type="application/json") 
     # remove folder with current zip file
@@ -1136,7 +1142,7 @@ def run_analysis(request, exc="", ctx=""):
     
     if not os.path.exists(output_fetched_file):
         msg = "No ouptut file was generated in the optimization process. \
-                Check your optimization settings."    
+               Check your optimization settings."    
         return HttpResponse(json.dumps({"response":"KO", "message": msg}), content_type="application/json")
 
     
@@ -1265,7 +1271,7 @@ def run_analysis(request, exc="", ctx=""):
     return HttpResponse(json.dumps(resp), content_type="application/json")
 
 
-def zip_sim(request, exc="", ctx=""):
+def zip_sim(request, jobid="", exc="", ctx=""):
     user_dir_res_opt = request.session[exc]['user_dir_results_opt']
     user_dir_sim_run = request.session[exc]['user_dir_sim_run']
     opt_res_mod_folder = request.session.get("opt_res_mod_folder", "")
@@ -1355,6 +1361,23 @@ def zip_sim(request, exc="", ctx=""):
                         final_zip_fname.replace(user_dir_sim_run, '', 1))
 
     foo.close()
+
+    wf_dir = request.session[exc]['workflows_dir']
+    userid = request.session[exc]['userid']
+    wf_job_ids = request.session[exc]['wf_job_ids']
+    
+    # open file containing job info for current user
+    job_ids_file = os.path.join(wf_dir, userid, wf_job_ids)
+    with open(job_ids_file, 'r') as f:
+        user_job_ids = json.load(f)
+    f.close()
+    if jobid in user_job_ids and "source_opt_id" in user_job_ids[jobid]:
+        fetch_opt_uuid = user_job_ids[jobid]["source_opt_id"]
+    else:
+        fetch_opt_uuid = ""
+
+    request.session[exc]['fetch_opt_uuid'] = fetch_opt_uuid
+    request.session.save()
 
     return HttpResponse(json.dumps({"response":"OK"}), content_type="application/json")
     
@@ -1496,46 +1519,137 @@ def wf_storage_list(request, exc="", ctx=""):
 
 
 def get_data_model_catalog(request, exc="", ctx=""):
-    # retrieve access_token
-    access_token = get_access_token(request.user.social_auth.get())
-    
-    mc = ModelCatalog(token=access_token)
-    
-    # retrieve UUID of chosen optimized model
-    # TODO for Luca
-    opt_mod_uuid = "01284a1d-6fd3-4cc0-8fa7-41eada65d9d9"    # as example
-    
-    opt_model = mc.get_model(model_id=opt_mod_uuid)
-    # TODO: use above output to populate form fields
+
+    fetch_opt_uuid = request.session[exc].pop('fetch_opt_uuid', None)
+
+    model_name = "hhnb_" + request.session[exc]['wf_id']
+
+    data = {}
+    if not fetch_opt_uuid:
+        data["name"] = model_name
+        data["response"] = "KO"
+        data["base_model"] = ""
+        return HttpResponse(json.dumps(data), content_type="application/json")
+    else:
+        # retrieve access_token
+        access_token = get_access_token(request.user.social_auth.get())
+        mc = ModelCatalog(token=access_token)
+
+        # retrieve UUID of chosen optimized model
+        try:
+            base_model_data = mc.get_model(model_id=fetch_mod_uuid)
+            data["response"] = "OK"
+            data["base_model"] = base_model_data["name"]
+        except:
+            data["response"] = "KO"
+            data["base_model"] = "" 
+        
+        data["name"] = model_name
+
+        return HttpResponse(json.dumps(data), content_type="application/json")
 
 
 def register_model_catalog(request, exc="", ctx=""):
-    # retrieve access_token
+
+    # get data from form
+    form_data = request.POST
+    # retrieve model full path
+    sim_dir = request.session[exc]['user_dir_sim_run']
+
+    full_file_path = ""
+    for i in os.listdir(sim_dir):
+        if i.endswith(".zip"):
+            full_file_path = os.path.join(sim_dir, i)
+            break
+
+    if full_file_path == "":
+        return HttpResponse(json.dumps({"response":"KO", "message":"No sim model is present"}), \
+                content_type="application/json")
+
+    # retrieve user's access_token
     access_token = get_access_token(request.user.social_auth.get())
+  
+    # retrieve info 
+    mc_clb_id = request.session[exc]["mod_clb_id"]
+    mc_clb_user = request.session[exc]["mod_clb_user"]
+    mc_clb_url = request.session[exc]['mod_clb_url']
+
+    # retrieve refresh token for accessing destination collab
+    refresh_token = settings.USER_REFRESH_TOKENS[mc_clb_user]['refresh_token']
+
+    # retrieve authorized user access token to access the destination collab storage
+    token_url = settings.HBP_OIDC_TOKEK_URL 
+    SOCIAL_AUTH_HBP_KEY = settings.SOCIAL_AUTH_HBP_KEY
+    SOCIAL_AUTH_HBP_SECRET = settings.SOCIAL_AUTH_HBP_SECRET
+
+    data = {
+        "client_id": SOCIAL_AUTH_HBP_KEY,\
+        "client_secret": SOCIAL_AUTH_HBP_SECRET,\
+        "grant_type":"refresh_token",
+        "refresh_token": refresh_token,
+        }
+
+    response = requests.post(token_url, data=data)
+    clb_user_token = response.json()['access_token']
+
+    # retrieve data from request.session
+    hhnb_storage_folder = "hhnb_wf_model"
     
-    # specify target Collab ID to be used for storage
-    TARGET_COLLAB_ID = "8123"   # as example
+    sc = service_client.Client.new(access_token)
+    ac = service_api_client.ApiClient.new(access_token)
     
+    # retrieve collab related projects
+    project_dict = ac.list_projects(None, None, None, mc_clb_id)
+    project = project_dict['results']
+    storage_root = ac.get_entity_path(project[0]['uuid'])
+    
+    # create final storage folder if it does not exist
+    hhnb_full_storage_path = os.path.join(storage_root, hhnb_storage_folder)
+    crr_zip_storage_path = os.path.join(hhnb_full_storage_path, i) 
+
+    # retrieve 
+    if not sc.exists(str(hhnb_full_storage_path)):
+        sc.mkdir(str(hhnb_full_storage_path))
+    if sc.exists(str(crr_zip_storage_path)):
+        sc.delete(str(crr_zip_storage_path))
+    
+    resp_upload = sc.upload_file(full_file_path, str(crr_zip_storage_path), \
+        "application/zip")
+
+    mod_url = mc_clb_url + resp_upload['uuid']
     mc = ModelCatalog(token=access_token)
-    MCapp_navID = mc.exists_in_collab_else_create(collab_id=TARGET_COLLAB_ID)
-    
-    # move local model zip file to collab storage - if required
-    collab_folder = "HHNB_UseCase/{}/{}_{}".format(datetime.now().strftime("%Y-%m-%d"),model_name.replace(" ", "_"), datetime.now().strftime("%Y%m%d-%H%M%S"))
-    data_store = CollabDataStore(collab_id=storage_collab_id,
-                                 base_folder=collab_folder,
-                                 auth=test_library.auth)
-    data_store.authorize(mc.auth)
-    data_store.collab_id = TARGET_COLLAB_ID
-    collab_path = data_store.upload_data([local_model_zip_path]) # keep as list
+    MCapp_navID = mc.exists_in_collab_else_create(collab_id=mc_clb_id)
+
+    mod_name = form_data["modelName"] + form_data["modelSuffix"]
+    auth_family_name = form_data["authorLastName"]
+    auth_given_name = form_data["authorFirstName"]
+    organization = form_data["modelOrganization"]
+    cell_type = form_data["modelCellType"]
+    model_scope = form_data["modelScope"]
+    abstraction_level = form_data["modelAbstraction"]
+    brain_region = form_data["modelBrainRegion"]
+    species = form_data["modelSpecies"]
+    own_family_name = form_data["ownerLastName"]
+    own_given_name = form_data["ownerFirstName"]
+    license = form_data["modelLicense"]
+    description = form_data["modelDescription"]
+    private = form_data["modelPrivate"]
+    if private=="true":
+        private_flag = True
+    else:
+        private_flag = False
     
     # TODO: fetch data from form fields and populate below - similar to lines 268 to 281 of workflow.js
-    model_id = mc.register_model(app_id=MCapp_navID, name="IGNORE - Test Model - Model_1",
-                author={"family_name": "Appukuttan", "given_name": "Shailesh"}, organization="HBP-SP6",
-                private=False, cell_type="hippocampus CA1 pyramidal cell", model_scope="single cell",
-                abstraction_level="spiking neurons", brain_region="basal ganglia", species="Mus musculus",
-                owner={"family_name": "Appukuttan", "given_name": "Shailesh"}, project="SP 6.4", license="BSD 3-Clause",
-                description="This is a test entry",
-                instances=[{"source":"<<model_CSCS_download_url>>","version":"1.0", "parameters":""}])
+    model_id = mc.register_model(app_id=str(MCapp_navID), name=mod_name,
+                author={"family_name": auth_family_name, "given_name": auth_given_name}, organization=organization,
+                private=private_flag, cell_type=cell_type, model_scope=model_scope,
+                abstraction_level=abstraction_level, brain_region=brain_region, species=species,
+                owner={"family_name": own_family_name, "given_name": own_given_name}, project="SP 6.4", license=license,
+                description=description,
+                instances=[{"source":mod_url,"version":"1.0", "parameters":""}])
     
-    model_path_on_catalog = "https://collab.humanbrainproject.eu/#/collab/{}/nav/{}?state=model.{}".format(str(TARGET_COLLAB_ID),str(MCapp_navID), model_id)
-    # TODO: display above path to user on Success
+    model_path_on_catalog = "https://collab.humanbrainproject.eu/#/collab/{}/nav/{}?state=model.{}".format(str(mc_clb_id),str(MCapp_navID), model_id)
+    
+    edit_message = "The model was successfully registered in the Model Catalog.<br><br>Model's info and metadata can be edited <a href='" + model_path_on_catalog +"' target='_blank'> here</a>."
+    return HttpResponse(json.dumps({"response":"OK", "message":edit_message}), \
+        content_type="application/json")

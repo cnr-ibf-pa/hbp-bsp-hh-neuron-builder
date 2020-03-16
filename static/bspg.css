@@ -3,6 +3,15 @@
 * {
     box-sizing: border-box;
 }
+
+.min-width-800 {
+    min-width: 800px;
+}
+
+.min-width-900 {
+    min-width: 900px;
+}
+
 .img-container {
     margin-left: 0px;
     float: left;
