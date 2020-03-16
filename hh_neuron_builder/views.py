@@ -443,6 +443,7 @@ def fetch_opt_set_file(request, source_opt_name="", source_opt_id="", exc="", ct
     """
     Set optimization setting file
     """
+
     response = {"response": "OK", "message":""}
 
     #opt_model_path = request.session[exc]['optimization_model_path']
@@ -1537,7 +1538,8 @@ def get_data_model_catalog(request, exc="", ctx=""):
 
         # retrieve UUID of chosen optimized model
         try:
-            base_model_data = mc.get_model(model_id=fetch_mod_uuid)
+            base_model_data = mc.get_model(model_id=fetch_opt_uuid)
+            data = base_model_data
             data["response"] = "OK"
             data["base_model"] = base_model_data["name"]
         except:
@@ -1553,6 +1555,7 @@ def register_model_catalog(request, exc="", ctx=""):
 
     # get data from form
     form_data = request.POST
+
     # retrieve model full path
     sim_dir = request.session[exc]['user_dir_sim_run']
 

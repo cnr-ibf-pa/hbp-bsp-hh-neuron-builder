@@ -20,11 +20,9 @@ $(document).ready(function(){
 });
 
 function closeMsgDiv(){
-    var objId = $(this).attr("id");
-    if (objId == "msg-ok-btn"){
-    toggleElVisibility(displayBlock=["#mainPageDiv"], displayNone=["#overlaywrappermsgnaas"], 
-            eventsNone=[], eventsAuto=["#mainPageDiv"]);
-    }
+    document.getElementById("overlaywrappermsgnaas").style.display = "none";
+    document.getElementById("mainPageDiv").style.pointerEvents = "auto";
+    document.body.style.overflow = "auto";
 }
 
 
@@ -113,7 +111,7 @@ function registerModel() {
     // open please wait div
     toggleElVisibility( displayBlock=["#overlaywrappermsgnaas"], displayNone=['#overlaywrapmodreg'], 
             eventsNone=["#mainPageDiv"], eventsAuto=[]);
-    fillMessageDiv(msg="Please wait ...", msgTag="info", 
+    fillMessageDiv(msg="Please wait ...", msgTag="default", 
             msgTextId="#msgtextnaas", msgDiv="#overlaymsgnaas", waitFlag=true, 
             waitElId="#spinning-wheel-naas", okBtnFlag=false, okBtnId="#msg-ok-btn");
     //manage form to register model in model catalog
