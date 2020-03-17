@@ -23,14 +23,6 @@ function closeMsgDiv(){
     document.getElementById("overlaywrappermsgnaas").style.display = "none";
     document.getElementById("mainPageDiv").style.pointerEvents = "auto";
     document.body.style.overflow = "auto";
-    /*
-    var objId = $(this).attr("id");
-    if (objId == "msg-ok-btn"){
-    toggleElVisibility(displayBlock=["#mainPageDiv"], displayNone=["#overlaywrappermsgnaas"], 
-            eventsNone=[], eventsAuto=["#mainPageDiv"]);
-    document.body.style.overflow = "auto";
-    }
-    */
 }
 
 

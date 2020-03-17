@@ -462,7 +462,6 @@ def fetch_opt_set_file(request, source_opt_name="", source_opt_id="", exc="", ct
 	model_file_dict = json.load(json_file)
 
     request.session[exc]['source_opt_name'] = source_opt_name
-    #request.session[exc]['source_opt_zip'] = os.path.join(opt_model_path, source_opt_name, source_opt_name + '.zip')
 
     for k in model_file_dict:
         crr_k = str(k.keys()[0])
@@ -477,7 +476,6 @@ def fetch_opt_set_file(request, source_opt_name="", source_opt_id="", exc="", ct
         f.write(r.content)
     request.session[exc]['source_opt_zip'] = opt_zip_path
     request.session[exc]['source_opt_id'] = source_opt_id
-    #shutil.copy(request.session[exc]['source_opt_zip'], user_dir_data_opt)
 
     request.session.save()
     return HttpResponse("")
@@ -826,18 +824,11 @@ def check_cond_exist(request, exc="", ctx=""):
 	response['run_sim']['status'] = False
         response['run_sim']['message'] = resp_sim['message']
 
-    # check if optimization results zip file exists
-    #for i in os.listdir(res_dir):
-    #    if i.endswith('.zip'):
-    #        response['opt_res']['status'] = True
-    #        break
-
     # check if ANY optimization results zip file exists
     for i in os.listdir(res_dir):
         if i.endswith('_opt_res.zip'):
             response['opt_res_files']['status'] = True
             break
-
 
     # check if optimization has been submitted
     if os.path.exists(os.path.join(dest_dir, \
@@ -1523,7 +1514,10 @@ def get_data_model_catalog(request, exc="", ctx=""):
 
     fetch_opt_uuid = request.session[exc].pop('fetch_opt_uuid', None)
 
-    model_name = "hhnb_" + request.session[exc]['wf_id']
+    time_info = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
+    userid = request.session[exc]['userid']
+
+    model_name = "hhnb_" + time_info + "_" + userid
 
     data = {}
     if not fetch_opt_uuid:
@@ -1556,6 +1550,11 @@ def register_model_catalog(request, exc="", ctx=""):
     # get data from form
     form_data = request.POST
 
+    if form_data["modelSuffix"] and form_data["modelSuffix"][0]!='-' and form_data["modelSuffix"][0]!='_':
+        mod_name = form_data["modelName"] + '_' + form_data["modelSuffix"]
+    else:
+        mod_name = form_data["modelName"] + form_data["modelSuffix"]
+    
     # retrieve model full path
     sim_dir = request.session[exc]['user_dir_sim_run']
 
@@ -1569,6 +1568,47 @@ def register_model_catalog(request, exc="", ctx=""):
         return HttpResponse(json.dumps({"response":"KO", "message":"No sim model is present"}), \
                 content_type="application/json")
 
+    mc_dir = sim_dir + "_mc"
+    dest_file = os.path.join(mc_dir, i)
+    if os.path.exists(sim_dir + "_mc"):
+        shutil.rmtree(mc_dir)
+    os.makedirs(mc_dir)
+    shutil.copyfile(full_file_path, dest_file)        
+
+    # unzip model file in mc folder
+    final_wf_dir = os.path.splitext(dest_file)[0]
+    mc_mod_name = os.path.splitext(i)[0]
+    zip_ref = zipfile.ZipFile(dest_file, 'r')
+    if os.path.exists(final_wf_dir):
+        shutil.rmtree(final_wf_dir)
+    zip_ref.extractall(mc_dir)
+    zip_ref.close()
+
+    # remove zip file
+    os.remove(dest_file)
+
+    # rename destination folder
+    final_folder = os.path.join(mc_dir, mod_name)
+    orig_folder = os.path.join(mc_dir, mc_mod_name)
+    os.rename(orig_folder, final_folder)
+    
+    # zip final folder with mc name
+    mc_zip_name_full = final_folder + '.zip'
+    mc_zip_name = os.path.basename(final_folder) + ".zip"
+    foo = zipfile.ZipFile(mc_zip_name_full, 'w', zipfile.ZIP_DEFLATED)
+
+    for root, dirs, files in os.walk(final_folder):
+        for d in dirs:
+            if os.listdir(os.path.join(root,d)) == []:
+                crr_zip_filename = os.path.join(root, d)
+                crr_arcname = crr_zip_filename.replace(mc_dir, '', 1)
+                foo.write(os.path.join(root, d), crr_arcname)
+        for f in files:
+            crr_zip_ffilename = os.path.join(root, f)
+            crr_farcname = crr_zip_ffilename.replace(mc_dir, '', 1)
+            foo.write(os.path.join(root, f), crr_farcname)
+    foo.close()
+    
     # retrieve user's access_token
     access_token = get_access_token(request.user.social_auth.get())
   
@@ -1608,22 +1648,19 @@ def register_model_catalog(request, exc="", ctx=""):
     
     # create final storage folder if it does not exist
     hhnb_full_storage_path = os.path.join(storage_root, hhnb_storage_folder)
-    crr_zip_storage_path = os.path.join(hhnb_full_storage_path, i) 
+    storage_mod_name =  os.path.join(hhnb_full_storage_path, mc_zip_name) 
 
-    # retrieve 
+    # create folder in the collab storage if needed
     if not sc.exists(str(hhnb_full_storage_path)):
         sc.mkdir(str(hhnb_full_storage_path))
-    if sc.exists(str(crr_zip_storage_path)):
-        sc.delete(str(crr_zip_storage_path))
-    
-    resp_upload = sc.upload_file(full_file_path, str(crr_zip_storage_path), \
+
+    resp_upload = sc.upload_file(mc_zip_name_full, str(storage_mod_name), \
         "application/zip")
 
     mod_url = mc_clb_url + resp_upload['uuid']
     mc = ModelCatalog(token=access_token)
     MCapp_navID = mc.exists_in_collab_else_create(collab_id=mc_clb_id)
 
-    mod_name = form_data["modelName"] + form_data["modelSuffix"]
     auth_family_name = form_data["authorLastName"]
     auth_given_name = form_data["authorFirstName"]
     organization = form_data["modelOrganization"]
