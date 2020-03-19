@@ -1519,11 +1519,19 @@ def get_data_model_catalog(request, exc="", ctx=""):
 
     model_name = "hhnb_" + time_info + "_" + userid
 
+    headers = {'Authorization': get_auth_header(request.user.social_auth.get())}
+    vf_url = "https://validation-v1.brainsimulation.eu/authorizedcollabparameterrest/?format=json&python_client=true"
+    res = requests.get(vf_url)
+    default_values = res.json()
+
     data = {}
+    data["default_values"] = default_values
+
     if not fetch_opt_uuid:
         data["name"] = model_name
         data["response"] = "KO"
         data["base_model"] = ""
+
         return HttpResponse(json.dumps(data), content_type="application/json")
     else:
         # retrieve access_token
@@ -1533,7 +1541,7 @@ def get_data_model_catalog(request, exc="", ctx=""):
         # retrieve UUID of chosen optimized model
         try:
             base_model_data = mc.get_model(model_id=fetch_opt_uuid)
-            data = base_model_data
+            data["fetched_values"] = base_model_data
             data["response"] = "OK"
             data["base_model"] = base_model_data["name"]
         except:
@@ -1571,8 +1579,9 @@ def register_model_catalog(request, exc="", ctx=""):
     mc_dir = sim_dir + "_mc"
     dest_file = os.path.join(mc_dir, i)
     if os.path.exists(sim_dir + "_mc"):
-        shutil.rmtree(mc_dir)
+        shutil.rmtree(mc_dir, ignore_errors=True)
     os.makedirs(mc_dir)
+
     shutil.copyfile(full_file_path, dest_file)        
 
     # unzip model file in mc folder
@@ -1594,7 +1603,7 @@ def register_model_catalog(request, exc="", ctx=""):
     
     # zip final folder with mc name
     mc_zip_name_full = final_folder + '.zip'
-    mc_zip_name = os.path.basename(final_folder) + ".zip"
+    mc_zip_name = mod_name + ".zip"
     foo = zipfile.ZipFile(mc_zip_name_full, 'w', zipfile.ZIP_DEFLATED)
 
     for root, dirs, files in os.walk(final_folder):
@@ -1656,6 +1665,9 @@ def register_model_catalog(request, exc="", ctx=""):
 
     resp_upload = sc.upload_file(mc_zip_name_full, str(storage_mod_name), \
         "application/zip")
+
+    #return HttpResponse(json.dumps({"response":"OK", "message":"submit again"}), \
+    #    content_type="application/json")
 
     mod_url = mc_clb_url + resp_upload['uuid']
     mc = ModelCatalog(token=access_token)

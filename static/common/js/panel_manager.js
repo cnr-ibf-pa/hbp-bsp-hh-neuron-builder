@@ -32,41 +32,33 @@ function fillMessageDiv(msg="", msgTag="", msgTextId="", msgDiv="",
 // open side div for optimization run parameter settings
 function toggleElVisibility(displayBlock=[], displayNone=[], 
         eventsNone=[], eventsAuto=[]) {
-
     for (var i = 0; i < displayNone.length; i++){
-        console.log(displayNone[i])
-        $(displayNone[i]).css('display', 'none');
+        document.getElementById(displayNone[i]).style.display = "none"
     }
 
     for (var i = 0; i < displayBlock.length; i++){
-        $(displayBlock[i]).css('display', 'block');
+        document.getElementById(displayBlock[i]).style.display = "block"
+        //$(displayBlock[i]).css('display', 'block');
+        $(displayBlock[i]).show();
     }
 
     // manage element visibility
     for (var i = 0; i < eventsNone.length; i++){
-        $(eventsNone[i]).css('pointerEvents', 'none');
+        document.getElementById(eventsNone[i]).style.pointerEvents = "none"
     }
 
     for (var i = 0; i < eventsAuto.length; i++){
-        $(eventsAuto[i]).css('pointerEvents', 'block');
+        document.getElementById(eventsAuto[i]).style.pointerEvents = "auto"
     }
-    
 }
 
 // open side div for optimization run parameter settings
 function closeMessageDiv(onDivListIds, offDivListIds) {
-    console.log("inside here")
     // manage divs visibility
     for (var i = 0; i < offDivListIds.length; i++){
-        console.log(offDivListIds[i])
-        console.log(offDivListIds[i])
-        console.log(offDivListIds[i])
         $(offDivListIds[i]).css('display', 'none');
     }
     for (var i = 0; i < onDivListIds.length; i++){
-        console.log(onDivListIds[i])
-        console.log(onDivListIds[i])
-        console.log(onDivListIds[i])
         $(onDivListIds[i]).css('pointerEvents', 'auto');
     }
     document.body.style.overflow = "auto";

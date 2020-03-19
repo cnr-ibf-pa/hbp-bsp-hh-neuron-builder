@@ -43,8 +43,8 @@ urlpatterns = [
     url(r'^wf-storage-list/' + req_pattern  + '/$', views.wf_storage_list),
     url(r'^workflow/$', views.workflow),    
     url(r'^zip-sim/(?P<jobid>.*)/' + req_pattern  + '$', views.zip_sim),
-    url(r'^get-data-model-catalog/' + req_pattern  + '/$', views.get_data_model_catalog),
-    url(r'^register-model-catalog/' + req_pattern  + '/$', views.register_model_catalog),
+    url(r'^get-data-model-catalog/' + req_pattern  + '$', views.get_data_model_catalog),
+    url(r'^register-model-catalog/' + req_pattern  + '$', views.register_model_catalog),
 ]
 
 if settings.DEBUG:

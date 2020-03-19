@@ -1,6 +1,9 @@
 var exc = sessionStorage.getItem("exc", exc) ?  sessionStorage.getItem("exc") : "";
 var ctx = sessionStorage.getItem("ctx", ctx) ? sessionStorage.getItem("ctx") : "";
 var req_pattern = exc + '/' + ctx;
+var modelFieldMapping = {"model_scope":"modelScope", "cell_type":"modelCellType", 
+        "brain_region":"modelBrainRegion", "organization":"modelOrganization",
+        "abstraction_level":"modelAbstraction", "species":"modelSpecies"};
 
 $(document).ready(function(){
     document.getElementById("back-to-wf-btn").onclick = backToWorkflow;
@@ -20,20 +23,16 @@ $(document).ready(function(){
 });
 
 function closeMsgDiv(){
-    document.getElementById("overlaywrappermsgnaas").style.display = "none";
-    document.getElementById("mainPageDiv").style.pointerEvents = "auto";
-    document.body.style.overflow = "auto";
+    toggleElVisibility(displayBlock=[], displayNone=['overlaywrappermsgnaas'], 
+            eventsNone=[], eventsAuto=["mainPageDiv"]);
 }
 
 
 // open div for model catalog registration
 function displayModelRegistrationDiv() {
-    document.getElementById("overlaywrapmodreg").style.display = "block";
-    document.getElementById("mainPageDiv").style.pointerEvents = "none";
-    document.body.style.overflow = "hidden";
 
-    toggleElVisibility(displayBlock=["#overlaywrappermsgnaas"], displayNone=['#overlaywrapmodreg'], 
-            eventsNone=["#mainPageDiv"], eventsAuto=[]);
+    toggleElVisibility(displayBlock=["overlaywrappermsgnaas"], displayNone=['overlaywrapmodreg'], 
+            eventsNone=["mainPageDiv"], eventsAuto=[]);
     fillMessageDiv(msg="Please wait ...", msgTag="default", 
             msgTextId="#msgtextnaas", msgDiv="#overlaymsgnaas", waitFlag=true, 
             waitElId="#spinning-wheel-naas", okBtnFlag=false, okBtnId="#msg-ok-btn");
@@ -41,6 +40,22 @@ function displayModelRegistrationDiv() {
     $.getJSON("/hh-neuron-builder/get-data-model-catalog/" + req_pattern, function(data){
         document.getElementById("modelName").value = data["name"]
         document.getElementById("modelLicense").value = "CC BY" // default license
+        
+        var keys = Object.keys(modelFieldMapping);
+        var k; 
+        for (k in modelFieldMapping){
+            //var k = keys[i];
+            var field = modelFieldMapping[k];
+            var crr_field = document.getElementById(field);
+            var crr_options = "";
+            var f;
+            for (f in data["default_values"][k]){
+                crr_options += "<option>" + data["default_values"][k][f]  + "</option>"
+            }
+            crr_field.innerHTML = crr_options;
+        }
+        
+        
         if (data['base_model'] == "") {
             document.getElementById("base-model").innerHTML = 
                 "<i>* the original model used for the optimization is not available<\i>"
@@ -50,18 +65,18 @@ function displayModelRegistrationDiv() {
         }
         if (data['response'] == "OK"){
             // TODO: populate default values for form fields with returned model JSON info
-            document.getElementById("authorFirstName").value = data["author"][0]["given_name"]
-            document.getElementById("authorLastName").value = data["author"][0]["family_name"]
-            document.getElementById("ownerFirstName").value = data["owner"][0]["given_name"]
-            document.getElementById("ownerLastName").value = data["owner"][0]["family_name"]
-            document.getElementById("modelPrivate").value = data["private"]
-            document.getElementById("modelOrganization").value = data["organization"]
-            document.getElementById("modelSpecies").value = data["species"]
-            document.getElementById("modelBrainRegion").value = data["brain_region"]
-            document.getElementById("modelCellType").value = data["cell_type"]
-            document.getElementById("modelScope").value = data["model_scope"]
-            document.getElementById("modelAbstraction").value = data["abstraction_level"]
-            document.getElementById("modelDescription").value = data["description"]
+            document.getElementById("authorFirstName").value = data["fetched_values"]["author"][0]["given_name"]
+            document.getElementById("authorLastName").value = data["fetched_values"]["author"][0]["family_name"]
+            document.getElementById("ownerFirstName").value = data["fetched_values"]["owner"][0]["given_name"]
+            document.getElementById("ownerLastName").value = data["fetched_values"]["owner"][0]["family_name"]
+            document.getElementById("modelPrivate").value = data["fetched_values"]["private"]
+            document.getElementById("modelOrganization").value = data["fetched_values"]["organization"]
+            document.getElementById("modelSpecies").value = data["fetched_values"]["species"]
+            document.getElementById("modelBrainRegion").value = data["fetched_values"]["brain_region"]
+            document.getElementById("modelCellType").value = data["fetched_values"]["cell_type"]
+            document.getElementById("modelScope").value = data["fetched_values"]["model_scope"]
+            document.getElementById("modelAbstraction").value = data["fetched_values"]["abstraction_level"]
+            document.getElementById("modelDescription").value = data["fetched_values"]["description"]
         } else {
             // TODO: populate default values for form fields with returned model JSON info
             document.getElementById("authorFirstName").value = ""
@@ -69,25 +84,18 @@ function displayModelRegistrationDiv() {
             document.getElementById("ownerFirstName").value = ""
             document.getElementById("ownerLastName").value = "" 
             document.getElementById("modelPrivate").value = false
-            document.getElementById("modelOrganization").value = "<<empty>>" 
-            document.getElementById("modelSpecies").value = "Undefined"
-            document.getElementById("modelBrainRegion").value = "other"
-            document.getElementById("modelCellType").value = "other"
-            document.getElementById("modelScope").value = "other"
-            document.getElementById("modelAbstraction").value = "other"
             document.getElementById("modelDescription").value = "" 
         }
  
-    toggleElVisibility(displayBlock=["#overlaywrapmodreg"], displayNone=['#overlaywrappermsgnaas'], 
-            eventsNone=["#mainPageDiv"], eventsAuto=[]);
+    toggleElVisibility(displayBlock=["overlaywrapmodreg"], displayNone=['overlaywrappermsgnaas'], 
+            eventsNone=[], eventsAuto=[]);
     });
 } 
 
-// Manage feature files upload button
+// Close model registration div
 function closeModelRegistrationDiv() {
-    document.getElementById("overlaywrapmodreg").style.display = "none";
-    document.getElementById("mainPageDiv").style.pointerEvents = "auto";
-    document.body.style.overflow = "auto";
+    toggleElVisibility(displayBlock=[], displayNone=['overlaywrapmodreg'], 
+            eventsNone=[], eventsAuto=["mainPageDiv"]);
 }
 
 // 
@@ -99,9 +107,11 @@ function backToWorkflow() {
 function registerModel() {
     var checks = checkEditValues(editList=["#authorFirstName", "#authorLastName",
         "#ownerFirstName", "#ownerLastName"]);
+
+    toggleElVisibility(displayBlock=["overlaywrappermsgnaas"], displayNone=['overlaywrapmodreg'], 
+            eventsNone=["mainPageDiv"], eventsAuto=[]);
+
     if (checks["response"] == "KO"){
-        toggleElVisibility(displayBlock=["#overlaywrappermsgnaas"], displayNone=['#overlaywrapmodreg'], 
-            eventsNone=["#mainPageDiv"], eventsAuto=[]);
         fillMessageDiv(msg=checks["message"], msgTag="error", 
             msgTextId="#msgtextnaas", msgDiv="#overlaymsgnaas", waitFlag=fals, 
             waitElId="#spinning-wheel-naas", okBtnFlag=true, okBtnId="#msg-ok-btn");
@@ -109,16 +119,16 @@ function registerModel() {
     }
 
     // open please wait div
-    toggleElVisibility( displayBlock=["#overlaywrappermsgnaas"], displayNone=['#overlaywrapmodreg'], 
-            eventsNone=["#mainPageDiv"], eventsAuto=[]);
     fillMessageDiv(msg="Please wait ...", msgTag="default", 
             msgTextId="#msgtextnaas", msgDiv="#overlaymsgnaas", waitFlag=true, 
             waitElId="#spinning-wheel-naas", okBtnFlag=false, okBtnId="#msg-ok-btn");
+
     //manage form to register model in model catalog
-    var $modelRegisterForm = $('#modelRegisterForm');
-    $modelRegisterForm.submit(function(e){
+    //var $modelRegisterForm = $('#modelRegisterForm');
+    $('#modelRegisterForm').submit(function(e){
+        e.stopImmediatePropagation();
         e.preventDefault();
-        $.post('/hh-neuron-builder/register-model-catalog/' + req_pattern + '/', $(this).serialize(), function(response){
+        $.post('/hh-neuron-builder/register-model-catalog/' + req_pattern , $(this).serialize(), function(response){
             if (response['response'] == "KO"){
                 fillMessageDiv(msg="Some error occurred", msgTag="error",  
                 msgTextId="#msgtextnaas", msgDiv="#overlaymsgnaas", waitFlag=false, 
@@ -128,8 +138,9 @@ function registerModel() {
                 msgTextId="#msgtextnaas", msgDiv="#overlaymsgnaas", waitFlag=false, 
                 waitElId="#spinning-wheel-naas", okBtnFlag=true, okBtnId="#msg-ok-btn");
             }
+            toggleElVisibility( displayBlock=["overlaymsgnaas"], displayNone=['overlaywrapmodreg'], 
+                    eventsNone=[], eventsAuto=[]);
         },'json');
-        return false;
     });
 }
 
@@ -142,3 +153,4 @@ function checkEditValues(editList=[]){
     }
     return {"response":"OK", "message":""}
 }
+
