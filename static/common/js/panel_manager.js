@@ -7,7 +7,7 @@ function fillMessageDiv(msg="", msgTag="", msgTextId="", msgDiv="",
     if (msgTag == "error"){
         $(msgDiv).css('borderColor', 'red');
     } else if (msgTag == "info"){
-        $(msgDiv).css('borderColor', 'blue');
+        $(msgDiv).css('borderColor', '#6cbaf6');
     } else if (msgTag == "success") {
         $(msgDiv).css('borderColor', 'green');
     } else if (msgTag == "default") {

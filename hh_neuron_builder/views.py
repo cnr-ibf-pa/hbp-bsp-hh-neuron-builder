@@ -59,8 +59,8 @@ def home(request):
     """
     Serving home page for "hh neuron builder" application
     """
-    ctx = request.GET.get('ctx', None)
 
+    ctx = request.GET.get('ctx', None)
     if not ctx:
         return render(request, 'efelg/hbp_redirect.html')
     else:
@@ -1510,7 +1510,29 @@ def wf_storage_list(request, exc="", ctx=""):
     return HttpResponse(json.dumps({"list":storage_list}), content_type="application/json")
 
 
+def get_user_clb_permissions(request, exc="", ctx=""):
+
+    collab_url = "https://services.humanbrainproject.eu/collab/v0/collab/context/" + ctx  + "/permissions/"
+
+    # get user header token
+    headers = {'Authorization': get_auth_header(request.user.social_auth.get())}
+
+    # 
+    resp = requests.get(collab_url, headers=headers)
+    if resp.json()["UPDATE"]:
+        response = "OK"
+    else:
+        response = "KO"
+
+    return HttpResponse(json.dumps({"response":response}), content_type="application/json")
+
+
 def get_data_model_catalog(request, exc="", ctx=""):
+
+    mc_clb_user = request.session[exc]["mod_clb_user"]
+
+    # refresh collab user token from permanent refresh token
+    storage_user_token = resources.get_token_from_refresh_token(mc_clb_user)
 
     fetch_opt_uuid = request.session[exc].pop('fetch_opt_uuid', None)
 
@@ -1519,7 +1541,8 @@ def get_data_model_catalog(request, exc="", ctx=""):
 
     model_name = "hhnb_" + time_info + "_" + userid
 
-    headers = {'Authorization': get_auth_header(request.user.social_auth.get())}
+    #headers = {'Authorization': get_auth_header(request.user.social_auth.get())}
+    headers = {'Authorization': "Bearer " + storage_user_token}
     vf_url = "https://validation-v1.brainsimulation.eu/authorizedcollabparameterrest/?format=json&python_client=true"
     res = requests.get(vf_url)
     default_values = res.json()
@@ -1535,8 +1558,8 @@ def get_data_model_catalog(request, exc="", ctx=""):
         return HttpResponse(json.dumps(data), content_type="application/json")
     else:
         # retrieve access_token
-        access_token = get_access_token(request.user.social_auth.get())
-        mc = ModelCatalog(token=access_token)
+        #access_token = get_access_token(request.user.social_auth.get())
+        mc = ModelCatalog(token=storage_user_token)
 
         # retrieve UUID of chosen optimized model
         try:
@@ -1553,7 +1576,7 @@ def get_data_model_catalog(request, exc="", ctx=""):
         return HttpResponse(json.dumps(data), content_type="application/json")
 
 
-def register_model_catalog(request, exc="", ctx=""):
+def register_model_catalog(request, reg_collab="", exc="", ctx=""):
 
     # get data from form
     form_data = request.POST
@@ -1619,36 +1642,21 @@ def register_model_catalog(request, exc="", ctx=""):
     foo.close()
     
     # retrieve user's access_token
-    access_token = get_access_token(request.user.social_auth.get())
+    #access_token = get_access_token(request.user.social_auth.get())
   
     # retrieve info 
     mc_clb_id = request.session[exc]["mod_clb_id"]
     mc_clb_user = request.session[exc]["mod_clb_user"]
     mc_clb_url = request.session[exc]['mod_clb_url']
 
-    # retrieve refresh token for accessing destination collab
-    refresh_token = settings.USER_REFRESH_TOKENS[mc_clb_user]['refresh_token']
-
-    # retrieve authorized user access token to access the destination collab storage
-    token_url = settings.HBP_OIDC_TOKEK_URL 
-    SOCIAL_AUTH_HBP_KEY = settings.SOCIAL_AUTH_HBP_KEY
-    SOCIAL_AUTH_HBP_SECRET = settings.SOCIAL_AUTH_HBP_SECRET
-
-    data = {
-        "client_id": SOCIAL_AUTH_HBP_KEY,\
-        "client_secret": SOCIAL_AUTH_HBP_SECRET,\
-        "grant_type":"refresh_token",
-        "refresh_token": refresh_token,
-        }
-
-    response = requests.post(token_url, data=data)
-    clb_user_token = response.json()['access_token']
+    # refresh collab user token from permanent refresh token
+    storage_user_token = resources.get_token_from_refresh_token(mc_clb_user)
 
     # retrieve data from request.session
     hhnb_storage_folder = "hhnb_wf_model"
     
-    sc = service_client.Client.new(access_token)
-    ac = service_api_client.ApiClient.new(access_token)
+    sc = service_client.Client.new(storage_user_token)
+    ac = service_api_client.ApiClient.new(storage_user_token)
     
     # retrieve collab related projects
     project_dict = ac.list_projects(None, None, None, mc_clb_id)
@@ -1666,12 +1674,22 @@ def register_model_catalog(request, exc="", ctx=""):
     resp_upload = sc.upload_file(mc_zip_name_full, str(storage_mod_name), \
         "application/zip")
 
-    #return HttpResponse(json.dumps({"response":"OK", "message":"submit again"}), \
-    #    content_type="application/json")
+    reg_mod_url = mc_clb_url + resp_upload['uuid']
 
-    mod_url = mc_clb_url + resp_upload['uuid']
-    mc = ModelCatalog(token=access_token)
-    MCapp_navID = mc.exists_in_collab_else_create(collab_id=mc_clb_id)
+    if reg_collab == "current_collab":
+        clb_user_token = get_access_token(request.user.social_auth.get())
+        collab_url = "https://services.humanbrainproject.eu/collab/v0/collab/context/" + ctx 
+        headers = {'Authorization': "Bearer " + clb_user_token}
+        resp = requests.get(collab_url, headers=headers)
+        mc_fin_clb_id = resp.json()["collab"]["id"]
+    else:
+        mc_fin_clb_id = mc_clb_id
+        clb_user_token = storage_user_token
+
+    # create model catalog instance and add to Collab if not present
+    mc = ModelCatalog(token=clb_user_token)
+    MCapp_navID = mc.exists_in_collab_else_create(collab_id=mc_fin_clb_id)
+    mc.set_app_config(collab_id=mc_fin_clb_id, app_id=MCapp_navID, only_if_new=True)
 
     auth_family_name = form_data["authorLastName"]
     auth_given_name = form_data["authorFirstName"]
@@ -1691,17 +1709,25 @@ def register_model_catalog(request, exc="", ctx=""):
     else:
         private_flag = False
     
-    # TODO: fetch data from form fields and populate below - similar to lines 268 to 281 of workflow.js
     model_id = mc.register_model(app_id=str(MCapp_navID), name=mod_name,
-                author={"family_name": auth_family_name, "given_name": auth_given_name}, organization=organization,
-                private=private_flag, cell_type=cell_type, model_scope=model_scope,
-                abstraction_level=abstraction_level, brain_region=brain_region, species=species,
-                owner={"family_name": own_family_name, "given_name": own_given_name}, project="SP 6.4", license=license,
-                description=description,
-                instances=[{"source":mod_url,"version":"1.0", "parameters":""}])
+        author={"family_name": auth_family_name, "given_name": auth_given_name}, organization=organization,
+        private=private_flag, cell_type=cell_type, model_scope=model_scope,
+        abstraction_level=abstraction_level, brain_region=brain_region, species=species,
+        owner={"family_name": own_family_name, "given_name": own_given_name}, project="SP 6.4", license=license,
+        description=description,
+        instances=[{"source":reg_mod_url,"version":"1.0", "parameters":""}])
     
-    model_path_on_catalog = "https://collab.humanbrainproject.eu/#/collab/{}/nav/{}?state=model.{}".format(str(mc_clb_id),str(MCapp_navID), model_id)
+    model_path_on_catalog = "https://collab.humanbrainproject.eu/#/collab/{}/nav/{}?state=model.{}".format(str(mc_fin_clb_id),str(MCapp_navID), model_id)
     
-    edit_message = "The model was successfully registered in the Model Catalog.<br><br>Model's info and metadata can be edited <a href='" + model_path_on_catalog +"' target='_blank'> here</a>."
-    return HttpResponse(json.dumps({"response":"OK", "message":edit_message}), \
+    edit_message = "\
+            The model was successfully registered in the Model Catalog.<br>\
+            Model's info and metadata can be shown \
+            <a href='" + model_path_on_catalog +"' target='_blank'>here</a>.<br><br>\
+            Once the page will be opened in a new tab, if a welcome message is displayed \
+            instead of the model instance, please click on the Model Catalog \
+            item in the left menu in order to reload the page; click on the 'Authorize' button if requested.<br><br>\
+            Leave the current tab open in case you need to recollect the model url."
+
+    
+    return HttpResponse(json.dumps({"response":"OK", "message":edit_message, "reg_mod_url":model_path_on_catalog}), \
         content_type="application/json")

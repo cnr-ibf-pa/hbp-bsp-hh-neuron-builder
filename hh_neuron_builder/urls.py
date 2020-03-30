@@ -25,12 +25,15 @@ urlpatterns = [
     url(r'^embedded-naas/' + req_pattern  + '/$', views.embedded_naas),
     url(r'^fetch-opt-set-file/(?P<source_opt_name>[_a-zA-Z0-9\-.]*)/(?P<source_opt_id>[_a-zA-Z0-9\-.]*)/' + req_pattern  + '/$', views.fetch_opt_set_file),
     url(r'^fetch-wf-from-storage/(?P<wfid>[0-9]{14}_[0-9]+)/' + req_pattern  + '/$', views.fetch_wf_from_storage),
+    url(r'^get-data-model-catalog/' + req_pattern  + '/$', views.get_data_model_catalog),
     url(r'^get_local_optimization_list$', views.get_local_optimization_list),
     url(r'^get_model_list/' + req_pattern  + '$', views.get_model_list),    
     url(r'^get-job-details/(?P<jobid>.*)/'+ req_pattern + '/$', views.get_job_details),    
     url(r'^get-job-list/' + req_pattern  + '$', views.get_job_list),    
+    url(r'^get-user-clb-permissions/' + req_pattern  + '$', views.get_user_clb_permissions),    
     url(r'^initialize/(?P<exc>' + exc_pattern + ')/(?P<ctx>' + ctx_pattern + ')$', views.initialize),    
     url(r'^model-loaded-flag/' + req_pattern  + '$', views.model_loaded_flag),
+    url(r'^register-model-catalog/(?P<reg_collab>current_collab|storage_collab)/' + req_pattern  + '/$', views.register_model_catalog),
     url(r'^run-analysis/' + req_pattern  + '$', views.run_analysis),
     url(r'^run-optimization/' + req_pattern  + '/$', views.run_optimization),    
     url(r'^save-wf-to-storage/' +  req_pattern  + '$', views.save_wf_to_storage),
@@ -43,8 +46,6 @@ urlpatterns = [
     url(r'^wf-storage-list/' + req_pattern  + '/$', views.wf_storage_list),
     url(r'^workflow/$', views.workflow),    
     url(r'^zip-sim/(?P<jobid>.*)/' + req_pattern  + '$', views.zip_sim),
-    url(r'^get-data-model-catalog/' + req_pattern  + '$', views.get_data_model_catalog),
-    url(r'^register-model-catalog/' + req_pattern  + '$', views.register_model_catalog),
 ]
 
 if settings.DEBUG:
