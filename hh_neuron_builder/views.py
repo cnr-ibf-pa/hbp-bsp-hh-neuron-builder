@@ -12,6 +12,8 @@ import shutil
 import tarfile
 import datetime
 import requests
+import inspect
+import time
 
 # import django libs
 from django.conf import settings
@@ -31,6 +33,7 @@ import hbp_service_client.storage_service.api as service_api_client
 from hbp_service_client.document_service.service_locator import ServiceLocator
 from hbp_service_client.document_service.client import Client
 from hbp_service_client.document_service.requestor import DocNotFoundException, DocException
+from hbp_validation_framework import ModelCatalog
 
 # import local tools
 from tools import hpc_job_manager
@@ -51,15 +54,13 @@ accesslogger = logging.getLogger('hhnb_access.log')
 accesslogger.addHandler(logging.FileHandler('/var/log/bspg/hhnb_access.log'))
 accesslogger.setLevel(logging.DEBUG)
 
-
 @login_required(login_url="/login/hbp/")
 def home(request):
     """
     Serving home page for "hh neuron builder" application
     """
-    
-    ctx = request.GET.get('ctx', None)
 
+    ctx = request.GET.get('ctx', None)
     if not ctx:
         return render(request, 'efelg/hbp_redirect.html')
     else:
@@ -151,7 +152,11 @@ def initialize(request, exc = "", ctx = ""):
     request.session[exc]['opt_sub_param_file'] = 'opt_sub_param.json'
     request.session[exc]['sim_run_flag_file'] = 'sim_run_flag.txt'
     request.session[exc]['wf_job_ids'] = 'wf_job_ids.json'
-
+    request.session[exc]['mod_clb_id'] = '79183'
+    request.session[exc]['mod_clb_url'] = \
+            'https://collab.humanbrainproject.eu/#/collab/79183/nav/535962?state=uuid%3D'
+    request.session[exc]['mod_clb_user'] = 'test116'
+    
     accesslogger.info(resources.string_for_log('home', request))
 
     request.session.save()
@@ -192,6 +197,8 @@ def create_wf_folders(request, wf_type="new", exc="", ctx=""):
         request.session[exc].pop('username_fetch', None)
         request.session[exc].pop('password_fetch', None)
         request.session[exc].pop('hpc_sys_fetch', None)
+        request.session[exc].pop('source_opt_id', None)
+        request.session[exc].pop('fetch_opt_uuid', None)
         request.session[exc]['user_dir'] = os.path.join(workflows_dir, userid, wf_id)
         request.session[exc]['user_dir_data'] = os.path.join(workflows_dir, \
                 userid, wf_id, 'data')
@@ -432,10 +439,11 @@ def copy_feature_files(request, featurefolder = "", exc = "", ctx = ""):
     return HttpResponse(json.dumps(response), content_type="application/json")
 
 # fetch model from dataset
-def fetch_opt_set_file(request, source_opt_name="", exc="", ctx=""):
+def fetch_opt_set_file(request, source_opt_name="", source_opt_id="", exc="", ctx=""):
     """
     Set optimization setting file
     """
+
     response = {"response": "OK", "message":""}
 
     #opt_model_path = request.session[exc]['optimization_model_path']
@@ -454,7 +462,6 @@ def fetch_opt_set_file(request, source_opt_name="", exc="", ctx=""):
 	model_file_dict = json.load(json_file)
 
     request.session[exc]['source_opt_name'] = source_opt_name
-    #request.session[exc]['source_opt_zip'] = os.path.join(opt_model_path, source_opt_name, source_opt_name + '.zip')
 
     for k in model_file_dict:
         crr_k = str(k.keys()[0])
@@ -468,7 +475,7 @@ def fetch_opt_set_file(request, source_opt_name="", exc="", ctx=""):
     with open(opt_zip_path, 'wb') as f:
         f.write(r.content)
     request.session[exc]['source_opt_zip'] = opt_zip_path
-    #shutil.copy(request.session[exc]['source_opt_zip'], user_dir_data_opt)
+    request.session[exc]['source_opt_id'] = source_opt_id
 
     request.session.save()
     return HttpResponse("")
@@ -486,6 +493,7 @@ def run_optimization(request, exc="", ctx=""):
     gennum = request.session[exc]['gennum']
     time_info = request.session[exc]['time_info']
     offsize = request.session[exc]['offsize']
+    source_opt_id = request.session[exc]['source_opt_id']
     source_opt_name = request.session[exc]['source_opt_name']
     source_opt_zip = request.session[exc]['source_opt_zip']
     dest_dir = request.session[exc]['user_dir_data_opt_launch']
@@ -576,7 +584,7 @@ def run_optimization(request, exc="", ctx=""):
         wf_job_ids = request.session[exc]['wf_job_ids']
         ids_file = os.path.join(workflows_dir, userid, wf_job_ids)
         ids_dict = {"wf_id" : wf_id, "hpc_sys": hpc_sys, \
-                "time_info": time_info}
+                "time_info": time_info, "source_opt_id": source_opt_id}
 
         # update file containing 
         if os.path.exists(ids_file):
@@ -816,18 +824,11 @@ def check_cond_exist(request, exc="", ctx=""):
 	response['run_sim']['status'] = False
         response['run_sim']['message'] = resp_sim['message']
 
-    # check if optimization results zip file exists
-    #for i in os.listdir(res_dir):
-    #    if i.endswith('.zip'):
-    #        response['opt_res']['status'] = True
-    #        break
-
     # check if ANY optimization results zip file exists
     for i in os.listdir(res_dir):
         if i.endswith('_opt_res.zip'):
             response['opt_res_files']['status'] = True
             break
-
 
     # check if optimization has been submitted
     if os.path.exists(os.path.join(dest_dir, \
@@ -959,6 +960,8 @@ def upload_files(request, filetype = "", exc = "", ctx = ""):
             shutil.rmtree(final_res_folder)
             os.mkdir(final_res_folder)
             return HttpResponse(json.dumps(check_resp), content_type="application/json") 
+        request.session[exc]['source_opt_id'] = ""
+        request.session.save()
 
 
     elif filetype == "modsim":
@@ -973,6 +976,7 @@ def upload_files(request, filetype = "", exc = "", ctx = ""):
             for k in filename_list:
                 os.remove(os.path.join(final_res_folder, k.name))
             return HttpResponse(json.dumps({"response":"KO", "message":msg}), content_type="application/json") 
+        request.session['fetch_opt_uuid'] = ""
 
     request.session.save()
     
@@ -1069,7 +1073,7 @@ def download_job(request, job_id="", exc="", ctx=""):
     #
     if not os.path.exists(opt_res_dir):
         return HttpResponse(json.dumps({"response":"KO", \
-            "message": "The workflow folder does not exist anymore. \
+            "message": "The workflow session has expired. \
             <br> Please start a new workflow or fetch a previous one."}), \
             content_type="application/json") 
     # remove folder with current zip file
@@ -1129,7 +1133,7 @@ def run_analysis(request, exc="", ctx=""):
     
     if not os.path.exists(output_fetched_file):
         msg = "No ouptut file was generated in the optimization process. \
-                Check your optimization settings."    
+               Check your optimization settings."    
         return HttpResponse(json.dumps({"response":"KO", "message": msg}), content_type="application/json")
 
     
@@ -1258,7 +1262,7 @@ def run_analysis(request, exc="", ctx=""):
     return HttpResponse(json.dumps(resp), content_type="application/json")
 
 
-def zip_sim(request, exc="", ctx=""):
+def zip_sim(request, jobid="", exc="", ctx=""):
     user_dir_res_opt = request.session[exc]['user_dir_results_opt']
     user_dir_sim_run = request.session[exc]['user_dir_sim_run']
     opt_res_mod_folder = request.session.get("opt_res_mod_folder", "")
@@ -1348,6 +1352,23 @@ def zip_sim(request, exc="", ctx=""):
                         final_zip_fname.replace(user_dir_sim_run, '', 1))
 
     foo.close()
+
+    wf_dir = request.session[exc]['workflows_dir']
+    userid = request.session[exc]['userid']
+    wf_job_ids = request.session[exc]['wf_job_ids']
+    
+    # open file containing job info for current user
+    job_ids_file = os.path.join(wf_dir, userid, wf_job_ids)
+    with open(job_ids_file, 'r') as f:
+        user_job_ids = json.load(f)
+    f.close()
+    if jobid in user_job_ids and "source_opt_id" in user_job_ids[jobid]:
+        fetch_opt_uuid = user_job_ids[jobid]["source_opt_id"]
+    else:
+        fetch_opt_uuid = ""
+
+    request.session[exc]['fetch_opt_uuid'] = fetch_opt_uuid
+    request.session.save()
 
     return HttpResponse(json.dumps({"response":"OK"}), content_type="application/json")
     
@@ -1487,3 +1508,225 @@ def wf_storage_list(request, exc="", ctx=""):
 
     return HttpResponse(json.dumps({"list":storage_list}), content_type="application/json")
 
+
+def get_user_clb_permissions(request, exc="", ctx=""):
+
+    collab_url = "https://services.humanbrainproject.eu/collab/v0/collab/context/" + ctx  + "/permissions/"
+
+    # get user header token
+    headers = {'Authorization': get_auth_header(request.user.social_auth.get())}
+
+    # 
+    resp = requests.get(collab_url, headers=headers)
+    if resp.json()["UPDATE"]:
+        response = "OK"
+    else:
+        response = "KO"
+
+    return HttpResponse(json.dumps({"response":response}), content_type="application/json")
+
+
+def get_data_model_catalog(request, exc="", ctx=""):
+
+    mc_clb_user = request.session[exc]["mod_clb_user"]
+
+    # refresh collab user token from permanent refresh token
+    storage_user_token = resources.get_token_from_refresh_token(mc_clb_user)
+
+    fetch_opt_uuid = request.session[exc].pop('fetch_opt_uuid', None)
+
+    time_info = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
+    userid = request.session[exc]['userid']
+
+    model_name = "hhnb_" + time_info + "_" + userid
+
+    #headers = {'Authorization': get_auth_header(request.user.social_auth.get())}
+    headers = {'Authorization': "Bearer " + storage_user_token}
+    vf_url = "https://validation-v1.brainsimulation.eu/authorizedcollabparameterrest/?format=json&python_client=true"
+    res = requests.get(vf_url)
+    default_values = res.json()
+
+    data = {}
+    data["default_values"] = default_values
+
+    if not fetch_opt_uuid:
+        data["name"] = model_name
+        data["response"] = "KO"
+        data["base_model"] = ""
+
+        return HttpResponse(json.dumps(data), content_type="application/json")
+    else:
+        # retrieve access_token
+        #access_token = get_access_token(request.user.social_auth.get())
+        mc = ModelCatalog(token=storage_user_token)
+
+        # retrieve UUID of chosen optimized model
+        try:
+            base_model_data = mc.get_model(model_id=fetch_opt_uuid)
+            data["fetched_values"] = base_model_data
+            data["response"] = "OK"
+            data["base_model"] = base_model_data["name"]
+        except:
+            data["response"] = "KO"
+            data["base_model"] = "" 
+        
+        data["name"] = model_name
+
+        return HttpResponse(json.dumps(data), content_type="application/json")
+
+
+def register_model_catalog(request, reg_collab="", exc="", ctx=""):
+
+    # get data from form
+    form_data = request.POST
+
+    if form_data["modelSuffix"] and form_data["modelSuffix"][0]!='-' and form_data["modelSuffix"][0]!='_':
+        mod_name = form_data["modelName"] + '_' + form_data["modelSuffix"]
+    else:
+        mod_name = form_data["modelName"] + form_data["modelSuffix"]
+    
+    # retrieve model full path
+    sim_dir = request.session[exc]['user_dir_sim_run']
+
+    full_file_path = ""
+    for i in os.listdir(sim_dir):
+        if i.endswith(".zip"):
+            full_file_path = os.path.join(sim_dir, i)
+            break
+
+    if full_file_path == "":
+        return HttpResponse(json.dumps({"response":"KO", "message":"No sim model is present"}), \
+                content_type="application/json")
+
+    mc_dir = sim_dir + "_mc"
+    dest_file = os.path.join(mc_dir, i)
+    if os.path.exists(sim_dir + "_mc"):
+        shutil.rmtree(mc_dir, ignore_errors=True)
+    os.makedirs(mc_dir)
+
+    shutil.copyfile(full_file_path, dest_file)        
+
+    # unzip model file in mc folder
+    final_wf_dir = os.path.splitext(dest_file)[0]
+    mc_mod_name = os.path.splitext(i)[0]
+    zip_ref = zipfile.ZipFile(dest_file, 'r')
+    if os.path.exists(final_wf_dir):
+        shutil.rmtree(final_wf_dir)
+    zip_ref.extractall(mc_dir)
+    zip_ref.close()
+
+    # remove zip file
+    os.remove(dest_file)
+
+    # rename destination folder
+    final_folder = os.path.join(mc_dir, mod_name)
+    orig_folder = os.path.join(mc_dir, mc_mod_name)
+    os.rename(orig_folder, final_folder)
+    
+    # zip final folder with mc name
+    mc_zip_name_full = final_folder + '.zip'
+    mc_zip_name = mod_name + ".zip"
+    foo = zipfile.ZipFile(mc_zip_name_full, 'w', zipfile.ZIP_DEFLATED)
+
+    for root, dirs, files in os.walk(final_folder):
+        for d in dirs:
+            if os.listdir(os.path.join(root,d)) == []:
+                crr_zip_filename = os.path.join(root, d)
+                crr_arcname = crr_zip_filename.replace(mc_dir, '', 1)
+                foo.write(os.path.join(root, d), crr_arcname)
+        for f in files:
+            crr_zip_ffilename = os.path.join(root, f)
+            crr_farcname = crr_zip_ffilename.replace(mc_dir, '', 1)
+            foo.write(os.path.join(root, f), crr_farcname)
+    foo.close()
+    
+    # retrieve user's access_token
+    #access_token = get_access_token(request.user.social_auth.get())
+  
+    # retrieve info 
+    mc_clb_id = request.session[exc]["mod_clb_id"]
+    mc_clb_user = request.session[exc]["mod_clb_user"]
+    mc_clb_url = request.session[exc]['mod_clb_url']
+
+    # refresh collab user token from permanent refresh token
+    storage_user_token = resources.get_token_from_refresh_token(mc_clb_user)
+
+    # retrieve data from request.session
+    hhnb_storage_folder = "hhnb_wf_model"
+    
+    sc = service_client.Client.new(storage_user_token)
+    ac = service_api_client.ApiClient.new(storage_user_token)
+    
+    # retrieve collab related projects
+    project_dict = ac.list_projects(None, None, None, mc_clb_id)
+    project = project_dict['results']
+    storage_root = ac.get_entity_path(project[0]['uuid'])
+    
+    # create final storage folder if it does not exist
+    hhnb_full_storage_path = os.path.join(storage_root, hhnb_storage_folder)
+    storage_mod_name =  os.path.join(hhnb_full_storage_path, mc_zip_name) 
+
+    # create folder in the collab storage if needed
+    if not sc.exists(str(hhnb_full_storage_path)):
+        sc.mkdir(str(hhnb_full_storage_path))
+
+    resp_upload = sc.upload_file(mc_zip_name_full, str(storage_mod_name), \
+        "application/zip")
+
+    reg_mod_url = mc_clb_url + resp_upload['uuid']
+
+    if reg_collab == "current_collab":
+        clb_user_token = get_access_token(request.user.social_auth.get())
+        collab_url = "https://services.humanbrainproject.eu/collab/v0/collab/context/" + ctx 
+        headers = {'Authorization': "Bearer " + clb_user_token}
+        resp = requests.get(collab_url, headers=headers)
+        mc_fin_clb_id = resp.json()["collab"]["id"]
+    else:
+        mc_fin_clb_id = mc_clb_id
+        clb_user_token = storage_user_token
+
+    # create model catalog instance and add to Collab if not present
+    mc = ModelCatalog(token=clb_user_token)
+    MCapp_navID = mc.exists_in_collab_else_create(collab_id=mc_fin_clb_id)
+    mc.set_app_config(collab_id=mc_fin_clb_id, app_id=MCapp_navID, only_if_new=True)
+
+    auth_family_name = form_data["authorLastName"]
+    auth_given_name = form_data["authorFirstName"]
+    organization = form_data["modelOrganization"]
+    cell_type = form_data["modelCellType"]
+    model_scope = form_data["modelScope"]
+    abstraction_level = form_data["modelAbstraction"]
+    brain_region = form_data["modelBrainRegion"]
+    species = form_data["modelSpecies"]
+    own_family_name = form_data["ownerLastName"]
+    own_given_name = form_data["ownerFirstName"]
+    license = form_data["modelLicense"]
+    description = form_data["modelDescription"]
+    private = form_data["modelPrivate"]
+    if private=="true":
+        private_flag = True
+    else:
+        private_flag = False
+    
+    model_id = mc.register_model(app_id=str(MCapp_navID), name=mod_name,
+        author={"family_name": auth_family_name, "given_name": auth_given_name}, organization=organization,
+        private=private_flag, cell_type=cell_type, model_scope=model_scope,
+        abstraction_level=abstraction_level, brain_region=brain_region, species=species,
+        owner={"family_name": own_family_name, "given_name": own_given_name}, project="SP 6.4", license=license,
+        description=description,
+        instances=[{"source":reg_mod_url,"version":"1.0", "parameters":""}])
+    
+    model_path_on_catalog = "https://collab.humanbrainproject.eu/#/collab/{}/nav/{}?state=model.{}".format(str(mc_fin_clb_id),str(MCapp_navID), model_id)
+    
+    edit_message = "\
+            The model was successfully registered in the Model Catalog.<br>\
+            Model's info and metadata can be shown \
+            <a href='" + model_path_on_catalog +"' target='_blank'>here</a>.<br><br>\
+            Once the page will be opened in a new tab, if a welcome message is displayed \
+            instead of the model instance, please click on the Model Catalog \
+            item in the left menu in order to reload the page; click on the 'Authorize' button if requested.<br><br>\
+            Leave the current tab open in case you need to recollect the model url."
+
+    
+    return HttpResponse(json.dumps({"response":"OK", "message":edit_message, "reg_mod_url":model_path_on_catalog}), \
+        content_type="application/json")

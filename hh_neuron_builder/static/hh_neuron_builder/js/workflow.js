@@ -2,7 +2,7 @@ var exc = sessionStorage.getItem("exc", exc) ?  sessionStorage.getItem("exc") : 
 var ctx = sessionStorage.getItem("ctx", ctx) ? sessionStorage.getItem("ctx") : "";
 var req_pattern = exc + '/' + ctx;
 
-$(window).bind("pageshow", function() { 
+$(window).bind("pageshow", function() {
     checkConditions();
     closeParameterDiv();
     closeFetchParamDiv();
@@ -90,6 +90,7 @@ $(document).ready(function(){
         e.preventDefault();
         closePleaseWaitDiv();
     });
+
 
     // assign functions to buttons' click
     // manage top bar buttons
@@ -195,7 +196,6 @@ function openParameterDiv() {
     document.getElementById("mainDiv").style.pointerEvents = "none";
     document.body.style.overflow = "hidden";
 }
-
 
 // open side div for optimization run parameter settings
 function openErrorDiv(message, messagetag) {
@@ -626,7 +626,6 @@ function displayJobInfo() {
                     if (crr_job_json['job_stage'] == "COMPLETED" || 
                             crr_job_json['job_stage'] == "SUCCESSFUL" || 
                             crr_job_json['job_stage'] == "FAILED") {
-                        console.log(crr_job_json['job_stage'])
                         cell3.style.color = "#00802b";
                         cell3.style.fontWeight = "bolder";
                         cell3.style.fontSize = "14px";
@@ -664,7 +663,6 @@ function displayJobInfo() {
     return true;
 }
 
-
 //
 function closeJobInfoDiv() {
     document.getElementById("overlaywrapperjobs").style.display = "none";
@@ -672,12 +670,11 @@ function closeJobInfoDiv() {
     document.body.style.overflow = "auto";
 }
 
-
 //
 function downloadJob(jobid) {
     displayPleaseWaitDiv();
     closeJobInfoDiv();
-    changeMsgPleaseWaitDiv("Downloading job results.<br>This operation may take several minutes.");
+    changeMsgPleaseWaitDiv("Downloading job results and analyzing data.<br>This operation may take several minutes.");
     $.getJSON('/hh-neuron-builder/download-job/' + jobid + '/' + req_pattern + '/', function(data){
         if (data["response"] == "KO"){
             closePleaseWaitDiv();
@@ -692,7 +689,7 @@ function downloadJob(jobid) {
                     return false;
                 } else {
                     var resp_flag = true
-                        $.getJSON('/hh-neuron-builder/zip-sim/' + req_pattern, function(zip_data){
+                        $.getJSON('/hh-neuron-builder/zip-sim/' + jobid + '/'  + req_pattern, function(zip_data){
                             if (zip_data["response"] == "KO") {
                                 closePleaseWaitDiv();
                                 openErrorDiv(zip_data["message"], 'error');
@@ -715,12 +712,10 @@ function downloadJob(jobid) {
     });
 }
 
-
 //
 function downloadLocalSim(){
     downloadLocal("modsim");
 }
-
 
 //
 function downloadLocalOpt(){
@@ -746,6 +741,7 @@ function downloadLocal(filetype) {
     closePleaseWaitDiv();
 }
 
+//
 function newWorkflow() {
     displayPleaseWaitDiv();
     $.getJSON("/hh-neuron-builder/create-wf-folders/new/" + exc + "/" + ctx, function(data){
@@ -759,6 +755,7 @@ function newWorkflow() {
     });
 }
 
+//
 function cloneWorkflow() {
     displayPleaseWaitDiv();
     $.getJSON('/hh-neuron-builder/create-wf-folders/cloned/' + req_pattern, function(zip_data){
@@ -767,6 +764,7 @@ function cloneWorkflow() {
     });
 }
 
+//
 function saveWorkflow() {
     displayPleaseWaitDiv(message="Saving workflow to storage");
     $.getJSON('/hh-neuron-builder/save-wf-to-storage/' + req_pattern, function(zip_data){
@@ -775,12 +773,14 @@ function saveWorkflow() {
     });
 }
 
+//
 function goHome() {
     displayPleaseWaitDiv(message="Loading ...");
     window.location.href='/hh-neuron-builder?ctx=' + ctx;
     closePleaseWaitDiv();
 }
 
+//
 function manageOptSetInput(){
 
     var select_el = $(this).closest('select').attr('id');
@@ -861,4 +861,3 @@ function manageOptSetInput(){
         }
     }
 }
-

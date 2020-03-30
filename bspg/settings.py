@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/1.10/ref/settings/
 import os
 import shutil
 from . import debug
+from bspg_keys.collab_token import *
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -41,6 +42,7 @@ else:
     if not DEBUG:
         from bspg_keys.prod_auth_key import*
 
+from bspg_keys.user_refresh_tokens_collab_v1 import *
 
 ALLOWED_HOSTS = [
         '*',
@@ -51,6 +53,7 @@ HBP_ENV_URL = 'https://collab.humanbrainproject.eu/config.json'
 HBP_IDENTITY_SERVICE_URL = 'https://services.humanbrainproject.eu/idm/v1/api'
 HBP_MY_USER_URL = 'https://services.humanbrainproject.eu/idm/v1/api/user/me'
 HBP_MY_COLLABS_URL = "https://services.humanbrainproject.eu/collab/v0/mycollabs/"
+HBP_OIDC_TOKEK_URL = "https://services.humanbrainproject.eu/oidc/token"
 
 USE_X_FORWARDED_HOST = True
 

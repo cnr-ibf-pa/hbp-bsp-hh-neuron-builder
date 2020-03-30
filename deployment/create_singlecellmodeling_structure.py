@@ -12,12 +12,19 @@ import os
 import requests
 import sys
 
-#MODEL_CATALOG_URL = os.environ['MODELS_URL']
+from hbp_validation_framework import ModelCatalog
+mc = ModelCatalog(username="lbologna")  # HBP username; password via environment variable
+# mc = ModelCatalog(username="shailesh", password="")  # HBP username & Password
+# For more authentication related info, see: 
+# https://hbp-validation-client.readthedocs.io/en/master/#regarding-hbp-authentication
+# https://hbp-validation-client.readthedocs.io/en/master/#hbp_validation_framework.ModelCatalog
+
+# MODEL_CATALOG_URL = os.environ['MODELS_URL']
 MODEL_CATALOG_URL = 'https://validation-v1.brainsimulation.eu/models/'
 
 FILES_TO_CREATE = {
     'granule_models.json': '?brain_region=cerebellum&cell_type=granule%20cell&model_scope=single%20cell&species=Rattus%20norvegicus&abstraction_level=spiking%20neurons%3A%20biophysical',
-    'hippocampus_models.json': '?brain_region=hippocampus&organization=HBP-SP6&model_scope=single%20cell&species=Rattus%20norvegicus&owner',
+    'hippocampus_models.json': '?brain_region=hippocampus&organization=HBP-SP6&model_scope=single%20cell&species=Rattus%20norvegicus&collab_id=12027',
     'purkinje_models.json': '?brain_region=cerebellum&cell_type=Purkinje%20cell&model_scope=single%20cell&name=Purkinje%20cell%20-%20Multi%20compartmental',
 }
 
@@ -57,7 +64,7 @@ def _check_models_modification(new_models, file_name):
 
 
 def filter_meta(model_info):
-    fields_to_save = ('name', 'author', 'cell_type', 'brain_region', 'species', 'description', 'id')
+    fields_to_save = ('id', 'name', 'author', 'cell_type', 'brain_region', 'species', 'description')
     x = {k: model_info[k] for k in fields_to_save}
 
     instance_to_zip = model_info['instances'][0]['source']
@@ -67,7 +74,6 @@ def filter_meta(model_info):
 
 def get_img(caption_to_find, model_info):
     img_list = model_info['images']
-
     def get_caption_img(img_list):
         if img_list['caption'] == caption_to_find:
             return True
@@ -94,7 +100,7 @@ def save_model_file(file_name, output_content):
 def create_meta():
     for file_name, query_string in FILES_TO_CREATE.items():
         logging.info('Fetching %s:', file_name)
-        response = requests.get(MODEL_CATALOG_URL + query_string)
+        response = requests.get(MODEL_CATALOG_URL + query_string, auth=mc.auth, verify=mc.verify)
         if not response.ok:
             logging.error('Failed to fetch data for %s', file_name)
             logging.error(response.text)
@@ -106,10 +112,6 @@ def create_meta():
 
         output_content = []
         for model in models_list:
-            print(model)
-            print(model)
-            print(model)
-            print(model)
             model_name = model['name']
             cell_info = {
                 model_name: {
