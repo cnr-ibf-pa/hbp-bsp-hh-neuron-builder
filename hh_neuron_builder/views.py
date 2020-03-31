@@ -153,8 +153,6 @@ def initialize(request, exc = "", ctx = ""):
     request.session[exc]['sim_run_flag_file'] = 'sim_run_flag.txt'
     request.session[exc]['wf_job_ids'] = 'wf_job_ids.json'
     request.session[exc]['mod_clb_id'] = '79183'
-    request.session[exc]['mod_clb_url'] = \
-            'https://collab.humanbrainproject.eu/#/collab/79183/nav/535962?state=uuid%3D'
     request.session[exc]['mod_clb_user'] = 'test116'
     
     accesslogger.info(resources.string_for_log('home', request))
@@ -1646,7 +1644,6 @@ def register_model_catalog(request, reg_collab="", exc="", ctx=""):
     # retrieve info 
     mc_clb_id = request.session[exc]["mod_clb_id"]
     mc_clb_user = request.session[exc]["mod_clb_user"]
-    mc_clb_url = request.session[exc]['mod_clb_url']
 
     # refresh collab user token from permanent refresh token
     storage_user_token = resources.get_token_from_refresh_token(mc_clb_user)

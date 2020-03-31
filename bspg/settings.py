@@ -13,7 +13,7 @@ https://docs.djangoproject.com/en/1.10/ref/settings/
 import os
 import shutil
 from . import debug
-from bspg_keys.collab_token import *
+#from bspg_keys.collab_token import *
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -34,15 +34,17 @@ PROXIES = {}
 if DEV:
     from dev_config import *
     from bspg_keys.dev_app_key import *
+    from bspg_keys.dev_user_refresh_tokens_clb_v1 import *
     if not DEBUG:
         from bspg_keys.dev_auth_key import *
 else:
     from prod_config import *
     from bspg_keys.prod_app_key import *
+    from bspg_keys.prod_user_refresh_tokens_clb_v1 import *
     if not DEBUG:
         from bspg_keys.prod_auth_key import*
 
-from bspg_keys.user_refresh_tokens_collab_v1 import *
+#from bspg_keys.user_refresh_tokens_collab_v1 import *
 
 ALLOWED_HOSTS = [
         '*',
