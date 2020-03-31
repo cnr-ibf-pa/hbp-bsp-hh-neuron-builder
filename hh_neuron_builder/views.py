@@ -60,6 +60,7 @@ def home(request):
     Serving home page for "hh neuron builder" application
     """
 
+    print(request.user.social_auth.get().extra_data["refresh_token"])
     ctx = request.GET.get('ctx', None)
     if not ctx:
         return render(request, 'efelg/hbp_redirect.html')
@@ -1709,13 +1710,21 @@ def register_model_catalog(request, reg_collab="", exc="", ctx=""):
         private_flag = False
     
     model_id = mc.register_model(app_id=str(MCapp_navID), name=mod_name,
-        author={"family_name": auth_family_name, "given_name": auth_given_name}, organization=organization,
-        private=private_flag, cell_type=cell_type, model_scope=model_scope,
-        abstraction_level=abstraction_level, brain_region=brain_region, species=species,
-        owner={"family_name": own_family_name, "given_name": own_given_name}, project="SP 6.4", license=license,
+	author={"family_name": auth_family_name, "given_name": auth_given_name},
+        owner={"family_name": own_family_name, "given_name": own_given_name},
+        organization=organization,
+        private=private_flag,
+        cell_type=cell_type,
+        model_scope=model_scope,
+        abstraction_level=abstraction_level,
+        brain_region=brain_region,
+        species=species,
         description=description,
-        instances=[{"source":reg_mod_url,"version":"1.0", "parameters":""}])
-    
+        instances=[{"source":reg_mod_url,
+        	"version":"1.0",
+                "parameters":"",
+                "license":license}]) 
+
     model_path_on_catalog = "https://collab.humanbrainproject.eu/#/collab/{}/nav/{}?state=model.{}".format(str(mc_fin_clb_id),str(MCapp_navID), model_id)
     
     edit_message = "\
