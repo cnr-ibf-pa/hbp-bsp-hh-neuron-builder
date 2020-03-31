@@ -844,7 +844,6 @@ def check_cond_exist(request, exc="", ctx=""):
     opt_sub_param_dict = {}
     opt_sub_param_file = os.path.join(request.session[exc]['user_dir_data_opt_launch'], \
         request.session[exc]['opt_sub_param_file'])
-    
     # if parameter file exists, read values
     if os.path.exists(opt_sub_param_file):
         with open(opt_sub_param_file) as json_file:

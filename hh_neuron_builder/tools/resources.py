@@ -70,8 +70,6 @@ def get_token_from_refresh_token(mc_clb_user=""):
         }
 
     response = requests.post(token_url, data=data)
-    pprint.pprint(response.text)
-    pprint.pprint(response.json())
     clb_user_token = response.json()['access_token']
 
     return clb_user_token

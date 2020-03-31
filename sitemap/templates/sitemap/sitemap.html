@@ -1,0 +1,34 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Brain Simulation Platform sitemap</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width">
+
+        <link rel="stylesheet" href="{% static 'hbp-collaboratory-theme/dist/css/bootstrap.css' %}">
+        <link rel="stylesheet" href="{% static 'bspg.css' %}">
+        <link rel="stylesheet" href="{% static 'sitemap/css/sitemap.css' %}">
+        <script type="text/javascript" src="{% static 'jquery/dist/jquery.min.js' %}"></script>
+        <script src={% static 'sitemap/js/d3.v3.min.js' %}></script>
+        <script src={% static 'sitemap/js/dndTree.js' %}></script>
+    </head>
+
+    <body>
+        <h3 id= "title">Brain Simulation Platform Sitemap</h3>
+        <div id="demo"></div>
+        <!--
+            <input id="reloadButton" type="button" onclick='reloadMap()' class="btn btn-link"  value="reload map">
+        -->
+        <div id="tree-container"></div>
+        <br>
+        <script>
+
+window.addEventListener("resize", reloadMap);
+function reloadMap(){
+    window.location = window.location;
+}
+        </script>
+    </body>
+</html>
