@@ -180,12 +180,12 @@ function registerModelMain(){
                 displayModelRegistrationDiv();
             } else {
                 var message = "You do not have write permissions for the present \
-                               collab: this will prevent you from saving your model \
+                               Collab: this will prevent you from saving your model \
                                in the Collab instance of the Model Catalog.<br><br>\
                                If you proceed, the model will be saved in a different\
-                               collab and its url will be shown after the registration.\
+                               Collab and its url will be shown after the registration.\
                                In this case, if you want to edit your model's metadata, \
-                               you will need to contact support@humanbrainproject.eu.<br><br>\
+                               you will need to contact <strong>support@humanbrainproject.eu.</strong><br><br>\
                                Alternatively, you can run the HH-Neuron-Builder \
                                tool in one of the Collabs you are a member of.\
                                This will give you full control on the registered model."

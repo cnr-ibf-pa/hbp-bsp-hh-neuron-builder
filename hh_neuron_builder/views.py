@@ -60,7 +60,6 @@ def home(request):
     Serving home page for "hh neuron builder" application
     """
 
-    print(request.user.social_auth.get().extra_data["refresh_token"])
     ctx = request.GET.get('ctx', None)
     if not ctx:
         return render(request, 'efelg/hbp_redirect.html')
