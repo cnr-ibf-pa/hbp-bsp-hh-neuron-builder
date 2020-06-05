@@ -69,14 +69,15 @@ def get_working_directory(job, headers={}, properties=None, proxies={}):
 
 
 def invoke_action(resource, action, headers, data={},proxies={}):
+    print('invoke_action(%s) called...' % action)
     my_headers = headers.copy()
     my_headers['Content-Type']="application/json"
     action_url = get_properties(resource, headers, proxies=proxies)['_links']['action:'+action]['href']
     r = requests.post(action_url,data=json.dumps(data), headers=my_headers, \
             verify=False, proxies=proxies)
-    if r.status_code!=200:
-        raise RuntimeError("Error invoking action: %s" % r.status_code)
-    return r.json()
+    if r.status_code != 200 and r.status_code != 204:
+	raise RuntimeError("Error invoking action: (code: %s, message: %s)." % (r.status_code, r.content))
+    return r
 
 
 def upload(destination, file_desc, headers, proxies={}):
@@ -110,19 +111,17 @@ def submit(url, job, headers, inputs=[], proxies={}):
         os.environ["no_proxy"] = ""
     r = requests.post(url,data=json.dumps(job), headers=my_headers, \
             verify=False, proxies=proxies)
-
     if r.status_code!=201:
         raise RuntimeError("Error submitting job: %s" % r.status_code)
     else:
         jobURL = r.headers['Location']
-
+    
     #  upload input data and explicitely start job
     if len(inputs)>0:
         working_directory = get_working_directory(jobURL, headers)
         for input in inputs:
             upload(working_directory+"/files", input, headers)
         invoke_action(jobURL, "start", headers)
-    
     return jobURL
 
     
@@ -178,7 +177,8 @@ def get_file_content(file_url, headers, check_size_limit=True,\
         return r.content
 
 def list_files(dir_url, auth, path="/", proxies={}):
-    return get_properties(dir_url+"/files"+path, auth, proxies=proxies)['children']
+    #return get_properties(dir_url+"/files"+path, auth, proxies=proxies)['children']
+    return get_properties(dir_url+"/files"+path, auth, proxies=proxies)
 
 def get_oidc_auth(token=None):
     """ returns HTTP headers containing OIDC bearer token """

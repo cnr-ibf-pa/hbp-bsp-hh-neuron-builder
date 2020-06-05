@@ -530,7 +530,8 @@ def run_optimization(request, exc="", ctx=""):
                 node_num=node_num, runtime=runtime, zfName=zfName)
 
     elif hpc_sys == "DAINT-CSCS":
-        PROXIES = settings.PROXIES
+        
+	PROXIES = settings.PROXIES
         execname = "zipfolder.py"
         joblaunchname = "ipyparallel.sbatch"
         
@@ -542,6 +543,8 @@ def run_optimization(request, exc="", ctx=""):
             source_feat=source_feat, gennum=gennum, offsize=offsize, \
             zfName=zfName, hpc = hpc_sys, execname=execname, \
             joblaunchname=joblaunchname)
+	
+	
 
         # launch job on cscs-pizdaint
         resp = hpc_job_manager.Unicore.run_unicore_opt(hpc=hpc_sys, \
@@ -1247,7 +1250,18 @@ def run_analysis(request, exc="", ctx=""):
             resp = hpc_job_manager.OptResultManager.create_analysis_files(\
                 opt_res_folder, opt_res_file)
             up_folder = resp["up_folder"]
-            tempresp = subprocess.call(". /web/bspg/venvbspg/bin/activate; cd " + up_folder + "; nrnivmodl mechanisms; python opt_neuron.py --analyse --checkpoint ./checkpoints > /dev/null 2>&1 ", shell=True)
+            chkps_listdir = os.listdir(os.path.join(up_folder, 
+                'checkpoints'))
+            for i in chkps_listdir:
+                if i[-4:] == ".pkl":
+                    pkl_file = i
+                    continue
+                else:
+                    pkl_file = ""
+            tempresp = subprocess.call(". /web/bspg/venvbspg/bin/activate;\
+                    cd " + up_folder + "; nrnivmodl mechanisms; \
+                    python opt_neuron.py --analyse --checkpoint \
+                    ./checkpoints/" + pkl_file +" > /dev/null 2>&1 ", shell=True)
 
         except Exception as e:
             msg = traceback.format_exception(*sys.exc_info())

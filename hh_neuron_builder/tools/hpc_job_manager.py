@@ -297,15 +297,12 @@ class Unicore:
                 job_url = unicore_client.submit(base_url + '/jobs', job, auth, \
                     inputs, proxies=proxies)
                 jobname = job_url.split('/')[-1]
-
             resp = {'response':'OK', 'joburl':job_url, 'jobname': jobname, \
                     'job_id': jobname,
                     'message':'Job submitted with success', 'status_code':200}
-
         except Exception as e:
             print(e)
             resp = {'response':'KO', 'message': 'Operation not completed'}
-
         return resp 
 
 
@@ -411,7 +408,7 @@ class Unicore:
             if (r['status']=='SUCCESSFUL') or (r['status']=='FAILED'):
                 wd = unicore_client.get_working_directory(job_url, auth, proxies=proxies)
                 output_files = unicore_client.list_files(wd, auth, proxies=proxies)
-                for file_path in output_files:
+                for file_path in output_files['content']:
                     _, f = os.path.split(file_path)
                     if (f=='stderr') or (f=="stdout") or (f=="output.zip"):
                         content = unicore_client.get_file_content(wd + "/files" + \
@@ -859,7 +856,7 @@ class OptFolderManager:
                 f.write('set -x\n')
                 f.write('\n')
                 f.write('export MODULEPATH=/users/bp000178/ich002/software/daint/'+\
-                    'local-20191129103029/share/modules:$MODULEPATH;module load bpopt\n')
+                        'local-20191129103029/share/modules:/apps/daint/UES/easybuild/modulefiles:$MODULEPATH;module load bpopt\n')
                 f.write('\n')
                 f.write('export USEIPYP=1\n')
                 f.write('export IPYTHONDIR="`pwd`/.ipython"\n')
