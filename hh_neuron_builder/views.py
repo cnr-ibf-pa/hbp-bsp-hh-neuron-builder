@@ -1252,16 +1252,10 @@ def run_analysis(request, exc="", ctx=""):
             up_folder = resp["up_folder"]
             chkps_listdir = os.listdir(os.path.join(up_folder, 
                 'checkpoints'))
-            for i in chkps_listdir:
-                if i[-4:] == ".pkl":
-                    pkl_file = i
-                    continue
-                else:
-                    pkl_file = ""
             tempresp = subprocess.call(". /web/bspg/venvbspg/bin/activate;\
                     cd " + up_folder + "; nrnivmodl mechanisms; \
                     python opt_neuron.py --analyse --checkpoint \
-                    ./checkpoints/" + pkl_file +" > /dev/null 2>&1 ", shell=True)
+                    ./checkpoints > /dev/null 2>&1 ", shell=True)
 
         except Exception as e:
             msg = traceback.format_exception(*sys.exc_info())
