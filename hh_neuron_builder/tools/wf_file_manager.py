@@ -37,8 +37,7 @@ class CheckConditions:
         else:
             # check that all folders exist
             folder_list = ["checkpoints", "config", "figures", "mechanisms", \
-                    "model", "morphology", "tools", "opt_neuron.py", \
-                    "__init__.py"]
+                    "model", "morphology", "opt_neuron.py"]
             for f in folder_list:
                 if not os.path.exists(os.path.join(opt_folder, f)):
                     return {"response":"KO", "message":"Folder/file '" + f + "' does not exist in the \
@@ -94,13 +93,6 @@ class CheckConditions:
                             'model' folder. Please upload a well formatted \
                             .zip file"}
 
-            # validate files in folder 'tools'
-            file_list = ['get_stats.py', 'task_stats.py']
-            for f in file_list:
-                if not os.path.exists(os.path.join(opt_folder, "tools", f)):
-                    return {"response":"KO", "message":"File '" + f + "' does not exist in the \
-                            'tools' folder. Please upload a well formatted \
-                            .zip file"}
 
             # check that only one file is present in morphology
             morph_list_dir = os.listdir(os.path.join(opt_folder, "morphology"))
