@@ -14,8 +14,14 @@ $(document).ready(function(){
                 var model_name = index;
                 $("#sub-title-div" ).after("<div  id=" + model_uuid + " name=" +
                         model_name + " class='model-info-div' style='width:100%; cursor:pointer'></div>");
-                $("#" + model_uuid).append("<div id=" + model_uuid + " class='model-info-div-title'>" + e['meta']['species'] + ' > ' + e['meta']['brain_region'] + ' > ' +  e['meta']['cell_type'] + "</div>");
-                $("#" + model_uuid).append("<div style='display:flex;' id=" + model_uuid + 'a' + " ></div>");
+                $("#" + model_uuid).append("<div id=" + model_uuid + 
+                        " class='model-info-div-title'>" + 
+                        e['meta']['species'] + ' > ' + 
+                        e['meta']['brain_region'] + ' > ' +  
+                        e['meta']['cell_type'] + ' > ' +
+                        e['meta']['name'] + "</div>");
+                $("#" + model_uuid).append("<div style='display:flex;' id=" + 
+                        model_uuid + 'a' + " ></div>");
                 var img_div = document.createElement("DIV");
                 var spk_img = document.createElement("IMG");
                 var mor_img = document.createElement("IMG");
