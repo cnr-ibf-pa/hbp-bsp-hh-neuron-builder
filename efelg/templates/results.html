@@ -1,0 +1,65 @@
+{% load static %}
+{% load oidc_session %}
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <script type="text/javascript" src="{% static 'bspganalytics.js' %}">
+        </script>
+        <title>Feature extraction GUI</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width">
+
+        <link rel="stylesheet" href="{% static 'hbp-collaboratory-theme/dist/css/bootstrap.css' %}">
+        <link rel="stylesheet" href="{% static 'bspg.css' %}">
+
+    </head>
+    <body>
+        <div id="main-e-res-div">
+            <div class="fixed-page-title row center-container">
+                <div class="col-sm-4 align-left">Results</div>
+                <div class="col-sm-4 align-center"><h4>Feature Extraction</h4></div>
+                <div class="col-sm-4 align-right">
+                    <button id="home-btn" class="btn btn-link" style="color:white;" onclick="window.location.href='/efelg/overview/'">Home</button>
+                </div>
+            </div>
+            <!-- Execution completed div  -->
+            <div id="exec-completed-div" style="display: none;"
+                                         class="alert alert-success row">
+
+                <div class="col-sm-6 align-left">Execution Completed</div>
+                <div class="col-sm-6 align-right">
+                    <a href="/efelg/download_zip" 
+                       class="alert-link">
+                        Download all results in .zip format
+                    </a>
+                </div>
+            </div>
+
+            <div id=hiddendiv></div>
+
+            <!-- div for loading message start -->
+            <div id="load-message" class="overlay-wrapper" style="display:none">
+                <div style="top: 40%;" class="overlay-content">
+                    <div class="center-container">
+                        <div class="row-center-container">
+                            <br>
+                            <div style="margin: auto;" class="spinning lg">
+                            </div>
+                            <br>
+                            <div class="please-wait-text">
+                                <p>Extracting features from traces. This may
+                                take a few minutes.</p>
+                                <p>Please wait ...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- div for loading message end -->
+    </body>
+</html>
+
+<script type="text/javascript" src="{% static 'jquery/dist/jquery.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'common/js/global.js' %}"></script>
+<script type="text/javascript" src="{% static 'efelg/js/results.js' %}"></script>

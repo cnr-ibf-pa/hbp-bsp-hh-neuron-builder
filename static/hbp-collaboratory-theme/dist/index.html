@@ -1,0 +1,95 @@
+<!doctype html>
+
+<html>
+
+  <head>
+    <title>HBP Collaboratory Bootstrap 3 Theme</title>
+    <meta name="viewport" content="width=device-width">
+    <link rel="stylesheet" href="./css/bootstrap.css">
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
+    <script type="text/javascript" src="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
+  </head>
+
+  <body>
+    <div class="container-fluid text-center">
+      <div class="row">
+        <div class="col-lg-6 col-lg-offset-3">
+          <h1 class="page-header">hbp-collaboratory-theme
+            <small>(0.1.0)</small>
+          </h1>
+          <p class="lead">A Bootstrap 3 Theme for HBP Collaboratory Extensions</p>
+          <div class="list-group">
+            <a class="list-group-item" href="https://bbpcode.epfl.ch/code/#/admin/projects/platform/hbp/collaboratory-theme">View on Gerrit</a>
+            <a class="list-group-item" href="examples/kitchen-sink.html">View "Kitchen Sink" Example</a>
+          </div>
+
+          <div class='panel panel-default text-left'>
+            <div class="panel-heading"><h3>Quick Install</h3></div>
+            <div class="panel-body">
+              <p>Download the <a href="dist/css/bootstrap.css" download>bootstrap.css</a> or <a href="dist/css/bootstrap.min.css" download>bootstrap.min.css</a> files or install using Bower:</p>
+              <pre>bower install hbp-collaboratory-theme</pre>
+            </div>
+          </div>
+
+          <div class='panel panel-default text-left'>
+            <div class="panel-heading"><h3>README</h3></div>
+            <div class="panel-body">
+              <h1 id="hbp-collaboratory-theme">hbp-collaboratory-theme</h1>
+<p>A Bootstrap 3 Theme for HBP Collaboratory Extensions</p>
+<p><a href="https://bbpcode.epfl.ch/ci/job/platform.collaboratory-theme.github/1/"><img src="https://bbpcode.epfl.ch/ci/buildStatus/icon?job=platform.collaboratory-theme.github&amp;build=1" alt="Build Status"></a></p>
+<h1 id="setup-collaboratory-theme">Setup Collaboratory Theme</h1>
+<p>This library package the HBP theme and Bootstrap so that you don&#39;t need to
+import both libraries.</p>
+<h2 id="install-with-bower">Install with Bower</h2>
+<p>Install the theme component using HBP Bower registry (<a href="http://bbpcode.epfl.ch/repositories/bower">http://bbpcode.epfl.ch/repositories/bower</a>).</p>
+<pre><code>bower install hbp-collaboratory-theme</code></pre>
+<h2 id="using-sass">Using Sass</h2>
+<p>Import <code>dist/sass/theme.scss</code></p>
+<pre><code class="language-scss"><span class="comment">// Assuming that `bower_components` is in your Sass import path</span>
+<span class="at_rule">@<span class="keyword">import</span><span class="preprocessor"> hbp-collaboratory-theme</span>/dist/sass/theme.scss</code></pre>
+<h2 id="using-css">Using CSS</h2>
+<p>Link to <code>dist/css/bootstrap.min.css</code></p>
+<pre><code>&lt;link rel=&quot;Stylesheet&quot; href=&quot;hbp-collaboratory-theme/dist/css/bootstrap.min.css&quot;&gt;</code></pre>
+<h2 id="javascript-dependencies">Javascript dependencies</h2>
+<p>A few Bootstrap components requires a counterpart javascript library. The loaded
+library depends of the underlying framework.</p>
+<p>Bootstrap jQuery plugin is included in this bundle as an optional dependency.
+If you are developing an angular based application, you need to rely on
+<code>angular-bootstrap</code> component instead.</p>
+<h3 id="angular-js-based-project">Angular JS based project</h3>
+<p>Install <code>ui.bootstrap</code></p>
+<pre><code>bower install angular-bootstrap</code></pre>
+<p>Require the module in your application.</p>
+<pre><code class="language-js"><span class="keyword">var</span> app = angular.module(<span class="string">'MyApp'</span>, [<span class="string">'ui.bootstrap'</span>]);</code></pre>
+<h3 id="jquery-based-proejct">jQuery based proejct</h3>
+<p>Include the <code>bootstrap.js</code> library in your HTML page.</p>
+<pre><code class="language-html">&lt;script src=&quot;./bower_components/collaboratory-theme/dist/javascripts/bootstrap.min.js&quot;&gt;</code></pre>
+<h1 id="usage">Usage</h1>
+<p>You can discover the look and feel of the theme by opening the kitchen sink page located at <code>./dist/examples/kitchen-sink.html</code>.</p>
+<p>This is just a theme over Bootstrap so all  <a href="http://getbootstrap.com/">Bootstrap official documentation</a> apply and should be considered accurate.</p>
+<h1 id="development">Development</h1>
+<p>Run watcher and server using grunt:</p>
+<pre><code class="language-bash">grunt serve</code></pre>
+<p>You can then access a development server on <a href="http://localhost:8100">http://localhost:8100</a>.</p>
+<p>Each time a modification is detected, the corresponding files will be
+regenerated. If a Sass file is modified, the <code>dist</code> folder will be rebuilt
+as well, which means that you can link this project with other Bower enable
+development folder and have the change propagated.</p>
+<h1 id="credits">Credits</h1>
+<p>The project structure and build files are inspired by the <a href="http://code.divshot.com/themestrap/">Themestrap</a> template.
+The kitchen sink especially is a direct copy of a huge amount of work from this
+project.
+The main variation is that we use Bootstrap Sass instead of Less.</p>
+
+            </div>
+          </div>
+
+          <footer>
+            <p class="text-muted" style="margin-top: 100px;"><small>Copyright &copy; 2015 HBP.</small></p>
+          </footer>
+        </div>
+      </div>
+    </div>
+  </body>
+
+</html>
