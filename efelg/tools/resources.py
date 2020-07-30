@@ -229,15 +229,19 @@ def print_citations(json_file_list, conf_file, final_file):
         if fin_key not in all_citations:
             continue
         crr_ref = all_citations[fin_key]
-        crr_cit = crr_ref.keys()[0]
+        crr_cit = list(crr_ref.keys())[0]
         if crr_cit not in final_citations:
             final_citations[crr_cit] = []
             final_citations[crr_cit].append(i)
         else:
             final_citations[crr_cit].append(i)
 
+    print('CHECKING FOR DIRECTORY:\n %s' % ''.join(final_file.split('/')[:-1]))
+    if not os.path.exists('/'.join(final_file.split('/')[:-1])):
+        os.mkdir('/'.join(final_file.split('/')[:-1]))
+
     with open(final_file, 'w') as tf:
-        for key, val in final_citations.iteritems():
+        for key, val in final_citations.items():
             tf.write("For the following data:\n")
             for i in val:
                 tf.write(i + "\n")

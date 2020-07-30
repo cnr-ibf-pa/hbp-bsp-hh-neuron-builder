@@ -13,11 +13,19 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from django.urls import path, include
+from django.urls import path, include, register_converter
 from hbp_login import views as login_view
 
+# from hhnb.utils.converters import AnyCharConvert
+# register_converter(AnyCharConvert, 'any')
+
+
 urlpatterns = [
-    path('hbp-login/', login_view.login, name='hbp-login'),
-    path('efelg', include('efelg.urls'),),
-    # path('hh-neuron-builder', include('hh_neuron_builder.urls')),
+    # path('hbp-login/', login_view.login, name='hbp-login'),
+    # path('hbp-login/?ctx=<uuid:ctx>', login_view.login, name='hbp-login'),
+    # path('hbp-login/?next=/?ctx=<uuid:ctx>', login_view.login, name='hbp-login'),
+    # path('hbp-login/<any:path>', login_view.login, name='hbp-login'),
+
+    path('efelg/', include('efelg.urls')),
+    path('hh-neuron-builder/', include('hhnb.urls')),
 ]

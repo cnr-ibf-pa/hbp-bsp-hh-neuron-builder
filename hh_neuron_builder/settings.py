@@ -37,7 +37,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'sslserver',
     'hbp_login',
+    'hhnb',
     'efelg',
 ]
 
@@ -48,12 +50,12 @@ MIDDLEWARE = [
     # 'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
 AUTHENTICATION_BACKENDS = (
     'hbp_login.auth.backends.MyHbpBackend',
-    # 'django.contrib.auth.backends.ModelBackend'
+    'django.contrib.auth.backends.ModelBackend'
 )
 
 ROOT_URLCONF = 'hh_neuron_builder.urls'
@@ -64,7 +66,7 @@ TEMPLATES = [
         'DIRS': [
             os.path.join(BASE_DIR, 'hbp_login/templates'),
             os.path.join(BASE_DIR, 'efelg/templates'),
-            # os.path.join(BASE_DIR, 'hh_neuron_builder/templates')
+            os.path.join(BASE_DIR, 'hhnb/templates')
         ],
         'APP_DIRS': True,
         'OPTIONS': {
@@ -130,15 +132,25 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-STATIC_ROOT = BASE_DIR + STATIC_URL
+#STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR, 'hbp_login/static'),
     os.path.join(BASE_DIR, 'efelg/static'),
-    # os.path.join(BASE_DIR, 'hh_neuron_builder/static')
+    os.path.join(BASE_DIR, 'hhnb/static'),
+    os.path.join(BASE_DIR, 'static')
 )
 
 MEDIA_ROOT = os.path.join("../app", 'media')
 
-LOGIN_URL = 'http://127.0.0.1:8000/hbp-login'
-HBP_USER_URL = 'https://services.humanbrainproject.eu/idm/v1/api/user/me'
+LOGIN_URL = 'https://127.0.0.1:8000/hbp-login'
+HBP_MY_USER_URL = 'https://services.humanbrainproject.eu/idm/v1/api/user/me'
+
+HBP_COLLAB_SERVICE_URL = 'https://services.humanbrainproject.eu/collab/v0/'
+HBP_ENV_URL = 'https://collab.humanbrainproject.eu/config.json'
+HBP_IDENTITY_SERVICE_URL = 'https://services.humanbrainproject.eu/idm/v1/api'
+HBP_MY_COLLABS_URL = "https://services.humanbrainproject.eu/collab/v0/mycollabs/"
+HBP_OIDC_TOKEK_URL = "https://services.humanbrainproject.eu/oidc/token"
+
+
+SESSION_SAVE_EVERY_REQUEST = True

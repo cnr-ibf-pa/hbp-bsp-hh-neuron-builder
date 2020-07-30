@@ -1,0 +1,407 @@
+{% extends 'hhnb/home_layout.html' %}
+{% load static  %}
+
+{% block content  %}
+
+<input type="hidden" id="refresh" value="no">
+<div id="mainDiv" class="center-container">
+    <div class="param-title-div">
+        <div class="row">
+            <div id="wf-title" class="col-xs-6 align-left wf-title"></div>
+            <div class="col-xs-6 align-right">
+                <button id="wf-btn-home" class="btn home-title-btn" 
+                                         onclick="window.location.href='/hh-neuron-builder/'">
+                    Home</button>
+                <button id="wf-btn-new-wf" class="btn home-title-btn" 
+                                           title="Create a new workflow">
+                    New</button>
+                <button id="wf-btn-clone-wf" class="btn home-title-btn" 
+                                             title="Clone current workflow">Clone</button>
+                <button id="wf-btn-save" class="btn home-title-btn" 
+                                         title="Save current workflow to Collab Storage">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="cell-opt-div"  class="center-container wf-page-panel">
+        <div class="bg-light-gb center-container">
+            <div>
+                <button class="btn-link"  
+                        onclick="$('#inner-opt-div').toggle(500);">
+                    <h2>Cell Optimization</h2></button>
+            </div>
+        </div>
+        <div id="inner-opt-div" style="display:none;" class="bg-light-gb center-container row-center-container">
+            <div class="center-container row-center-container">
+                <div class="step-panel">
+                    <div style="margin-bottom:20px">
+                        <div class="col-xs-3"></div>
+                        <div class="col-xs-6" style="text-align:center">
+                            <h3>Feature extraction</h3> 
+                        </div>
+                        <div class="glyphicon glyphicon-info-sign col-xs-3" 
+                             title="Click the 'Extract features' button to compute electrophysiological features (from the HBP dataset or your own experimental files) to be used in your optimization process. You can also upload your own features.json and protocols.json files by clicking on 'Upload file'" 
+                             style="padding:10px; color:#4a71bf; postion: relative; valign:middle; text-align:right">
+                        </div>
+                    </div>
+                    <div class="center-container">
+                        <button type="button" id="feat-efel-btn" class="btn btn-default" >Extract features</button>
+                        <button type="button" id="feat-up-btn" class="btn btn-default">Upload files</button>
+                    </div>
+                    <div class="center-container">
+                        <button id="del-feat-btn" title="Delete feature files" type="button" class="btn btn-link" disabled>Delete</button>
+                        <button id="down-feat-btn" title="Download feature files" type="button" class="btn btn-link">Download</button>
+                    </div>
+                    <div id="feat-bar" class="status-bar center-container row-center-container">
+                    </div>
+                </div>
+            </div>
+
+            <div class="center-container row-center-container">
+                <div class="step-panel">
+                    <div>
+                        <div class="col-xs-3"></div>
+                        <div class="col-xs-6" style="text-align:center">
+                            <h3>Optimization files</h3> 
+                        </div>
+                        <div class="glyphicon glyphicon-info-sign col-xs-3" data-toggle="popover" 
+                                                                            data-trigger="hover" data-content="Test" 
+                                                                                                 title="Choose a model from the HBP dataset by clicking the 'Choose from database' button. Alternative, you can upload a properly formatted .zip file containing the model folders/files. For further details, please refer to the HBP Brain Simulation Platform Guidebook" 
+                                                                                                 style="padding:10px; color:#4a71bf; postion: relative; valign:middle; text-align:right">
+                        </div>
+                    </div>
+                    <div class="center-container">
+                        <button type="button" id="opt-db-hpc-btn" title="Use optimization files from the database" class="btn btn-default" >Choose from database</button>
+                        <button type="button" id="opt-up-btn" class="btn btn-default">Upload file</button>
+                    </div>
+                    <div class="center-container">
+                        <button id="del-opt" title="Delete optimization files" type="button" class="btn btn-link" disabled>Delete</button>
+                        <button id="down-opt-set-btn" title="Download optimization files" type="button" class="btn btn-link">Download</button>
+                    </div>
+                    <div id="opt-files-bar" class="center-container status-bar">
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="center-container row-center-container">
+                <div class="step-panel">
+                    <div>
+                        <div class="col-xs-3"></div>
+                        <div class="col-xs-6">
+                            <h3>Optimization settings</h3> 
+                        </div>
+                        <div class="glyphicon glyphicon-info-sign col-xs-3" 
+                             title="Click the 'Set parameters/Choose HPC button' to set the optimization (i.e. BluePyOpt) and execution (e.g. number of cores, runtime, etc.) parameters" 
+                             style="padding:10px; color:#4a71bf; postion: relative; valign:middle; text-align:right">
+                        </div>
+                    </div>
+                    <div class="center-container">
+                        <button type="button" id="opt-set-btn" class="btn btn-default"  title="Set Optimization parameters">Set parameters/Choose HPC</button>
+                    </div>
+                    <div id="opt-param-bar" class="status-bar center-container">
+                    </div>
+                </div>
+            </div>
+
+            <div id="optlaunchmessagediv" class="center-container row-center-container">
+                <img id="optlaunchimg" src="{% static "img/ko_red.png" %}" class="ok-ko-btn">
+                <span id="optlaunchtextspan">No optimization launched</span>
+            </div>
+            <div class="center-container">
+                <div class="center-container row-center-container">
+                    <button type="button" id="launch-opt-btn"
+                                          class="main-panel-btn btn btn-lg" 
+                                          class="main-panel-btn btn btn-lg" 
+                                          disabled>Launch optimization</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Single cell simulation run panel -->
+    <div id="run-sim-div" class="center-container  wf-page-panel">
+        <div class="bg-light-gb center-container">
+            <div class="">
+                <button class="btn-link" onclick="$('#inner-sim-div').toggle(500);"><h2>Single Cell Simulation Run</h2></button>
+            </div>
+        </div>
+
+        <div id="inner-sim-div" style="display:none;" class="center-container row-center-container">
+            <div class="bg-light-gb center-container row-center-container">
+                <div class="step-panel">
+                    <div>
+                        <div class="col-xs-3"></div>
+                        <div class="col-xs-6" style="text-align:center">
+                            <h3>Optimization results</h3> 
+                        </div>
+                        <div class="glyphicon glyphicon-info-sign col-xs-3" 
+                             data-toggle="popover" 
+                             data-trigger="hover" data-content="Test" 
+                                                  title="Fetch optimization results from HPC systems by clicking the 'Fetch results' button. Alternative, you can upload a properly formatted .zip file containing the optimized  model folders/files ready for simulation. For further details, please refer to the HBP Brain Simulation Platform Guidebook" 
+                                                  style="padding:10px; color:#4a71bf; postion: relative; valign:middle; text-align:right">
+                        </div>
+                    </div>
+                    <div class="center-container">
+                        <button id="opt-fetch-btn" type="button" 
+                                                   class="btn btn-default">Fetch results</button>
+                        <button id="opt-res-up-btn" type="button" 
+                                                    class="btn btn-default">Upload file</button>
+                    </div>
+                    <div class="center-container">
+                        <button id="del-sim-btn" 
+                                title="Delete optimization results" 
+                                type="button" class="btn btn-link" disabled>Delete</button>
+
+                        <button id="down-opt-btn" title="Download optimization results" 
+                                                  type="button" 
+                                                  class="btn btn-link">Download results</button>
+                    </div>
+                    <div class="center-container">
+                        <button id="down-sim-btn" title="Download model files"
+                                                  type="button" 
+                                                  class="btn btn-link">Download model</button>
+                    </div>
+                    <div id="opt-res-bar" class="status-bar center-container">
+                    </div>
+                </div>
+                <div class="center-container">
+                    <button type="button" id="run-sim-btn" class="width-step-div main-panel-btn btn btn-lg" disabled>Run simulation</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- section containing divs for user insertions -->
+<div id="overlaywrapper" class="overlay-wrapper">
+    <br>
+    <div id="overlayparam" class="overlay-content overflow">
+        <form id='submitRunParam' method='POST'>{% csrf_token %}
+            <div class="param-title-div">
+                <strong>HPC system</strong>
+            </div>
+            <br>
+            <select id="hpc_sys" name="hpc_sys">
+                <option value="--" name="--">Select a HPC system</option>
+                <option  value="DAINT-CSCS" name="DAINT-CSCS">CSCS-DAINT</option>
+                <option  value="SA-CSCS" name="SA-CSCS">CSCS-DAINT Service Account</option>
+                <option value="NSG" name="NSG">NSG - NeuroScience Gateway</option>
+            </select>
+            <br>
+            <div id="hpc-param" class="collapse">
+                <div id="un-div" style="display:block">
+                    <br>
+                    <label class="" for="username_submit">Username</label>
+                    <br>
+                    <input class="" id="username_submit" type="text" name="username_submit">
+                    <br>
+                    <br>
+                </div>
+                <div id="pwd-div" style="display:block">
+                    <label class="" for="password_submit">Password</label>
+                    <br>
+                    <input class="" id="password_submit" type="password"
+                                                         name="password_submit">
+                </div>
+            </div>
+            <br>
+            <div class="param-title-div">
+                <strong>Algorithm Parameters</strong>
+            </div>
+            <br>
+            <label for="gen-max">Number of generation (max 60)</label>
+            <br>
+            <input class="num-edit" type="number" name="gen-max" id="gen-max" step="1" min="1"><br>
+            <br>
+            <label for="offspring">Offspring size</label>
+            <br>
+            <input class="num-edit" type="number" name="offspring" id="offspring"step="1" min="1"><br>
+            <br>
+            <br>
+            <div class="param-title-div">
+                <strong>Optimization Run Parameters</strong>
+            </div>
+            <br>
+            <label for="node-num">Number of nodes</label>
+            <br>
+            <input type="number" name="node-num" id="node-num"><br>
+            <br>
+            <label for="core-num">Number of cores</label>
+            <br>
+            <input type="number" name="core-num" id="core-num"><br>
+            <br>
+            <label for="runtime">Runtime</label>
+            <br>
+            <input type="" name="runtime" id="runtime"><br>
+            <br>
+            <br>
+            <button id="cancel-param-btn" type="button" class="btn btn-primary closebtn">Cancel</button>
+            <button id="apply-param" class="btn btn-primary" disabled>Apply</button>
+        </form>
+    </div>
+</div>
+<!-- -->
+
+
+<!-- section containing divs for user fetch system insertions -->
+<div id="overlaywrapperfetch" class="overlay-wrapper">
+    <div id="overlayparamfetch" style="top:30%;" 
+                                class="overlay-content standard-border">
+        <form id='submitFetchParam' method='POST'>{% csrf_token %}
+            <div class="param-title-div">
+                <strong>HPC system</strong>
+            </div>
+            <br>
+            <select id="hpc_sys_fetch" name="hpc_sys_fetch">
+                <option value="--" name="--">Select a HPC system</option>
+                <option value="DAINT-CSCS" name="DAINT-CSCS">CSCS-DAINT</option>
+                <option value="SA-CSCS" name="SA-CSCS">CSCS-DAINT Service Account</option>
+                <option value="NSG" name="NSG">NSG - NeuroScience Gateway</option>
+            </select>
+            <div id="hpc-param-fetch" class="collapse">
+                <div id="un-fetch-div">
+                    <br>
+                    <label for="username_fetch">Username</label>
+                    <input id="username_fetch" type="text" name="username_fetch">
+                </div>
+                <div id="pwd-fetch-div">
+                    <br>
+                    <label for="password_fetch">Password</label>
+                    <input id="password_fetch" type="password" name="password_fetch">
+                </div>
+            </div>
+            <br>
+            <br>
+            <button id="cancel-param-fetch-btn" type="button" class="btn btn-primary closebtn">Cancel</button>
+            <button id="apply-param-fetch" class="btn btn-primary" disabled>Apply</button>
+        </form>
+    </div>
+</div>
+<!-- -->
+
+<!-- "Please wait" message div -->
+<div id="overlaywrapperwait" class="overlay-wrapper">
+    <div id="overlaywait" style="top:35%;" class="overlay-content standard-border">
+        <div style="margin:auto;" class="spinning lg"></div>
+        <div id="waitdynamictext" class="please-wait-text"></div>
+        <div class="please-wait-text">Please wait ...</div>
+    </div>
+</div>
+<!-- -->
+
+<!-- "Error" message div -->
+<div id="overlaywrappererror" class="overlay-wrapper">
+    <div id="overlayerror" style="top:35%;" class="overlay-content standard-border">
+        <div class="center-container">
+            <div class="row-center-container">
+                <div id="errordynamictext" class="please-wait-text"></div>
+                <br>
+                <button id="ok-error-div-btn" class="btn btn-default
+                closebtn">Ok</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- -->
+
+
+<!-- "Reload" message div -->
+<div id="overlaywrapperreload" class="overlay-wrapper">
+    <div id="overlayrelod" style="top:35%;" class="overlay-content standard-border">
+        <div class="center-container">
+            <div class="row-center-container">
+                <div id="reloaddynamictext" class="please-wait-text"></div>
+                <br>
+                <button id="reload-div-btn" class="btn btn-default
+                closebtn">Reload</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- -->
+
+<!-- "Expired Workflow" message div -->
+<div id="overlaywrapperexpiration" class="overlay-wrapper">
+    <div id="overlayexpired" style="top:35%;" class="overlay-content">
+        <div class="center-container">
+            <div class="row-center-container">
+                <div id="expirationdynamictext" class="please-wait-text"></div>
+                <button id="home-expiration-div-btn" class="btn btn-default
+                closebtn" onclick="window.location.href='/hh-neuron-builder/'">Home</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- -->
+
+<!-- Fetched jobs div -->
+<div id="overlaywrapperjobs" class="overlay-wrapper">
+    <div id="overlayjobs" 
+         class="overlay-content overflow width-95p height-90p">
+        <div id="fetch-job-title" class="align-center">
+            <h4><strong>Download job results</strong></h4>
+        </div>
+
+        <table id="job-list-table" style="overflow:auto" 
+                                   class="sortable height-90p" cellpadding="10">
+            <thead> 
+                <tr> 
+                    <th id="wf-th" class="tth">Workflow ID</th> 
+                    <th id="job-th" class="tth">Job ID</th> 
+                    <th class="tth">Status</th> 
+                    <th id="dt-th" class="tth">Date/Time (UTC)</th> 
+                    <th class="sorttable_nosort"></th> 
+                </tr> 
+                <tbody id="job-list-body">
+                </tbody>
+            </thead> 
+
+        </table>
+
+        <div id="job-list-div" class="height-90p"
+                               style="overflow:auto;">
+        </div>
+        <br>
+        <div class="center-container row-center-container">
+            <button id="refresh-job-list-btn" type="button" 
+                                              class="btn btn-default col-xs-6">Refresh</button>
+            <button id="cancel-job-list-btn" type="button" 
+                                             class="btn btn-default col-xs-6">Cancel</button>
+        </div>
+        <br>
+    </div>
+</div>
+<!-- -->
+
+<!-- Upload div -->
+<div id="overlaywrapperoptres" class="overlay-wrapper">
+    <div id="overlayoptres" style="top:20%;" class="overlay-content" >
+        <form id="uploadFileForm" action="" method="POST" enctype="multipart/form-data">{% csrf_token %}
+            <div id="uploadTitleDiv" class="param-title-div">
+            </div>
+        <br>
+        <div id="upload_sim_img_div">
+            <img src="{% static "hh_neuron_builder/img/expected_sim_zip.jpg"  %}"
+                 style="width:100%" alt="Expected sim zip file">
+            <br>
+            <br>
+        </div>
+        <label for="opt-res-file" style="overflow-x:scroll">
+            <input style="overflow-x:scroll" type="file" name="opt-res-file" id="opt-res-file" class="btn btn-default" accept=".zip"/>
+            <span style="overflow-x:scroll" class="custom-file-control"></span>
+        </label>
+        <br>
+        <button type="button" id="cancel-upload-file-btn" class="btn btn-primary">Cancel</button>
+        <input type="submit" id="upload-opt-res-btn" disabled name="upload_opt_res_button" class="btn btn-primary" value="Upload" />
+        </form>
+    </div>
+</div>
+<!-- -->
+
+<script type="text/javascript" src="{% static 'hh_neuron_builder/js/workflow.js' %}"></script>
+<script type="text/javascript" src="{% static 'hh_neuron_builder/js/common.js' %}"></script>
+
+{% endblock  %}
