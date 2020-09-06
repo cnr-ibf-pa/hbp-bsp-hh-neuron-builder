@@ -310,8 +310,8 @@ def get_list(request):
             crr_file_auth = files_auth[i]
             # if any(j in crr_file_auth for j in crr_auth_data_list) or crr_file_auth[0] == "all":
             #     allfiles.append(i[:-5])
-            allfiles.append(i[:-5])
-
+            if crr_file_auth[0] == 'all':
+                allfiles.append(i[:-5])
 
     request.session["current_authorized_files"] = allfiles
 

@@ -1,6 +1,7 @@
 // show "check permissions" message
-writeMessage("wmd-first", "Checking data permissions. This may take 30s to 50s");
-writeMessage("wmd-second", "Please wait ...");
+//writeMessage("wmd-first", "Checking data permissions. This may take 30s to 50s");
+writeMessage("wmd-first", "Loading");
+writeMessage("wmd-second", "Please wait...");
 openMessageDiv("wait-message-div", "main-e-st-div");
 
 //
