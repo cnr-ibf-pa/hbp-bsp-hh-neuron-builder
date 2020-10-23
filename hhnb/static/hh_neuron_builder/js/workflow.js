@@ -96,7 +96,7 @@ $(document).ready(function(){
     // manage top bar buttons
     document.getElementById("wf-btn-home").onclick = goHome;
     document.getElementById("wf-btn-new-wf").onclick = newWorkflow;
-    document.getElementById("wf-btn-clone-wf").onclick = cloneWorkflow;
+//    document.getElementById("wf-btn-clone-wf").onclick = cloneWorkflow;
     document.getElementById("wf-btn-save").onclick = saveWorkflow;
 
     // manage optimization settings buttons action
@@ -755,22 +755,44 @@ function newWorkflow() {
     });
 }
 
-//
-function cloneWorkflow() {
+
+/*function cloneWorkflow() {
     displayPleaseWaitDiv();
     $.getJSON('/hh-neuron-builder/create-wf-folders/cloned/' + req_pattern, function(zip_data){
         checkConditions();
         closePleaseWaitDiv();
     });
-}
+}*/
 
 //
-function saveWorkflow() {
+/*function saveWorkflow() {
     displayPleaseWaitDiv(message="Saving workflow to storage");
     $.getJSON('/hh-neuron-builder/save-wf-to-storage/' + req_pattern, function(zip_data){
         checkConditions();
         closePleaseWaitDiv();
     });
+}*/
+
+
+function downloadURI(uri, name) {
+  var link = document.createElement("a");
+  link.download = name;
+  link.href = uri;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  delete link;
+}
+
+
+function saveWorkflow() {
+    fetch("/hh-neuron-builder/workflow-download/" + req_pattern, {
+        method: "GET"
+    }).then(
+        data => downloadURI(data.url, 'workflow')
+    ).catch(
+        error => console.log(error)
+    );
 }
 
 //

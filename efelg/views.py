@@ -9,8 +9,6 @@ from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.http.response import HttpResponse
 
-from hbp_login.utils.misc import get_auth_header
-
 from hh_neuron_builder import settings
 from efelg.tools import resources, manage_json
 
@@ -291,7 +289,9 @@ def get_list(request):
     json_dir = request.session['json_dir']
 
     # extract the list of the collabs the current user belongs to
-    my_collabs_url = settings.HBP_MY_COLLABS_URL
+    #
+    # my_collabs_url = settings.HBP_MY_COLLABS_URL TODO: to be removed
+    #
     # crr_auth_data_list = resources.user_collab_list(my_collabs_url, request.user.social_auth.get())
 
     # retrieve the file containing the authorizations for each data file

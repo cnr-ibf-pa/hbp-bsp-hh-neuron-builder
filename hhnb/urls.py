@@ -14,6 +14,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.urls import path, register_converter
+from django.conf.urls.static import static
 from hhnb import views
 from hhnb.utils import converters
 
@@ -38,7 +39,7 @@ urlpatterns = [
     # path('<uuid:ctx>', views.home),
     # path('login/hbp', auth_views.login),
     # path('logout/hbp', auth_views.logout),
-    path('check-cond-exists/' + required, views.check_cond_exist),
+    path('check-cond-exist/' + required, views.check_cond_exist),
     path('choose-opt-model/', views.choose_opt_model),
     path('copy-feature-files/<any:feature_folder>/' + required + '/', views.copy_feature_files),
     path('create-wf-folders/<new_or_cloned:wf_type>/' + required, views.create_wf_folders, name='create_wf_folders'),
@@ -70,4 +71,10 @@ urlpatterns = [
     path('wf-storage-list/' + required + '/', views.wf_storage_list),
     path('workflow/', views.workflow),
     path('zip-sim/<any:job_id>/' + required, views.zip_sim),
+
+    path('workflow-upload/' + required, views.workflow_upload),
+    path('workflow-download/' + required, views.workflow_download),
+
+    path('get-user-avatar', views.get_user_avatar),
+    path('get-user-page', views.get_user_page),
 ]
