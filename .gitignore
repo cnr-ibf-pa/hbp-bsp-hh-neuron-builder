@@ -1,5 +1,6 @@
 *.pyc
 *.log
 .idea/
+.vscode
 
 db.sqlite3

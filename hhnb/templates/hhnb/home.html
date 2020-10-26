@@ -29,9 +29,14 @@
         <div class="center-container column-center-container main-page-panel">
             <button id="new-wf" type="button" class="btn btn-lg main-panel-btn" 
                                               onclick=initNewWorkflow();>Initiate a new workflow</button>
-            <button id="fetch-wf-btn" type="button" 
-                                      class="btn btn-lg main-panel-btn" 
+            <!--<button id="fetch-wf-btn" type="button"
+                                      class="btn btn-lg main-panel-btn"
                                       onclick=fetchWorkflows();>Select a completed/ongoing workflow
+            </button>-->
+            <input type="file" accept="application/zip" id="workflow-upload" style="display: none">
+            <button id="fetch-wf-btn" type="button"
+                                      class="btn btn-lg main-panel-btn"
+                                      onclick=uploadWorkflow();>Upload workflow
             </button>
         </div>
     </div>

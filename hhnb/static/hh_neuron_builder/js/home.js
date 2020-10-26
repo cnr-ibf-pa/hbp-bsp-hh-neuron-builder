@@ -29,6 +29,7 @@ $(document).ready(function(){
     });
 });
 
+/*
 function fetchWorkflows() {
     openPleaseWaitDiv("Searching for workflows in your current collab storage");
     var listDivEl = document.getElementById("wf-storage-list-div");
@@ -63,6 +64,42 @@ function fetchWorkflows() {
             document.body.style.overflow = "hidden";
         };
     });
+}
+*/
+
+
+function uploadWorkflow() {
+    console.log("uploadWorkflow() called.")
+    // Select your input type file and store it in a variable
+    const input = document.getElementById('workflow-upload');
+    $("#workflow-upload").trigger("click");
+
+    // This will upload the file after having read it
+    const upload = (file) => {
+      fetch("/hh-neuron-builder/workflow-upload/" + req_pattern, { // Your POST endpoint
+        method: "POST",
+        headers: {
+          "Content-Type": "application/zip",
+          "Content-Disposition": "attachment; filename=\"" + file.name + "\""
+        },
+        body: file
+      }).then(
+        data => {
+            console.log("SONO QUI"); // Handle the success response object
+            console.log(data);
+            window.location.href = "/hh-neuron-builder/workflow/";
+        }
+      ).catch(
+        error => console.log(error) // Handle the error response object
+      );
+    };
+
+    // Event handler executed when a file is selected
+    const onSelectFile = () => upload(input.files[0]);
+
+    // Add a listener on your input
+    // It will be triggered when a file will be selected
+    input.addEventListener('change', onSelectFile, false);
 }
 
 function openNoWfDiv() {
@@ -128,7 +165,7 @@ function downloadWf(wfid) {
     openPleaseWaitDiv("Downloading workflow from the storage.");
     closeFetchWfStorageDiv();
     var wfid_no_ext = wfid.replace(/\.[^/.]+$/, "")
-        $.getJSON('/hh-neuron-builder/fetch-wf-from-storage/' + wfid_no_ext + '/' + req_pattern + '/', function(data){
+        $.getJSON('/hh-neuron-builder/fetch-wf-from-storage/' + wfid_no_ext + '/' + req_pattern + '/', function(data) {
             closePleaseWaitDiv();
             window.location.href = "/hh-neuron-builder/workflow/";
         });

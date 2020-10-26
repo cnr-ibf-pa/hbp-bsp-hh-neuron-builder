@@ -15,13 +15,10 @@ import uuid
 
 # import django libs
 from django.conf import settings
-from django.shortcuts import render
-from django.http import HttpResponse
+from django.shortcuts import render, redirect
+from django.http import HttpResponse, JsonResponse, FileResponse
 from django.contrib.auth.decorators import login_required
 # import hbp modules
-
-# from hbp_app_python_auth.auth import get_access_token, get_token_type, get_auth_header
-from hbp_login.utils.misc import get_access_token, get_auth_header
 
 # TODO: to replace with new API
 import hbp_service_client.storage_service.client as service_client
@@ -40,6 +37,8 @@ from hhnb.tools import resources, hpc_job_manager, wf_file_manager
 # sys.path.append(os.path.join(settings.BASE_DIR))
 # from ctools import manage_auth
 
+from mozilla_django_oidc.contrib.drf import get_oidc_backend
+
 # set logging up
 logging.basicConfig(stream=sys.stdout)
 logger = logging.getLogger()
@@ -51,16 +50,25 @@ accesslogger.addHandler(logging.FileHandler('hhnb_access.log'))
 accesslogger.setLevel(logging.DEBUG)
 
 
-# @login_required()
 def home(request, ctx=None):
+    if request.user.is_authenticated:
+        print(request.user)
+        print(request.user.first_name)
+        print(request.user.last_name)
+        # print(request.user.name)
+        # user_access_token = request.session.get('oidc_access_token')
+        # r = requests.get(url=settings.OIDC_OP_USER_ENDPOINT, headers={'Authorization': 'Bearer %s' % user_access_token})
+        # print(request.user.first_name)
+        # if r.status_code == 200:
+        #     print(json.dumps(r.json(), indent=4))
+        # else:
+        #     print(r.status_code, r.text, sep='\n')
+
+
+    # print('home')
     """
     Serving home page for "hh neuron builder" application
     """
-    try:
-        print('[Home view] User in session %s' % request.session['user_id'])
-    except KeyError:
-        print('[Home view] User not saved in session')
-
     # if not ctx:
     #     ctx = request.GET.get('ctx', None)
     #     if not ctx:
@@ -75,11 +83,7 @@ def home(request, ctx=None):
     return render(request, 'hhnb/home.html', context)
 
 
-# @login_required()
 def set_exc_tags(request, exc="", ctx=""):
-
-    # print(request.user)
-
     if exc in request.session:
         exc = ""
     else:
@@ -447,13 +451,14 @@ def fetch_opt_set_file(request, source_opt_name="", source_opt_id="", exc="", ct
     request.session[exc]['source_opt_name'] = source_opt_name
 
     for k in model_file_dict:
-        crr_k = str(k.keys()[0])
+        crr_k = str(list(k.keys())[0])
         if crr_k == source_opt_name:
             zip_url = k[crr_k]['meta']['zip_url']
             break
 
-    PROXIES = settings.PROXIES
-    r = requests.get(zip_url, proxies=PROXIES)
+    # PROXIES = settings.PROXIES
+    r = requests.get(zip_url)  # , proxies=PROXIES)
+    print(r.status_code)
     opt_zip_path = os.path.join(user_dir_data_opt, source_opt_name + '.zip')
     with open(opt_zip_path, 'wb') as f:
         f.write(r.content)
@@ -1664,3 +1669,102 @@ def register_model_catalog(request, reg_collab="", exc="", ctx=""):
 
     return HttpResponse(json.dumps({"response": "OK", "message": edit_message, "reg_mod_url": model_path_on_catalog}),
                         content_type="application/json")
+
+
+# tmp dir workflow
+def workflow_upload(request, exc='', ctx=''):
+    print('upload_workflow endpoint.')
+
+    if request.method == 'POST':
+        wf = request.body
+        filename = request.META['HTTP_CONTENT_DISPOSITION'].split('filename="')[1].split('"')[0]
+
+        # TODO: add user id and ctx on workflow file name
+        user_path = os.path.join(settings.MEDIA_ROOT, 'user')
+        if not os.path.exists(user_path):
+            os.mkdir(user_path)
+        with open(os.path.join(user_path, filename), 'wb') as fd:
+            fd.write(wf)
+        with open(os.path.join(user_path, filename), 'rb') as fd:
+            zip_file = zipfile.ZipFile(fd)
+            zip_file.extractall(path=user_path)
+
+        for f in os.listdir(user_path):
+            if f == filename.split('.zip')[0]:
+                target_path = os.path.join(user_path, f)
+
+        for c in filename[:14]:
+            if c not in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']:
+                request.session[exc]['time_info'] = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
+            else:
+                # check if filename has changed
+                request.session[exc]['time_info'] = filename[:14]
+                break
+        request.session[exc]['wf_id'] = filename.split('.zip')[0]
+        # overwrite keys if present in request.session
+        request.session[exc]['user_dir'] = target_path
+        request.session[exc]['user_dir_data'] = os.path.join(target_path, 'data')
+        request.session[exc]['user_dir_data_feat'] = os.path.join(target_path, 'data', 'features')
+        request.session[exc]['user_dir_data_opt_set'] = os.path.join(target_path, 'data', 'opt_settings')
+        request.session[exc]['user_dir_data_opt_launch'] = os.path.join(target_path, 'data', 'opt_launch')
+        request.session[exc]['user_dir_results'] = os.path.join(target_path, 'results')
+        request.session[exc]['user_dir_results_opt'] = os.path.join(target_path, 'results', 'opt')
+        request.session[exc]['user_dir_sim_run'] = os.path.join(target_path, 'sim')
+
+        user_dir_data_opt = request.session[exc]['user_dir_data_opt_set']
+        for crr_f in os.listdir(user_dir_data_opt):
+            if crr_f.endswith(".zip"):
+                request.session[exc]['source_opt_name'] = os.path.splitext(crr_f)[0]
+                request.session[exc]['source_opt_zip'] = os.path.join(user_dir_data_opt, crr_f)
+                break
+
+        # create folders for global data and json files if not existing
+        if not os.path.exists(request.session[exc]['user_dir_data_feat']):
+            os.makedirs(request.session[exc]['user_dir_data_feat'])
+        if not os.path.exists(request.session[exc]['user_dir_data_opt_set']):
+            os.makedirs(request.session[exc]['user_dir_data_opt_set'])
+        if not os.path.exists(request.session[exc]['user_dir_data_opt_launch']):
+            os.makedirs(request.session[exc]['user_dir_data_opt_launch'])
+        if not os.path.exists(request.session[exc]['user_dir_results_opt']):
+            os.makedirs(request.session[exc]['user_dir_results_opt'])
+        if not os.path.exists(request.session[exc]['user_dir_sim_run']):
+            os.makedirs(request.session[exc]['user_dir_sim_run'])
+
+        request.session.save()
+
+        return JsonResponse(data={'response': 'OK'})
+
+    # shutil.rmtree(user_path)
+    return JsonResponse(data={'response': 'KO'})
+
+
+def workflow_download(request, exc="", ctx=""):
+    tmp_dir = os.path.join(settings.MEDIA_ROOT, 'tmp')
+    if not os.path.exists(tmp_dir):
+        os.mkdir(tmp_dir)
+
+    # retrieve data from request.session
+    wf_id = request.session[exc]['wf_id']
+    wf_dir = request.session[exc]['workflows_dir']
+
+    # to change with ebrains username
+    # userid = request.session[exc]['userid']
+    userid='0001'
+
+    # create zip file with the entire workflow
+    zipped_wf = zipfile.ZipFile(os.path.join(tmp_dir, wf_id + '.zip'), 'w', compression=zipfile.ZIP_DEFLATED)
+    for root, dirs, files in os.walk(request.session[exc]['user_dir']):
+        for f in files:
+            zipped_wf.write(os.path.join(root, f))
+    zipped_wf.close()
+
+    return FileResponse(open(zipped_wf.filename, 'rb'), as_attachment=True)
+
+
+def get_user_avatar(request):
+    r = requests.get('https://wiki.ebrains.eu/bin/download/XWiki/' + request.user.username + '/avatar.png?width=36&height=36&keepAspectRatio=true')
+    return HttpResponse(content_type='image/png;', charset='UTF-8', content=r.content)
+
+
+def get_user_page(request):
+    return redirect('https://wiki.ebrains.eu/bin/view/Identity/#/users/' + request.user.username)
