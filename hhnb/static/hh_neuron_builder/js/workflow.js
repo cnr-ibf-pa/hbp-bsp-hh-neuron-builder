@@ -96,7 +96,7 @@ $(document).ready(function(){
     // manage top bar buttons
     document.getElementById("wf-btn-home").onclick = goHome;
     document.getElementById("wf-btn-new-wf").onclick = newWorkflow;
-//    document.getElementById("wf-btn-clone-wf").onclick = cloneWorkflow;
+    document.getElementById("wf-btn-clone-wf").onclick = cloneWorkflow;
     document.getElementById("wf-btn-save").onclick = saveWorkflow;
 
     // manage optimization settings buttons action
@@ -755,14 +755,19 @@ function newWorkflow() {
     });
 }
 
-
-/*function cloneWorkflow() {
+function cloneWorkflow() {
     displayPleaseWaitDiv();
-    $.getJSON('/hh-neuron-builder/create-wf-folders/cloned/' + req_pattern, function(zip_data){
-        checkConditions();
-        closePleaseWaitDiv();
+    let win = window.open("", "_blank");
+    $.getJSON("/hh-neuron-builder/clone-workflow/" + req_pattern + "/", function(zip_data) {
+        console.log(zip_data);
     });
-}*/
+    // $.getJSON('/hh-neuron-builder/create-wf-folders/cloned/' + req_pattern, function(zip_data){
+    //     checkConditions();
+    //     closePleaseWaitDiv();
+    //     let win = window.open('/hh-neuron-builder/workflow', "_blank");
+    //     win.focus();
+    // });
+}
 
 //
 /*function saveWorkflow() {

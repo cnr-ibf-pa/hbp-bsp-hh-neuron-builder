@@ -49,7 +49,7 @@ urlpatterns = [
     path('embedded-efel-gui/', views.embedded_efel_gui),
     path('embedded-naas/' + required + '/', views.embedded_naas),
     path('fetch-opt-set-file/<source_opt:source_opt_name>/<source_opt:source_opt_id>/' + required + '/', views.fetch_opt_set_file),
-    path('fetch-wf-from-storage/<workflow_id:workflow_id>/' + required + '/', views.fetch_wf_from_storage),
+    # path('fetch-wf-from-storage/<workflow_id:workflow_id>/' + required + '/', views.fetch_wf_from_storage),
     path('get-data-model-catalog/' + required + '/', views.get_data_model_catalog),
     path('get_local_optimization_list', views.get_local_optimization_list),
     path('get_model_list/' + required, views.get_model_list),
@@ -77,4 +77,6 @@ urlpatterns = [
 
     path('get-user-avatar', views.get_user_avatar),
     path('get-user-page', views.get_user_page),
+    
+    path('clone-workflow/' + required + '/', views.clone_workflow),
 ]

@@ -22,10 +22,10 @@
 <body>
 <div id="title-div-container">
     <nav class="navbar navbar-expand-lg navbar-light bg-light bg-bordeaux"
-         style="display: flex; margin: 4px; margin-bottom: 0px; border-radius: 8px; justify-content: space-around;">
+         style="display: flex; margin: 0px; margin-bottom: 0px; border-radius: 0px; justify-content: space-around;">
         <div style="display: invisible; margin-right: auto; margin-left: 16px; width: 160px; "></div>
-        <div style="text-align: center;">
-            <h3 style="aling-self: center; color: #FFF; font-size: x-large;">
+        <div style="text-align: center">
+            <h3 style="margin: 10px 0px; color: #FFF; font-size: x-large;">
                 Hodgkin-Huxley
                 Neuron Builder</h3>
         </div>
@@ -34,8 +34,8 @@
             <a href="/hh-neuron-builder/get-user-page" style="margin:auto;">
                 <img style="border-radius: 64px;" src="/hh-neuron-builder/get-user-avatar">
             </a>
-            <a style="align-self: center; cursor: pointer" onclick="logout(this);">
-                <img src="{% static '/img/login_ico_white.png' %}">
+            <a style="align-self: center; cursor: pointer; display: flex;" onclick="logout(this);">
+                <img style="margin: auto; margin-right: 4px;" src="{% static '/img/login_ico_white.png' %}">
                 <strong style="text-align: center; color: #EEE; font-size: 18px;">Log-out</strong>
             </a>
             <form style="display: none" id="logout-form" action="{% url 'oidc_logout' %}" method="post">
@@ -43,54 +43,13 @@
                 <input id="logout-submit-input-button" type="submit" value="logout">
             </form>
             {% else %}
-            <a style="margin-left: auto;" href="{% url 'oidc_authentication_init' %}">
-                <img src="{% static '/img/login_ico_white.png' %}">
+            <a style="margin-left: auto; display: flex;" href="{% url 'oidc_authentication_init' %}">
+                <img style="margin: auto; margin-right: 4px; " src="{% static '/img/login_ico_white.png' %}">
                 <strong style="text-align: center; color: #EEE; font-size: 18px;">Log-in</strong>
             </a>
             {% endif %}
         </div>
-        <!--        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup"-->
-        <!--                aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">-->
-        <!--            <span class="navbar-toggler-icon"></span>-->
-        <!--        </button>-->
-        <!--        <div class="collapse navbar-collapse" id="navbarNavAltMarkup" style="border: 1px green solid;">-->
-        <!--            <div class="navbar-nav" style="align-self: center; height: 40px; border: 1px solid blue;">-->
-        <!--                <a class="nav-link active" href="#">Home <span class="sr-only">(current)</span></a>-->
-        <!--                <a class="nav-link" href="#">Features</a>-->
-        <!--                <a class="nav-link" href="#">Pricing</a>-->
-        <!--                <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Disabled</a>-->
-        <!--            </div>-->
-        <!--        </div>-->
     </nav>
-
-    <!--    <div class="navbar navbar-expand-lg navbar-light bg-light"
-             style="display: flex; justify-content: center; border: solid 1px red; width: 100%;">
-            <div id="title-div" class="fixed-page-title bg-bordeaux"
-                 style="border-radius: 8px; margin: 4px; padding: 16px;">
-                <ul class="navbar-nav">
-                    <li class="navbar-item">
-                        <div>
-                            <h3 id="title" style="align-self: center;">Hodgkin-Huxley Neuron Builder</h3>
-                        </div>
-                    </li>
-                    <li class="navbar-item">
-                        <div>
-                            {% if user.is_authenticated %}
-                            <p>Current user: {{ user.email }}</p>
-                            <form action="{% url 'oidc_logout' %}" method="post">
-                                {% csrf_token %}
-                                <input type="submit" value="logout">
-                            </form>
-                            {% else %}
-                            <a href="{% url 'oidc_authentication_init' %}">
-                                <strong>Log-in</strong>
-                            </a>
-                            {% endif %}
-                        </div>
-                    </li>
-                </ul>
-            </div>
-        </div>-->
 </div>
 {% block content %}{% endblock %}
 </body>
