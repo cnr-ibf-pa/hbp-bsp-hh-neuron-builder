@@ -4,6 +4,7 @@
 {% block content  %}
 
 <input type="hidden" id="refresh" value="no">
+
 <div id="mainDiv" class="center-container">
     <div class="param-title-div">
         <div class="row">
@@ -335,6 +336,25 @@
 </div>
 <!-- -->
 
+<div id="overlaywrapperdownloadworkspace" class="overlay-wrapper">
+    <div id="overdownloadworkspace" style="top: 35%;" class="overlay-content">
+        <div class="center-container">
+            <div class="row-center-container">
+                <div id="downloadworkspacetext" class="please-wait-text">
+                    You need to authenticate with Ebrains to go on...<br>
+                    Please download your current workspace and then upload it to continue this session !
+                </div>
+                <button id="cancel-div-btn" class="btn btn-default closebtn" onclick="closeDownloadWorkspaceDiv()">Cancel</button>
+                <button id="continue-without-download-workspace-div-btn" class="btn btn-default closebtn">Continue without downloading</button>
+                <button id="download-workspace-div-btn" class="btn btn-default closebtn" onclick="saveWorkflowOnDiv()">
+                    Download workspace
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 <!-- Fetched jobs div -->
 <div id="overlaywrapperjobs" class="overlay-wrapper">
     <div id="overlayjobs" 
@@ -398,7 +418,19 @@
     </div>
 </div>
 <!-- -->
-
+<script>
+var exc = "{{ exc }}";
+var ctx = "{{ ctx }}";
+if (exc != "" && ctx != "") {
+    sessionStorage.setItem("exc", exc);
+    sessionStorage.setItem("ctx", ctx);
+    console.log(sessionStorage.getItem("exc"));
+    console.log(sessionStorage.getItem("ctx"));
+} else {
+    console.log(exc);
+    console.log(ctx);
+}
+</script>
 <script type="text/javascript" src="{% static 'hh_neuron_builder/js/workflow.js' %}"></script>
 <script type="text/javascript" src="{% static 'hh_neuron_builder/js/common.js' %}"></script>
 

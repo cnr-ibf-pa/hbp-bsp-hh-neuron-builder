@@ -3,6 +3,7 @@ var ctx = sessionStorage.getItem("ctx", ctx) ? sessionStorage.getItem("ctx") : "
 var req_pattern = exc + '/' + ctx;
 
 $(window).bind("pageshow", function() {
+    console.log("exc: " + exc.toString() + " cxt: " + ctx.toString());
     checkConditions();
     closeParameterDiv();
     closeFetchParamDiv();
@@ -192,9 +193,22 @@ function reloadCurrentPage() {
 
 // open div for optimization run parameter settings
 function openParameterDiv() {
-    document.getElementById("overlaywrapper").style.display = "block";
-    document.getElementById("mainDiv").style.pointerEvents = "none";
-    document.body.style.overflow = "hidden";
+    console.log("openParameterDiv() called.");
+    fetch('/hh-neuron-builder/get-authentication')
+        .then(response => {
+                if (response.ok) {
+                    document.getElementById("overlaywrapper").style.display = "block";
+                    document.getElementById("mainDiv").style.pointerEvents = "none";
+                    document.body.style.overflow = "hidden";
+                } else {
+                    console.log("opening download workspace div");
+                    openDownloadWorkspaceDiv();
+//                    alert('Please download your workflow before authentication and then upload it to continue with you workspace');
+//                    saveWorkflow();
+//                    window.location.href = "/oidc/authenticate/";
+                }
+            }
+        )
 }
 
 // open side div for optimization run parameter settings
@@ -225,6 +239,12 @@ function openExpirationDiv(message) {
     document.getElementById("expirationdynamictext").innerHTML = message;
 }
 
+function openDownloadWorkspaceDiv() {
+    document.getElementById("mainDiv").style.pointerEvents = "none";
+    document.getElementById("overlaywrapper").style.pointerEvents = "none";
+    document.getElementById("overlaywrapperdownloadworkspace").style.display = "block";
+}
+
 // open side div for optimization run parameter settings
 function closeErrorDiv() {
     document.getElementById("mainDiv").style.pointerEvents = "auto";
@@ -246,11 +266,19 @@ function closeExpirationDiv() {
     document.getElementById("overlaywrapperexpiration").style.display = "none";
     document.getElementById("mainDiv").style.pointerEvents = "auto";
     document.body.style.overflow = "auto";
-} 
+}
+
+
+function closeDownloadWorkspaceDiv() {
+    document.getElementById("overlaywrapperdownloadworkspace").style.display = "none";
+    document.getElementById("mainDiv").style.pointerEvents = "auto";
+    document.body.style.overflow = "auto";
+}
 
 //
 function checkConditions(){
     $.getJSON('/hh-neuron-builder/check-cond-exist/' + req_pattern, function(data){
+        console.log(data);
         if (data["response"] == "KO"){
             closePleaseWaitDiv();
             openReloadDiv();
@@ -756,10 +784,11 @@ function newWorkflow() {
 }
 
 function cloneWorkflow() {
-    displayPleaseWaitDiv();
-    let win = window.open("", "_blank");
-    $.getJSON("/hh-neuron-builder/clone-workflow/" + req_pattern + "/", function(zip_data) {
-        console.log(zip_data);
+//    displayPleaseWaitDiv();
+    $.getJSON("/hh-neuron-builder/clone-workflow/" + req_pattern + "/", function(data) {
+        console.log(data);
+        let win = window.open("/hh-neuron-builder/workflow/" + data.exc + "/" + data.ctx + "/", "_blank");
+        win.focus();
     });
     // $.getJSON('/hh-neuron-builder/create-wf-folders/cloned/' + req_pattern, function(zip_data){
     //     checkConditions();
@@ -795,6 +824,19 @@ function saveWorkflow() {
         method: "GET"
     }).then(
         data => downloadURI(data.url, 'workflow')
+    ).catch(
+        error => console.log(error)
+    );
+}
+
+
+function saveWorkflowOnDiv() {
+    fetch("/hh-neuron-builder/workflow-download/" + req_pattern, {
+        method: "GET"
+    }).then(data => {
+            downloadURI(data.url, 'workflow');
+            window.location.href = "/oidc/authenticate/";
+        }
     ).catch(
         error => console.log(error)
     );
