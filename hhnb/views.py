@@ -526,7 +526,7 @@ def run_optimization(request, exc="", ctx=""):
                                           core_num=core_num, node_num=node_num, runtime=runtime, zfName=zfName)
 
     elif hpc_sys == "DAINT-CSCS":
-        PROXIES = settings.PROXIES
+        # PROXIES = settings.PROXIES
         execname = "zipfolder.py"
         joblaunchname = "ipyparallel.sbatch"
 
@@ -543,10 +543,10 @@ def run_optimization(request, exc="", ctx=""):
         # launch job on cscs-pizdaint
         resp = hpc_job_manager.Unicore.run_unicore_opt(hpc=hpc_sys, filename=zfName, joblaunchname=joblaunchname,
                                                        token=access_token, jobname=wf_id, core_num=core_num,
-                                                       node_num=node_num, runtime=runtime, foldname=opt_name, proxies=PROXIES)
+                                                       node_num=node_num, runtime=runtime, foldname=opt_name)  # , proxies=PROXIES)
 
     elif hpc_sys == "SA-CSCS":
-        PROXIES = settings.PROXIES
+        # PROXIES = settings.PROXIES
         execname = "zipfolder.py"
         joblaunchname = "ipyparallel.sbatch"
 
@@ -563,7 +563,7 @@ def run_optimization(request, exc="", ctx=""):
         # launch job on cscs-pizdaint
         resp = hpc_job_manager.Unicore.run_unicore_opt(hpc=hpc_sys, filename=zfName, joblaunchname=joblaunchname,
                                                        token=access_token, jobname=wf_id, core_num=core_num,
-                                                       node_num=node_num, runtime=runtime, foldname=opt_name, proxies=PROXIES)
+                                                       node_num=node_num, runtime=runtime, foldname=opt_name)  # , proxies=PROXIES)
 
     if resp['response'] == "OK":
         crr_job_name = resp['jobname']
@@ -751,8 +751,6 @@ def check_cond_exist(request, exc="", ctx=""):
     The function checks on current workflow folders whether files are present to go on with the workflow.
     The presence of simulation parameters are also checked.
     """
-
-    print(json.dumps(request.session[exc], indent=4))
 
     if exc not in request.session or "user_dir" not in request.session[exc]:
         resp = {"response": "KO", "message": "An error occurred while loading the application.<br><br>Please reload."}
@@ -996,13 +994,13 @@ def get_job_list(request, exc="", ctx=""):
         resp = hpc_job_manager.Nsg.fetch_job_list(username_fetch=username_fetch, password_fetch=password_fetch)
 
     if hpc_sys_fetch == "DAINT-CSCS" or hpc_sys_fetch == "SA-CSCS":
-        PROXIES = settings.PROXIES
+        # PROXIES = settings.PROXIES
 
         # TODO: update with new API [RESOLVED]
         # access_token = get_access_token(request.user.social_auth.get())
         access_token = 'Bearer ' + request.session['oidc_access_token']  # get access token with new method
 
-        resp = hpc_job_manager.Unicore.fetch_job_list(hpc_sys_fetch, access_token, proxies=PROXIES)
+        resp = hpc_job_manager.Unicore.fetch_job_list(hpc_sys_fetch, access_token)  # , proxies=PROXIES)
 
     # fetch workflow ids for all fetched jobs and add to response
     for key in resp:
@@ -1033,13 +1031,13 @@ def get_job_details(request, jobid="", exc="", ctx=""):
 
         # if job has to be fetched from DAINT-CSCS
     elif hpc_sys_fetch == "DAINT-CSCS" or hpc_sys_fetch == "SA-CSCS":
-        PROXIES = settings.PROXIES
+        # PROXIES = settings.PROXIES
         fetch_job_list = request.session[exc]["hpc_fetch_job_list"]
         job_url = fetch_job_list[jobid]["url"]
         # access_token = get_access_token(request.user.social_auth.get())
         access_token = request.session.get('oidc_access_token')
         resp = hpc_job_manager.Unicore.fetch_job_details(hpc=hpc_sys_fetch, job_url=job_url, job_id=jobid,
-                                                         token="Bearer " + access_token, proxies=PROXIES)
+                                                         token="Bearer " + access_token)  # , proxies=PROXIES)
 
     request.session.save()
 
@@ -1076,7 +1074,7 @@ def download_job(request, job_id="", exc="", ctx=""):
                                                      password_fetch=password_fetch, opt_res_dir=opt_res_dir, wf_id=wf_id)
 
     elif hpc_sys_fetch == "DAINT-CSCS":
-        PROXIES = settings.PROXIES
+        # PROXIES = settings.PROXIES
         job_url = fetch_job_list[job_id]["url"]
 
         # retrieve access_token
@@ -1085,10 +1083,10 @@ def download_job(request, job_id="", exc="", ctx=""):
         access_token = 'Bearer ' + request.session['oidc_access_token']  # get access token with new method
 
         resp = hpc_job_manager.Unicore.fetch_job_results(hpc=hpc_sys_fetch, job_url=job_url, dest_dir=opt_res_dir,
-                                                         token="Bearer " + access_token, proxies=PROXIES, wf_id=wf_id)
+                                                         token="Bearer " + access_token)  # , proxies=PROXIES, wf_id=wf_id)
 
     elif hpc_sys_fetch == "SA-CSCS":
-        PROXIES = settings.PROXIES
+        # PROXIES = settings.PROXIES
         job_url = fetch_job_list[job_id]["url"]
 
         # TODO: update with new API [RESOLVED]
@@ -1096,7 +1094,7 @@ def download_job(request, job_id="", exc="", ctx=""):
         access_token = 'Bearer ' + request.session['oidc_access_token']  # get access token with new method
 
         resp = hpc_job_manager.Unicore.fetch_job_results(hpc=hpc_sys_fetch, job_url=str(job_url), dest_dir=opt_res_dir,
-                                                         token="Bearer " + access_token, proxies=PROXIES, wf_id=wf_id)
+                                                         token="Bearer " + access_token)  # , proxies=PROXIES, wf_id=wf_id)
 
     return HttpResponse(json.dumps(resp), content_type="application/json")
 
@@ -1217,7 +1215,7 @@ def run_analysis(request, exc="", ctx=""):
                 return HttpResponse(json.dumps({"response": "KO", "message": msg}), content_type="application/json")
 
     elif hpc_sys_fetch == "DAINT-CSCS" or hpc_sys_fetch == "SA-CSCS":
-        PROXIES = settings.PROXIES
+        # PROXIES = settings.PROXIES
         try:
             resp = hpc_job_manager.OptResultManager.create_analysis_files(opt_res_folder, opt_res_file)
             up_folder = resp["up_folder"]

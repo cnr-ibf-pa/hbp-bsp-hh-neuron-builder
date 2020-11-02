@@ -97,7 +97,7 @@ def submit(url, job, headers, inputs=[], proxies={}):
     if proxies:
         os.environ["no_proxy"] = ""
     r = requests.post(url, data=json.dumps(job), headers=my_headers, verify=False, proxies=proxies)
-
+    print(r.status_code, r.text)
     if r.status_code != 201:
         raise RuntimeError("Error submitting job: %s" % r.status_code)
     else:

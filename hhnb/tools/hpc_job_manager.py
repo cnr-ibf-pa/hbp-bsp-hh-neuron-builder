@@ -207,15 +207,15 @@ class Unicore:
     SA_CSCS_FILES_URL = "https://bspsa.cineca.it/files/pizdaint/bsp_pizdaint_01/"
 
     @classmethod
-    def check_login(cls, username="", token="", hpc="", proxies={}):
+    def check_login(cls, username="", token="", hpc=""):  # , proxies={}):
         auth = unicore_client.get_oidc_auth(token=token) 
         base_url = unicore_client.get_sites()[hpc]['url']
-        role = unicore_client.get_properties(base_url, auth, proxies)['client']['role']['selected']
+        role = unicore_client.get_properties(base_url, auth)['client']['role']['selected']  # , proxies)['client']['role']['selected']
 
         resp = {"response": "KO", "message": "This account is not allowed to submit job on " + hpc + " booster partition"}
         if role == "user":
-            info = unicore_client.get_properties(base_url, auth, proxies=proxies)['client']['xlogin']['UID']
-            UIDs = unicore_client.get_properties(base_url, auth, proxies=proxies)['client']['xlogin']['availableUIDs']
+            info = unicore_client.get_properties(base_url, auth)['client']['xlogin']['UID'] # , proxies=proxies)['client']['xlogin']['UID']
+            UIDs = unicore_client.get_properties(base_url, auth)['client']['xlogin']['availableUIDs'] # , proxies=proxies)['client']['xlogin']['availableUIDs']
             if username in UIDs and username[0:3] == "vsk":
                 resp = {"response": "OK", "message": "Successful authentication"}
             
@@ -223,12 +223,12 @@ class Unicore:
 
     @classmethod
     def run_unicore_opt(cls, hpc="", filename="", joblaunchname="", token=None, core_num=4, jobname="UNICORE_Job",
-                        node_num=2, runtime=4, username="", foldname="", proxies={}):
+                        node_num=2, runtime=4, username="", foldname=""):  # , proxies={}):
 
         basename = os.path.basename(filename)
 
         # read file to be moved to remote
-        with open(filename, 'r') as f:
+        with open(filename, 'rb') as f:
             content = f.read()
         f.close()
         modpy = content
@@ -284,7 +284,7 @@ class Unicore:
                 jobname = job['job_id']
                 job_url = 'https://bspsa.cineca.it/jobs/pizdaint/bsp_pizdaint_01/' + jobname + '/'
             else:
-                job_url = unicore_client.submit(base_url + '/jobs', job, auth, inputs, proxies=proxies)
+                job_url = unicore_client.submit(base_url + '/jobs', job, auth, inputs)  # , proxies=proxies)
                 jobname = job_url.split('/')[-1]
 
             resp = {
@@ -300,7 +300,7 @@ class Unicore:
             print(e)
             resp = {'response': 'KO', 'message': 'Operation not completed'}
 
-        return resp 
+        return resp
 
     @classmethod
     def fetch_job_list(cls, hpc, token, proxies={}):
@@ -599,9 +599,9 @@ class OptFolderManager:
         os.remove(fin_feat_path)
         os.remove(fin_prot_path)
 
-        fin_key = morph_json.keys()[0]
-        feat_key = feat_json.keys()[0]
-        prot_key = prot_json.keys()[0]
+        fin_key = list(morph_json.keys())[0]
+        feat_key = list(feat_json.keys())[0]
+        prot_key = list(prot_json.keys())[0]
 
         feat_json[fin_key] = feat_json.pop(feat_key)
         prot_json[fin_key] = prot_json.pop(prot_key)
