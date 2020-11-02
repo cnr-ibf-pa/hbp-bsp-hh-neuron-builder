@@ -23,12 +23,12 @@ from django.contrib.auth.decorators import login_required
 # import hbp modules
 
 # TODO: to replace with new API
-import hbp_service_client.storage_service.client as service_client
-import hbp_service_client.storage_service.api as service_api_client
+# import hbp_service_client.storage_service.client as service_client
+# import hbp_service_client.storage_service.api as service_api_client
 # from hbp_service_client.document_service.service_locator import ServiceLocator
 # from hbp_service_client.document_service.client import Client
 # from hbp_service_client.document_service.requestor import DocNotFoundException, DocException
-from hbp_validation_framework import ModelCatalog
+# from hbp_validation_framework import ModelCatalog
 
 # import local tools
 from hhnb.tools import resources, hpc_job_manager, wf_file_manager
@@ -40,6 +40,8 @@ from hhnb.tools import resources, hpc_job_manager, wf_file_manager
 # from ctools import manage_auth
 
 from mozilla_django_oidc.contrib.drf import get_oidc_backend
+
+from deprecated import deprecated
 
 # set logging up
 logging.basicConfig(stream=sys.stdout)
@@ -529,8 +531,9 @@ def run_optimization(request, exc="", ctx=""):
         joblaunchname = "ipyparallel.sbatch"
 
         # retrieve access_token
-        # TODO: update with new API
-        access_token = "Bearer " + get_access_token(request.user.social_auth.get())
+        # TODO: update with new API [RESOLVED]
+        # access_token = "Bearer " + get_access_token(request.user.social_auth.get())
+        access_token = 'Bearer ' + request.session['oidc_access_token']  # get access token with new method
 
         hpc_job_manager.OptFolderManager.createzip(fin_opt_folder=fin_opt_folder, source_opt_zip=source_opt_zip,
                                                    opt_name=opt_name, source_feat=source_feat, gennum=gennum,
@@ -548,8 +551,9 @@ def run_optimization(request, exc="", ctx=""):
         joblaunchname = "ipyparallel.sbatch"
 
         # retrieve access_token
-        # TODO: update with new API
-        access_token = "Bearer " + get_access_token(request.user.social_auth.get())
+        # TODO : update with new API [RESOLVED]
+        # access_token = "Bearer " + get_access_token(request.user.social_auth.get())
+        access_token = 'Bearer ' + request.session['oidc_access_token']  # get access token with new method
 
         hpc_job_manager.OptFolderManager.createzip(fin_opt_folder=fin_opt_folder, source_opt_zip=source_opt_zip,
                                                    opt_name=opt_name, source_feat=source_feat, gennum=gennum,
@@ -993,8 +997,11 @@ def get_job_list(request, exc="", ctx=""):
 
     if hpc_sys_fetch == "DAINT-CSCS" or hpc_sys_fetch == "SA-CSCS":
         PROXIES = settings.PROXIES
-        # TODO: update with new API
-        access_token = get_access_token(request.user.social_auth.get())
+
+        # TODO: update with new API [RESOLVED]
+        # access_token = get_access_token(request.user.social_auth.get())
+        access_token = 'Bearer ' + request.session['oidc_access_token']  # get access token with new method
+
         resp = hpc_job_manager.Unicore.fetch_job_list(hpc_sys_fetch, access_token, proxies=PROXIES)
 
     # fetch workflow ids for all fetched jobs and add to response
@@ -1073,8 +1080,9 @@ def download_job(request, job_id="", exc="", ctx=""):
         job_url = fetch_job_list[job_id]["url"]
 
         # retrieve access_token
-        # TODO: update with new API
-        access_token = get_access_token(request.user.social_auth.get())
+        # TODO: update with new API [RESOLVED]
+        # access_token = get_access_token(request.user.social_auth.get())
+        access_token = 'Bearer ' + request.session['oidc_access_token']  # get access token with new method
 
         resp = hpc_job_manager.Unicore.fetch_job_results(hpc=hpc_sys_fetch, job_url=job_url, dest_dir=opt_res_dir,
                                                          token="Bearer " + access_token, proxies=PROXIES, wf_id=wf_id)
@@ -1083,8 +1091,10 @@ def download_job(request, job_id="", exc="", ctx=""):
         PROXIES = settings.PROXIES
         job_url = fetch_job_list[job_id]["url"]
 
-        # TODO: update with new API
-        access_token = get_access_token(request.user.social_auth.get())
+        # TODO: update with new API [RESOLVED]
+        # access_token = get_access_token(request.user.social_auth.get())
+        access_token = 'Bearer ' + request.session['oidc_access_token']  # get access token with new method
+
         resp = hpc_job_manager.Unicore.fetch_job_results(hpc=hpc_sys_fetch, job_url=str(job_url), dest_dir=opt_res_dir,
                                                          token="Bearer " + access_token, proxies=PROXIES, wf_id=wf_id)
 
@@ -1364,11 +1374,13 @@ def download_zip(request, filetype="", exc="", ctx=""):
     return response
 
 
+@deprecated(reason='method dismissed with Ebrains')
 # handle file upload to storage collab
 def save_wf_to_storage(request, exc="", ctx=""):
     # retrieve access_token
-    # TODO: update with new API
-    access_token = get_access_token(request.user.social_auth.get())
+    # TODO: update with new API [RESOLVED]
+    # access_token = get_access_token(request.user.social_auth.get())
+    access_token = 'Bearer ' + request.session['oidc_access_token']  # get access token with new method
 
     # retrieve data from request.session
     collab_id = request.session[exc]['collab_id']
@@ -1379,9 +1391,11 @@ def save_wf_to_storage(request, exc="", ctx=""):
     hhnb_storage_folder = request.session[exc]['hhnb_storage_folder']
     username = request.session[exc]["username"]
 
-    # TODO: update with new API
-    access_token = get_access_token(request.user.social_auth.get())
+    # TODO: update with new API [RESOLVED]
+    # access_token = get_access_token(request.user.social_auth.get())
+    access_token = 'Bearer ' + request.session['oidc_access_token']  # get access token with new method
 
+    # TODO: update with new API
     sc = service_client.Client.new(access_token)
     ac = service_api_client.ApiClient.new(access_token)
 
@@ -1428,10 +1442,12 @@ def save_wf_to_storage(request, exc="", ctx=""):
     return HttpResponse(json.dumps({"response": "OK", "message": ""}), content_type="application/json")
 
 
+@deprecated(reason='method dismissed with Ebrains')
 def wf_storage_list(request, exc="", ctx=""):
+    # TODO: update with new API [RESOLVED]
     # retrieve access_token
-    #TODO: update with new API
-    access_token = get_access_token(request.user.social_auth.get())
+    # access_token = get_access_token(request.user.social_auth.get())
+    access_token = request.session['oidc_access_token']
 
     # retrieve data from request.session
     collab_id = request.session[exc]['collab_id']
@@ -1441,8 +1457,9 @@ def wf_storage_list(request, exc="", ctx=""):
 
     context = request.session[exc]['ctx']
 
-    # TODO: update with new API
-    access_token = get_access_token(request.user.social_auth.get())
+    # TODO: update with new API [RESOLVED]
+    # access_token = get_access_token(request.user.social_auth.get())
+    access_token = request.session['oidc_access_token']
 
     # TODO: update with new API
     sc = service_client.Client.new(access_token)
@@ -1631,8 +1648,10 @@ def register_model_catalog(request, reg_collab="", exc="", ctx=""):
     reg_mod_url = mc_clb_url + resp_upload['uuid']
 
     if reg_collab == "current_collab":
-        # TODO: update with new API
-        clb_user_token = get_access_token(request.user.social_auth.get())
+        # TODO: update with new API [RESOLVED]
+        # clb_user_token = get_access_token(request.user.social_auth.get())
+        clb_user_token = request.session['oidc_access_token']
+        # TODO: change url with the new Ebrains' one
         collab_url = "https://services.humanbrainproject.eu/collab/v0/collab/context/" + ctx
         headers = {'Authorization': "Bearer " + clb_user_token}
         resp = requests.get(collab_url, headers=headers)
