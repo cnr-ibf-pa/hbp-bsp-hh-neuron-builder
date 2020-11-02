@@ -48,9 +48,11 @@ class FeatOrOptsetOrModsimConverter:
     regex = 'feat|optset|modsim'
 
     def to_python(self, value):
+        print(self.__class__, value)
         return value
 
     def to_url(self, value):
+        print(self.__class__, value)
         return value
 
 
