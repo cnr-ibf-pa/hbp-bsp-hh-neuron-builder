@@ -1352,23 +1352,23 @@ def zip_sim(request, jobid="", exc="", ctx=""):
     return HttpResponse(json.dumps({"response": "OK"}), content_type="application/json")
 
 
-def download_zip(request, filetype="", exc="", ctx=""):
+def download_zip(request, file_type="", exc="", ctx=""):
     """
     download files to local machine
     """
     current_working_dir = os.getcwd()
-    if filetype == "feat":
+    if file_type == "feat":
         fetch_folder = request.session[exc]['user_dir_data_feat']
         zipname = os.path.join(fetch_folder, "features.zip")
         foo = zipfile.ZipFile(zipname, 'w', zipfile.ZIP_DEFLATED)
         foo.write(os.path.join(fetch_folder, "features.json"), "features.json")
         foo.write(os.path.join(fetch_folder, "protocols.json"), "protocols.json")
         foo.close()
-    elif filetype == "optset":
+    elif file_type == "optset":
         fetch_folder = request.session[exc]['user_dir_data_opt_set']
-    elif filetype == "modsim":
+    elif file_type == "modsim":
         fetch_folder = request.session[exc]['user_dir_sim_run']
-    elif filetype == "optres":
+    elif file_type == "optres":
         fetch_folder = request.session[exc]['user_dir_results']
 
     zip_file_list = []
@@ -1380,7 +1380,7 @@ def download_zip(request, filetype="", exc="", ctx=""):
 
     crr_file = zip_file_list[0]
     full_file_path = os.path.join(fetch_folder, crr_file)
-    crr_file_full = open(full_file_path, "r")
+    crr_file_full = open(full_file_path, "rb")
     response = HttpResponse(crr_file_full, content_type="application/zip")
 
     request.session.save()
