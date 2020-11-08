@@ -423,15 +423,23 @@ def get_model_list(request, exc="", ctx=""):
 
 
 def copy_feature_files(request, feature_folder="", exc="", ctx=""):
+    print(feature_folder)
+    print(feature_folder)
+    print(feature_folder)
+    print(feature_folder)
+    feature_folder = feature_folder.replace("______",".")
     response = {"expiration": False}
     if not os.path.exists(request.session[exc]["user_dir"]) or not \
-            os.path.exists(os.path.join(os.sep, feature_folder)):
+            os.path.exists(feature_folder):
+        print("efelg results folders not existing")
         response = {"expiration": True}
         return HttpResponse(json.dumps(response), content_type="application/json")
 
-    response["folder"] = featurefolder
-    shutil.copy(os.path.join(os.sep, featurefolder, 'features.json'), request.session[exc]['user_dir_data_feat'])
-    shutil.copy(os.path.join(os.sep, featurefolder, 'protocols.json'), request.session[exc]['user_dir_data_feat'])
+    response["folder"] = feature_folder
+    shutil.copy(os.path.join(feature_folder, 'features.json'), 
+            request.session[exc]['user_dir_data_feat'])
+    shutil.copy(os.path.join(feature_folder, 'protocols.json'), 
+            request.session[exc]['user_dir_data_feat'])
 
     return HttpResponse(json.dumps(response), content_type="application/json")
 
