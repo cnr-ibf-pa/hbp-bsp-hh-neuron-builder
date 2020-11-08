@@ -228,7 +228,7 @@ class Unicore:
         basename = os.path.basename(filename)
 
         # read file to be moved to remote
-        with open(filename, 'r') as f:
+        with open(filename, 'rb') as f:
             content = f.read()
         f.close()
         modpy = content
@@ -300,6 +300,8 @@ class Unicore:
             print(e)
             resp = {'response': 'KO', 'message': 'Operation not completed'}
 
+        import pprint
+        pprint.pprint(resp)
         return resp 
 
     @classmethod
@@ -428,7 +430,7 @@ class OptResultManager:
             tar.extractall(path=opt_res_folder)
             tar.close()
         elif opt_res_file.endswith(".zip"):
-            zip_ref = zipfile.ZipFile(os.path.join(opt_res_folder, opt_res_file), 'r')
+            zip_ref = zipfile.ZipFile(os.path.join(opt_res_folder, opt_res_file), 'rb')
             zip_ref.extractall(path=opt_res_folder)
             zip_ref.close()
 
@@ -599,9 +601,9 @@ class OptFolderManager:
         os.remove(fin_feat_path)
         os.remove(fin_prot_path)
 
-        fin_key = morph_json.keys()[0]
-        feat_key = feat_json.keys()[0]
-        prot_key = prot_json.keys()[0]
+        fin_key = list(morph_json.keys())[0]
+        feat_key = list(feat_json.keys())[0]
+        prot_key = list(prot_json.keys())[0]
 
         feat_json[fin_key] = feat_json.pop(feat_key)
         prot_json[fin_key] = prot_json.pop(prot_key)

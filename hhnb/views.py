@@ -422,10 +422,10 @@ def get_model_list(request, exc="", ctx=""):
     return HttpResponse(json.dumps(model_file_dict), content_type="application/json")
 
 
-def copy_feature_files(request, featurefolder="", exc="", ctx=""):
+def copy_feature_files(request, feature_folder="", exc="", ctx=""):
     response = {"expiration": False}
     if not os.path.exists(request.session[exc]["user_dir"]) or not \
-            os.path.exists(os.path.join(os.sep, featurefolder)):
+            os.path.exists(os.path.join(os.sep, feature_folder)):
         response = {"expiration": True}
         return HttpResponse(json.dumps(response), content_type="application/json")
 
@@ -467,6 +467,7 @@ def fetch_opt_set_file(request, source_opt_name="", source_opt_id="", exc="", ct
             break
 
     # PROXIES = settings.PROXIES
+    PROXIES = {}
     r = requests.get(zip_url)  # , proxies=PROXIES)
     print(r.status_code)
     opt_zip_path = os.path.join(user_dir_data_opt, source_opt_name + '.zip')
@@ -526,7 +527,8 @@ def run_optimization(request, exc="", ctx=""):
                                           core_num=core_num, node_num=node_num, runtime=runtime, zfName=zfName)
 
     elif hpc_sys == "DAINT-CSCS":
-        PROXIES = settings.PROXIES
+        #PROXIES = settings.PROXIES
+        PROXIES = {}
         execname = "zipfolder.py"
         joblaunchname = "ipyparallel.sbatch"
 
@@ -546,7 +548,8 @@ def run_optimization(request, exc="", ctx=""):
                                                        node_num=node_num, runtime=runtime, foldname=opt_name, proxies=PROXIES)
 
     elif hpc_sys == "SA-CSCS":
-        PROXIES = settings.PROXIES
+        #PROXIES = settings.PROXIES
+        PROXIES = {}
         execname = "zipfolder.py"
         joblaunchname = "ipyparallel.sbatch"
 
@@ -996,7 +999,8 @@ def get_job_list(request, exc="", ctx=""):
         resp = hpc_job_manager.Nsg.fetch_job_list(username_fetch=username_fetch, password_fetch=password_fetch)
 
     if hpc_sys_fetch == "DAINT-CSCS" or hpc_sys_fetch == "SA-CSCS":
-        PROXIES = settings.PROXIES
+        #PROXIES = settings.PROXIES
+        PROXIES = {}
 
         # TODO: update with new API [RESOLVED]
         # access_token = get_access_token(request.user.social_auth.get())
@@ -1033,7 +1037,8 @@ def get_job_details(request, jobid="", exc="", ctx=""):
 
         # if job has to be fetched from DAINT-CSCS
     elif hpc_sys_fetch == "DAINT-CSCS" or hpc_sys_fetch == "SA-CSCS":
-        PROXIES = settings.PROXIES
+        #PROXIES = settings.PROXIES
+        PROXIES = {}
         fetch_job_list = request.session[exc]["hpc_fetch_job_list"]
         job_url = fetch_job_list[jobid]["url"]
         # access_token = get_access_token(request.user.social_auth.get())
@@ -1076,7 +1081,8 @@ def download_job(request, job_id="", exc="", ctx=""):
                                                      password_fetch=password_fetch, opt_res_dir=opt_res_dir, wf_id=wf_id)
 
     elif hpc_sys_fetch == "DAINT-CSCS":
-        PROXIES = settings.PROXIES
+        #PROXIES = settings.PROXIES
+        PROXIES = {}
         job_url = fetch_job_list[job_id]["url"]
 
         # retrieve access_token
@@ -1088,7 +1094,8 @@ def download_job(request, job_id="", exc="", ctx=""):
                                                          token="Bearer " + access_token, proxies=PROXIES, wf_id=wf_id)
 
     elif hpc_sys_fetch == "SA-CSCS":
-        PROXIES = settings.PROXIES
+        #PROXIES = settings.PROXIES
+        PROXIES = {}
         job_url = fetch_job_list[job_id]["url"]
 
         # TODO: update with new API [RESOLVED]
@@ -1217,7 +1224,8 @@ def run_analysis(request, exc="", ctx=""):
                 return HttpResponse(json.dumps({"response": "KO", "message": msg}), content_type="application/json")
 
     elif hpc_sys_fetch == "DAINT-CSCS" or hpc_sys_fetch == "SA-CSCS":
-        PROXIES = settings.PROXIES
+        #PROXIES = settings.PROXIES
+        PROXIES = {}
         try:
             resp = hpc_job_manager.OptResultManager.create_analysis_files(opt_res_folder, opt_res_file)
             up_folder = resp["up_folder"]
