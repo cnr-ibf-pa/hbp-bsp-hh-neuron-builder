@@ -881,12 +881,12 @@ def check_cond_exist(request, exc="", ctx=""):
 
 
 # delete feature files
-def delete_files(request, filetype="", exc="", ctx=""):
-    if filetype == "feat":
+def delete_files(request, file_type="", exc="", ctx=""):
+    if file_type == "feat":
         folder = request.session[exc]['user_dir_data_feat']
-    elif filetype == "optset":
+    elif file_type == "optset":
         folder = request.session[exc]['user_dir_data_opt_set']
-    elif filetype == "modsim":
+    elif file_type == "modsim":
         folder = request.session[exc]['user_dir_sim_run']
 
     shutil.rmtree(folder)
