@@ -5,16 +5,18 @@
 <script type="text/javascript" src="{% static 'common/js/panel_manager.js' %}"></script>
 <div id="mainPageDiv">
     <div id="bluenaas-frame-div">
-        <iframe style="border-style: solid;" id="naas-frame" class="object-iframe" type="text/html" src=""></iframe>
+        <iframe style="border-style: solid;" id="naas-frame" 
+            class="object-iframe" type="text/html" src=""></iframe>
     </div>
     <div class="container">
         <div class="row">
-            <button type="button" id="back-to-wf-btn" class="btn btn-default col col-sm-6">Back to workflow</button>
+            <button type="button" id="back-to-wf-btn" 
+                class="btn btn-default col col-sm-6">Back to workflow</button>
             <button title=
             "The registration of the model in the Model Catalog  
             is currently being finalized for integration with the EBRAINS 
             Collaboratory v2. It will be active again in a few days."
-                 disabled tooltip="" type="button" value="mc-register" 
+                 type="button" value="mc-register" 
                  id="reg-mod-main-btn" class="btn btn-default col col-sm-6">
                 Register in Model Catalog
             </button>
@@ -26,13 +28,16 @@
 
 <!-- Continue Message div -->
 <div id="ow-msg-continue-naas" class="overlay-wrapper">
-    <div id="o-msg-continue-naas" style="top:35%;" class="overlay-content standard-border">
+    <div id="o-msg-continue-naas" style="top:35%;" 
+        class="overlay-content standard-border">
         <div id="continue-msg-text-naas" class="please-wait-text"></div>
         <br>
         <div class="center-container">
             <div class="row-center-container">
-                <button id="msg-continue-cancel-btn" type="button" class="btn btn-primary closebtn">Cancel</button>
-                <button id="msg-continue-ok-btn" type="button" class="btn btn-primary closebtn">Proceed</button>
+                <button id="msg-continue-cancel-btn" type="button" 
+                    class="btn btn-primary closebtn">Cancel</button>
+                <button id="msg-continue-ok-btn" type="button" 
+                    class="btn btn-primary closebtn">Proceed</button>
             </div>
         </div>
     </div>
@@ -41,13 +46,18 @@
 
 <!-- Message div -->
 <div id="overlaywrappermsgnaas" class="overlay-wrapper">
-    <div id="overlaymsgnaas" style="top:35%;" class="overlay-content standard-border">
-        <div id="spinning-wheel-naas"style="margin:auto;" class="spinning lg"></div>
+    <div id="overlaymsgnaas" style="top:35%;" 
+                             class="overlay-content standard-border">
+        <div id="spinning-wheel-naas"style="margin:auto;" 
+            class="spinning lg">
+        </div>
         <div id="msgtextnaas" class="please-wait-text"></div>
         <br>
         <div class="center-container">
             <div class="row-center-container">
-                <button id="msg-ok-btn" type="button" class="btn btn-primary closebtn">Ok</button>
+                <button id="msg-ok-btn" type="button" 
+                    class="btn btn-primary closebtn">Ok
+                </button>
             </div>
         </div>
     </div>
@@ -70,25 +80,32 @@
                         <label for="modelName">Model Name*: </label>
                     </td>
                     <td>
-                        <input type="text" style="background-color:#e6e6e6; min-width:210px;" readonly="readonly" id="modelName" name="modelName">
+                        <input type="text" 
+                        style="background-color:#e6e6e6; min-width:210px;" 
+                        readonly="readonly" id="modelName" name="modelName">
                     </td>
                     <td>
-                        <input type="text" name="modelSuffix" id="modelSuffix" placeholder="complete (if needed)" style="min-width:150px">
+                        <input type="text" name="modelSuffix" id="modelSuffix" 
+                        placeholder="complete (if needed)" 
+                        style="min-width:150px">
                     </td>
                 </tr>
 
                 <tr>
                     <td>
-                        <label for="authorFirstName">Author FirstName**: </label>
+                        <label for="authorFirstName">Author FirstName**: 
+                        </label>
                     </td>
                     <td>
-                        <input type="text" name="authorFirstName" id="authorFirstName" required>
+                        <input type="text" name="authorFirstName" 
+                        id="authorFirstName" required>
                     </td>
                     <td>
                         <label for="authorLastName">Author LastName**: </label>
                     </td>
                     <td>
-                        <input type="text" name="authorLastName" id="authorLastName" required>
+                        <input type="text" name="authorLastName" 
+                        id="authorLastName" required>
                     </td>
                 </tr>
 
@@ -103,7 +120,8 @@
                         <label for="ownerLastName">Owner LastName**: </label>
                     </td>
                     <td>
-                        <input type="text" name="ownerLastName" id="ownerLastName" required>
+                        <input type="text" name="ownerLastName" 
+                        id="ownerLastName" required>
                     </td>
                 </tr>
 
@@ -138,7 +156,8 @@
                         <label for="modelOrganization">Organization: </label>
                     </td>
                     <td>
-                        <select name="modelOrganization" id="modelOrganization">
+                        <select name="modelOrganization" 
+                            id="modelOrganization">
                         </select>
                     </td>
                     <td>
@@ -189,7 +208,11 @@
                         <label for="modelDescription">Model Description***: </label>
                     </td>
                     <td colspan=3>
-                        <textarea name="modelDescription" id="modelDescription" style="width:100%" placeholder="insert model description here (if any)"></textarea>
+                        <textarea name="modelDescription" 
+                            id="modelDescription" style="width:100%" 
+                            placeholder="insert model description here 
+                            (if any)">
+                        </textarea>
                     </td>
                 </tr>
             </table>
@@ -204,12 +227,15 @@
             </div>
             <br>
             <br>
-            <button id="cancel-model-register-btn" type="button" class="btn btn-primary closebtn">Cancel</button>
-            <button type="text" name="register_mc_form" id="register-model-btn" class="btn btn-primary">Register</button>
+            <button id="cancel-model-register-btn" type="button" 
+                class="btn btn-primary closebtn">Cancel</button>
+            <button type="text" name="register_mc_form" id="register-model-btn" 
+                class="btn btn-primary">Register</button>
         </form>
     </div>
 </div>
 <!-- -->
 
-<script type="text/javascript" src="{% static 'hh_neuron_builder/js/embedded_naas.js' %}"></script>
+<script type="text/javascript" 
+    src="{% static 'hh_neuron_builder/js/embedded_naas.js' %}"></script>
 {% endblock  %}

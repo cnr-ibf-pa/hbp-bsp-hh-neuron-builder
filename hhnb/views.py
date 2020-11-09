@@ -1324,11 +1324,14 @@ def zip_sim(request, jobid="", exc="", ctx=""):
 
     crr_dir_opt = os.path.join(user_dir_sim_run, crr_opt_name)
     for root, dirs, files in os.walk(user_dir_sim_run):
-        if root == os.path.join(crr_dir_opt, 'morphology') or root == os.path.join(crr_dir_opt, 'checkpoints') or \
-                root == os.path.join(crr_dir_opt, 'mechanisms') or root == os.path.join(crr_dir_opt, opt_logs_folder):
+        if root == os.path.join(crr_dir_opt, 'morphology') or \
+                root == os.path.join(crr_dir_opt, 'checkpoints') or \
+                root == os.path.join(crr_dir_opt, 'mechanisms') or \
+                root == os.path.join(crr_dir_opt, opt_logs_folder):
             for f in files:
                 final_zip_fname = os.path.join(root, f)
-                foo.write(final_zip_fname, final_zip_fname.replace(user_dir_sim_run, '', 1))
+                foo.write(final_zip_fname, 
+                        final_zip_fname.replace(user_dir_sim_run, '', 1))
 
     foo.close()
 
@@ -1740,20 +1743,28 @@ def workflow_upload(request, exc='', ctx=''):
     if request.method == 'POST':
         wf = request.body
         filename = request.META['HTTP_CONTENT_DISPOSITION'].split('filename="')[1].split('"')[0]
-
+        workflows_dir = request.session[exc]['workflows_dir']
         # TODO: add user id and ctx on workflow file name
+
         if not request.user.is_authenticated:
-            user_path = os.path.join(settings.MEDIA_ROOT, 'user', 'tmp')
+            user_path = os.path.join(workflows_dir, 'user')
         else:
-            user_path = os.path.join(settings.MEDIA_ROOT, 'user', request.user.username)
+            user_path = os.path.join(workflows_dir, request.user.username)
         print('USER_PATH %s' % user_path)
         if not os.path.exists(user_path):
             os.mkdir(user_path)
+        wf_zip = os.path.join(user_path, filename)
+        crr_wf_folder = os.path.join(user_path, os.path.splitext(filename)[0])
+        if os.path.exists(crr_wf_folder):
+            shutil.rmtree(crr_wf_folder)
         with open(os.path.join(user_path, filename), 'wb') as fd:
             fd.write(wf)
-        with open(os.path.join(user_path, filename), 'rb') as fd:
+        with open(wf_zip, 'rb') as fd:
             zip_file = zipfile.ZipFile(fd)
             zip_file.extractall(path=user_path)
+
+        os.remove(wf_zip)
+
 
         target_path = None
         for f in os.listdir(user_path):
@@ -1761,16 +1772,16 @@ def workflow_upload(request, exc='', ctx=''):
                 target_path = os.path.join(user_path, f)
 
         # create workspace dir if not exists yet
-        if not target_path:
-            os.mkdir(os.path.join(user_path, filename.split('.zip')[0]))
-            target_path = os.path.join(user_path, filename.split('.zip')[0])
-            os.mkdir(os.path.join(target_path, 'data'))
-            os.mkdir(os.path.join(target_path, 'data', 'features'))
-            os.mkdir(os.path.join(target_path, 'data', 'opt_settings'))
-            os.mkdir(os.path.join(target_path, 'data', 'opt_launch'))
-            os.mkdir(os.path.join(target_path, 'results'))
-            os.mkdir(os.path.join(target_path, 'results', 'opt'))
-            os.mkdir(os.path.join(target_path, 'sim'))
+        #if not target_path:
+        #    os.mkdir(os.path.join(user_path, filename.split('.zip')[0]))
+        #    target_path = os.path.join(user_path, filename.split('.zip')[0])
+        #    os.mkdir(os.path.join(target_path, 'data'))
+        #    os.mkdir(os.path.join(target_path, 'data', 'features'))
+        #    os.mkdir(os.path.join(target_path, 'data', 'opt_settings'))
+        #    os.mkdir(os.path.join(target_path, 'data', 'opt_launch'))
+        #    os.mkdir(os.path.join(target_path, 'results'))
+        #    os.mkdir(os.path.join(target_path, 'results', 'opt'))
+        #    os.mkdir(os.path.join(target_path, 'sim'))
 
         for c in filename[:14]:
             if c not in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']:
@@ -1819,15 +1830,15 @@ def workflow_download(request, exc='', ctx=''):
 
     # to change with ebrains username
     username = request.session[exc]['username']
+    
+    #
+    user_dir = request.session[exc]['user_dir']
+    user_dir_split= os.path.split(user_dir)
+    shutil.make_archive(os.path.join(tmp_dir, wf_id), 'zip',
+            user_dir_split[0], user_dir_split[1])
 
-    # create zip file with the entire workflow
-    zipped_wf = zipfile.ZipFile(os.path.join(tmp_dir, wf_id + '.zip'), 'w', compression=zipfile.ZIP_DEFLATED)
-    for root, dirs, files in os.walk(request.session[exc]['user_dir']):
-        for f in files:
-            zipped_wf.write(os.path.join(root, f))
-    zipped_wf.close()
-
-    return FileResponse(open(zipped_wf.filename, 'rb'), as_attachment=True)
+    return FileResponse(open(os.path.join(tmp_dir, wf_id + '.zip'), 'rb'), 
+            as_attachment=True)
 
 
 def get_user_avatar(request):
