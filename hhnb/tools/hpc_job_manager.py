@@ -207,15 +207,15 @@ class Unicore:
     SA_CSCS_FILES_URL = "https://bspsa.cineca.it/files/pizdaint/bsp_pizdaint_01/"
 
     @classmethod
-    def check_login(cls, username="", token="", hpc="", proxies={}):
+    def check_login(cls, username="", token="", hpc=""):  # , proxies={}):
         auth = unicore_client.get_oidc_auth(token=token) 
         base_url = unicore_client.get_sites()[hpc]['url']
-        role = unicore_client.get_properties(base_url, auth, proxies)['client']['role']['selected']
+        role = unicore_client.get_properties(base_url, auth)['client']['role']['selected']  # , proxies)['client']['role']['selected']
 
         resp = {"response": "KO", "message": "This account is not allowed to submit job on " + hpc + " booster partition"}
         if role == "user":
-            info = unicore_client.get_properties(base_url, auth, proxies=proxies)['client']['xlogin']['UID']
-            UIDs = unicore_client.get_properties(base_url, auth, proxies=proxies)['client']['xlogin']['availableUIDs']
+            info = unicore_client.get_properties(base_url, auth)['client']['xlogin']['UID'] # , proxies=proxies)['client']['xlogin']['UID']
+            UIDs = unicore_client.get_properties(base_url, auth)['client']['xlogin']['availableUIDs'] # , proxies=proxies)['client']['xlogin']['availableUIDs']
             if username in UIDs and username[0:3] == "vsk":
                 resp = {"response": "OK", "message": "Successful authentication"}
             
@@ -223,12 +223,12 @@ class Unicore:
 
     @classmethod
     def run_unicore_opt(cls, hpc="", filename="", joblaunchname="", token=None, core_num=4, jobname="UNICORE_Job",
-                        node_num=2, runtime=4, username="", foldname="", proxies={}):
+                        node_num=2, runtime=4, username="", foldname=""):  # , proxies={}):
 
         basename = os.path.basename(filename)
 
         # read file to be moved to remote
-        with open(filename, 'r') as f:
+        with open(filename, 'rb') as f:
             content = f.read()
         f.close()
         modpy = content
@@ -284,7 +284,9 @@ class Unicore:
                 jobname = job['job_id']
                 job_url = 'https://bspsa.cineca.it/jobs/pizdaint/bsp_pizdaint_01/' + jobname + '/'
             else:
-                job_url = unicore_client.submit(base_url + '/jobs', job, auth, inputs, proxies=proxies)
+                job_url = unicore_client.submit(base_url + '/jobs', job, auth, inputs)  # , proxies=proxies)
+                print('job_url: %s' % job_url)
+                print('jobname: %s' % job_url.split('/')[-1])
                 jobname = job_url.split('/')[-1]
 
             resp = {
@@ -295,12 +297,13 @@ class Unicore:
                 'message': 'Job submitted with success',
                 'status_code': 200
             }
-
+            print(resp)
         except Exception as e:
+            print('this is the error')
             print(e)
             resp = {'response': 'KO', 'message': 'Operation not completed'}
 
-        return resp 
+        return resp
 
     @classmethod
     def fetch_job_list(cls, hpc, token, proxies={}):
@@ -599,9 +602,9 @@ class OptFolderManager:
         os.remove(fin_feat_path)
         os.remove(fin_prot_path)
 
-        fin_key = morph_json.keys()[0]
-        feat_key = feat_json.keys()[0]
-        prot_key = prot_json.keys()[0]
+        fin_key = list(morph_json.keys())[0]
+        feat_key = list(feat_json.keys())[0]
+        prot_key = list(prot_json.keys())[0]
 
         feat_json[fin_key] = feat_json.pop(feat_key)
         prot_json[fin_key] = prot_json.pop(prot_key)
@@ -780,22 +783,72 @@ class OptFolderManager:
 
         # CSCS Pizdaint
         elif hpc == "DAINT-CSCS" or hpc == "SA-CSCS":
+            # with open(os.path.join(fin_dest_dir, execname),'w') as f:
+            #     f.write('import os\n')
+            #     f.write('import zipfile\n')
+            #     f.write('retval = os.getcwd()\n')
+            #     f.write('print "Current working directory %s" % retval\n')
+            #     f.write('os.chdir(\'..\')\n')
+            #     f.write('retval = os.getcwd()\n')
+            #     f.write('print "Current working directory %s" % retval\n')
+            #     f.write('def zipdir(path, ziph):\n')
+            #     f.write('    for root, dirs, files in os.walk(path):\n')
+            #     f.write('        for file in files:\n')
+            #     f.write('            ziph.write(os.path.join(root, file))\n')
+            #     f.write('zipf = zipfile.ZipFile(\'output.zip\', \'w\')\n')
+            #     f.write('zipdir(\''+foldernameOPTstring+'/\', zipf)\n')
+            #
+            # # create file for launching job
+            # with open(os.path.join(fin_dest_dir, joblaunchname), 'w') as f:
+            #     f.write('#!/bin/bash -l\n')
+            #     f.write('\n')
+            #     f.write('mkdir logs\n')
+            #     f.write('#SBATCH --job-name=bluepyopt_ipyparallel\n')
+            #     f.write('#SBATCH --error=logs/ipyparallel_%j.log\n')
+            #     f.write('#SBATCH --output=logs/ipyparallel_%j.log\n')
+            #     f.write('#SBATCH --partition=normal\n')
+            #     f.write('#SBATCH --constraint=mc\n')
+            #     # f.write('#SBATCH --mem=10GB\n')
+            #     f.write('\n')
+            #     f.write('export PMI_NO_FORK=1\n')
+            #     f.write('export PMI_NO_PREINITIALIZE=1\n')
+            #     f.write('export PMI_MMAP_SYNC_WAIT_TIME=300\n')
+            #     f.write('\n')
+            #     f.write('set -e\n')
+            #     f.write('set -x\n')
+            #     f.write('\n')
+            #     f.write('export MODULEPATH=/users/bp000178/ich002/software/daint/' +
+            #             'local-20191129103029/share/modules:$MODULEPATH;module load bpopt\n')
+            #     f.write('\n')
+            #     f.write('export USEIPYP=1\n')
+            #     f.write('export IPYTHONDIR="`pwd`/.ipython"\n')
+            #     f.write('export IPYTHON_PROFILE=ipyparallel.${SLURM_JOBID}\n')
+            #     f.write('ipcontroller --init --sqlitedb --ip=\'*\' --profile=${IPYTHON_PROFILE} &\n')
+            #     f.write('sleep 30\n')
+            #     f.write('srun ipengine --profile=${IPYTHON_PROFILE} &\n')
+            #     f.write('CHECKPOINTS_DIR="checkpoints"\n')
+            #     f.write('nrnivmodl mechanisms\n')
+            #     f.write('python opt_neuron.py --offspring_size='+ offsize +
+            #             ' --max_ngen=' + gennum + ' --start --checkpoint "${CHECKPOINTS_DIR}/checkpoint.pkl"\n')
+            #     f.write('python zipfolder.py')
+            #     f.write('\n')
+            # f.close()
+
             with open(os.path.join(fin_dest_dir, execname),'w') as f:
                 f.write('import os\n')
                 f.write('import zipfile\n')
                 f.write('retval = os.getcwd()\n')
-                f.write('print "Current working directory %s" % retval\n')
+                f.write('print("Current working directory %s" % retval)\n')
                 f.write('os.chdir(\'..\')\n')
                 f.write('retval = os.getcwd()\n')
-                f.write('print "Current working directory %s" % retval\n')
+                f.write('print("Current working directory %s" % retval)\n')
                 f.write('def zipdir(path, ziph):\n')
                 f.write('    for root, dirs, files in os.walk(path):\n')
                 f.write('        for file in files:\n')
                 f.write('            ziph.write(os.path.join(root, file))\n')
                 f.write('zipf = zipfile.ZipFile(\'output.zip\', \'w\')\n')
-                f.write('zipdir(\''+foldernameOPTstring+'/\', zipf)\n')
-
-            # create file for launching job 
+                f.write('zipdir(\'' + foldernameOPTstring + '/\', zipf)\n')
+            f.close()
             with open(os.path.join(fin_dest_dir, joblaunchname), 'w') as f:
                 f.write('#!/bin/bash -l\n')
                 f.write('\n')
@@ -805,17 +858,19 @@ class OptFolderManager:
                 f.write('#SBATCH --output=logs/ipyparallel_%j.log\n')
                 f.write('#SBATCH --partition=normal\n')
                 f.write('#SBATCH --constraint=mc\n')
-                # f.write('#SBATCH --mem=10GB\n')
                 f.write('\n')
                 f.write('export PMI_NO_FORK=1\n')
                 f.write('export PMI_NO_PREINITIALIZE=1\n')
-                f.write('export PMI_MMAP_SYNC_WAIT_TIME=300\n')
-                f.write('\n')
+                f.write('export PMI_MMAP_SYNC_WAIT_TIME=300 \n')
                 f.write('set -e\n')
                 f.write('set -x\n')
                 f.write('\n')
-                f.write('export MODULEPATH=/users/bp000178/ich002/software/daint/' +
-                        'local-20191129103029/share/modules:$MODULEPATH;module load bpopt\n')
+                f.write('module load daint-mc cray-python/3.8.2.1 PyExtensions/python3-CrayGNU-20.08\n')
+                f.write(
+                    'module use /apps/hbp/ich002/hbp-spack-deployments/softwares/15-09-2020/install/modules/tcl/cray-cnl7-haswell\n')
+                f.write('module load neuron/7.8.0c\n')
+                f.write('module load py-bluepyopt\n')
+                f.write('nrnivmodl mechanisms\n')
                 f.write('\n')
                 f.write('export USEIPYP=1\n')
                 f.write('export IPYTHONDIR="`pwd`/.ipython"\n')
@@ -824,8 +879,7 @@ class OptFolderManager:
                 f.write('sleep 30\n')
                 f.write('srun ipengine --profile=${IPYTHON_PROFILE} &\n')
                 f.write('CHECKPOINTS_DIR="checkpoints"\n')
-                f.write('nrnivmodl mechanisms\n')
-                f.write('python opt_neuron.py --offspring_size='+ offsize +
+                f.write('python opt_neuron.py --offspring_size=' + offsize +
                         ' --max_ngen=' + gennum + ' --start --checkpoint "${CHECKPOINTS_DIR}/checkpoint.pkl"\n')
                 f.write('python zipfolder.py')
                 f.write('\n')
