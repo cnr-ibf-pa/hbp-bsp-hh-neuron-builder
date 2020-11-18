@@ -168,8 +168,9 @@ function checkEditValues(editList=[]){
 // manage register button clicks
 function registerModelMain(){
     var mcModUrl = sessionStorage.getItem("mcModUrl");
-    toggleElVisibility(displayBlock=["overlaywrappermsgnaas"], displayNone=['overlaywrapmodreg'], 
-            eventsNone=["mainPageDiv"], eventsAuto=[]);
+    toggleElVisibility(displayBlock=["overlaywrappermsgnaas"], 
+        displayNone=['overlaywrapmodreg'], eventsNone=["mainPageDiv"], 
+        eventsAuto=[]);
     fillMessageDiv(msg="Please wait ...", msgTag="default", 
             msgTextId="#msgtextnaas", msgDiv="#overlaymsgnaas", waitFlag=true, 
             waitElId="#spinning-wheel-naas", okBtnFlag=false, okBtnId="#msg-ok-btn");

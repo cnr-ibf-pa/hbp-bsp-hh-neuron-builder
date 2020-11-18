@@ -152,8 +152,10 @@ def overview(request):
     u_crr_res_d_dir = os.path.join(res_dir, userid, time_info, 'u_data')
 
     # build media relative result path
-    media_rel_crr_user_res = os.path.join('media', 'efel_data', res_dir, userid, time_info, 'u_res')
-    media_abs_crr_user_res = os.path.join(settings.MEDIA_ROOT, 'efel_data', res_dir, userid, time_info, 'u_res')
+    media_rel_crr_user_res = os.path.join(res_dir,  userid, time_info, 'u_res')
+    media_abs_crr_user_res = os.path.join(settings.MEDIA_ROOT, 'efel_data', 
+            res_dir, userid, time_info, 'u_res')
+    media_abs_crr_user_res = os.path.join(res_dir, userid, time_info, 'u_res')
 
     # storage relative path folder
     st_rel_user_results_folder = os.path.join(res_dir, u_time_f)
@@ -650,7 +652,7 @@ def features_json_path(request):
 
     abs_url = request.session['media_abs_crr_user_res']
     full_feature_json_file = os.path.join(abs_url, 'features.json')
-    return HttpResponse(json.dumps({'path': os.path.join(os.sep, full_feature_json_file)}))
+    return HttpResponse(json.dumps({'path': full_feature_json_file}))
 
 
 #####
@@ -661,7 +663,7 @@ def features_json_files_path(request):
         return render(request, 'efelg/hbp_redirect.html')
 
     abs_url = request.session['media_abs_crr_user_res']
-    return HttpResponse(json.dumps({'path': os.path.join(os.sep, abs_url)}))
+    return HttpResponse(json.dumps({'path': abs_url}))
 
 
 #####

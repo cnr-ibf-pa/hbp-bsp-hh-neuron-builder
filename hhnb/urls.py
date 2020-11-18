@@ -43,7 +43,7 @@ urlpatterns = [
     path('choose-opt-model/', views.choose_opt_model),
     path('copy-feature-files/<any:feature_folder>/' + required + '/', views.copy_feature_files),
     path('create-wf-folders/<new_or_cloned:wf_type>/' + required, views.create_wf_folders, name='create_wf_folders'),
-    path('delete-files/<feat_or_optset_or_modsim:file_type>' + required + '/', views.delete_files),
+    path('delete-files/<feat_or_optset_or_modsim:file_type>/' + required + '/', views.delete_files),
     path('download-job/<any:job_id>/' + required + '/', views.download_job),
     path('download-zip/<feat_or_optset_or_modsim_or_optres:file_type>/' + required + '/', views.download_zip),
     path('embedded-efel-gui/', views.embedded_efel_gui),

@@ -147,7 +147,7 @@ def initialize(request, exc="", ctx=""):
     # build directory names
     workflows_dir = os.path.join(settings.MEDIA_ROOT, 'hhnb', 'workflows')
     # scm_structure_path = os.path.join(settings.MEDIA_ROOT, 'hhnb', 'bsp_data_repository', 'singlecellmodeling_structure.json')
-    scm_structure_path = os.path.join(settings.MEDIA_ROOT, 'hhnb', 'hippocampus_models.json')
+    scm_structure_path = os.path.join(settings.MEDIA_ROOT, 'hhnb', 'hippocampus_models_py3.json')
     opt_model_path = os.path.join(settings.MEDIA_ROOT, 'hhnb', 'bsp_data_repository', 'optimizations')
 
     # create global variables in request.session
@@ -422,16 +422,24 @@ def get_model_list(request, exc="", ctx=""):
     return HttpResponse(json.dumps(model_file_dict), content_type="application/json")
 
 
-def copy_feature_files(request, featurefolder="", exc="", ctx=""):
+def copy_feature_files(request, feature_folder="", exc="", ctx=""):
+    print(feature_folder)
+    print(feature_folder)
+    print(feature_folder)
+    print(feature_folder)
+    feature_folder = feature_folder.replace("______",".")
     response = {"expiration": False}
     if not os.path.exists(request.session[exc]["user_dir"]) or not \
-            os.path.exists(os.path.join(os.sep, featurefolder)):
+            os.path.exists(feature_folder):
+        print("efelg results folders not existing")
         response = {"expiration": True}
         return HttpResponse(json.dumps(response), content_type="application/json")
 
-    response["folder"] = featurefolder
-    shutil.copy(os.path.join(os.sep, featurefolder, 'features.json'), request.session[exc]['user_dir_data_feat'])
-    shutil.copy(os.path.join(os.sep, featurefolder, 'protocols.json'), request.session[exc]['user_dir_data_feat'])
+    response["folder"] = feature_folder
+    shutil.copy(os.path.join(feature_folder, 'features.json'), 
+            request.session[exc]['user_dir_data_feat'])
+    shutil.copy(os.path.join(feature_folder, 'protocols.json'), 
+            request.session[exc]['user_dir_data_feat'])
 
     return HttpResponse(json.dumps(response), content_type="application/json")
 
@@ -467,6 +475,7 @@ def fetch_opt_set_file(request, source_opt_name="", source_opt_id="", exc="", ct
             break
 
     # PROXIES = settings.PROXIES
+    PROXIES = {}
     r = requests.get(zip_url)  # , proxies=PROXIES)
     print(r.status_code)
     opt_zip_path = os.path.join(user_dir_data_opt, source_opt_name + '.zip')
@@ -526,7 +535,9 @@ def run_optimization(request, exc="", ctx=""):
                                           core_num=core_num, node_num=node_num, runtime=runtime, zfName=zfName)
 
     elif hpc_sys == "DAINT-CSCS":
-        # PROXIES = settings.PROXIES
+        #PROXIES = settings.PROXIES
+        PROXIES = {}
+
         execname = "zipfolder.py"
         joblaunchname = "ipyparallel.sbatch"
 
@@ -546,7 +557,8 @@ def run_optimization(request, exc="", ctx=""):
                                                        node_num=node_num, runtime=runtime, foldname=opt_name)  # , proxies=PROXIES)
 
     elif hpc_sys == "SA-CSCS":
-        # PROXIES = settings.PROXIES
+        #PROXIES = settings.PROXIES
+        PROXIES = {}
         execname = "zipfolder.py"
         joblaunchname = "ipyparallel.sbatch"
 
@@ -868,12 +880,12 @@ def check_cond_exist(request, exc="", ctx=""):
 
 
 # delete feature files
-def delete_files(request, filetype="", exc="", ctx=""):
-    if filetype == "feat":
+def delete_files(request, file_type="", exc="", ctx=""):
+    if file_type == "feat":
         folder = request.session[exc]['user_dir_data_feat']
-    elif filetype == "optset":
+    elif file_type == "optset":
         folder = request.session[exc]['user_dir_data_opt_set']
-    elif filetype == "modsim":
+    elif file_type == "modsim":
         folder = request.session[exc]['user_dir_sim_run']
 
     shutil.rmtree(folder)
@@ -994,7 +1006,8 @@ def get_job_list(request, exc="", ctx=""):
         resp = hpc_job_manager.Nsg.fetch_job_list(username_fetch=username_fetch, password_fetch=password_fetch)
 
     if hpc_sys_fetch == "DAINT-CSCS" or hpc_sys_fetch == "SA-CSCS":
-        # PROXIES = settings.PROXIES
+        #PROXIES = settings.PROXIES
+        PROXIES = {}
 
         # TODO: update with new API [RESOLVED]
         # access_token = get_access_token(request.user.social_auth.get())
@@ -1031,7 +1044,8 @@ def get_job_details(request, jobid="", exc="", ctx=""):
 
         # if job has to be fetched from DAINT-CSCS
     elif hpc_sys_fetch == "DAINT-CSCS" or hpc_sys_fetch == "SA-CSCS":
-        # PROXIES = settings.PROXIES
+        #PROXIES = settings.PROXIES
+        PROXIES = {}
         fetch_job_list = request.session[exc]["hpc_fetch_job_list"]
         job_url = fetch_job_list[jobid]["url"]
         # access_token = get_access_token(request.user.social_auth.get())
@@ -1074,7 +1088,8 @@ def download_job(request, job_id="", exc="", ctx=""):
                                                      password_fetch=password_fetch, opt_res_dir=opt_res_dir, wf_id=wf_id)
 
     elif hpc_sys_fetch == "DAINT-CSCS":
-        # PROXIES = settings.PROXIES
+        #PROXIES = settings.PROXIES
+        PROXIES = {}
         job_url = fetch_job_list[job_id]["url"]
 
         # retrieve access_token
@@ -1086,7 +1101,8 @@ def download_job(request, job_id="", exc="", ctx=""):
                                                          token="Bearer " + access_token)  # , proxies=PROXIES, wf_id=wf_id)
 
     elif hpc_sys_fetch == "SA-CSCS":
-        # PROXIES = settings.PROXIES
+        #PROXIES = settings.PROXIES
+        PROXIES = {}
         job_url = fetch_job_list[job_id]["url"]
 
         # TODO: update with new API [RESOLVED]
@@ -1215,7 +1231,8 @@ def run_analysis(request, exc="", ctx=""):
                 return HttpResponse(json.dumps({"response": "KO", "message": msg}), content_type="application/json")
 
     elif hpc_sys_fetch == "DAINT-CSCS" or hpc_sys_fetch == "SA-CSCS":
-        # PROXIES = settings.PROXIES
+        #PROXIES = settings.PROXIES
+        PROXIES = {}
         try:
             resp = hpc_job_manager.OptResultManager.create_analysis_files(opt_res_folder, opt_res_file)
             up_folder = resp["up_folder"]
@@ -1306,11 +1323,14 @@ def zip_sim(request, jobid="", exc="", ctx=""):
 
     crr_dir_opt = os.path.join(user_dir_sim_run, crr_opt_name)
     for root, dirs, files in os.walk(user_dir_sim_run):
-        if root == os.path.join(crr_dir_opt, 'morphology') or root == os.path.join(crr_dir_opt, 'checkpoints') or \
-                root == os.path.join(crr_dir_opt, 'mechanisms') or root == os.path.join(crr_dir_opt, opt_logs_folder):
+        if root == os.path.join(crr_dir_opt, 'morphology') or \
+                root == os.path.join(crr_dir_opt, 'checkpoints') or \
+                root == os.path.join(crr_dir_opt, 'mechanisms') or \
+                root == os.path.join(crr_dir_opt, opt_logs_folder):
             for f in files:
                 final_zip_fname = os.path.join(root, f)
-                foo.write(final_zip_fname, final_zip_fname.replace(user_dir_sim_run, '', 1))
+                foo.write(final_zip_fname, 
+                        final_zip_fname.replace(user_dir_sim_run, '', 1))
 
     foo.close()
 
@@ -1334,23 +1354,23 @@ def zip_sim(request, jobid="", exc="", ctx=""):
     return HttpResponse(json.dumps({"response": "OK"}), content_type="application/json")
 
 
-def download_zip(request, filetype="", exc="", ctx=""):
+def download_zip(request, file_type="", exc="", ctx=""):
     """
     download files to local machine
     """
     current_working_dir = os.getcwd()
-    if filetype == "feat":
+    if file_type == "feat":
         fetch_folder = request.session[exc]['user_dir_data_feat']
         zipname = os.path.join(fetch_folder, "features.zip")
         foo = zipfile.ZipFile(zipname, 'w', zipfile.ZIP_DEFLATED)
         foo.write(os.path.join(fetch_folder, "features.json"), "features.json")
         foo.write(os.path.join(fetch_folder, "protocols.json"), "protocols.json")
         foo.close()
-    elif filetype == "optset":
+    elif file_type == "optset":
         fetch_folder = request.session[exc]['user_dir_data_opt_set']
-    elif filetype == "modsim":
+    elif file_type == "modsim":
         fetch_folder = request.session[exc]['user_dir_sim_run']
-    elif filetype == "optres":
+    elif file_type == "optres":
         fetch_folder = request.session[exc]['user_dir_results']
 
     zip_file_list = []
@@ -1362,7 +1382,7 @@ def download_zip(request, filetype="", exc="", ctx=""):
 
     crr_file = zip_file_list[0]
     full_file_path = os.path.join(fetch_folder, crr_file)
-    crr_file_full = open(full_file_path, "r")
+    crr_file_full = open(full_file_path, "rb")
     response = HttpResponse(crr_file_full, content_type="application/zip")
 
     request.session.save()
@@ -1722,20 +1742,28 @@ def workflow_upload(request, exc='', ctx=''):
     if request.method == 'POST':
         wf = request.body
         filename = request.META['HTTP_CONTENT_DISPOSITION'].split('filename="')[1].split('"')[0]
-
+        workflows_dir = request.session[exc]['workflows_dir']
         # TODO: add user id and ctx on workflow file name
+
         if not request.user.is_authenticated:
-            user_path = os.path.join(settings.MEDIA_ROOT, 'user', 'tmp')
+            user_path = os.path.join(workflows_dir, 'user')
         else:
-            user_path = os.path.join(settings.MEDIA_ROOT, 'user', request.user.username)
+            user_path = os.path.join(workflows_dir, request.user.username)
         print('USER_PATH %s' % user_path)
         if not os.path.exists(user_path):
             os.mkdir(user_path)
+        wf_zip = os.path.join(user_path, filename)
+        crr_wf_folder = os.path.join(user_path, os.path.splitext(filename)[0])
+        if os.path.exists(crr_wf_folder):
+            shutil.rmtree(crr_wf_folder)
         with open(os.path.join(user_path, filename), 'wb') as fd:
             fd.write(wf)
-        with open(os.path.join(user_path, filename), 'rb') as fd:
+        with open(wf_zip, 'rb') as fd:
             zip_file = zipfile.ZipFile(fd)
             zip_file.extractall(path=user_path)
+
+        os.remove(wf_zip)
+
 
         target_path = None
         for f in os.listdir(user_path):
@@ -1743,16 +1771,16 @@ def workflow_upload(request, exc='', ctx=''):
                 target_path = os.path.join(user_path, f)
 
         # create workspace dir if not exists yet
-        if not target_path:
-            os.mkdir(os.path.join(user_path, filename.split('.zip')[0]))
-            target_path = os.path.join(user_path, filename.split('.zip')[0])
-            os.mkdir(os.path.join(target_path, 'data'))
-            os.mkdir(os.path.join(target_path, 'data', 'features'))
-            os.mkdir(os.path.join(target_path, 'data', 'opt_settings'))
-            os.mkdir(os.path.join(target_path, 'data', 'opt_launch'))
-            os.mkdir(os.path.join(target_path, 'results'))
-            os.mkdir(os.path.join(target_path, 'results', 'opt'))
-            os.mkdir(os.path.join(target_path, 'sim'))
+        #if not target_path:
+        #    os.mkdir(os.path.join(user_path, filename.split('.zip')[0]))
+        #    target_path = os.path.join(user_path, filename.split('.zip')[0])
+        #    os.mkdir(os.path.join(target_path, 'data'))
+        #    os.mkdir(os.path.join(target_path, 'data', 'features'))
+        #    os.mkdir(os.path.join(target_path, 'data', 'opt_settings'))
+        #    os.mkdir(os.path.join(target_path, 'data', 'opt_launch'))
+        #    os.mkdir(os.path.join(target_path, 'results'))
+        #    os.mkdir(os.path.join(target_path, 'results', 'opt'))
+        #    os.mkdir(os.path.join(target_path, 'sim'))
 
         for c in filename[:14]:
             if c not in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']:
@@ -1801,15 +1829,15 @@ def workflow_download(request, exc='', ctx=''):
 
     # to change with ebrains username
     username = request.session[exc]['username']
+    
+    #
+    user_dir = request.session[exc]['user_dir']
+    user_dir_split= os.path.split(user_dir)
+    shutil.make_archive(os.path.join(tmp_dir, wf_id), 'zip',
+            user_dir_split[0], user_dir_split[1])
 
-    # create zip file with the entire workflow
-    zipped_wf = zipfile.ZipFile(os.path.join(tmp_dir, wf_id + '.zip'), 'w', compression=zipfile.ZIP_DEFLATED)
-    for root, dirs, files in os.walk(request.session[exc]['user_dir']):
-        for f in files:
-            zipped_wf.write(os.path.join(root, f))
-    zipped_wf.close()
-
-    return FileResponse(open(zipped_wf.filename, 'rb'), as_attachment=True)
+    return FileResponse(open(os.path.join(tmp_dir, wf_id + '.zip'), 'rb'), 
+            as_attachment=True)
 
 
 def get_user_avatar(request):

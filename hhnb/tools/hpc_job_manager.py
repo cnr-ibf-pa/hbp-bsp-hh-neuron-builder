@@ -304,7 +304,7 @@ class Unicore:
             resp = {'response': 'KO', 'message': 'Operation not completed'}
 
         return resp
-
+      
     @classmethod
     def fetch_job_list(cls, hpc, token, proxies={}):
         """
@@ -431,7 +431,7 @@ class OptResultManager:
             tar.extractall(path=opt_res_folder)
             tar.close()
         elif opt_res_file.endswith(".zip"):
-            zip_ref = zipfile.ZipFile(os.path.join(opt_res_folder, opt_res_file), 'r')
+            zip_ref = zipfile.ZipFile(os.path.join(opt_res_folder, opt_res_file), 'rb')
             zip_ref.extractall(path=opt_res_folder)
             zip_ref.close()
 

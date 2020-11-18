@@ -31,8 +31,10 @@ function saveFeatures(){
     
     var innerDiv = document.getElementById("efelgui-frame").contentDocument || 
         getElementById("efelgui-frame").contentWindow.document;
-    var folderName = innerDiv.getElementById("hiddendiv").classList[0];
-    $.getJSON('/hh-neuron-builder/copy-feature-files/' + folderName + '/' + exc + '/' + ctx +'/', 
+    var folderNameOrig = innerDiv.getElementById("hiddendiv").classList[0];
+    folderName = folderNameOrig.replace(/\./g, "______")
+    $.getJSON('/hh-neuron-builder/copy-feature-files/' + folderName + '/' + 
+        exc + '/' + ctx +'/', 
             function(data){
                 window.location.href = "/hh-neuron-builder/workflow";
             });    
