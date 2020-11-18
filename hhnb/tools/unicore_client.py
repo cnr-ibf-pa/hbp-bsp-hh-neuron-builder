@@ -44,7 +44,9 @@ def get_properties(resource, headers={}, proxies={}):
     """
     my_headers = headers.copy()
     my_headers['Accept'] = "application/json"
+    print('==== GET PROPERTIES ===== %s ' % resource)
     r = requests.get(resource, headers=my_headers, verify=False, proxies=proxies)
+    print(r.status_code, r.text)
     if r.status_code != 200:
         raise RuntimeError("Error getting properties: %s" % r.status_code)
     else:
@@ -65,9 +67,16 @@ def invoke_action(resource, action, headers, data={}, proxies={}):
     my_headers['Content-Type'] = "application/json"
     action_url = get_properties(resource, headers, proxies=proxies)['_links']['action:'+action]['href']
     r = requests.post(action_url, data=json.dumps(data), headers=my_headers, verify=False, proxies=proxies)
-    if r.status_code != 200:
-        raise RuntimeError("Error invoking action: %s" % r.status_code)
-    return r.json()
+    # print('===== INVOKING ACTION =======')
+    # print(r.status_code)
+    # if r.status_code != 200 and r.status_code != 204:
+    #     raise RuntimeError("Error invoking action: %s" % r.status_code)
+    if r.status_code == 200:
+        return r.json()
+    elif r.status_code == 204:
+        return None
+    else:
+        raise RuntimeError('Error invoking action: %s' % r.status_code)
 
 
 def upload(destination, file_desc, headers, proxies={}):
@@ -96,20 +105,26 @@ def submit(url, job, headers, inputs=[], proxies={}):
     
     if proxies:
         os.environ["no_proxy"] = ""
-    r = requests.post(url, data=json.dumps(job), headers=my_headers, verify=False, proxies=proxies)
+    r = requests.post(url, data=json.dumps(job), headers=my_headers, verify=False)  # ,  proxies=proxies)
+
+    print('========== JOB SUBMITTED ==============')
+    print(r.status_code, r.text)
 
     if r.status_code != 201:
         raise RuntimeError("Error submitting job: %s" % r.status_code)
     else:
         job_url = r.headers['Location']
-
+    print(r.headers)
+    print('job_url: %s' % job_url)
     #  upload input data and explicitely start job
     if len(inputs) > 0:
         working_directory = get_working_directory(job_url, headers)
         for i in inputs:
             upload(working_directory+"/files", i, headers)
         invoke_action(job_url, "start", headers)
-    
+
+    print('==== JOB SUBMITTED SUCCESSFULLY ====')
+    print('job_url: %s' % job_url)
     return job_url
 
     

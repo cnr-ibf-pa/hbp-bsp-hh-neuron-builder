@@ -537,6 +537,7 @@ def run_optimization(request, exc="", ctx=""):
     elif hpc_sys == "DAINT-CSCS":
         #PROXIES = settings.PROXIES
         PROXIES = {}
+
         execname = "zipfolder.py"
         joblaunchname = "ipyparallel.sbatch"
 
@@ -553,7 +554,7 @@ def run_optimization(request, exc="", ctx=""):
         # launch job on cscs-pizdaint
         resp = hpc_job_manager.Unicore.run_unicore_opt(hpc=hpc_sys, filename=zfName, joblaunchname=joblaunchname,
                                                        token=access_token, jobname=wf_id, core_num=core_num,
-                                                       node_num=node_num, runtime=runtime, foldname=opt_name, proxies=PROXIES)
+                                                       node_num=node_num, runtime=runtime, foldname=opt_name)  # , proxies=PROXIES)
 
     elif hpc_sys == "SA-CSCS":
         #PROXIES = settings.PROXIES
@@ -574,7 +575,7 @@ def run_optimization(request, exc="", ctx=""):
         # launch job on cscs-pizdaint
         resp = hpc_job_manager.Unicore.run_unicore_opt(hpc=hpc_sys, filename=zfName, joblaunchname=joblaunchname,
                                                        token=access_token, jobname=wf_id, core_num=core_num,
-                                                       node_num=node_num, runtime=runtime, foldname=opt_name, proxies=PROXIES)
+                                                       node_num=node_num, runtime=runtime, foldname=opt_name)  # , proxies=PROXIES)
 
     if resp['response'] == "OK":
         crr_job_name = resp['jobname']
@@ -762,8 +763,6 @@ def check_cond_exist(request, exc="", ctx=""):
     The function checks on current workflow folders whether files are present to go on with the workflow.
     The presence of simulation parameters are also checked.
     """
-
-    print(json.dumps(request.session[exc], indent=4))
 
     if exc not in request.session or "user_dir" not in request.session[exc]:
         resp = {"response": "KO", "message": "An error occurred while loading the application.<br><br>Please reload."}
@@ -1014,7 +1013,7 @@ def get_job_list(request, exc="", ctx=""):
         # access_token = get_access_token(request.user.social_auth.get())
         access_token = 'Bearer ' + request.session['oidc_access_token']  # get access token with new method
 
-        resp = hpc_job_manager.Unicore.fetch_job_list(hpc_sys_fetch, access_token, proxies=PROXIES)
+        resp = hpc_job_manager.Unicore.fetch_job_list(hpc_sys_fetch, access_token)  # , proxies=PROXIES)
 
     # fetch workflow ids for all fetched jobs and add to response
     for key in resp:
@@ -1052,7 +1051,7 @@ def get_job_details(request, jobid="", exc="", ctx=""):
         # access_token = get_access_token(request.user.social_auth.get())
         access_token = request.session.get('oidc_access_token')
         resp = hpc_job_manager.Unicore.fetch_job_details(hpc=hpc_sys_fetch, job_url=job_url, job_id=jobid,
-                                                         token="Bearer " + access_token, proxies=PROXIES)
+                                                         token="Bearer " + access_token)  # , proxies=PROXIES)
 
     request.session.save()
 
@@ -1099,7 +1098,7 @@ def download_job(request, job_id="", exc="", ctx=""):
         access_token = 'Bearer ' + request.session['oidc_access_token']  # get access token with new method
 
         resp = hpc_job_manager.Unicore.fetch_job_results(hpc=hpc_sys_fetch, job_url=job_url, dest_dir=opt_res_dir,
-                                                         token="Bearer " + access_token, proxies=PROXIES, wf_id=wf_id)
+                                                         token="Bearer " + access_token)  # , proxies=PROXIES, wf_id=wf_id)
 
     elif hpc_sys_fetch == "SA-CSCS":
         #PROXIES = settings.PROXIES
@@ -1111,7 +1110,7 @@ def download_job(request, job_id="", exc="", ctx=""):
         access_token = 'Bearer ' + request.session['oidc_access_token']  # get access token with new method
 
         resp = hpc_job_manager.Unicore.fetch_job_results(hpc=hpc_sys_fetch, job_url=str(job_url), dest_dir=opt_res_dir,
-                                                         token="Bearer " + access_token, proxies=PROXIES, wf_id=wf_id)
+                                                         token="Bearer " + access_token)  # , proxies=PROXIES, wf_id=wf_id)
 
     return HttpResponse(json.dumps(resp), content_type="application/json")
 
