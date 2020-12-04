@@ -621,6 +621,7 @@ function displayJobInfo() {
                     }
                     changeMsgPleaseWaitDiv("Fetching details for job " + (print_idx) + " of " + job_list_len);
                     var crr_job_json = job_details;
+                    console.log(crr_job_json);
 
                     var job_download_button2 = document.createElement("button");
                     job_download_button2.id = crr_job_json['job_id'];
@@ -641,7 +642,7 @@ function displayJobInfo() {
                     cell3.setAttribute("align", "center");
                     cell4.className += "ttd";
                     cell5.className += "ttd";
-                    cell1.innerHTML = "  " + joblist[crr_job_json["job_id"]]["wf"]["wf_id"] + "  ";
+                    cell1.innerHTML = "  " + crr_job_json["job_name"] + "  ";
                     cell2.innerHTML = "  " + crr_job_json["job_id"] + "  ";
                     cell3.innerHTML = "  " + crr_job_json["job_stage"] + "  " ;
 

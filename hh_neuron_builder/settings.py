@@ -52,7 +52,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     # 'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    #'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
 FILE_UPLOAD_HANDLERS = [
@@ -176,3 +176,7 @@ LOGIN_REDIRECT_URL = "/hh-neuron-builder"
 LOGOUT_REDIRECT_URL = "/hh-neuron-builder"
 
 LOGIN_URL = 'oidc_authentication_init'
+
+
+# LOGGING SETTINGS
+

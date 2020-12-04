@@ -20,7 +20,7 @@ def md5(filename):
 
 
 # generate data structure containing data and metadata
-def gen_data_struct(filename, filename_meta, upload_flag= False):
+def gen_data_struct(filename, filename_meta, upload_flag=False):
     c_species, c_area, c_region, c_type, c_etype, c_name, c_sample = get_cell_info(filename_meta, upload_flag)
     sampling_rate, tonoff, traces, volt_unit, amp_unit = get_traces_info(filename, upload_flag)
     obj = {
@@ -111,7 +111,7 @@ def get_cell_info(filename, upload_flag=False):
 
 
 # extract data info (i.e. voltage trace, stimulus and stimulus unit) from experimental and metadata files
-def get_traces_info(filename, upload_flag = False):
+def get_traces_info(filename, upload_flag=False):
     
     #
     data = neo.io.AxonIO(filename)

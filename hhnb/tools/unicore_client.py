@@ -44,9 +44,8 @@ def get_properties(resource, headers={}, proxies={}):
     """
     my_headers = headers.copy()
     my_headers['Accept'] = "application/json"
-    print('==== GET PROPERTIES ===== %s ' % resource)
     r = requests.get(resource, headers=my_headers, verify=False, proxies=proxies)
-    print(r.status_code, r.text)
+    print(r.status_code, r.content)
     if r.status_code != 200:
         raise RuntimeError("Error getting properties: %s" % r.status_code)
     else:
@@ -106,16 +105,11 @@ def submit(url, job, headers, inputs=[], proxies={}):
     if proxies:
         os.environ["no_proxy"] = ""
     r = requests.post(url, data=json.dumps(job), headers=my_headers, verify=False)  # ,  proxies=proxies)
-
-    print('========== JOB SUBMITTED ==============')
-    print(r.status_code, r.text)
-
+    print(r.status_code, r.text, sep='\n')
     if r.status_code != 201:
         raise RuntimeError("Error submitting job: %s" % r.status_code)
     else:
         job_url = r.headers['Location']
-    print(r.headers)
-    print('job_url: %s' % job_url)
     #  upload input data and explicitely start job
     if len(inputs) > 0:
         working_directory = get_working_directory(job_url, headers)
@@ -123,8 +117,6 @@ def submit(url, job, headers, inputs=[], proxies={}):
             upload(working_directory+"/files", i, headers)
         invoke_action(job_url, "start", headers)
 
-    print('==== JOB SUBMITTED SUCCESSFULLY ====')
-    print('job_url: %s' % job_url)
     return job_url
 
     

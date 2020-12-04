@@ -1,5 +1,7 @@
 from hhnb.tools import unicore_client
 
+from pyunicore import client as new_unicore_client
+
 import json
 import os
 import requests
@@ -10,6 +12,9 @@ import zipfile
 import shutil
 import collections
 import re
+
+import urllib3
+urllib3.disable_warnings()
 
 
 class Nsg:
@@ -253,6 +258,9 @@ class Unicore:
                     "Runtime": runtime,
                     "NodeConstraints": "mc"
                 },
+                "Tags": [
+                    "hhnb"
+                ]
             }
 
             auth = unicore_client.get_oidc_auth(token=token)
@@ -285,8 +293,8 @@ class Unicore:
                 job_url = 'https://bspsa.cineca.it/jobs/pizdaint/bsp_pizdaint_01/' + jobname + '/'
             else:
                 job_url = unicore_client.submit(base_url + '/jobs', job, auth, inputs)  # , proxies=proxies)
-                print('job_url: %s' % job_url)
-                print('jobname: %s' % job_url.split('/')[-1])
+                # print('job_url: %s' % job_url)
+                # print('jobname: %s' % job_url.split('/')[-1])
                 jobname = job_url.split('/')[-1]
 
             resp = {
@@ -310,6 +318,7 @@ class Unicore:
         """
         Retrieve job list from Unicore systems
         """
+        tr = new_unicore_client.Transport(token.split('Bearer ')[1])
 
         job_list_dict = collections.OrderedDict()
 
@@ -317,12 +326,19 @@ class Unicore:
         base_url = unicore_client.get_sites()[hpc]['url']
 
         if hpc == "DAINT-CSCS":
-            listofjobs = unicore_client.get_properties(base_url + '/jobs', auth, proxies=proxies)
-            jobs = listofjobs['jobs']
-            for i in jobs:
-                job_title = i.split('/')[-1]
+            # listofjobs = unicore_client.get_properties(base_url + '/jobs', auth, proxies=proxies)
+            # jobs = listofjobs['jobs']
+            # for i in jobs:
+            #     job_title = i.split('/')[-1]
+            #     job_list_dict[job_title] = collections.OrderedDict()
+            #     job_list_dict[job_title]['url'] = i
+            daint_client = new_unicore_client.Client(tr, "https://brissago.cscs.ch:8080/DAINT-CSCS/rest/core")
+            jobs = daint_client.get_jobs(tags=['hhnb'])
+            for j in jobs:
+                job_title = j.job_id
                 job_list_dict[job_title] = collections.OrderedDict()
-                job_list_dict[job_title]['url'] = i
+                job_list_dict[job_title]['url'] = j.links['self']
+
         elif hpc == "SA-CSCS":
             listofjobs = unicore_client.get_properties(base_url + '/jobs/pizdaint/bsp_pizdaint_01/', auth, proxies=proxies)
             jobs = listofjobs
@@ -378,6 +394,14 @@ class Unicore:
         if not os.path.exists(dest_dir):
             os.mkdir(dest_dir)
         auth = unicore_client.get_oidc_auth(token=token)
+
+        tr = new_unicore_client.Transport(token.split('Bearer ')[1])
+        daint_client = new_unicore_client.Client(tr, "https://brissago.cscs.ch:8080/DAINT-CSCS/rest/core")
+
+        print('Getting JOB info')
+        job = new_unicore_client.Job(tr, job_url)
+        print(job.properties)
+
         r = unicore_client.get_properties(job_url, auth, proxies=proxies)
 
         # job retrieving from SA-CSCS

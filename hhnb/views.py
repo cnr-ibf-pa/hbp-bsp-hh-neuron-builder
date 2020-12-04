@@ -147,7 +147,8 @@ def initialize(request, exc="", ctx=""):
     # build directory names
     workflows_dir = os.path.join(settings.MEDIA_ROOT, 'hhnb', 'workflows')
     # scm_structure_path = os.path.join(settings.MEDIA_ROOT, 'hhnb', 'bsp_data_repository', 'singlecellmodeling_structure.json')
-    scm_structure_path = os.path.join(settings.MEDIA_ROOT, 'hhnb', 'hippocampus_models_py3.json')
+    # scm_structure_path = os.path.join(settings.MEDIA_ROOT, 'hhnb', 'hippocampus_models_py3.json')
+    scm_structure_path = os.path.join(settings.MEDIA_ROOT, 'hhnb', 'hippocampus_models_new.json')
     opt_model_path = os.path.join(settings.MEDIA_ROOT, 'hhnb', 'bsp_data_repository', 'optimizations')
 
     # create global variables in request.session
@@ -588,7 +589,7 @@ def run_optimization(request, exc="", ctx=""):
 
         wf_job_ids = request.session[exc]['wf_job_ids']
         ids_file = os.path.join(workflows_dir, username, wf_job_ids)
-        ids_dict = {"wf_id": wf_id, "hpc_sys": hpc_sys, "time_info": time_info, "source_opt_id": source_opt_id}
+        ids_dict = {"wf_id": wf_id, "job_id": crr_job_name, "hpc_sys": hpc_sys, "time_info": time_info, "source_opt_id": source_opt_id}
 
         # update file containing
         if os.path.exists(ids_file):
@@ -1016,11 +1017,11 @@ def get_job_list(request, exc="", ctx=""):
         resp = hpc_job_manager.Unicore.fetch_job_list(hpc_sys_fetch, access_token)  # , proxies=PROXIES)
 
     # fetch workflow ids for all fetched jobs and add to response
-    for key in resp:
-        if key in all_id:
-            resp[key]["wf"] = all_id[key]
-        else:
-            resp[key]["wf"] = {"wf_id": "No workflow id associated", "hpc_sys": hpc_sys_fetch}
+    # for key in resp:
+    #     if key in all_id:
+    #         resp[key]["wf"] = all_id[key]
+    #     else:
+    #         resp[key]["wf"] = {"wf_id": "No workflow id associated", "hpc_sys": hpc_sys_fetch}
 
     request.session[exc]['hpc_fetch_job_list'] = resp
 
@@ -1032,6 +1033,7 @@ def get_job_list(request, exc="", ctx=""):
 def get_job_details(request, jobid="", exc="", ctx=""):
     """
     """
+    jobid = str(jobid)
 
     hpc_sys_fetch = request.session[exc]['hpc_sys_fetch']
 
@@ -1052,8 +1054,8 @@ def get_job_details(request, jobid="", exc="", ctx=""):
         access_token = request.session.get('oidc_access_token')
         resp = hpc_job_manager.Unicore.fetch_job_details(hpc=hpc_sys_fetch, job_url=job_url, job_id=jobid,
                                                          token="Bearer " + access_token)  # , proxies=PROXIES)
-
-    request.session.save()
+        print(json.dumps(resp, indent=4))
+        request.session.save()
 
     return HttpResponse(json.dumps(resp), content_type="application/json")
 
@@ -1061,6 +1063,7 @@ def get_job_details(request, jobid="", exc="", ctx=""):
 def download_job(request, job_id="", exc="", ctx=""):
     """
     """
+    job_id = str(job_id)
 
     opt_res_dir = request.session[exc]['user_dir_results_opt']
     wf_id = request.session[exc]['wf_id']
@@ -1841,7 +1844,7 @@ def workflow_download(request, exc='', ctx=''):
 
 
 def get_user_avatar(request):
-    r = requests.get('https://wiki.ebrains.eu/bin/download/XWiki/' + request.user.username + '/avatar.png?width=36&height=36&keepAspectRatio=true')
+    r = requests.get('https://wiki.ebrains.eu/bin/download/XWiki/' + request.user.username + '/avatar.png?width=36&height=36&keepAspectRatio=true', verify=False)
     return HttpResponse(content_type='image/png;', charset='UTF-8', content=r.content)
 
 
