@@ -40,7 +40,7 @@ def gen_data_struct(filename, filename_meta, upload_flag=False):
         'sampling_rate': sampling_rate,
         'contributors': {'name': '', 'message': ''}
     }
-    
+    print(md5(filename))
     return obj
 
 

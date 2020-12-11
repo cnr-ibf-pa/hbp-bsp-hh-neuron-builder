@@ -746,8 +746,9 @@ def upload_files(request):
         outfilepath = os.path.join(u_up_dir, outfilename)
 
         data = manage_json.gen_data_struct(name, name, upload_flag=True)
-        print(data)
-        print(type(data))
+
+        # print(data)
+        # print(type(data))
         if os.path.isfile(outfilepath):
             os.remove(outfilepath)
         with open(outfilepath, 'w') as f:

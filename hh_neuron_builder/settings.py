@@ -75,10 +75,7 @@ ROOT_URLCONF = 'hh_neuron_builder.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [
-            os.path.join(BASE_DIR, 'efelg/templates'),
-            os.path.join(BASE_DIR, 'hhnb/templates')
-        ],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -143,12 +140,10 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 # STATIC_ROOT = os.path.join(BASE_DIR, 'static')
-
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'efelg/static'),
-    os.path.join(BASE_DIR, 'hhnb/static'),
     os.path.join(BASE_DIR, 'static')
 ]
+
 
 MEDIA_ROOT = os.path.join("../app", 'media')
 
