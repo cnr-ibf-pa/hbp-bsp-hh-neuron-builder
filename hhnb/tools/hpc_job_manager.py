@@ -1,5 +1,7 @@
 from hhnb.tools import unicore_client
 
+from pyunicore import client as new_unicore_client
+
 import json
 import os
 import requests
@@ -7,9 +9,13 @@ import xml.etree.ElementTree
 import sys
 import traceback
 import zipfile
+import tarfile
 import shutil
 import collections
 import re
+
+import urllib3
+urllib3.disable_warnings()
 
 
 class Nsg:
@@ -197,6 +203,33 @@ class Nsg:
         return ""
 
 
+class UnicoreClient:
+
+    class __UnicoreClient:
+
+        def __init__(self, token):
+            self.token = token
+            self.tr = new_unicore_client.Transport(self.token.split('Bearer ')[1])
+            self.daint_client = new_unicore_client.Client(self.tr, 'https://brissago.cscs.ch:8080/DAINT-CSCS/rest/core')
+
+        def get_token(self):
+            return self.token
+
+        def get_daint_client(self):
+            return self.daint_client
+
+    instance = None
+
+    @staticmethod
+    def get_instance(token):
+        if not UnicoreClient.instance:
+            UnicoreClient.instance = UnicoreClient.__UnicoreClient(token)
+        return UnicoreClient.instance
+
+    def __get_daint_client(self):
+        return self.instance.get_daint_client()
+
+
 class Unicore:
     """
     Class for submitting jobs with Unicore
@@ -205,6 +238,7 @@ class Unicore:
     MAX_SIZE = 20240000
     SA_CSCS_JOBS_URL = "https://bspsa.cineca.it/jobs/pizdaint/bsp_pizdaint_01/"
     SA_CSCS_FILES_URL = "https://bspsa.cineca.it/files/pizdaint/bsp_pizdaint_01/"
+
 
     @classmethod
     def check_login(cls, username="", token="", hpc=""):  # , proxies={}):
@@ -223,7 +257,7 @@ class Unicore:
 
     @classmethod
     def run_unicore_opt(cls, hpc="", filename="", joblaunchname="", token=None, core_num=4, jobname="UNICORE_Job",
-                        node_num=2, runtime=4, username="", foldname=""):  # , proxies={}):
+                        node_num=2, runtime=4, username="", foldname="", project=None):  # , proxies={}):
 
         basename = os.path.basename(filename)
 
@@ -251,9 +285,14 @@ class Unicore:
                     "Nodes": str(node_num),
                     "CPUsPerNode": str(core_num),
                     "Runtime": runtime,
-                    "NodeConstraints": "mc"
+                    "NodeConstraints": "mc",
+                    "Project": project
                 },
+                "Tags": [
+                    "hhnb"
+                ]
             }
+            print(job)
 
             auth = unicore_client.get_oidc_auth(token=token)
             # auth['X-UNICORE-User-Preferences'] = 'uid:'+ username 
@@ -285,8 +324,8 @@ class Unicore:
                 job_url = 'https://bspsa.cineca.it/jobs/pizdaint/bsp_pizdaint_01/' + jobname + '/'
             else:
                 job_url = unicore_client.submit(base_url + '/jobs', job, auth, inputs)  # , proxies=proxies)
-                print('job_url: %s' % job_url)
-                print('jobname: %s' % job_url.split('/')[-1])
+                # print('job_url: %s' % job_url)
+                # print('jobname: %s' % job_url.split('/')[-1])
                 jobname = job_url.split('/')[-1]
 
             resp = {
@@ -310,6 +349,7 @@ class Unicore:
         """
         Retrieve job list from Unicore systems
         """
+        # tr = new_unicore_client.Transport(token.split('Bearer ')[1])
 
         job_list_dict = collections.OrderedDict()
 
@@ -317,12 +357,26 @@ class Unicore:
         base_url = unicore_client.get_sites()[hpc]['url']
 
         if hpc == "DAINT-CSCS":
-            listofjobs = unicore_client.get_properties(base_url + '/jobs', auth, proxies=proxies)
-            jobs = listofjobs['jobs']
-            for i in jobs:
-                job_title = i.split('/')[-1]
+            # listofjobs = unicore_client.get_properties(base_url + '/jobs', auth, proxies=proxies)
+            # jobs = listofjobs['jobs']
+            # for i in jobs:
+            #     job_title = i.split('/')[-1]
+            #     job_list_dict[job_title] = collections.OrderedDict()
+            #     job_list_dict[job_title]['url'] = i
+            # daint_client = new_unicore_client.Client(tr, "https://brissago.cscs.ch:8080/DAINT-CSCS/rest/core")
+            # daint_client = UnicoreClient(token=token).get_daint_client()
+            # print(daint_client)
+            # jobs = daint_client.get_jobs(tags=['hhnb'])
+
+            daint_client = UnicoreClient().get_instance(token).get_daint_client()
+            print(daint_client)
+            jobs = daint_client.get_jobs(tags=['hhnb'])
+
+            for j in jobs:
+                job_title = j.job_id
                 job_list_dict[job_title] = collections.OrderedDict()
-                job_list_dict[job_title]['url'] = i
+                job_list_dict[job_title]['url'] = j.links['self']
+
         elif hpc == "SA-CSCS":
             listofjobs = unicore_client.get_properties(base_url + '/jobs/pizdaint/bsp_pizdaint_01/', auth, proxies=proxies)
             jobs = listofjobs
@@ -378,7 +432,12 @@ class Unicore:
         if not os.path.exists(dest_dir):
             os.mkdir(dest_dir)
         auth = unicore_client.get_oidc_auth(token=token)
-        r = unicore_client.get_properties(job_url, auth, proxies=proxies)
+
+        # print('Getting JOB info')
+        # job = new_unicore_client.Job(tr, job_url)
+        # print(job.properties)
+
+        # r = unicore_client.get_properties(job_url, auth, proxies=proxies)
 
         # job retrieving from SA-CSCS
         if hpc == "SA-CSCS":
@@ -401,19 +460,35 @@ class Unicore:
                                     local_file.write(str(r.content))
             
         elif hpc == "DAINT-CSCS":
-            if (r['status'] == 'SUCCESSFUL') or (r['status'] == 'FAILED'):
-                wd = unicore_client.get_working_directory(job_url, auth, proxies=proxies)
-                output_files = unicore_client.list_files(wd, auth, proxies=proxies)
-                for file_path in output_files:
-                    _, f = os.path.split(file_path)
-                    if (f == 'stderr') or (f == "stdout") or (f == "output.zip"):
-                        content = unicore_client.get_file_content(wd + "/files" + file_path, auth, MAX_SIZE=cls.MAX_SIZE, proxies=proxies)
-                        with open(os.path.join(dest_dir, f), "w") as local_file:
-                            local_file.write(content)
-                        local_file.close()
+            daint_client = UnicoreClient().get_instance(token).get_daint_client()
+
+            for storage in daint_client.get_storages():
+                if storage.storage_url.endswith(job_url.split('/')[-1] + '-uspace'):
+                    job_storage = storage
+            print(job_storage)
+
+            # if (r['status'] == 'SUCCESSFUL') or (r['status'] == 'FAILED'):
+            #     wd = unicore_client.get_working_directory(job_url, auth, proxies=proxies)
+            #     output_files = unicore_client.list_files(wd, auth, proxies=proxies)
+            #     for file_path in output_files:
+            #         _, f = os.path.split(file_path)
+            #         if (f == 'stderr') or (f == "stdout") or (f == "output.zip"):
+            #             content = unicore_client.get_file_content(wd + "/files" + file_path, auth, MAX_SIZE=cls.MAX_SIZE, proxies=proxies)
+            #             with open(os.path.join(dest_dir, f), "w") as local_file:
+            #                 local_file.write(content)
+            #             local_file.close()
+
+            results_list = job_storage.listdir('.')
+            for f in results_list:
+                if f == 'stderr' or f == 'stdout' or f == 'output.zip':
+                    remote_file = job_storage.stat(f)
+                    remote_file.download(os.path.join(dest_dir, f))
+                    print('downloaded %s' % os.path.join(dest_dir, f))
+
         OptFolderManager.create_opt_res_zip(fin_folder=dest_dir, filetype="optres", wf_id=wf_id)
 
         return ""
+
     
 # TODO: to be check by Luca
 class OptResultManager:
@@ -424,22 +499,30 @@ class OptResultManager:
     
     @classmethod
     def create_analysis_files(cls, opt_res_folder, opt_res_file):
+        print('create_analysis_files() called.')
         """
         """
+        print(opt_res_file)
+        print('os_res_folder content: %s' % os.listdir(opt_res_folder))
         if opt_res_file.endswith(".tar.gz"):
             tar = tarfile.open(os.path.join(opt_res_folder, opt_res_file))
             tar.extractall(path=opt_res_folder)
             tar.close()
         elif opt_res_file.endswith(".zip"):
-            zip_ref = zipfile.ZipFile(os.path.join(opt_res_folder, opt_res_file), 'rb')
+            zip_ref = zipfile.ZipFile(os.path.join(opt_res_folder, opt_res_file), 'r')
             zip_ref.extractall(path=opt_res_folder)
             zip_ref.close()
+        print('os_res_folder content: %s' % os.listdir(opt_res_folder))
 
         analysis_file_list = []
+        print('analysis_file_list=%s' % analysis_file_list)
+
         for (dirpath, dirnames, filenames) in os.walk(opt_res_folder):
             for filename in filenames:
                 if filename == "analysis.py":
                     analysis_file_list.append(os.path.join(dirpath, filename))
+
+        print('analysis_file_list=%s' % analysis_file_list)
 
         if len(analysis_file_list) != 1:
             msg = "No (or multiple) analysis.py file(s) found. \
@@ -452,21 +535,21 @@ class OptResultManager:
             up_folder = os.path.split(file_path)[0]
 
             # modify analysis.py file
-            f = open(full_file_path, 'r')
-
-            lines = f.readlines()
-            lines[228]='    traces=[]\n'
-            lines[238]='        traces.append(response.keys()[0])\n'
-            lines[242]='\n    stimord={} \n    for i in range(len(traces)): \n        stimord[i]=float(traces[i][traces[i].find(\'_\')+1:traces[i].find(\'.soma\')]) \n    import operator \n    sorted_stimord = sorted(stimord.items(), key=operator.itemgetter(1)) \n    traces2=[] \n    for i in range(len(sorted_stimord)): \n        traces2.append(traces[sorted_stimord[i][0]]) \n    traces=traces2 \n'
-            lines[243]='    plot_multiple_responses([responses], cp_filename, fig=model_fig, traces=traces)\n'
-            lines[366]="def plot_multiple_responses(responses, cp_filename, fig, traces):\n"
-            lines[369] = "\n"
-            lines[370] = "\n"
-            lines[371] = "\n" # n is the line number you want to edit; subtract 1 as indexing of list starts from 0
-            f.close()   # close the file and reopen in write mode to enable writing to file; you can also open in append mode and use "seek", but you will have some unwanted old data if the new data is shorter in length.
-            f = open(full_file_path, 'w')
-            f.writelines(lines)
-            f.close()
+            # f = open(full_file_path, 'r')
+            #
+            # lines = f.readlines()
+            # lines[228]='    traces=[]\n'
+            # lines[238]='        traces.append(response.keys()[0])\n'
+            # lines[242]='\n    stimord={} \n    for i in range(len(traces)): \n        stimord[i]=float(traces[i][traces[i].find(\'_\')+1:traces[i].find(\'.soma\')]) \n    import operator \n    sorted_stimord = sorted(stimord.items(), key=operator.itemgetter(1)) \n    traces2=[] \n    for i in range(len(sorted_stimord)): \n        traces2.append(traces[sorted_stimord[i][0]]) \n    traces=traces2 \n'
+            # lines[243]='    plot_multiple_responses([responses], cp_filename, fig=model_fig, traces=traces)\n'
+            # lines[366]="def plot_multiple_responses(responses, cp_filename, fig, traces):\n"
+            # lines[369] = "\n"
+            # lines[370] = "\n"
+            # lines[371] = "\n" # n is the line number you want to edit; subtract 1 as indexing of list starts from 0
+            # f.close()   # close the file and reopen in write mode to enable writing to file; you can also open in append mode and use "seek", but you will have some unwanted old data if the new data is shorter in length.
+            # f = open(full_file_path, 'w')
+            # f.writelines(lines)
+            # f.close()
 
             # modify evaluator.py if present
             if not os.path.exists(os.path.join(file_path, 'evaluator.py')):
@@ -475,13 +558,14 @@ class OptResultManager:
                 resp = {"Status":"ERROR", "response":"KO", "message": msg}
                 return resp
             else:
-                f = open(os.path.join(file_path, 'evaluator.py'), 'r')    # pass an appropriate path of the required file
-                lines = f.readlines()
-                lines[167]='    #print param_names\n'
-                f.close()   # close the file and reopen in write mode to enable writing to file; you can also open in append mode and use "seek", but you will have some unwanted old data if the new data is shorter in length.
-                f = open(os.path.join(file_path, 'evaluator.py'), 'w')    # pass an appropriate path of the required file
-                f.writelines(lines)
-                f.close()
+                pass
+            #     f = open(os.path.join(file_path, 'evaluator.py'), 'r')    # pass an appropriate path of the required file
+            #     lines = f.readlines()
+            #     lines[167]='    #print param_names\n'
+            #     f.close()   # close the file and reopen in write mode to enable writing to file; you can also open in append mode and use "seek", but you will have some unwanted old data if the new data is shorter in length.
+            #     f = open(os.path.join(file_path, 'evaluator.py'), 'w')    # pass an appropriate path of the required file
+            #     f.writelines(lines)
+            #     f.close()
 
             if up_folder not in sys.path:
                 sys.path.append(up_folder)
@@ -627,7 +711,9 @@ class OptFolderManager:
             OptFolderManager.add_exec_file(hpc, fin_dest_dir=fin_dest_dir, execname=execname, gennum=gennum, offsize=offsize, mod_path="", joblaunchname=joblaunchname)
         elif hpc == "DAINT-CSCS" or hpc == "SA-CSCS":
             OptFolderManager.remove_files_from_opt_folder(fin_dest_dir=fin_dest_dir, hpc=hpc)
-            OptFolderManager.add_exec_file(hpc, fin_dest_dir=fin_dest_dir, execname=execname, gennum=gennum, offsize=offsize, mod_path="", joblaunchname=joblaunchname, foldernameOPTstring=opt_name)
+            exc_name, job = OptFolderManager.add_exec_file(hpc, fin_dest_dir=fin_dest_dir, execname=execname, gennum=gennum, offsize=offsize, mod_path="", joblaunchname=joblaunchname, foldernameOPTstring=opt_name)
+            print('================= FILES ==================')
+            print(exc_name, job)
 
         # build optimization folder name
         crr_dir_opt = os.path.join(fin_opt_folder, opt_name)
@@ -671,6 +757,7 @@ class OptFolderManager:
 
             if root == crr_dir_opt:
                 for f in files:
+                    print(f)
                     if f.endswith('.py') or (f.endswith('.sbatch') and (hpc == "DAINT-CSCS" or hpc == "SA-CSCS")):
                         final_zip_fname = os.path.join(root, f)
                         foo.write(final_zip_fname, final_zip_fname.replace(fin_opt_folder, '', 1))
@@ -698,7 +785,7 @@ class OptFolderManager:
 
         # Neuro Science Gateway
         if hpc == "NSG":
-            with open(os.path.join(fin_dest_dir, execname),'w') as f:
+            with open(os.path.join(fin_dest_dir, execname), 'w') as f:
                 f.write('import os')
                 f.write('\n')
                 f.write('os.system(\'python opt_neuron.py --max_ngen=' + str(gennum) +
@@ -834,7 +921,58 @@ class OptFolderManager:
             #     f.write('\n')
             # f.close()
 
-            with open(os.path.join(fin_dest_dir, execname),'w') as f:
+            # with open(os.path.join(fin_dest_dir, execname),'w') as f:
+            #     f.write('import os\n')
+            #     f.write('import zipfile\n')
+            #     f.write('retval = os.getcwd()\n')
+            #     f.write('print("Current working directory %s" % retval)\n')
+            #     f.write('os.chdir(\'..\')\n')
+            #     f.write('retval = os.getcwd()\n')
+            #     f.write('print("Current working directory %s" % retval)\n')
+            #     f.write('def zipdir(path, ziph):\n')
+            #     f.write('    for root, dirs, files in os.walk(path):\n')
+            #     f.write('        for file in files:\n')
+            #     f.write('            ziph.write(os.path.join(root, file))\n')
+            #     f.write('zipf = zipfile.ZipFile(\'output.zip\', \'w\')\n')
+            #     f.write('zipdir(\'' + foldernameOPTstring + '/\', zipf)\n')
+            # f.close()
+            # with open(os.path.join(fin_dest_dir, joblaunchname), 'w') as f:
+            #     f.write('#!/bin/bash -l\n')
+            #     f.write('\n')
+            #     f.write('mkdir logs\n')
+            #     f.write('#SBATCH --job-name=bluepyopt_ipyparallel\n')
+            #     f.write('#SBATCH --error=logs/ipyparallel_%j.log\n')
+            #     f.write('#SBATCH --output=logs/ipyparallel_%j.log\n')
+            #     f.write('#SBATCH --partition=normal\n')
+            #     f.write('#SBATCH --constraint=mc\n')
+            #     f.write('\n')
+            #     f.write('export PMI_NO_FORK=1\n')
+            #     f.write('export PMI_NO_PREINITIALIZE=1\n')
+            #     f.write('export PMI_MMAP_SYNC_WAIT_TIME=300 \n')
+            #     f.write('set -e\n')
+            #     f.write('set -x\n')
+            #     f.write('\n')
+            #     f.write('module load daint-mc cray-python/3.8.2.1 PyExtensions/python3-CrayGNU-20.08\n')
+            #     f.write(
+            #         'module use /apps/hbp/ich002/hbp-spack-deployments/softwares/15-09-2020/install/modules/tcl/cray-cnl7-haswell\n')
+            #     f.write('module load neuron/7.8.0c\n')
+            #     f.write('module load py-bluepyopt\n')
+            #     f.write('nrnivmodl mechanisms\n')
+            #     f.write('\n')
+            #     f.write('export USEIPYP=1\n')
+            #     f.write('export IPYTHONDIR="`pwd`/.ipython"\n')
+            #     f.write('export IPYTHON_PROFILE=ipyparallel.${SLURM_JOBID}\n')
+            #     f.write('ipcontroller --init --sqlitedb --ip=\'*\' --profile=${IPYTHON_PROFILE} &\n')
+            #     f.write('sleep 30\n')
+            #     f.write('srun ipengine --profile=${IPYTHON_PROFILE} &\n')
+            #     f.write('CHECKPOINTS_DIR="checkpoints"\n')
+            #     f.write('python opt_neuron.py --offspring_size=' + offsize +
+            #             ' --max_ngen=' + gennum + ' --start --checkpoint "${CHECKPOINTS_DIR}/checkpoint.pkl"\n')
+            #     f.write('python zipfolder.py')
+            #     f.write('\n')
+            # f.close()
+
+            with open(os.path.join(fin_dest_dir, execname), 'w') as f:
                 f.write('import os\n')
                 f.write('import zipfile\n')
                 f.write('retval = os.getcwd()\n')
@@ -849,6 +987,7 @@ class OptFolderManager:
                 f.write('zipf = zipfile.ZipFile(\'output.zip\', \'w\')\n')
                 f.write('zipdir(\'' + foldernameOPTstring + '/\', zipf)\n')
             f.close()
+            # create file for launching job
             with open(os.path.join(fin_dest_dir, joblaunchname), 'w') as f:
                 f.write('#!/bin/bash -l\n')
                 f.write('\n')
@@ -879,11 +1018,14 @@ class OptFolderManager:
                 f.write('sleep 30\n')
                 f.write('srun ipengine --profile=${IPYTHON_PROFILE} &\n')
                 f.write('CHECKPOINTS_DIR="checkpoints"\n')
-                f.write('python opt_neuron.py --offspring_size=' + offsize +
-                        ' --max_ngen=' + gennum + ' --start --checkpoint "${CHECKPOINTS_DIR}/checkpoint.pkl"\n')
+                f.write('python opt_neuron.py --offspring_size=' + str(offsize) +
+                        ' --max_ngen=' + str(gennum) + ' --start --checkpoint "${CHECKPOINTS_DIR}/checkpoint.pkl"\n')
                 f.write('python zipfolder.py')
                 f.write('\n')
             f.close()
+
+            print(os.listdir())
+            print(os.getcwd())
 
             return [execname, joblaunchname]
 
@@ -975,6 +1117,9 @@ class OptSettings:
             "hpc_sys": hpc_sys,
             "job_title": job_title
         }
+
+        if 'project' in kwargs:
+            params.update({'project': kwargs['project']})
 
         with open(opt_sub_param_file, 'w') as pf:
             json.dump(params, pf)

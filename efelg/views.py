@@ -22,8 +22,6 @@ import json
 
 import bluepyefe as bpefe
 
-
-
 # set logging up
 logging.basicConfig(stream=sys.stdout)
 logger = logging.getLogger()
@@ -33,7 +31,6 @@ logger.setLevel(logging.DEBUG)
 accesslogger = logging.getLogger('efelg_access.log')
 accesslogger.addHandler(logging.FileHandler('efelg_access.log'))
 accesslogger.setLevel(logging.DEBUG)
-
 
 # Create your views here.
 
@@ -724,7 +721,7 @@ def upload_files(request):
         # if file exists delete and recreate it
         if os.path.isfile(crr_local_filename):
             os.remove(crr_local_filename)
-        final_file = open(crr_local_filename, 'w')
+        final_file = open(crr_local_filename, 'wb')
 
         # save chunks or entire file based on dimensions
         if k.multiple_chunks():
@@ -749,6 +746,8 @@ def upload_files(request):
         outfilepath = os.path.join(u_up_dir, outfilename)
 
         data = manage_json.gen_data_struct(name, name, upload_flag=True)
+        print(data)
+        print(type(data))
         if os.path.isfile(outfilepath):
             os.remove(outfilepath)
         with open(outfilepath, 'w') as f:

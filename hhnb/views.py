@@ -147,7 +147,8 @@ def initialize(request, exc="", ctx=""):
     # build directory names
     workflows_dir = os.path.join(settings.MEDIA_ROOT, 'hhnb', 'workflows')
     # scm_structure_path = os.path.join(settings.MEDIA_ROOT, 'hhnb', 'bsp_data_repository', 'singlecellmodeling_structure.json')
-    scm_structure_path = os.path.join(settings.MEDIA_ROOT, 'hhnb', 'hippocampus_models_py3.json')
+    # scm_structure_path = os.path.join(settings.MEDIA_ROOT, 'hhnb', 'hippocampus_models_py3.json')
+    scm_structure_path = os.path.join(settings.MEDIA_ROOT, 'hhnb', 'hippocampus_models_new.json')
     opt_model_path = os.path.join(settings.MEDIA_ROOT, 'hhnb', 'bsp_data_repository', 'optimizations')
 
     # create global variables in request.session
@@ -538,6 +539,8 @@ def run_optimization(request, exc="", ctx=""):
         #PROXIES = settings.PROXIES
         PROXIES = {}
 
+        project_id = request.session[exc]['project']
+
         execname = "zipfolder.py"
         joblaunchname = "ipyparallel.sbatch"
 
@@ -554,7 +557,7 @@ def run_optimization(request, exc="", ctx=""):
         # launch job on cscs-pizdaint
         resp = hpc_job_manager.Unicore.run_unicore_opt(hpc=hpc_sys, filename=zfName, joblaunchname=joblaunchname,
                                                        token=access_token, jobname=wf_id, core_num=core_num,
-                                                       node_num=node_num, runtime=runtime, foldname=opt_name)  # , proxies=PROXIES)
+                                                       node_num=node_num, runtime=runtime, foldname=opt_name, project=project_id)  # , proxies=PROXIES)
 
     elif hpc_sys == "SA-CSCS":
         #PROXIES = settings.PROXIES
@@ -588,7 +591,7 @@ def run_optimization(request, exc="", ctx=""):
 
         wf_job_ids = request.session[exc]['wf_job_ids']
         ids_file = os.path.join(workflows_dir, username, wf_job_ids)
-        ids_dict = {"wf_id": wf_id, "hpc_sys": hpc_sys, "time_info": time_info, "source_opt_id": source_opt_id}
+        ids_dict = {"wf_id": wf_id, "job_id": crr_job_name, "hpc_sys": hpc_sys, "time_info": time_info, "source_opt_id": source_opt_id}
 
         # update file containing
         if os.path.exists(ids_file):
@@ -670,6 +673,7 @@ def submit_run_param(request, exc="", ctx=""):
 
     # selected_traces_rest = request.POST.get('csrfmiddlewaretoken')
     form_data = request.POST
+    print(form_data)
 
     # read data from form
     gennum = int(form_data['gen-max'])
@@ -688,6 +692,8 @@ def submit_run_param(request, exc="", ctx=""):
     wf_id = request.session[exc]['wf_id']
     dest_dir = request.session[exc]['user_dir_data_opt_launch']
     username = request.session[exc]['username']
+
+    project_id = None
 
     # if chosen system is nsg
     if hpc_sys == 'NSG':
@@ -708,6 +714,10 @@ def submit_run_param(request, exc="", ctx=""):
             return HttpResponse(json.dumps(resp_dict), content_type="application/json")
 
     elif hpc_sys == "DAINT-CSCS" or hpc_sys == "SA-CSCS":
+        if hpc_sys == "DAINT-CSCS":
+            project_id = form_data['project']
+            request.session[exc]['project'] = project_id
+
         runtime = form_data['runtime']
         resp_dict = {'response': 'OK', 'message': 'Set Job title'}
 
@@ -716,7 +726,7 @@ def submit_run_param(request, exc="", ctx=""):
 
     hpc_job_manager.OptSettings.print_opt_params(wf_id=wf_id, gennum=str(gennum), offsize=str(offsize),
                                                  nodenum=str(nodenum), corenum=str(corenum), runtime=str(runtime),
-                                                 opt_sub_param_file=opt_sub_param_file, hpc_sys=hpc_sys)
+                                                 opt_sub_param_file=opt_sub_param_file, hpc_sys=hpc_sys, project=project_id)
 
     request.session.save()
 
@@ -1016,11 +1026,11 @@ def get_job_list(request, exc="", ctx=""):
         resp = hpc_job_manager.Unicore.fetch_job_list(hpc_sys_fetch, access_token)  # , proxies=PROXIES)
 
     # fetch workflow ids for all fetched jobs and add to response
-    for key in resp:
-        if key in all_id:
-            resp[key]["wf"] = all_id[key]
-        else:
-            resp[key]["wf"] = {"wf_id": "No workflow id associated", "hpc_sys": hpc_sys_fetch}
+    # for key in resp:
+    #     if key in all_id:
+    #         resp[key]["wf"] = all_id[key]
+    #     else:
+    #         resp[key]["wf"] = {"wf_id": "No workflow id associated", "hpc_sys": hpc_sys_fetch}
 
     request.session[exc]['hpc_fetch_job_list'] = resp
 
@@ -1032,6 +1042,7 @@ def get_job_list(request, exc="", ctx=""):
 def get_job_details(request, jobid="", exc="", ctx=""):
     """
     """
+    jobid = str(jobid)
 
     hpc_sys_fetch = request.session[exc]['hpc_sys_fetch']
 
@@ -1052,8 +1063,8 @@ def get_job_details(request, jobid="", exc="", ctx=""):
         access_token = request.session.get('oidc_access_token')
         resp = hpc_job_manager.Unicore.fetch_job_details(hpc=hpc_sys_fetch, job_url=job_url, job_id=jobid,
                                                          token="Bearer " + access_token)  # , proxies=PROXIES)
-
-    request.session.save()
+        print(json.dumps(resp, indent=4))
+        request.session.save()
 
     return HttpResponse(json.dumps(resp), content_type="application/json")
 
@@ -1061,6 +1072,7 @@ def get_job_details(request, jobid="", exc="", ctx=""):
 def download_job(request, job_id="", exc="", ctx=""):
     """
     """
+    job_id = str(job_id)
 
     opt_res_dir = request.session[exc]['user_dir_results_opt']
     wf_id = request.session[exc]['wf_id']
@@ -1116,10 +1128,14 @@ def download_job(request, job_id="", exc="", ctx=""):
 
 
 def run_analysis(request, exc="", ctx=""):
+    print('run_analysis() called.')
+
     msg = ""
     opt_res_folder = request.session[exc]['user_dir_results_opt']
 
     hpc_sys_fetch = request.session[exc]['hpc_sys_fetch']
+
+    print(hpc_sys_fetch, opt_res_folder, sep='\n')
 
     # set output file name
     if hpc_sys_fetch == "NSG":
@@ -1128,6 +1144,7 @@ def run_analysis(request, exc="", ctx=""):
         opt_res_file = "output.zip"
 
     output_fetched_file = os.path.join(opt_res_folder, opt_res_file)
+    print(output_fetched_file)
 
     if not os.path.exists(output_fetched_file):
         msg = "No output file was generated in the optimization process. Check your optimization settings."
@@ -1217,14 +1234,16 @@ def run_analysis(request, exc="", ctx=""):
                 f.writelines(new_line)
                 f.close()
 
-                subprocess.call(". /web/bspg/venvbspg/bin/activate; cd " + up_folder + "; nrnivmodl mechanisms", shell=True)
+                # subprocess.call(". /web/bspg/venvbspg/bin/activate; cd " + up_folder + "; nrnivmodl mechanisms", shell=True)
+                subprocess.call('/home/rcsm17/Workspace/cnr/hh-neuron-builder/newvenv3/bin/activate; cd ' + up_folder + '; nrnivmodl mechanisms', shell=True)
 
                 r_0_fold = os.path.join(up_folder, 'r_0')
                 if os.path.isdir(r_0_fold):
                     shutil.rmtree(r_0_fold)
                 os.mkdir(r_0_fold)
 
-                subprocess.call(". /web/bspg/venvbspg/bin/activate; cd " + up_folder + "; python opt_neuron.py --analyse --checkpoint ./checkpoints", shell=True)
+                # subprocess.call(". /web/bspg/venvbspg/bin/activate; cd " + up_folder + "; python opt_neuron.py --analyse --checkpoint ./checkpoints", shell=True)
+                subprocess.call('/home/rcsm17/Workspace/cnr/hh-neuron-builder/newvenv3/bin/activate; cd ' + up_folder + '; python opt_neuron.py --analyse --checkpoint ./checkpoints', shell=True)
 
             except Exception as e:
                 msg = traceback.format_exception(*sys.exc_info())
@@ -1237,8 +1256,9 @@ def run_analysis(request, exc="", ctx=""):
             resp = hpc_job_manager.OptResultManager.create_analysis_files(opt_res_folder, opt_res_file)
             up_folder = resp["up_folder"]
             tempresp = subprocess.call(
-                ". /web/bspg/venvbspg/bin/activate; cd " + up_folder + "; nrnivmodl mechanisms; python opt_neuron.py --analyse --checkpoint ./checkpoints > /dev/null 2>&1 ",
+                "cd " + up_folder + "; nrnivmodl mechanisms; python opt_neuron.py --analyse --checkpoint ./checkpoints > /dev/null 2>&1 ",
                 shell=True)
+            print(tempresp)
 
         except Exception as e:
             msg = traceback.format_exception(*sys.exc_info())
@@ -1252,7 +1272,7 @@ def run_analysis(request, exc="", ctx=""):
     return HttpResponse(json.dumps(resp), content_type="application/json")
 
 
-def zip_sim(request, jobid="", exc="", ctx=""):
+def zip_sim(request, job_id="", exc="", ctx=""):
     user_dir_res_opt = request.session[exc]['user_dir_results_opt']
     user_dir_sim_run = request.session[exc]['user_dir_sim_run']
     opt_res_mod_folder = request.session.get("opt_res_mod_folder", "")
@@ -1312,6 +1332,7 @@ def zip_sim(request, jobid="", exc="", ctx=""):
 
     for filename in os.listdir(os.path.join(sim_mod_folder, 'checkpoints')):
         if filename.endswith(".hoc"):
+        # if filename.endswith('.pkl'):
             os.rename(os.path.join(sim_mod_folder, "checkpoints", filename), os.path.join(sim_mod_folder, "checkpoints", "cell.hoc"))
 
     current_working_dir = os.getcwd()
@@ -1343,8 +1364,8 @@ def zip_sim(request, jobid="", exc="", ctx=""):
     with open(job_ids_file, 'r') as f:
         user_job_ids = json.load(f)
     f.close()
-    if jobid in user_job_ids and "source_opt_id" in user_job_ids[jobid]:
-        fetch_opt_uuid = user_job_ids[jobid]["source_opt_id"]
+    if job_id in user_job_ids and "source_opt_id" in user_job_ids[job_id]:
+        fetch_opt_uuid = user_job_ids[job_id]["source_opt_id"]
     else:
         fetch_opt_uuid = ""
 
@@ -1841,7 +1862,7 @@ def workflow_download(request, exc='', ctx=''):
 
 
 def get_user_avatar(request):
-    r = requests.get('https://wiki.ebrains.eu/bin/download/XWiki/' + request.user.username + '/avatar.png?width=36&height=36&keepAspectRatio=true')
+    r = requests.get('https://wiki.ebrains.eu/bin/download/XWiki/' + request.user.username + '/avatar.png?width=36&height=36&keepAspectRatio=true', verify=False)
     return HttpResponse(content_type='image/png;', charset='UTF-8', content=r.content)
 
 

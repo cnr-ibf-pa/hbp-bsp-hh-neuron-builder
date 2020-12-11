@@ -52,7 +52,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     # 'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    #'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
 FILE_UPLOAD_HANDLERS = [
@@ -145,7 +145,6 @@ STATIC_URL = '/static/'
 # STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'ebrains_oidc_authentication/static'),
     os.path.join(BASE_DIR, 'efelg/static'),
     os.path.join(BASE_DIR, 'hhnb/static'),
     os.path.join(BASE_DIR, 'static')
@@ -176,3 +175,7 @@ LOGIN_REDIRECT_URL = "/hh-neuron-builder"
 LOGOUT_REDIRECT_URL = "/hh-neuron-builder"
 
 LOGIN_URL = 'oidc_authentication_init'
+
+
+# LOGGING SETTINGS
+

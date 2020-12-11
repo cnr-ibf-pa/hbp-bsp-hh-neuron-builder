@@ -621,6 +621,7 @@ function displayJobInfo() {
                     }
                     changeMsgPleaseWaitDiv("Fetching details for job " + (print_idx) + " of " + job_list_len);
                     var crr_job_json = job_details;
+                    console.log(crr_job_json);
 
                     var job_download_button2 = document.createElement("button");
                     job_download_button2.id = crr_job_json['job_id'];
@@ -641,7 +642,7 @@ function displayJobInfo() {
                     cell3.setAttribute("align", "center");
                     cell4.className += "ttd";
                     cell5.className += "ttd";
-                    cell1.innerHTML = "  " + joblist[crr_job_json["job_id"]]["wf"]["wf_id"] + "  ";
+                    cell1.innerHTML = "  " + crr_job_json["job_name"] + "  ";
                     cell2.innerHTML = "  " + crr_job_json["job_id"] + "  ";
                     cell3.innerHTML = "  " + crr_job_json["job_stage"] + "  " ;
 
@@ -867,6 +868,8 @@ function manageOptSetInput(){
         var un_div = document.getElementById("un-div");
         var hpc_param_container = document.getElementById("hpc-param");
         var apply_param_button = document.getElementById("apply-param");
+        var daint_project_section = document.getElementById("daint_project_section");
+        var daint_project_param = document.getElementById("daint_project_id");
     } else if (form_el == "submitFetchParam"){
         var pwd = document.getElementById("password_fetch");
         var un = document.getElementById("username_fetch");
@@ -877,6 +880,7 @@ function manageOptSetInput(){
     }
 
     if (sys == "--"){
+        daint_project_section.style.display = "none";
         pwd_div.setAttribute("style", "display:none");
         un_div.setAttribute("style", "display:none");
         hpc_param_container.classList = "collapse";
@@ -902,6 +906,11 @@ function manageOptSetInput(){
         pwd.required = false;
         un.required = false;
         if (form_el == "submitRunParam") {
+            if (sys == "DAINT-CSCS") {
+            daint_project_section.style.display = "block";
+            } else {
+                daint_project_section.style.display = "none";
+            }
             corenum.value = 24;
             nodenum.value = 6;
             runtime.type = "string";
@@ -912,6 +921,7 @@ function manageOptSetInput(){
             runtime.required = true;
         }
     } else if (sys == "NSG"){
+        daint_project_section.style.display = "none";
         pwd_div.setAttribute("style", "display:block;");
         un_div.setAttribute("style", "display:block;");
         pwd.setAttribute("value", "");
