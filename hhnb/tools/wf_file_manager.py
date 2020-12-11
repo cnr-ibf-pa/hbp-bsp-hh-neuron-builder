@@ -123,6 +123,7 @@ class CheckConditions:
             return {"response": "KO", "message": "'checkpoints' folder NOT present"}
 
         list_hoc_files = [cf for cf in os.listdir(check_folder) if cf.endswith(".hoc")]
+        # list_hoc_files = [cf for cf in os.listdir(check_folder) if cf.endswith(".pkl")]
         if not list_hoc_files:
             return {"response": "KO", "message": "No .hoc file is present in the final simulation folder"}
 

@@ -45,7 +45,6 @@ def get_properties(resource, headers={}, proxies={}):
     my_headers = headers.copy()
     my_headers['Accept'] = "application/json"
     r = requests.get(resource, headers=my_headers, verify=False, proxies=proxies)
-    print(r.status_code, r.content)
     if r.status_code != 200:
         raise RuntimeError("Error getting properties: %s" % r.status_code)
     else:

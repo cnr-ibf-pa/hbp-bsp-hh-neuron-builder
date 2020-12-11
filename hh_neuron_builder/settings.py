@@ -145,7 +145,6 @@ STATIC_URL = '/static/'
 # STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'ebrains_oidc_authentication/static'),
     os.path.join(BASE_DIR, 'efelg/static'),
     os.path.join(BASE_DIR, 'hhnb/static'),
     os.path.join(BASE_DIR, 'static')
