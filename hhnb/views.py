@@ -31,6 +31,8 @@ from django.contrib.auth.decorators import login_required
 # from hbp_validation_framework import ModelCatalog
 
 # import local tools
+from hbp_validation_framework import ModelCatalog
+
 from hhnb.tools import resources, hpc_job_manager, wf_file_manager
 
 # import common tools library for the bspg project
@@ -437,9 +439,9 @@ def copy_feature_files(request, feature_folder="", exc="", ctx=""):
         return HttpResponse(json.dumps(response), content_type="application/json")
 
     response["folder"] = feature_folder
-    shutil.copy(os.path.join(feature_folder, 'features.json'), 
+    shutil.copy(os.path.join(feature_folder, 'features.json'),
             request.session[exc]['user_dir_data_feat'])
-    shutil.copy(os.path.join(feature_folder, 'protocols.json'), 
+    shutil.copy(os.path.join(feature_folder, 'protocols.json'),
             request.session[exc]['user_dir_data_feat'])
 
     return HttpResponse(json.dumps(response), content_type="application/json")
@@ -1350,7 +1352,7 @@ def zip_sim(request, job_id="", exc="", ctx=""):
                 root == os.path.join(crr_dir_opt, opt_logs_folder):
             for f in files:
                 final_zip_fname = os.path.join(root, f)
-                foo.write(final_zip_fname, 
+                foo.write(final_zip_fname,
                         final_zip_fname.replace(user_dir_sim_run, '', 1))
 
     foo.close()
@@ -1520,6 +1522,8 @@ def wf_storage_list(request, exc="", ctx=""):
 
 
 def get_user_clb_permissions(request, exc="", ctx=""):
+    return JsonResponse(data={'response': 'OK'})
+
     collab_url = "https://services.humanbrainproject.eu/collab/v0/collab/context/" + ctx + "/permissions/"
 
     # get user header token
@@ -1701,8 +1705,6 @@ def register_model_catalog(request, reg_collab="", exc="", ctx=""):
 
     # create model catalog instance and add to Collab if not present
     mc = ModelCatalog(token=clb_user_token)
-    MCapp_navID = mc.exists_in_collab_else_create(collab_id=mc_fin_clb_id)
-    mc.set_app_config(collab_id=mc_fin_clb_id, app_id=MCapp_navID, only_if_new=True)
 
     auth_family_name = form_data["authorLastName"]
     auth_given_name = form_data["authorFirstName"]
@@ -1722,26 +1724,24 @@ def register_model_catalog(request, reg_collab="", exc="", ctx=""):
     else:
         private_flag = False
 
-    model_id = mc.register_model(app_id=str(MCapp_navID), name=mod_name,
-                                 author={"family_name": auth_family_name, "given_name": auth_given_name},
-                                 owner={"family_name": own_family_name, "given_name": own_given_name},
-                                 organization=organization,
-                                 private=private_flag,
-                                 cell_type=cell_type,
-                                 model_scope=model_scope,
-                                 abstraction_level=abstraction_level,
-                                 brain_region=brain_region,
-                                 species=species,
-                                 description=description,
-                                 instances=[{
-                                     "source": reg_mod_url,
-                                     "version": "1.0",
-                                     "parameters": "",
-                                     "license": license
-                                 }])
-
-    model_path_on_catalog = "https://collab.humanbrainproject.eu/#/collab/{}/nav/{}?state=model.{}".format(
-        str(mc_fin_clb_id), str(MCapp_navID), model_id)
+    model = mc.register_model(collab_id="hhnb-registeredmodels",
+                              name=mod_name,
+                              author={"family_name": auth_family_name, "given_name": auth_given_name},
+                              organization=organization,
+                              private=private_flag,
+                              species=species,
+                              brain_region=brain_region,
+                              cell_type=cell_type,
+                              model_scope=model_scope,
+                              abstraction_level=abstraction_level,
+                              owner={"family_name": own_family_name, "given_name": own_given_name},
+                              description=description,
+                              instances=[{
+                                  "version": "1.0",
+                                  "source": reg_mod_url,
+                                  "license": license,
+                              }])
+    model_path_on_catalog = "https://model-catalog.brainsimulation.eu/#model_id.{}".format(model["id"])
 
     edit_message = "\
             The model was successfully registered in the Model Catalog.<br>\
@@ -1785,23 +1785,10 @@ def workflow_upload(request, exc='', ctx=''):
 
         os.remove(wf_zip)
 
-
-        target_path = None
+        target_path = ''
         for f in os.listdir(user_path):
             if f == filename.split('.zip')[0]:
                 target_path = os.path.join(user_path, f)
-
-        # create workspace dir if not exists yet
-        #if not target_path:
-        #    os.mkdir(os.path.join(user_path, filename.split('.zip')[0]))
-        #    target_path = os.path.join(user_path, filename.split('.zip')[0])
-        #    os.mkdir(os.path.join(target_path, 'data'))
-        #    os.mkdir(os.path.join(target_path, 'data', 'features'))
-        #    os.mkdir(os.path.join(target_path, 'data', 'opt_settings'))
-        #    os.mkdir(os.path.join(target_path, 'data', 'opt_launch'))
-        #    os.mkdir(os.path.join(target_path, 'results'))
-        #    os.mkdir(os.path.join(target_path, 'results', 'opt'))
-        #    os.mkdir(os.path.join(target_path, 'sim'))
 
         for c in filename[:14]:
             if c not in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']:
@@ -1811,6 +1798,7 @@ def workflow_upload(request, exc='', ctx=''):
                 request.session[exc]['time_info'] = filename[:14]
                 break
         request.session[exc]['wf_id'] = filename.split('.zip')[0]
+
         # overwrite keys if present in request.session
         request.session[exc]['user_dir'] = target_path
         request.session[exc]['user_dir_data'] = os.path.join(target_path, 'data')
@@ -1850,15 +1838,12 @@ def workflow_download(request, exc='', ctx=''):
 
     # to change with ebrains username
     username = request.session[exc]['username']
-    
-    #
-    user_dir = request.session[exc]['user_dir']
-    user_dir_split= os.path.split(user_dir)
-    shutil.make_archive(os.path.join(tmp_dir, wf_id), 'zip',
-            user_dir_split[0], user_dir_split[1])
 
-    return FileResponse(open(os.path.join(tmp_dir, wf_id + '.zip'), 'rb'), 
-            as_attachment=True)
+    user_dir = request.session[exc]['user_dir']
+    user_dir_split = os.path.split(user_dir)
+    shutil.make_archive(os.path.join(tmp_dir, wf_id), 'zip', user_dir_split[0], user_dir_split[1])
+
+    return FileResponse(open(os.path.join(tmp_dir, wf_id + '.zip'), 'rb'), as_attachment=True)
 
 
 def get_user_avatar(request):
@@ -1871,7 +1856,7 @@ def get_user_page(request):
 
 
 def clone_workflow(request, exc='', ctx=''):
-    
+
     if exc not in request.session.keys() or "workflows_dir" not in request.session[exc]:
         response = {"response": "KO", "message": "An error occurred while loading the application.<br><br>Please reload."}
         return HttpResponse(json.dumps(response), content_type="application/json")

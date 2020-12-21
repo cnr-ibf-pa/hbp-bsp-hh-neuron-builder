@@ -14,6 +14,8 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.urls import path, include, register_converter
+from django.conf import settings
+from django.conf.urls.static import static
 
 # from hhnb.utils.converters import AnyCharConvert
 # register_converter(AnyCharConvert, 'any')
@@ -28,4 +30,5 @@ urlpatterns = [
 
     path('efelg/', include('efelg.urls')),
     path('hh-neuron-builder/', include('hhnb.urls')),
-]
+
+] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
