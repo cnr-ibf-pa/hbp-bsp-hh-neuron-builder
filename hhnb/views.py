@@ -35,6 +35,8 @@ from hbp_validation_framework import ModelCatalog
 
 from hhnb.tools import resources, hpc_job_manager, wf_file_manager
 
+import ebrains_drive
+
 # import common tools library for the bspg project
 
 # ctools used to renew token, not userd any more
@@ -1544,7 +1546,8 @@ def get_data_model_catalog(request, exc="", ctx=""):
     mc_clb_user = request.session[exc]["mod_clb_user"]
 
     # refresh collab user token from permanent refresh token
-    storage_user_token = resources.get_token_from_refresh_token(mc_clb_user)
+    # storage_user_token = resources.get_token_from_refresh_token(mc_clb_user)
+    storage_user_token = request.session['oidc_access_token']
 
     fetch_opt_uuid = request.session[exc].pop('fetch_opt_uuid', None)
 
@@ -1557,6 +1560,8 @@ def get_data_model_catalog(request, exc="", ctx=""):
     headers = {'Authorization': "Bearer " + storage_user_token}
     vf_url = "https://validation-v1.brainsimulation.eu/authorizedcollabparameterrest/?format=json&python_client=true"
     res = requests.get(vf_url)
+    print(res)
+    print(res.status_code, res.text)
     default_values = res.json()
 
     data = {"default_values": default_values}
@@ -1663,48 +1668,60 @@ def register_model_catalog(request, reg_collab="", exc="", ctx=""):
     mc_clb_user = request.session[exc]["mod_clb_user"]
     mc_clb_url = request.session[exc]['mod_clb_url']
 
+    print('id: %s\nuser: %s\nurl: %s' % (mc_clb_id, mc_clb_user, mc_clb_url))
+
     # refresh collab user token from permanent refresh token
-    storage_user_token = resources.get_token_from_refresh_token(mc_clb_user)
-
-    # retrieve data from request.session
-    hhnb_storage_folder = "hhnb_wf_model"
-
-    # TODO: update with new API
-    sc = service_client.Client.new(storage_user_token)
-    ac = service_api_client.ApiClient.new(storage_user_token)
-
-    # retrieve collab related projects
-    project_dict = ac.list_projects(None, None, None, mc_clb_id)
-    project = project_dict['results']
-    storage_root = ac.get_entity_path(project[0]['uuid'])
+    # storage_user_token = resources.get_token_from_refresh_token(mc_clb_user)
+    #
+    # # retrieve data from request.session
+    # hhnb_storage_folder = "hhnb_wf_model"
+    #
+    # # TODO: update with new API
+    # sc = service_client.Client.new(storage_user_token)
+    # ac = service_api_client.ApiClient.new(storage_user_token)
+    #
+    # # retrieve collab related projects
+    # project_dict = ac.list_projects(None, None, None, mc_clb_id)
+    # project = project_dict['results']
+    # storage_root = ac.get_entity_path(project[0]['uuid'])
 
     # create final storage folder if it does not exist
-    hhnb_full_storage_path = os.path.join(storage_root, hhnb_storage_folder)
-    storage_mod_name = os.path.join(hhnb_full_storage_path, mc_zip_name)
+    # hhnb_full_storage_path = os.path.join(storage_root, hhnb_storage_folder)
+    # storage_mod_name = os.path.join(hhnb_full_storage_path, mc_zip_name)
 
     # create folder in the collab storage if needed
-    if not sc.exists(str(hhnb_full_storage_path)):
-        sc.mkdir(str(hhnb_full_storage_path))
+    # if not sc.exists(str(hhnb_full_storage_path)):
+    #     sc.mkdir(str(hhnb_full_storage_path))
+    #
+    # resp_upload = sc.upload_file(mc_zip_name_full, str(storage_mod_name), "application/zip")
+    #
+    # reg_mod_url = mc_clb_url + resp_upload['uuid']
 
-    resp_upload = sc.upload_file(mc_zip_name_full, str(storage_mod_name), "application/zip")
+    # if reg_collab == "current_collab":
+    #     # TODO: update with new API [RESOLVED]
+    #     # clb_user_token = get_access_token(request.user.social_auth.get())
+    #     clb_user_token = request.session['oidc_access_token']
+    #     # TODO: change url with the new Ebrains' one
+    #     collab_url = "https://services.humanbrainproject.eu/collab/v0/collab/context/" + ctx
+    #     headers = {'Authorization': "Bearer " + clb_user_token}
+    #     resp = requests.get(collab_url, headers=headers)
+    #     mc_fin_clb_id = resp.json()["collab"]["id"]
+    # else:
+    #     mc_fin_clb_id = mc_clb_id
+    #     clb_user_token = storage_user_token
 
-    reg_mod_url = mc_clb_url + resp_upload['uuid']
-
-    if reg_collab == "current_collab":
-        # TODO: update with new API [RESOLVED]
-        # clb_user_token = get_access_token(request.user.social_auth.get())
-        clb_user_token = request.session['oidc_access_token']
-        # TODO: change url with the new Ebrains' one
-        collab_url = "https://services.humanbrainproject.eu/collab/v0/collab/context/" + ctx
-        headers = {'Authorization': "Bearer " + clb_user_token}
-        resp = requests.get(collab_url, headers=headers)
-        mc_fin_clb_id = resp.json()["collab"]["id"]
-    else:
-        mc_fin_clb_id = mc_clb_id
-        clb_user_token = storage_user_token
+    clb_user_token = request.session['oidc_access_token']
 
     # create model catalog instance and add to Collab if not present
     mc = ModelCatalog(token=clb_user_token)
+
+    client = ebrains_drive.connect(token=mc.auth.token)
+    repo = client.repos.get_repo_by_url("https://wiki.ebrains.eu/bin/view/Collabs/hhnb-registeredmodels/")
+    seafdir = repo.get_dir('/hhnb_wf_model')
+    mc_zip_uploaded = seafdir.upload_local_file(mc_zip_name_full)
+
+    print('============= UPLOADED FILE =============')
+    print(help(mc_zip_uploaded))
 
     auth_family_name = form_data["authorLastName"]
     auth_given_name = form_data["authorFirstName"]
@@ -1738,7 +1755,8 @@ def register_model_catalog(request, reg_collab="", exc="", ctx=""):
                               description=description,
                               instances=[{
                                   "version": "1.0",
-                                  "source": reg_mod_url,
+                                  # "source": reg_mod_url,
+                                  "source": mc_zip_uploaded.get_share_link(),
                                   "license": license,
                               }])
     model_path_on_catalog = "https://model-catalog.brainsimulation.eu/#model_id.{}".format(model["id"])
