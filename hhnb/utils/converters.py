@@ -57,7 +57,7 @@ class FeatOrOptsetOrModsimConverter:
 
 
 class FeatOrOptsetOrModsimOrOptresConverter:
-    regex = 'feat|optset|modsim'
+    regex = 'feat|optset|modsim|optres'
 
     def to_python(self, value):
         return value

@@ -42,14 +42,14 @@ class CheckConditions:
                             in the optimization folder. Please upload a well formatted .zip file"}
 
             # validate json files in config folder
-            jsonfile_list = ["features.json", "morph.json", "parameters.json protocols.json"]
+            jsonfile_list = ["features.json", "morph.json", "parameters.json", "protocols.json"]
             keys = []
             for i, j in enumerate(jsonfile_list):
                 c_filename = os.path.join(opt_folder, "config", j)
                 try:
                     with open(c_filename, "r") as read_file:
                         json_data = json.load(read_file)
-                        keys.append(json_data.keys()[0])
+                        keys.append(list(json_data.keys())[0])
                         read_file.close()
                 except ValueError:
                     return {"response": "KO", "message": "File '" + c_filename + "' is either not \
@@ -96,7 +96,7 @@ class CheckConditions:
             else:
                 with open(os.path.join(opt_folder, "config", "morph.json")) as json_file:
                     morph_data = json.load(json_file)
-                    if morph_list_dir[0] != morph_data.values()[0]: 
+                    if morph_list_dir[0] != list(morph_data.values())[0]:
                         return {"response": "KO", "message": "The file in the 'morphology' folder must have the same name\
                                 of the key in the 'morph.json' file in the 'config' folder"}
                     

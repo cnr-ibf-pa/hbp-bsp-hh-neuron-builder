@@ -25,7 +25,7 @@ SECRET_KEY = '4s1h2vtrbr)-c@8q9&^j(pkf+k$wks+(u43-lsn&mzm1zolvb#'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 AUTH_USER_MODEL = 'hhnb.MyUser'
 
@@ -75,10 +75,7 @@ ROOT_URLCONF = 'hh_neuron_builder.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [
-            os.path.join(BASE_DIR, 'efelg/templates'),
-            os.path.join(BASE_DIR, 'hhnb/templates')
-        ],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -142,13 +139,13 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
 STATIC_URL = '/static/'
-# STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+
+# STATIC_ROOT = os.path.join(BASE_DIR, '../static/')
 
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'efelg/static'),
-    os.path.join(BASE_DIR, 'hhnb/static'),
     os.path.join(BASE_DIR, 'static')
 ]
+
 
 MEDIA_ROOT = os.path.join("../app", 'media')
 

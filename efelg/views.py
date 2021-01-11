@@ -398,8 +398,6 @@ def extract_features(request):
     if "ctx" not in request.session:
         return render(request, 'efelg/hbp_redirect.html')
 
-    print('EXTRACTING FEATURES')
-
     data_dir = request.session['data_dir']
     json_dir = request.session['json_dir']
     selected_traces_rest_json = request.session['selected_traces_rest_json']
@@ -414,8 +412,6 @@ def extract_features(request):
     request.session['selected_features'] = check_features
     cell_dict = {}
     selected_traces_rest = []
-
-    print('STEP 1')
 
     for k in selected_traces_rest_json:
         # crr_vcorr = selected_traces_rest_json[k]['vcorr']
@@ -447,8 +443,6 @@ def extract_features(request):
             os.makedirs(crr_cell_data_folder)
         shutil.copy2(crr_json_file, crr_cell_data_folder)
 
-        print('STEP 1.5')
-
         #
         if crr_key in cell_dict:
             cell_dict[crr_key]['stim'].append(crr_file_sel_stim)
@@ -461,8 +455,6 @@ def extract_features(request):
             cell_dict[crr_key]['cell_name'] = crr_cell_name
             cell_dict[crr_key]['all_stim'] = crr_file_all_stim
             # cell_dict[crr_key]['vcorr'] = [float(crr_vcorr)]
-
-    print('STEP 2')
 
     target = []
     final_cell_dict = {}
@@ -493,7 +485,6 @@ def extract_features(request):
                 'exclude_unit': [crr_file_amp_unit for i in range(len(crr_exc))]
             }
 
-    print('STEP 3')
     # build configuration dictionary
     config = {}
     config['features'] = {'step': [str(i) for i in check_features]}
@@ -541,8 +532,6 @@ def extract_features(request):
         #                                                    "message": "An error occured while extracting the features. \
         #         Either you selected too many data or the traces were corrupted."})
 
-    print('STEP 4')
-
     conf_dir = request.session['conf_dir']
     conf_cit = os.path.join(conf_dir, 'citation_list.json')
     final_cit_file = os.path.join(full_crr_result_folder, 'HOWTOCITE.txt')
@@ -554,6 +543,7 @@ def extract_features(request):
     request.session['result_file_zip_name'] = crr_user_folder + '_results.zip'
     parent_folder = os.path.dirname(full_crr_result_folder)
     contents = os.walk(full_crr_result_folder)
+
     try:
         zip_file = zipfile.ZipFile(output_path, 'w', zipfile.ZIP_DEFLATED)
         for root, folders, files in contents:
@@ -578,7 +568,6 @@ def extract_features(request):
     finally:
         zip_file.close()
 
-    print('EXTRACTION OK 200')
     # accesslogger.info(resources.string_for_log('extract_features', request, page_spec_string='___'.join(check_features)))
     return HttpResponse(json.dumps({"status": "OK"}))
 
@@ -746,8 +735,9 @@ def upload_files(request):
         outfilepath = os.path.join(u_up_dir, outfilename)
 
         data = manage_json.gen_data_struct(name, name, upload_flag=True)
-        print(data)
-        print(type(data))
+
+        # print(data)
+        # print(type(data))
         if os.path.isfile(outfilepath):
             os.remove(outfilepath)
         with open(outfilepath, 'w') as f:
