@@ -642,7 +642,8 @@ def upload_to_naas(request, exc="", ctx=""):
         return HttpResponse(json.dumps({"response": "KO", "message": "No simulation .zip file is present"}), content_type="application/json")
     else:
         request.session[exc]['res_file_name'] = os.path.splitext(filename)[0]
-        r = requests.post("https://blue-naas-svc.humanbrainproject.eu/upload", files={"file": open(abs_res_file, "rb")})
+        # r = requests.post("https://blue-naas-svc.humanbrainproject.eu/upload", files={"file": open(abs_res_file, "rb")})
+        r = requests.post("https://blue-naas-bsp-epfl-svc.apps.hbp.eu/upload", files={"file": open(abs_res_file, "rb")})
 
     request.session.save()
 
@@ -1212,7 +1213,7 @@ def run_analysis(request, exc="", ctx=""):
                 f.close()
 
                 # subprocess.call(". /web/bspg/venvbspg/bin/activate; cd " + up_folder + "; nrnivmodl mechanisms", shell=True)
-                subprocess.call('/home/rcsm17/Workspace/cnr/hh-neuron-builder/newvenv3/bin/activate; cd ' + up_folder + '; nrnivmodl mechanisms', shell=True)
+                subprocess.call('/home/rcsm17/Workspace/cnr/hh-neuron-builder/venv3/bin/activate; cd ' + up_folder + '; nrnivmodl mechanisms', shell=True)
 
                 r_0_fold = os.path.join(up_folder, 'r_0')
                 if os.path.isdir(r_0_fold):
@@ -1220,7 +1221,7 @@ def run_analysis(request, exc="", ctx=""):
                 os.mkdir(r_0_fold)
 
                 # subprocess.call(". /web/bspg/venvbspg/bin/activate; cd " + up_folder + "; python opt_neuron.py --analyse --checkpoint ./checkpoints", shell=True)
-                subprocess.call('/home/rcsm17/Workspace/cnr/hh-neuron-builder/newvenv3/bin/activate; cd ' + up_folder + '; python opt_neuron.py --analyse --checkpoint ./checkpoints', shell=True)
+                subprocess.call('/home/rcsm17/Workspace/cnr/hh-neuron-builder/venv3/bin/activate; cd ' + up_folder + '; python opt_neuron.py --analyse --checkpoint ./checkpoints', shell=True)
 
             except Exception as e:
                 msg = traceback.format_exception(*sys.exc_info())
@@ -1232,6 +1233,7 @@ def run_analysis(request, exc="", ctx=""):
         try:
             resp = hpc_job_manager.OptResultManager.create_analysis_files(opt_res_folder, opt_res_file)
             up_folder = resp["up_folder"]
+            print('FOLDER = %s' % up_folder)
             tempresp = subprocess.call(
                 "cd " + up_folder + "; nrnivmodl mechanisms; python opt_neuron.py --analyse --checkpoint ./checkpoints > /dev/null 2>&1 ",
                 shell=True)
@@ -1787,6 +1789,25 @@ def workflow_download(request, exc='', ctx=''):
     shutil.make_archive(os.path.join(tmp_dir, wf_id), 'zip', user_dir_split[0], user_dir_split[1])
 
     return FileResponse(open(os.path.join(tmp_dir, wf_id + '.zip'), 'rb'), as_attachment=True)
+
+
+def simulation_result_download(request, exc='', ctx=''):
+    tmp_dir = os.path.join(settings.MEDIA_URL, 'tmp')
+    if not os.path.exists(tmp_dir):
+        os.mkdir(tmp_dir)
+
+    # retrieve the file from the current working directory
+    wf_dir = request.session[exc]['workflows_dir']
+    user_id = request.user.username
+    wf_id = request.session[exc]['wf_id']
+    result_dir = os.path.abspath(os.path.join(wf_dir, user_id, wf_id, 'sim'))
+
+    for f in os.listdir(result_dir):
+        if f.endswith('.zip'):
+            print(os.path.join(result_dir, f))
+            return FileResponse(open(os.path.join(result_dir, f), 'rb'), as_attachment=True)
+
+    return HttpResponse(content=b'File not found', status=404)
 
 
 def get_user_avatar(request):

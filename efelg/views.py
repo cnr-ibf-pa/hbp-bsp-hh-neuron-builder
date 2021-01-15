@@ -523,8 +523,8 @@ def extract_features(request):
         extractor.extract_features(threshold=-30)
         extractor.mean_features()
         extractor.plt_features()
-        extractor.feature_config_cells()  # version="legacy")
-        extractor.feature_config_all()  # version="legacy")
+        extractor.feature_config_cells(version="legacy")
+        extractor.feature_config_all(version="legacy")
     except ValueError as e:
         print('SOME ERROR OCCURED')
         print(e)

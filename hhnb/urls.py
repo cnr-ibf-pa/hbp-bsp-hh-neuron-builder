@@ -74,6 +74,7 @@ urlpatterns = [
 
     path('workflow-upload/' + required, views.workflow_upload),
     path('workflow-download/' + required, views.workflow_download),
+    path('simulation-result-download/' + required, views.simulation_result_download),
 
     path('get-user-avatar', views.get_user_avatar),
     path('get-user-page', views.get_user_page),
