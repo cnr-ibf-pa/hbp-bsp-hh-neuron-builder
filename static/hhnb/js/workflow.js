@@ -166,36 +166,18 @@ function efelPage() {
 
 }
 
-
-function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-
-// serve embedded-naas page
-async function inSilicoPage() {
-//    $("#run-sim-btn").prop("disabled", false);
-    //$.getJSON("/hh-neuron-builder/upload-to-naas/" + req_pattern, function(uploaddata){
-    console.log("inSilicoPage() called.");
-    fetch("/hh-neuron-builder/simulation-result-download/" + req_pattern, {
-        method: "GET"
-    }).then(data => {
-            alert("Please, download the model file and upload it on the next page !");
-            downloadURI(data.url, 'workflow')
-        }
-    ).catch(
-        error => console.log(error)
-    ).finally(async result => {
-        await sleep(3000);
-        window.location.href = "/hh-neuron-builder/embedded-naas/" + req_pattern + "/";
-        /*$.getJSON("/hh-neuron-builder/model-loaded-flag/" + req_pattern, function(data){
+function inSilicoPage() {
+    console.log("inSilicoPage() called");
+    $("#run-sim-btn").prop("disabled", true);
+    $.getJSON("/hh-neuron-builder/upload-to-naas/" + req_pattern, function(uploaddata){
+        $.getJSON("/hh-neuron-builder/model-loaded-flag/" + req_pattern, function(data){
             var o = data["response"];
             if (o == "KO"){
                 window.location.href = "";
             } else {
                 window.location.href = "/hh-neuron-builder/embedded-naas/" + req_pattern + "/";
-            } 
-        })*/
+            }
+        });
     });
 }
 

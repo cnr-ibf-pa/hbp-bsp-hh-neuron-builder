@@ -20,18 +20,16 @@ $(document).ready(function(){
 
     var reg_model = "";
 
-    document.getElementById("naas-frame").setAttribute("src", "https://blue-naas-bsp-epfl.apps.hbp.eu/"); //#model" + o);
-    /*$.getJSON("/hh-neuron-builder/model-loaded-flag/" + req_pattern, function(data){
+    $.getJSON("/hh-neuron-builder/model-loaded-flag/" + req_pattern, function(data){
         var o = data["response"];
         console.log("var o = " + o);
         if (o == "KO"){
             window.location.href = "";
         } else {
             console.log("apro link !");
-//            document.getElementById("naas-frame").setAttribute("src","https://blue-naas.humanbrainproject.eu/#/model/" + o)
-            document.getElementById("naas-frame").setAttribute("src", "https://blue-naas-bsp-epfl.apps.hbp.eu/"); //#model" + o);
+            document.getElementById("naas-frame").setAttribute("src", "https://blue-naas-bsp-epfl.apps.hbp.eu/#/model/" + o);
         }
-    });*/
+    });
 });
 
 function closeMsgDiv(){

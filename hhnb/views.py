@@ -643,7 +643,7 @@ def upload_to_naas(request, exc="", ctx=""):
     else:
         request.session[exc]['res_file_name'] = os.path.splitext(filename)[0]
         # r = requests.post("https://blue-naas-svc.humanbrainproject.eu/upload", files={"file": open(abs_res_file, "rb")})
-        r = requests.post("https://blue-naas-bsp-epfl-svc.apps.hbp.eu/upload", files={"file": open(abs_res_file, "rb")})
+        r = requests.post("https://blue-naas-svc-bsp-epfl.apps.hbp.eu/upload", files={"file": open(abs_res_file, "rb")})
 
     request.session.save()
 
