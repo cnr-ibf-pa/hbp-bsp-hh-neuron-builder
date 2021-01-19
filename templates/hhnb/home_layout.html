@@ -7,9 +7,10 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script type="text/javascript" src="{% static 'common/js/sorttable.js' %}"></script>
     <script type="text/javascript" src="{% static 'common/js/moment-with-locales.js' %}"></script>
-    <link rel="stylesheet" type="text/css"
-          href="{% static 'assets/themes/hbp-collaboratory-theme/dist/css/bootstrap.css' %}">
+<!--    <link rel="stylesheet" type="text/css"-->
+<!--          href="{% static 'assets/themes/hbp-collaboratory-theme/dist/css/bootstrap.css' %}">-->
     <link rel="stylesheet" type="text/css" href="{% static 'assets/themes/bspg.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'assets/themes/hhnb.css' %}">
     <title>Hodgkin-Huxley Neuron Builder</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
@@ -23,21 +24,22 @@
 
 <body>
 <div id="title-div-container">
-    <nav class="navbar navbar-expand-lg navbar-light bg-light bg-bordeaux"
-         style="display: flex; margin: 0px; margin-bottom: 0px; border-radius: 0px; justify-content: space-around;">
+    <nav class="navbar navbar-expand-lg navbar-light bg-light bg-tomato hhnb-nav-main">
+<!--         style="display: flex; margin: 0px; margin-bottom: 0px; border-radius: 0px; justify-content: space-around;">-->
         <div style="display: invisible; margin-right: auto; margin-left: 16px; width: 160px; "></div>
-        <div style="text-align: center">
+        <div class="text-align-center">
             <h3 style="margin: 10px 0px; color: #FFF; font-size: x-large;">
                 Hodgkin-Huxley
                 Neuron Builder</h3>
         </div>
-        <div style="align-self: center;margin-left: auto; margin-right: 16px; width: 160px; display: inline-flex">
+        <div class="login-section">
+<!--        <div style="align-self: center;margin-left: auto; margin-right: 16px; width: 160px; display: inline-flex">-->
             {% if user.is_authenticated %}
-            <a href="/hh-neuron-builder/get-user-page" style="margin:auto;">
-                <img style="border-radius: 64px;" src="/hh-neuron-builder/get-user-avatar">
+            <a class="margin-auto" href="/hh-neuron-builder/get-user-page">
+                <img class="border-radius-64" src="/hh-neuron-builder/get-user-avatar">
             </a>
             <a style="align-self: center; cursor: pointer; display: flex;" onclick="logout(this);">
-                <img style="margin: auto; margin-right: 4px;" src="{% static 'assets/img/login_ico_white.png' %}">
+                <img class="margin-auto margin-right-4" src="{% static 'assets/img/login_ico_white.png' %}">
                 <strong style="text-align: center; color: #EEE; font-size: 18px;">Log-out</strong>
             </a>
             <form style="display: none" id="logout-form" action="{% url 'oidc_logout' %}" method="post">

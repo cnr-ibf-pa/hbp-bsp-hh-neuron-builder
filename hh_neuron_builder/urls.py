@@ -17,15 +17,9 @@ from django.urls import path, include, register_converter
 from django.conf import settings
 from django.conf.urls.static import static
 
-# from hhnb.utils.converters import AnyCharConvert
-# register_converter(AnyCharConvert, 'any')
-
 
 urlpatterns = [
-    # path('hbp-login/', login_view.login, name='hbp-login'),
-    # path('hbp-login/?ctx=<uuid:ctx>', login_view.login, name='hbp-login'),
-    # path('hbp-login/?next=/?ctx=<uuid:ctx>', login_view.login, name='hbp-login'),
-    # path('hbp-login/<any:path>', login_view.login, name='hbp-login'),
+
     path('oidc/', include('mozilla_django_oidc.urls')),
 
     path('efelg/', include('efelg.urls')),

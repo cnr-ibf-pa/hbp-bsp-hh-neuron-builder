@@ -1,0 +1,49 @@
+html {
+    font-family: sans-serif;
+    -ms-text-size-adjust: 100%;
+    -webkit-text-size-adjust: 100%;
+}
+
+body {
+    margin: 0;
+}
+
+.bg-tomato {
+    background-color: rgb(255, 99, 71);
+}
+
+.hhnb-nav-main {
+    background-color: rgb(255, 99, 71);
+    display: flex;
+    margin: 0px;
+    margin-bottom: 0px;
+    border-radius: 0px;
+    justify-content: space-around;
+}
+
+.main-title {
+    text-align: center;
+    font-weight: bold;
+}
+
+.login-section {
+    align-self: center;
+    margin-left: auto;
+    margin-right: 16px;
+    width: 160px;
+    display: inline-flex;
+}
+
+
+/* single class style */
+.margin-auto {
+    margin: auto;
+}
+
+.margin-right-4 {
+    margin-right: 4px;
+}
+
+.border-radius-64 {
+    border-radius: 64px;
+}
