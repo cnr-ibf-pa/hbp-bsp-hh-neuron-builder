@@ -1,0 +1,18 @@
+{% load static %}
+{% load oidc_session %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Electrophys Feature Extraction GUI</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <link rel="stylesheet" href="{% static 'assets/themes/hbp-collaboratory-theme/dist/css/bootstrap.css' %}">
+</head>
+<body>
+{% hbp_oidc_session_handler request.user %}
+{% block content %}{% endblock %}
+<!--<script type="text/javascript" src="{% static 'jquery/dist/jquery.min.js' %}"></script>-->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</body>
+</html>

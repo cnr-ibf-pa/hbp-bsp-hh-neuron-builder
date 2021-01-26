@@ -1,0 +1,56 @@
+{% extends 'hhnb/home_layout.html' %}
+{% load static  %}
+
+{% block content %}
+
+<div id="home-main-div">
+    <div class="hhnb-secondary-nav">
+        <div class="page-title">Overview</div>
+        <a href="https://humanbrainproject.github.io/hbp-sp6-guidebook/online_usecases/single_cell_building/hippocampus/p1_hh_neuron_builder/p1_hh_neuron_builder.html"
+           target="_blank">
+           <span class="info-icon" title="Read the Guidebook"></span>
+        </a>
+        <a href="https://object.cscs.ch/v1/AUTH_c0a333ecf7c045809321ce9d9ecdfdea/web-resources-bsp/bsp-video-tutorials/HodgkinHuxleyNeuronBuilder/index.html"
+           target="_blank">
+           <span class="tutorial-icon" title="Watch the video tutorial"></span>
+        </a>
+    </div>
+</div>
+<div class="container main-content">
+    <div class="row">
+        <div class="col">
+            Go through the entire cell NEURON model building pipeline via the following steps:
+            <ul>
+                <li>electrophysiological feature extraction from voltage traces;</li>
+                <li>model parameter optimization</li>
+                <li><i>in silico</i> experiments using the optimized model cell.</li>
+            </ul>
+            Click on the buttons on the right to get started.
+        </div>
+        <div class="col">
+            <div class="row side-button-panel">
+                <button id="new-wf" type="button" class="btn btn-lg main-panel-btn" onclick="initNewWorkflow();">
+                    Initiate a new workflow
+                </button>
+            </div>
+            <div class="row side-button-panel">
+                <input type="file" accept="application/zip" id="workflow-upload" style="display: none">
+                <button id="fetch-wf-btn" type="button" class="btn btn-lg main-panel-btn" onclick="uploadWorkflow();">
+                    Upload workflow
+                </button>                
+            </div>
+            <button id="run-animation" type="button" class="btn" onclick="showLoadingAnimation()">Run Animation</button>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    var exc = "{{ exc }}";
+    var ctx = "{{ ctx }}";
+    sessionStorage.setItem("exc", exc);
+    sessionStorage.setItem("ctx", ctx);
+</script>
+
+<script type="text/javascript" src="{% static 'hhnb/js/home.js' %}"></script>
+{% endblock %}

@@ -6,25 +6,291 @@ html {
 
 body {
     margin: 0;
+    background-color: rgb(240, 240, 240);
 }
 
-.bg-tomato {
-    background-color: rgb(255, 99, 71);
+.flex-center {
+    display: flex;
+    justify-content: center;
 }
 
-.hhnb-nav-main {
+.col-extends {
+    width: 800px;
+}
+
+.bg-red-light {
+    background-color: rgb(212, 120, 120);
+}
+
+.hhnb-main-nav {
+    min-width: 955px;
     background-color: rgb(255, 99, 71);
     display: flex;
     margin: 0px;
     margin-bottom: 0px;
     border-radius: 0px;
-    justify-content: space-around;
+    justify-content: space-between;
+}
+
+.hhnb-main-nav-left-separator {
+    display: invisible;
+    margin-right: auto;
+    margin-left: 16px;
+    min-width: 10px;
+    width: 60px;
+}
+
+.hhnb-main-nav-center-content {
+    text-align: center;
+}
+
+
+.hhnb-main-nav-title {
+    margin: 10px 0px;
+    color: #ffffff;
+    font-size: bold;
+    text-align: center;
 }
 
 .main-title {
     text-align: center;
     font-weight: bold;
 }
+
+.hhnb-secondary-nav {
+    min-width: 955px;
+    background-color:rgb(255, 99, 71);
+    border-top: solid 2px rgb(255, 152, 134);
+    padding: 4px;
+    color: white;
+    display: flex;
+    box-shadow: 0px 5px 5px rgb(180, 180, 180);
+    align-items: baseline;
+}
+.hhnb-secondary-nav > a {
+    /* align-self: flex-end; */
+    margin-right: 4px;
+    height: 24px;
+}
+.hhnb-secondary-nav > button {
+    height: 24px;
+    text-align: center;
+    padding: 0px 12px;
+    text-decoration: none;
+    color: white;
+    align-self: center;
+    transition: all 0.3s ease;
+    margin: 0px 4px;
+    line-height: 0;
+    vertical-align: auto;
+}
+.hhnb-secondary-nav > button:hover, .hhnb-secondary-nav > button:focus {
+    background-color: white;
+    color: tomato;
+}
+
+.page-title {
+    margin: auto 0px;
+    margin-right: auto;
+}
+
+.main-content {
+    background-color: white;
+    border: solid 1px lightgray;
+    border-radius: 8px;
+    margin: auto;
+    margin-top: 40px;
+    margin-bottom: 40px;
+    padding: 40px;
+    box-shadow: 0px 5px 15px lightgray;
+    max-width: 1000px;
+}
+.main-content > .row > .col {
+    padding: 20px;
+}
+
+.main-content.extends {
+    max-width: 95%;
+    width: fit-content;
+    height: fit-content;
+    position: absolute;
+    padding: 25px;
+    top: 100px;
+    left: 0;
+    bottom: 0;
+    right: 0;
+}
+.object-iframe {
+    width: 100%;
+    height: 600px;
+    border: solid 1px lightgray;
+    border-radius: 4px;
+    /* box-shadow: 0px 5px 5px lightgray; */
+}
+
+/* Overview page content */
+.side-button-panel {
+    height: 50%;
+    margin: auto;
+}
+
+.main-panel-btn {
+    margin: auto;
+    background-color: rgb(255, 152, 134);
+    color: white;
+    transition: all 0.3s ease;
+    max-width: 500px;
+}
+.main-panel-btn.maximize {
+    width: 100%;
+    max-width: unset;
+}
+.main-panel-btn.extends {
+    /* width: inherit; */
+    max-width: 864px;
+    height: 50px;
+}
+
+.main-panel-btn:hover, .main-panel-btn:focus, .btn.focus {
+    background-color: rgb(255, 99, 71);
+    color: white;
+    box-shadow: 0px 5px 15px darkgray;
+    transform: scale(1.03) perspective(1px);
+}
+
+.no-scale:hover, .no-scale:focus {
+    transform: unset;
+    box-shadow: unset;
+}
+
+/* Workflow page content */
+.workflow-id {
+    margin-top: -40px;
+    margin-left: -40px;
+    margin-right: -40px;
+    padding: 0px 12px;
+    border-top-right-radius: inherit;
+    border-top-left-radius: inherit;
+}
+
+.workflow-content {
+    width: 930px;
+}
+
+.workflow-title {
+    margin-top: 12px;
+    margin-bottom: 4px;
+    color: rgb(50, 50, 50);
+    text-decoration: underline;
+    cursor: help;
+}
+
+.workflow-content > .row > .col {
+    padding: 0px 4px;
+}
+
+.secondary-content {
+    border: solid 1px darkgray;
+    border-radius: 4px;
+    margin-top: 24px;
+    padding: 14px;
+    padding-bottom: 0px;
+    width: 280px;
+    height: 210px;
+    margin-bottom: 24px;
+}
+.secondary-content.large {
+    width: inherit;
+    min-width: 862px;
+    margin: 10px 0px;
+}
+
+.secondary-content > .row {
+    justify-content: center;
+}
+.box-title {
+    margin: auto;
+    margin-left: 8px;
+    width: auto;
+}
+
+.row-separator {
+    min-width: 180px;
+    margin: auto;
+    padding: 0 24px;
+    margin-top: 12px;
+    margin-bottom: 12px;
+}
+.dark-gray-line {
+    height: 1px;
+    background-color: darkgray;
+}
+
+.workflow-btn {
+    margin: 4px 0px;
+    color:rgb(0, 91, 165);
+    /* border: solid 2px rgb(212, 30, 30); */
+    border: solid 1.5px rgb(0, 140, 255);
+    line-height: 1.2;
+    transition: all 0.3s ease;
+    width: 230px;
+}
+.workflow-btn:hover, .workflow-btn:focus{
+    background-color: rgb(0, 140, 255);
+    /* background-color: rgb(212, 30, 30); */
+    color: white;
+    /* transform: scale(1.05) perspective(1px); */
+    /* box-shadow: 5px 5px 5px lightgray; */
+}
+
+.btn-link:hover, .btn-link:focus, .btn-link:active {
+    box-shadow: unset;    
+}
+
+.workflow-btn.x2 {
+    height: 76px;
+}
+.workflow-btn.x1-5 {
+    height: 50px;
+}
+.workflow-btn.lg {
+    width: 350px;
+}
+.status-bar-text {
+    font-size: 10px;
+    color: white;
+    text-align: center;
+}
+
+.status-bar {
+    position: relative;
+    /* left: 13px; */
+    top: -39px;
+    width: 280px;
+    margin:auto;
+    /* border: solid 1px darkgray; */
+    border-top: unset;
+    border-bottom-right-radius: 4px;
+    border-bottom-left-radius: 4px;
+    transition: all 0.3s ease;
+}
+.status-bar:hover {
+    background-color: rgb(0, 210, 0);
+}
+.status-bar.red {
+    background-color: rgb(210, 0, 0);
+}
+.status-bar.green {
+    background-color: rgb(0, 210, 0);
+}
+
+.status-bar.extends {
+    top: -25px;
+    min-width: 864px;
+    margin: 0px auto;
+}
+
+/* login section fixed css */
 
 .login-section {
     align-self: center;
@@ -34,6 +300,94 @@ body {
     display: inline-flex;
 }
 
+.login-section > .user-img {
+    margin: auto;
+}
+.login-section > .user-img > img {
+    border-radius: 64px;
+    border: solid 1px #0066ff;
+}
+
+.login-section > .logout {
+    align-self: center;
+    cursor: pointer;
+    display: flex;
+    text-decoration: none;
+}
+.login-section > .login {
+    align-self: center;
+    cursor: pointer;
+    display: flex;
+    text-decoration: none;
+}
+.login-section > .logout > img,
+.login-section > .login > img {
+    margin: auto;
+    margin-right: 4px;
+}
+.login-section > .logout > strong,
+.login-section > .login > strong {
+    text-align: center;
+    color: #eeeeee;
+    font-size: 18px;
+}
+
+/* message div with fadein-fadeout animation */
+.overlay-wrapper {
+    display: block;
+    position: fixed;
+    border: solid 1px black;
+    z-index: 100;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.35);
+}
+
+.overlay-wrapper > .card > img {
+    background-image: url('../img/image-3.webp');
+    width: 100%;
+    height: 100%;
+}
+
+.overlay-content {
+    border: solid 1px green;
+    z-index: 100;
+    height: 100%;
+}
+
+.overlay-content > h1{
+    position: fixed;
+    top: 50%;
+    left: 50%;
+}
+
+/* icons */
+
+.info-icon {
+    background-image: url('../img/info.png');
+    width: 24px;
+    height: 24px;
+}
+.tutorial-icon {
+    background-image: url('../img/video.png');
+    width: 24px;
+    height: 24px;
+}
+
+a > span.info-icon {
+    display: inline-block;
+    margin-left: auto;
+}
+a > span.tutorial-icon {
+    display: inline-block;
+    margin-left: 0px;
+}
+
+.col > .info-icon {
+    margin: auto;
+    margin-right: 0px;
+    cursor: help;
+}
 
 /* single class style */
 .margin-auto {
@@ -44,6 +398,57 @@ body {
     margin-right: 4px;
 }
 
+.margin-right-12 {
+    margin-right: 12px;
+}
+ 
+.margin-bottom-12 {
+    margin-bottom: 12px;
+}
+
+.separator-8 {
+    margin: 0px 8px;
+}
+
 .border-radius-64 {
     border-radius: 64px;
+}
+
+.aling-self-center {
+    align-self: center;
+}
+
+.flex-grow-1 {
+    flex-grow: 1
+}
+
+.flex-grow-4 {
+    flex-grow: 8
+}
+
+/* animations */
+.fade-out {
+    opacity: 0;
+    transition: opacity 1s;
+}
+
+.fade-in {
+    opacity: 1;
+    transition: opacity 1s;
+}
+
+.bg-tomato {
+    background-color: rgb(230, 99, 71);
+}
+
+.bg-tomato-light {
+    background-color: rgb(255, 152, 134);
+}
+
+.bg-red {
+    background-color: rgb(173, 24, 24);
+}
+
+.bg-lightgray {
+    background-color: rgb(238, 238, 238);
 }

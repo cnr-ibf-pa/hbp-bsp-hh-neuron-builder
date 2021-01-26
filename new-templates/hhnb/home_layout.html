@@ -1,0 +1,98 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <!-- Required meta tags -->
+        <title>Hodgkin-Huxley Neuron Builder</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width">
+
+        <!-- Bootstrap CSS -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">
+       
+         <!-- Required external libraries -->
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW" crossorigin="anonymous"></script> 
+
+        <!-- Local libraries -->
+        <script type="text/javascript" src="{% static 'bspganalytics.js' %}"></script>
+        <script type="text/javascript" src="{% static 'common/js/sorttable.js' %}"></script>
+        <script type="text/javascript" src="{% static 'common/js/moment-with-locales.js' %}"></script>
+        <link rel="stylesheet" type="text/css" href="{% static 'assets/themes/hhnb.css' %}">
+
+
+        <!-- loading animation -->
+        <script type="text/javascript" src="{% static 'assets/animation/loading_animation/loading_animation.js' %}"></script>
+        <link rel="stylesheet" type="text/css" href="{% static 'assets/animation/loading_animation/loading_animation.css' %}">
+        <link rel="preload" href="{% static 'assets/animation/loading_animation/frame_0.png' %}" as="image">
+        <link rel="preload" href="{% static 'assets/animation/loading_animation/frame_1.png' %}" as="image">
+        <link rel="preload" href="{% static 'assets/animation/loading_animation/frame_2.png' %}" as="image">
+        <link rel="preload" href="{% static 'assets/animation/loading_animation/frame_3.png' %}" as="image">
+        <link rel="preload" href="{% static 'assets/animation/loading_animation/frame_4.png' %}" as="image">
+        <link rel="preload" href="{% static 'assets/animation/loading_animation/frame_5.png' %}" as="image">
+        <link rel="preload" href="{% static 'assets/animation/loading_animation/frame_6.png' %}" as="image">
+        <link rel="preload" href="{% static 'assets/animation/loading_animation/frame_7.png' %}" as="image">
+        <link rel="preload" href="{% static 'assets/animation/loading_animation/frame_8.png' %}" as="image">
+        <link rel="preload" href="{% static 'assets/animation/loading_animation/frame_9.png' %}" as="image">
+
+        
+
+        <script>
+            function logout(button) {
+                $("#logout-submit-input-button").trigger('click');
+            }
+    
+        </script>
+    </head>
+    <body>
+        <div id="title-div-container">
+            <nav class="navbar navbar-expand-lg hhnb-main-nav">
+                <!-- <div class="hhnb-main-nav-left-separator"></div> -->
+                <div class="col flex-grow-1 hhnb-main-nav-left-separator"></div>
+                <div class="col flex-grow-4 flex-center">
+                    <div class="hhnb-main-nav-center-content">
+                        <h3 class="hhnb-main-nav-title">Hodgkin-Huxley Neuron Builder</h3>
+                    </div>
+                </div>
+                <div class="col flex-grow-1">
+                    <div class="login-section">
+                        {% if user.is_authenticated %}                   
+                        <a class="user-img" href="/hh-neuron-builder/get-user-page">
+                            <img src="/hh-neuron-builder/get-user-avatar" alt="{% static 'assets/img/rounded_anonymous_38.png' %}">
+                        </a>
+                        <a class="logout" onclick="logout(this);">
+                            <img src="{% static 'assets/img/logout_ico_white.png' %}">
+                            <strong>Log-out</strong>
+                        </a>
+                        <form style="display: none" id="logout-form" action="{% url 'oidc_logout' %}" method="post">
+                            {% csrf_token %}
+                            <input id="logout-submit-input-button" type="submit" value="logout">
+                        </form>
+                        {% else %}
+                        <div class="user-img">
+                            <img src="{% static 'assets/img/rounded_anonymous_38.png' %}">
+                        </div>
+                        <a class="login" href="{% url 'oidc_authentication_init' %}">
+                            <img src="{% static 'assets/img/login_ico_white.png' %}">
+                            <strong >Log-in</strong>
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </nav>
+        </div>
+
+        {% block content %}{% endblock %}
+
+        <div class="loading-animation sublayer hide">
+            <div class="loading-animation container-glass hide">
+                <div id="loading-text-div" class="loading-animation text hide">
+                    Loading...
+                </div>
+                <div class="loading-animation frames hide"></div>
+            </div>
+        </div>
+
+    </body>
+</html>
