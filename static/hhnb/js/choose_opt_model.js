@@ -1,7 +1,7 @@
 $(document).ready(function(){
-    var mainDiv = document.getElementById("mainDivMod");
-    mainDiv.style.display = "none";
-    displayPleaseWaitDiv(message="Loading models");
+    // var mainDiv = document.getElementById("mainDivMod");
+    // mainDiv.style.display = "none";
+    showLoadingAnimation(message="Loading models");
     var address = "https://raw.githubusercontent.com/lbologna/bsp_data_repository/master/optimizations/";
     var exc = sessionStorage.getItem("exc", exc) ?  sessionStorage.getItem("exc") : "";
     var ctx = sessionStorage.getItem("ctx", ctx) ? sessionStorage.getItem("ctx") : "";
@@ -13,8 +13,9 @@ $(document).ready(function(){
                 var model_uuid = e['meta']["id"];
                 var model_name = index;
                 $("#sub-title-div" ).after("<div  id=" + model_uuid + " name=" +
-                        model_name + " class='model-info-div' style='width:100%; cursor:pointer'></div>");
-                $("#" + model_uuid).append("<div id=" + model_uuid + " class='model-info-div-title'>" + e['meta']['species'] + ' > ' + e['meta']['brain_region'] + ' > ' +  e['meta']['cell_type'] + "</div>");
+                        model_name + " class='main-content model-info-div' ></div>");
+                $("#" + model_uuid).append("<div id=" + model_uuid + "class=''>");
+                $("#" + model_uuid).append("<div id=" + model_uuid + " class='navbar navbar-light bg-light model-info-div-title'>" + e['meta']['species'] + ' > ' + e['meta']['brain_region'] + ' > ' +  e['meta']['cell_type'] + "</div>");
                 $("#" + model_uuid).append("<div style='display:flex;' id=" + model_uuid + 'a' + " ></div>");
                 var img_div = document.createElement("DIV");
                 var spk_img = document.createElement("IMG");
@@ -37,13 +38,15 @@ $(document).ready(function(){
                 spk_img.onload = function(){
                     counter += 1;
                     if (counter == 2 * data.length){
-                        closePleaseWaitDiv();
+                        // closePleaseWaitDiv();
+                        hideLoadingAnimation();
                     }
                 };
                 mor_img.onload = function(){
                     counter += 1;
                     if (counter == 2 * data.length){
-                        closePleaseWaitDiv();
+                        // closePleaseWaitDiv();
+                        hideLoadingAnimation();
                         mainDiv.style.display = "block";
                     }
                 };
@@ -57,10 +60,10 @@ $('body').on('click', '.model-info-div', function(){
     var ctx = sessionStorage.getItem("ctx", ctx) ? sessionStorage.getItem("ctx") : "";
     var optimization_name = $(this).attr('name');
     var optimization_id = $(this).attr('id');
-    displayPleaseWaitDiv(message="Fetching model from the HBP Model Catalog");
+    showLoadingAnimation(message="Fetching model from the HBP Model Catalog");
     $.get("/hh-neuron-builder/fetch-opt-set-file/" + optimization_name +
             "/" + optimization_id + "/" + exc + "/" + ctx + "/", function(){
-                closePleaseWaitDiv();
+                hideLoadingAnimation();
                 window.location.href = "/hh-neuron-builder/workflow/";
             });
 });

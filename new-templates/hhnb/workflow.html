@@ -6,7 +6,7 @@
 <div id="home-main-div">
     <div class="hhnb-secondary-nav">
         <div class="page-title">Workflow</div>
-        <button id="wf-btn-home" class="btn hhnb-title-btn" onclick="window.location.href='/hh-neuron-builder/'">Home</button>
+        <button id="wf-btn-home" class="btn hhnb-title-btn" onclick="goHome()">Home</button>
         <button id="wf-btn-new-wf" class="btn hhnb-title-btn"title="Create a new workflow">New</button>
         <button id="wf-btn-clone-wf" class="btn hhnb-title-btn" title="Clone current workflow">Clone</button>
         <button id="wf-btn-save" class="btn hhnb-title-btn" title="Download current workflow">Save</button>
@@ -22,194 +22,273 @@
     </div>
 </div>
 
-<div class="container main-content workflow-content">
-    <nav class="navbar navbar-light bg-light workflow-id">
-        <span id="workflow-id" class="col flex-grow-1 navbar-text">
-            Workflow id: 20202020_rsmiriglia
-        </span>
-        <span class="navbar-text main-title col flex-grow-1">Cell Optimization</span>
-        <span class="col flex-grow-1 flex-end"><div class="info-icon"></div></span>
-    </nav>
-    <div class="row">
-        <!-- <div class="main-title workflow-title" title="placeholder">Cell Optimization</div> -->
-        <div class="col">
-            <div class="container secondary-content">
-                <div class="row">
-                    <div class="col flex-grow-4">
-                        <div class="box-title">Feature extraction</div>
-                    </div>
-                    <div class="col flex-grow-1">
-                        <div class="info-icon"
-                             title="Click the 'Extract features' button to compute electrophysiological features (from the HBP dataset or your own experimental files) to be used in your optimization process. You can also upload your own features.json and protocols.json files by clicking on 'Upload file'">
+<div class="page">
+    <div class="container main-content workflow-content">
+        <nav class="navbar navbar-light bg-light workflow-id">
+            <span id="wf-title" class="col flex-grow-1 navbar-text">
+                Workflow id:
+            </span>
+            <span class="navbar-text main-title col flex-grow-1">Cell Optimization</span>
+            <span class="col flex-grow-1 flex-end"><div class="info-icon"></div></span>
+        </nav>
+        <div class="row">
+            <!-- <div class="main-title workflow-title" title="placeholder">Cell Optimization</div> -->
+            <div class="col">
+                <div class="container secondary-content">
+                    <div class="row">
+                        <div class="col flex-grow-4">
+                            <div class="box-title">Feature extraction</div>
+                        </div>
+                        <div class="col flex-grow-1">
+                            <div class="info-icon"
+                                title="Click the 'Extract features' button to compute electrophysiological features (from the HBP dataset or your own experimental files) to be used in your optimization process. You can also upload your own features.json and protocols.json files by clicking on 'Upload file'">
+                            </div>
+                        </div>
+                        <div class="row-separator">
+                            <div class="dark-gray-line"></div>
                         </div>
                     </div>
-                    <div class="row-separator">
-                        <div class="dark-gray-line"></div>
-                    </div>
+                    <!-- <div class="row"> -->
+                        <div class="row">
+                            <button type="button" id="feat-efel-btn" class="btn workflow-btn" onclick="efelPage()">Extract features</button>
+                        </div>
+                        <div class="row">
+                            <button type="button" id="feat-up-btn" class="btn workflow-btn" onclick="featUploadButton()">Upload files</button>
+                        </div>
+                        <div class="row">
+                            <div class="col flex-center">
+                                <button id="down-feat-btn" title="Download feature files" type="button" class="btn btn-link">
+                                    Download
+                                </button>
+                            </div>
+                            <div class="col flex-center">
+                                <button id="del-feat-btn" title="Delete feature files" type="button" class="btn btn-link"disabled>
+                                    Delete
+                                </button>
+                            </div>
+                            
+                        </div>
+                    <!-- </div> -->
                 </div>
-                <!-- <div class="row"> -->
-                    <div class="row">
-                        <button type="button" id="feat-efel-btn" class="btn workflow-btn">Extract features</button>
-                    </div>
-                    <div class="row">
-                        <button type="button" id="feat-up-btn" class="btn workflow-btn">Upload files</button>
-                    </div>
-                    <div class="row">
-                        <div class="col flex-center">
-                            <button id="down-feat-btn" title="Download feature files" type="button" class="btn btn-link">
-                                Download
-                            </button>
-                        </div>
-                        <div class="col flex-center">
-                            <button id="del-feat-btn" title="Delete feature files" type="button" class="btn btn-link"disabled>
-                                Delete
-                            </button>
-                        </div>
-                        
-                    </div>
-                <!-- </div> -->
-            </div>
-            <div id="feat-bar" class="row status-bar red">
-                <div class="status-bar-text">features.json and/or protocols.json NOT present</div>
-            </div>
-        </div>
-        <div class="col">
-            <div class="container secondary-content">
-                <div class="row">
-                    <div class="col flex-grow-4">
-                        <div class="box-title">Optimization files</div>
-                    </div>
-                    <div class="col flex-grow-1">
-                        <div class="info-icon"
-                             title="Choose a model from the HBP dataset by clicking the 'Choose from database' button. Alternative, you can upload a properly formatted .zip file containing the model folders/files. For further details, please refer to the HBP Brain Simulation Platform Guidebook">
-                        </div>
-                    </div>
-                    <div class="row-separator">
-                        <div class="dark-gray-line"></div>
-                    </div>
-                </div>                
-                <div class="row">
-                    <button type="button" id="opt-db-hpc-btn"  class="btn workflow-btn" title="Use optimization files from database">Choose from Model Catalog</button>
+                <div id="feat-bar" class="row status-bar status-bar-text red">
+                    features.json and/or protocols.json NOT present
                 </div>
-                <div class="row">
-                    <button type="button" id="opt-up-btn" class="btn workflow-btn">Upload files</button>
+            </div>
+            <div class="col">
+                <div class="container secondary-content">
+                    <div class="row">
+                        <div class="col flex-grow-4">
+                            <div class="box-title">Optimization files</div>
+                        </div>
+                        <div class="col flex-grow-1">
+                            <div class="info-icon"
+                                title="Choose a model from the HBP dataset by clicking the 'Choose from database' button. Alternative, you can upload a properly formatted .zip file containing the model folders/files. For further details, please refer to the HBP Brain Simulation Platform Guidebook">
+                            </div>
+                        </div>
+                        <div class="row-separator">
+                            <div class="dark-gray-line"></div>
+                        </div>
+                    </div>                
+                    <div class="row">
+                        <button type="button" id="opt-db-hpc-btn" class="btn workflow-btn" onclick="chooseOptModel()" title="Use optimization files from database">Choose from Model Catalog</button>
+                    </div>
+                    <div class="row">
+                        <button type="button" id="opt-up-btn" class="btn workflow-btn" onclick="displayOptSetUploadDiv()">Upload files</button>
 
-                </div>
-                <div class="row">
-                    <div class="col flex-center">
-                        <button id="down-opt-set-btn" title="Download optimization files" type="button"
-                            class="btn btn-link">Download
-                        </button>
-                    </div>
-                    <div class="col flex-center">
-                        <button id="del-opt" title="Delete optimization files" type="button" class="btn btn-link"
-                            disabled>Delete
-                        </button>                        
-                    </div>
-                </div>
-            </div>
-            <div id="opt-files-bar" class="row status-bar red">
-                <div class="status-bar-text">Oprimization files NOT present</div>
-            </div>
-        </div>
-        <div class="col">
-            <div class="container secondary-content">
-                <div class="row">
-                    <div class="col flex-grow-4">
-                        <div class="box-title">Optimization settings</div>
-                    </div>
-                    <div class="col flex-grow-1 ">
-                        <div class="info-icon"
-                             title="Click the 'Set parameters/Choose HPC button' to set the optimization (i.e. BluePyOpt) and execution (e.g. number of cores, runtime, etc.) parameters">
-                        </div>
-                    </div>
-                    <div class="row-separator">
-                        <div class="dark-gray-line"></div>
-                    </div>
-                </div>
-                <div class="row">
-                    <button type="button" id="opt-set-btn" class="btn workflow-btn x2">Set parameters/Choose HPC</button>
-                </div>
-            </div>
-            <div id="opt-param-bar" class="row status-bar red">
-                <div class="status-bar-text">Optimization parameters NOT set</div>
-            </div>
-        </div> 
-    </div>
-    <div class="row ">
-        <button type="button" class="btn main-panel-btn extends no-scale" disabled="true">Run Optimization</button>
-    </div>
-</div>
-<div class="container main-content workflow-content">
-    <nav class="navbar navbar-light bg-light workflow-id">
-        <span class="col"></span>
-        <span class="col navbar-text main-title" title="placeholder">
-            Single Cell Simulation Run
-        </span>
-        <span class="col"><div class="info-icon"></div></span>
-    </nav>
-    <div class="row margin-bottom-12"></div>
-    <div class="row">
-        <div class="col">
-            <div class="container secondary-content large">
-                <div class="row">
-                    <div class="col flex-grow-4">
-                        <div class="box-title">Optimization files</div>
-                    </div>
-                    <div class="col flex-grow-1">
-                        <div class="info-icon"
-                             data-toggle="popover"
-                             data-trigger="hover" data-content="Test"
-                             title="Fetch optimization results from HPC systems by clicking the 'Fetch results' button. Alternative, you can upload a properly formatted .zip file containing the optimized  model folders/files ready for simulation. For further details, please refer to the HBP Brain Simulation Platform Guidebook">
-                        </div>
-                    </div>
-                    <div class="row-separator">
-                        <div class="dark-gray-line"></div>
-                    </div>
-                    <div class="row" style="margin: 8px 0px">
-                        <div class="col flex-center">
-                            <button type="button" id="opt-fetch-btn" class="btn workflow-btn lg">Fetch results</button>
-                        </div>
-                        <div class="col flex-center">
-                            <button type="button" id="opt-res-up-btn" class="btn workflow-btn x1-5 lg">Upload file</button>
-                        </div>
                     </div>
                     <div class="row">
                         <div class="col flex-center">
-                            <button id="down-opt-btn" title="Download optimization files" type="button"
-                                class="btn btn-link">Download results
+                            <button id="down-opt-set-btn" title="Download optimization files" type="button"
+                                class="btn btn-link">Download
                             </button>
                         </div>
                         <div class="col flex-center">
-                            <button id="dewn-sim-btn" title="Delete optimization files" type="button" class="btn btn-link"
-                                disabled>Download model
-                            </button>                        
-                        </div>
-                        <div class="col flex-center">
-                            <button id="del-sim-btn" title="Delete optimization files" type="button" class="btn btn-link"
+                            <button id="del-opt" title="Delete optimization files" type="button" class="btn btn-link"
                                 disabled>Delete
                             </button>                        
                         </div>
                     </div>
                 </div>
+                <div id="opt-files-bar" class="row status-bar status-bar-text red">
+                    Oprimization files NOT present
+                </div>
             </div>
-            <div id="opt-res-bar" class="row status-bar extends red">
-                <div class="status-bar-text">NO simulation .zip file of NO correct output drom optimization</div>
-            </div>
+            <div class="col">
+                <div class="container secondary-content">
+                    <div class="row">
+                        <div class="col flex-grow-4">
+                            <div class="box-title">Optimization settings</div>
+                        </div>
+                        <div class="col flex-grow-1 ">
+                            <div class="info-icon"
+                                title="Click the 'Set parameters/Choose HPC button' to set the optimization (i.e. BluePyOpt) and execution (e.g. number of cores, runtime, etc.) parameters">
+                            </div>
+                        </div>
+                        <div class="row-separator">
+                            <div class="dark-gray-line"></div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <button type="button" id="opt-set-btn" class="btn workflow-btn x2" onclick="openParameterDiv()">Set parameters/Choose HPC</button>
+                    </div>
+                </div>
+                <div id="opt-param-bar" class="row status-bar status-bar-text red">
+                    Optimization parameters NOT set
+                </div>
+            </div> 
+        </div>
+        <div class="row ">
+            <button id="launch-opt-btn" type="button" class="btn main-panel-btn extends no-scale" disabled="true">Run Optimization</button>
         </div>
     </div>
-    <div class="row ">
-        <button type="button" id="run-sim-btn" class="btn main-panel-btn extends no-scale" disabled="true">Run Simulation</button>
+    <div class="container main-content workflow-content">
+        <nav class="navbar navbar-light bg-light workflow-id">
+            <span class="col"></span>
+            <span class="col navbar-text main-title" title="placeholder">
+                Single Cell Simulation Run
+            </span>
+            <span class="col"><div class="info-icon"></div></span>
+        </nav>
+        <div class="row margin-bottom-12"></div>
+        <div class="row">
+            <div class="col">
+                <div class="container secondary-content large">
+                    <div class="row">
+                        <div class="col flex-grow-4">
+                            <div class="box-title">Optimization files</div>
+                        </div>
+                        <div class="col flex-grow-1">
+                            <div class="info-icon"
+                                data-toggle="popover"
+                                data-trigger="hover" data-content="Test"
+                                title="Fetch optimization results from HPC systems by clicking the 'Fetch results' button. Alternative, you can upload a properly formatted .zip file containing the optimized  model folders/files ready for simulation. For further details, please refer to the HBP Brain Simulation Platform Guidebook">
+                            </div>
+                        </div>
+                        <div class="row-separator">
+                            <div class="dark-gray-line"></div>
+                        </div>
+                        <div class="row" style="margin: 8px 0px">
+                            <div class="col flex-center">
+                                <button type="button" id="opt-fetch-btn" class="btn workflow-btn lg">Fetch results</button>
+                            </div>
+                            <div class="col flex-center">
+                                <button type="button" id="opt-res-up-btn" class="btn workflow-btn x1-5 lg">Upload file</button>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col flex-center">
+                                <button id="down-opt-btn" title="Download optimization files" type="button"
+                                    class="btn btn-link">Download results
+                                </button>
+                            </div>
+                            <div class="col flex-center">
+                                <button id="down-sim-btn" title="Delete optimization files" type="button" class="btn btn-link"
+                                    disabled>Download model
+                                </button>                        
+                            </div>
+                            <div class="col flex-center">
+                                <button id="del-sim-btn" title="Delete optimization files" type="button" class="btn btn-link"
+                                    disabled>Delete
+                                </button>                        
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="opt-res-bar" class="row status-bar status-bar-text extends red">
+                   NO simulation .zip file of NO correct output drom optimization
+                </div>
+            </div>
+        </div>
+        <div class="row ">
+            <button type="button" id="run-sim-btn" class="btn main-panel-btn extends no-scale" disabled="true">Run Simulation</button>
+        </div>
     </div>
 </div>
+ 
 
+<!-- Upload div -->
+<!-- <div id="overlaywrapperoptres" class="overlay-wrapper">
+    <div id="overlayoptres" class="overlay-content">
+        <form id="uploadFileForm" action="" method="POST" enctype="multipart/form-data">{% csrf_token %}
+            <div id="uploadTitleDiv" class="param-title-div">
+            </div>
+            <br>
+            <div id="upload_sim_img_div">
+                <img src="{% static "hhnb/img/expected_sim_zip.jpg" %}"
+                style="width:100%" alt="Expected sim zip file">
+                <br>
+                <br>
+            </div>
+            <label for="opt-res-file" style="overflow-x:scroll">
+                <input style="overflow-x:scroll" type="file" name="opt-res-file" id="opt-res-file"
+                       class="btn btn-default" accept=".zip"/>
+                <span style="overflow-x:scroll" class="custom-file-control"></span>
+            </label>
+            <br>
+            <button type="button" id="cancel-upload-file-btn" class="btn workflow-btn">Cancel</button>
+            <input type="submit" id="upload-opt-res-btn" disabled name="upload_opt_res_button" class="btn workflow-btn"
+                   value="Upload"/>
+        </form>
+    </div>
+</div> -->
+<!-- -->
 
-
-<!-- section containing divs for user insertions -->
 <div id="overlaywrapper" class="overlay-wrapper">
-    <br>
-    <div id="overlayparam" class="overlay-content overflow">
+    
+    <!-- upload feat params -->
+    <div id="overlayfeatupload" class="overlay-content">
+        <form id="uploadFeatForm" action="" method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label for="formFileMultiple" class="form-label">Upload features files ("features.json" and "protocols.json")</label>
+                <input class="form-control" type="file" id="formFileMultiple" accept=".json" multiple>
+            </div>
+            <button type="button" id="cancel-upload-file-btn" class="btn workflow-btn" onclick="closeUploadFeat()">Cancel</button>
+            <input type="submit" id="upload-btn" disabled="true" name="upload_opt_res_button" class="btn workflow-btn" value="Upload"/>
+        </form>
+    </div>
+
+    
+
+    <!-- set hpc parameters -->
+    <div id="overlayparam" class="overlay-content">
         <form id='submitRunParam' method='POST'>{% csrf_token %}
+            <div class="container">
+                <div class="row">
+                    <div class="col">
+                        <a class="list-group-item list-group-item-action" id="DAINT-CSCS" value="DAINT-CSCS" name="DAINT-CSCS" onclick="setHPCSystem($(this).attr('value'))">CSCS-DAINT</a>
+                        <a class="list-group-item list-group-item-action" id="SA-CSCS" value="SA-CSCS" name="SA-CSCS" onclick="setHPCSystem($(this).attr('value'))">CSCS-DAINT Service Account</a>
+                        <a class="list-group-item list-group-item-action" id="NSG" value="NSG" name="NSG" onclick="setHPCSystem($(this).attr('value'))">NSG</a>
+                    </div>
+                    <div class="col">
+                        <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                              <span class="input-group-text" id="inputGroup-sizing-default">Project</span>
+                            </div>
+                            <input type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
+                        </div>
+                        <div class="row form-group">
+                            
+                            <label for="daint_project_id">Project</label>
+                            <input type="text" class="form-control" id="daint_project_id" placeholder="Set Project">                          
+                        </div>
+                        <div class="row form-group">
+                            <label for="">Algorithm Parameters</label>
+                            <label for="gen-max">Number of generation (max 60)</label>
+                            <br>
+                            <input class="num-edit" type="number" name="gen-max" id="gen-max" step="1" min="1"><br>
+                            <br>
+                            <label for="offspring">Offspring size</label>
+                            <br>
+                            <input class="num-edit" type="number" name="offspring" id="offspring" step="1" min="1"><br>
+                            <br>
+                        </div>
+                        <div class="row form-group">
+                            Optimization Parameters
+                        </div>
+                    </div>
+                </div>
+            </div>
             <div class="param-title-div">
                 <strong>HPC system</strong>
             </div>
@@ -282,191 +361,91 @@
             <button id="apply-param" class="btn btn-primary" disabled>Apply</button>
         </form>
     </div>
-</div>
-<!-- -->
 
-
-<!-- section containing divs for user fetch system insertions -->
-<div id="overlaywrapperfetch" class="overlay-wrapper">
-    <div id="overlayparamfetch" style="top:30%;"
-         class="overlay-content standard-border">
-        <form id='submitFetchParam' method='POST'>{% csrf_token %}
-            <div class="param-title-div">
-                <strong>HPC system</strong>
+    <!-- fetched jobs div -->
+    <div id="overlaywrapperjobs" class="overlay-wrapper">
+        <div id="overlayjobs"
+             class="overlay-content overflow width-95p height-90p">
+            <div id="fetch-job-title" class="align-center">
+                <h4><strong>Download job results</strong></h4>
+            </div>
+    
+            <table id="job-list-table" style="overflow:auto"
+                   class="sortable height-90p" cellpadding="10">
+                <thead>
+                <tr>
+                    <th id="wf-th" class="tth">Workflow ID</th>
+                    <th id="job-th" class="tth">Job ID</th>
+                    <th class="tth">Status</th>
+                    <th id="dt-th" class="tth">Date/Time (UTC)</th>
+                    <th class="sorttable_nosort"></th>
+                </tr>
+                <tbody id="job-list-body">
+                </tbody>
+                </thead>
+    
+            </table>
+    
+            <div id="job-list-div" class="height-90p"
+                 style="overflow:auto;">
             </div>
             <br>
-            <select id="hpc_sys_fetch" name="hpc_sys_fetch">
-                <option value="--" name="--">Select a HPC system</option>
-                <option value="DAINT-CSCS" name="DAINT-CSCS">CSCS-DAINT</option>
-                <option value="SA-CSCS" name="SA-CSCS">CSCS-DAINT Service Account</option>
-                <option value="NSG" name="NSG">NSG - NeuroScience Gateway</option>
-            </select>
-            <div id="hpc-param-fetch" class="collapse">
-                <div id="un-fetch-div">
-                    <br>
-                    <label for="username_fetch">Username</label>
-                    <input id="username_fetch" type="text" name="username_fetch">
-                </div>
-                <div id="pwd-fetch-div">
-                    <br>
-                    <label for="password_fetch">Password</label>
-                    <input id="password_fetch" type="password" name="password_fetch">
-                </div>
+            <div class="center-container row-center-container">
+                <button id="refresh-job-list-btn" type="button"
+                        class="btn btn-default col-xs-6">Refresh
+                </button>
+                <button id="cancel-job-list-btn" type="button"
+                        class="btn btn-default col-xs-6">Cancel
+                </button>
             </div>
             <br>
+        </div>
+    </div>
+
+      
+    <!-- error div -->
+    <div id="overlaywrappererror" class="overlay-content">
+        <div id="overlayerror" class="error-content">
+            <div id="errordynamictext"></div>
             <br>
-            <button id="cancel-param-fetch-btn" type="button" class="btn btn-primary closebtn">Cancel</button>
-            <button id="apply-param-fetch" class="btn btn-primary" disabled>Apply</button>
-        </form>
-    </div>
-</div>
-<!-- -->
-
-<!-- "Please wait" message div -->
-<div id="overlaywrapperwait" class="overlay-wrapper">
-    <div id="overlaywait" style="top:35%;" class="overlay-content standard-border">
-        <div style="margin:auto;" class="spinning lg"></div>
-        <div id="waitdynamictext" class="please-wait-text"></div>
-        <div class="please-wait-text">Please wait ...</div>
-    </div>
-</div>
-<!-- -->
-
-<!-- "Error" message div -->
-<div id="overlaywrappererror" class="overlay-wrapper">
-    <div id="overlayerror" style="top:35%;" class="overlay-content standard-border">
-        <div class="center-container">
-            <div class="row-center-container">
-                <div id="errordynamictext" class="please-wait-text"></div>
-                <br>
-                <button id="ok-error-div-btn" class="btn btn-default
-                closebtn">Ok
-                </button>
-            </div>
+            <button id="ok-error-div-btn" class="btn workflow-btn" onclick="closeErrorDiv()">Ok</button>
         </div>
     </div>
-</div>
-<!-- -->
 
-
-<!-- "Reload" message div -->
-<div id="overlaywrapperreload" class="overlay-wrapper">
-    <div id="overlayrelod" style="top:35%;" class="overlay-content standard-border">
-        <div class="center-container">
-            <div class="row-center-container">
-                <div id="reloaddynamictext" class="please-wait-text"></div>
-                <br>
-                <button id="reload-div-btn" class="btn btn-default
-                closebtn">Reload
-                </button>
-            </div>
+    <!-- reload div -->
+    <div id="overlaywrapperreload" class="overlay-content">
+        <div id="overlayreload" class="reload-content">
+            <div id="reloaddynamictext"></div>
+            <br>
+            <button id="reload-div-btn" class="btn workflow-btn" onclick="closeReloadDiv()">Reload</button>
         </div>
     </div>
-</div>
-<!-- -->
 
-<!-- "Expired Workflow" message div -->
-<div id="overlaywrapperexpiration" class="overlay-wrapper">
-    <div id="overlayexpired" style="top:35%;" class="overlay-content">
-        <div class="center-container">
-            <div class="row-center-container">
-                <div id="expirationdynamictext" class="please-wait-text"></div>
-                <button id="home-expiration-div-btn" class="btn btn-default
-                closebtn" onclick="window.location.href='/hh-neuron-builder/'">Home
-                </button>
-            </div>
+    <!-- expired workflow div -->
+    <div id="overlaywrapperexpiration" class="overlay-content">
+        <div id="overlayexpiration" class="expiration-content">
+            <div id="expirationdynamictext"></div>
+            <br>
+            <button id="home-expiration-div-btn" class="btn workflow-btn" onclick="window.location.href='/hh-neuron-builder/'">Home</button>
         </div>
     </div>
-</div>
-<!-- -->
 
-<div id="overlaywrapperdownloadworkspace" class="overlay-wrapper">
-    <div id="overdownloadworkspace" style="top: 35%;" class="overlay-content">
-        <div class="center-container">
-            <div class="row-center-container">
-                <div id="downloadworkspacetext" class="please-wait-text">
-                    You need to authenticate with Ebrains to go on...<br>
-                    Please download your current workspace and then upload it to continue this session !
-                </div>
-                <button id="cancel-div-btn" class="btn btn-default closebtn" onclick="closeDownloadWorkspaceDiv()">
-                    Cancel
-                </button>
-                <button id="download-workspace-div-btn" class="btn btn-default closebtn" onclick="saveWorkflowOnDiv()">
-                    Download workspace
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
-
-<!-- Fetched jobs div -->
-<div id="overlaywrapperjobs" class="overlay-wrapper">
-    <div id="overlayjobs"
-         class="overlay-content overflow width-95p height-90p">
-        <div id="fetch-job-title" class="align-center">
-            <h4><strong>Download job results</strong></h4>
-        </div>
-
-        <table id="job-list-table" style="overflow:auto"
-               class="sortable height-90p" cellpadding="10">
-            <thead>
-            <tr>
-                <th id="wf-th" class="tth">Workflow ID</th>
-                <th id="job-th" class="tth">Job ID</th>
-                <th class="tth">Status</th>
-                <th id="dt-th" class="tth">Date/Time (UTC)</th>
-                <th class="sorttable_nosort"></th>
-            </tr>
-            <tbody id="job-list-body">
-            </tbody>
-            </thead>
-
-        </table>
-
-        <div id="job-list-div" class="height-90p"
-             style="overflow:auto;">
+    <div id="overlaydownloadworkspace" class="overlay-content">
+        <div id="downloadworkspacetext" class="downloadworkspace-content">
+            You need to authenticate with Ebrains to go on...<br>
+            Please download your current workspace and then upload it to continue this session !
         </div>
         <br>
-        <div class="center-container row-center-container">
-            <button id="refresh-job-list-btn" type="button"
-                    class="btn btn-default col-xs-6">Refresh
-            </button>
-            <button id="cancel-job-list-btn" type="button"
-                    class="btn btn-default col-xs-6">Cancel
-            </button>
-        </div>
-        <br>
+        <button id="cancel-div-btn" class="btn workflow-btn" onclick="closeDownloadWorkspaceDiv()">
+            Cancel
+        </button>
+        <button id="download-workspace-div-btn" class="btn workflow-btn" onclick="saveWorkflowOnDiv()">
+            Download workspace
+        </button>
     </div>
-</div>
-<!-- -->
 
-<!-- Upload div -->
-<div id="overlaywrapperoptres" class="overlay-wrapper">
-    <div id="overlayoptres" style="top:20%;" class="overlay-content">
-        <form id="uploadFileForm" action="" method="POST" enctype="multipart/form-data">{% csrf_token %}
-            <div id="uploadTitleDiv" class="param-title-div">
-            </div>
-            <br>
-            <div id="upload_sim_img_div">
-                <img src="{% static "hhnb/img/expected_sim_zip.jpg" %}"
-                style="width:100%" alt="Expected sim zip file">
-                <br>
-                <br>
-            </div>
-            <label for="opt-res-file" style="overflow-x:scroll">
-                <input style="overflow-x:scroll" type="file" name="opt-res-file" id="opt-res-file"
-                       class="btn btn-default" accept=".zip"/>
-                <span style="overflow-x:scroll" class="custom-file-control"></span>
-            </label>
-            <br>
-            <button type="button" id="cancel-upload-file-btn" class="btn btn-primary">Cancel</button>
-            <input type="submit" id="upload-opt-res-btn" disabled name="upload_opt_res_button" class="btn btn-primary"
-                   value="Upload"/>
-        </form>
-    </div>
-</div>
 
+</div>
 
 
 <script>

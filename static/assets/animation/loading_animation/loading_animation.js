@@ -1,5 +1,6 @@
-function showLoadingAnimation() {
+function showLoadingAnimation(message="") {
     console.log("show loading animation");
+    setLoadingAnimationText(message);
     $(".loading-animation").removeClass("hide");
     $(".loading-animation").addClass("show");
 }
