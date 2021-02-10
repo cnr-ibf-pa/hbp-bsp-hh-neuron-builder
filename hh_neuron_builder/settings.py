@@ -147,14 +147,35 @@ STATICFILES_DIRS = [
 ]
 
 
-MEDIA_ROOT = os.path.join("../app", 'media')
+MEDIA_ROOT = os.path.join("/apps", 'media')
 
+MODEL_CATALOG_FILTER = {
+        'granule_models': {
+            'brain_region': 'cerebellum',
+            'cell_type': 'granule cell',
+            'model_scope': 'single cell',
+            'species': 'Rattus norvegicus',
+            'abstraction_level': 'spiking neurons: biophysical'
+        },
+        'hippocampus_models': {
+            'organization': 'HBP-SP6',
+            'model_scope': 'single cell',
+            'species': 'Rattus norvegicus',
+            'collab_id': '12027'
+        },
+        'purkinje_models': {
+            'brain_region': 'cerebellum',
+            'cell_type': 'Purkinje cell',
+            'model_scope': 'single cell',
+            'name': 'Purkinje cell - Multi compartmental'
+        }
+}
 
 # OIDC PARAMETERS
 OIDC_RP_CLIENT_ID = os.environ['OIDC_RP_CLIENT_ID']
 OIDC_RP_CLIENT_SECRET = os.environ['OIDC_RP_CLIENT_SECRET']
 
-OIDC_RP_SCOPES = 'openid profile email'
+OIDC_RP_SCOPES = 'openid profile email team clb.wiki.read clb.drive:read clb.drive:write'
 
 OIDC_CREATE_USER = False
 OIDC_STORE_ACCESS_TOKEN = True

@@ -166,8 +166,9 @@ function efelPage() {
 
 }
 
-// serve embedded-naas page
 function inSilicoPage() {
+    console.log("inSilicoPage() called");
+    $("#run-sim-btn").prop("disabled", true);
     $.getJSON("/hh-neuron-builder/upload-to-naas/" + req_pattern, function(uploaddata){
         $.getJSON("/hh-neuron-builder/model-loaded-flag/" + req_pattern, function(data){
             var o = data["response"];
@@ -175,9 +176,8 @@ function inSilicoPage() {
                 window.location.href = "";
             } else {
                 window.location.href = "/hh-neuron-builder/embedded-naas/" + req_pattern + "/";
-            } 
+            }
         });
-
     });
 }
 
@@ -322,6 +322,11 @@ function checkConditions(){
                 document.getElementById('opt-param-bar').style.background = "red";
                 document.getElementById('opt-param-bar').innerHTML = data['opt_set']['message'];
             };
+            document.getElementById("hpc_sys").value = data["opt_set"]["opt_sub_param_dict"]["hpc_sys"];
+            if (data["opt_set"]["opt_sub_param_dict"]["hpc_sys"] == "DAINT-CSCS") {
+                document.getElementById("daint_project_section").style.display = "block";
+                document.getElementById("daint_project_id").value = data["opt_set"]["opt_sub_param_dict"]["project"];
+            } 
             document.getElementById("node-num").value = data["opt_set"]["opt_sub_param_dict"]["number_of_nodes"]; 
             document.getElementById("core-num").value = data["opt_set"]["opt_sub_param_dict"]["number_of_cores"]; 
             document.getElementById("offspring").value = data["opt_set"]["opt_sub_param_dict"]["offspring_size"]; 

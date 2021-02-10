@@ -411,19 +411,49 @@ def get_model_list(request, exc="", ctx=""):
     """
     Serving api call to get list of optimization models
     """
-    model_file = request.session[exc]["singlecellmodeling_structure_path"]
-    with open(model_file) as json_file:
-        model_file_dict = json.load(json_file)
+    
+    #model_file = request.session[exc]["singlecellmodeling_structure_path"]
+    #with open(model_file) as json_file:
+    #    model_file_dict = json.load(json_file)
 
-    return HttpResponse(json.dumps(model_file_dict), content_type="application/json")
+    #return HttpResponse(json.dumps(model_file_dict), content_type="application/json")
+    
+    # Authenticate with token. To be change with permanent token
+    
+    mc_filter = settings.MODEL_CATALOG_FILTER
+
+    mc = ModelCatalog(token=request.session['oidc_access_token'])
+    
+    models = mc.list_models()
+    filtered_models = []
+    
+    fG = mc_filter['granule_models']
+    fH = mc_filter['hippocampus_models']
+    fP = mc_filter['purkinje_models']
+
+    for m in models:
+        if m['brain_region'] == fG['brain_region'] and m['cell_type'] == fG['cell_type'] and m['model_scope'] == fG['model_scope'] and m['species'] == fG['species'] and m['abstraction_level'] == fG['abstraction_level']:
+                filtered_models.append(m)
+                continue
+        elif m['organization'] == fH['organization'] and m['model_scope'] == fH['model_scope'] and m['species'] == fH['species'] and m['collab_id'] == fH['collab_id']:
+                filtered_models.append(m)
+                continue
+        elif m['brain_region'] == fP['brain_region'] and m['cell_type'] == fP['cell_type'] and m['model_scope'] == fP['model_scope'] and m['name'] == fP['name']:
+                filtered_models.append(m)
+    print(len(filtered_models))       
+    if len(models) > 0:
+        return JsonResponse(data={'models': json.dumps(filtered_models)}, status=200)
+    return HttpResponse(status=404)
 
 
 def copy_feature_files(request, feature_folder="", exc="", ctx=""):
-    print(feature_folder)
     feature_folder = feature_folder.replace("______",".")
     response = {"expiration": False}
-    if not os.path.exists(request.session[exc]["user_dir"]) or not \
-            os.path.exists(feature_folder):
+    
+    if not os.path.exists(feature_folder):
+        feature_folder = '/' + feature_folder
+    
+    if not os.path.exists(request.session[exc]["user_dir"]) or not os.path.exists(feature_folder):
         print("efelg results folders not existing")
         response = {"expiration": True}
         return HttpResponse(json.dumps(response), content_type="application/json")
@@ -438,11 +468,12 @@ def copy_feature_files(request, feature_folder="", exc="", ctx=""):
 
 
 # fetch model from dataset
-def fetch_opt_set_file(request, source_opt_name="", source_opt_id="", exc="", ctx=""):
+#def fetch_opt_set_file(request, source_opt_name="", source_opt_id="", exc="", ctx=""):
+def fetch_opt_set_file(request, source_opt_id='', exc='', ctx=''):
     """
     Set optimization setting file
     """
-
+    source_opt_id = str(source_opt_id)
     response = {"response": "OK", "message": ""}
 
     # opt_model_path = request.session[exc]['optimization_model_path']
@@ -455,16 +486,27 @@ def fetch_opt_set_file(request, source_opt_name="", source_opt_id="", exc="", ct
     shutil.rmtree(user_dir_data_opt)
     os.makedirs(user_dir_data_opt)
 
-    model_file = request.session[exc]["singlecellmodeling_structure_path"]
-    with open(model_file) as json_file:
-        model_file_dict = json.load(json_file)
+    # model_file = request.session[exc]["singlecellmodeling_structure_path"]
+    # with open(model_file) as json_file:
+    #     model_file_dict = json.load(json_file)
 
-    request.session[exc]['source_opt_name'] = source_opt_name
+    # request.session[exc]['source_opt_name'] = source_opt_name
 
-    for k in model_file_dict:
-        crr_k = str(list(k.keys())[0])
-        if crr_k == source_opt_name:
-            zip_url = k[crr_k]['meta']['zip_url']
+    # for k in model_file_dict:
+    #     crr_k = str(list(k.keys())[0])
+    #     if crr_k == source_opt_name:
+    #         zip_url = k[crr_k]['meta']['zip_url']
+    #         break
+
+    mc = ModelCatalog(token=request.session['oidc_access_token'])
+    model = mc.get_model(model_id=source_opt_id)
+    source_opt_name = model['name']
+
+    # TODO: add version control on js
+    zip_url = ''
+    for instance in model['instances']:
+        if instance['source']:
+            zip_url = instance['source']
             break
 
     r = requests.get(zip_url)
@@ -642,7 +684,8 @@ def upload_to_naas(request, exc="", ctx=""):
         return HttpResponse(json.dumps({"response": "KO", "message": "No simulation .zip file is present"}), content_type="application/json")
     else:
         request.session[exc]['res_file_name'] = os.path.splitext(filename)[0]
-        r = requests.post("https://blue-naas-svc.humanbrainproject.eu/upload", files={"file": open(abs_res_file, "rb")})
+        # r = requests.post("https://blue-naas-svc.humanbrainproject.eu/upload", files={"file": open(abs_res_file, "rb")})
+        r = requests.post("https://blue-naas-svc-bsp-epfl.apps.hbp.eu/upload", files={"file": open(abs_res_file, "rb")}, verify=False)
 
     request.session.save()
 
@@ -826,28 +869,38 @@ def check_cond_exist(request, exc="", ctx=""):
     if os.path.exists(opt_sub_param_file):
         with open(opt_sub_param_file) as json_file:
             opt_sub_param_dict = json.load(json_file)
-
         response['opt_set']['opt_sub_param_dict'] = opt_sub_param_dict
 
         rsk = request.session[exc].keys()
         hpc = request.session[exc].get("hpc_sys", "NO-HPC-SELECTED")
-
+        if hpc == 'NO-HPC-SELECTED':
+            try:
+                hpc = opt_sub_param_dict['hpc_sys']
+            except KeyError:
+                hpc = 'NO-HPC-SELECTED'
+        
         if hpc == "NSG":
             rules = [
                 'username_submit' in rsk,
                 'password_submit' in rsk,
             ]
+        
         elif hpc == "DAINT-CSCS" or hpc == "SA-CSCS":
+            if hpc == "DAINT-CSCS":
+                request.session[exc]['project'] = opt_sub_param_dict['project']
             rules = [True]
         else:
             rules = [False]
-
+        
         if all(rules):
             response['opt_set']['status'] = True
             response['opt_set']['message'] = ""
         else:
             response['opt_set']['status'] = False
             response['opt_set']['message'] = "Settings retrieved. Credentials NOT set"
+            if hpc == 'NO-HPC-SELECTED':
+                response['opt_set']['message'] = 'No HPC selected'
+    
     else:
         opt_sub_param_dict = hpc_job_manager.OptSettings.get_params_default()
         response['opt_set']['message'] = "Optimization parameters NOT set"
@@ -1211,16 +1264,14 @@ def run_analysis(request, exc="", ctx=""):
                 f.writelines(new_line)
                 f.close()
 
-                # subprocess.call(". /web/bspg/venvbspg/bin/activate; cd " + up_folder + "; nrnivmodl mechanisms", shell=True)
-                subprocess.call('/home/rcsm17/Workspace/cnr/hh-neuron-builder/newvenv3/bin/activate; cd ' + up_folder + '; nrnivmodl mechanisms', shell=True)
+                subprocess.call('. /usr/local/hhnb-dev/venv3/bin/activate; cd ' + up_folder + '; /usr/local/hhnb-dev/venv3/bin/nrnivmodl mechanisms', shell=True)
 
                 r_0_fold = os.path.join(up_folder, 'r_0')
                 if os.path.isdir(r_0_fold):
                     shutil.rmtree(r_0_fold)
                 os.mkdir(r_0_fold)
 
-                # subprocess.call(". /web/bspg/venvbspg/bin/activate; cd " + up_folder + "; python opt_neuron.py --analyse --checkpoint ./checkpoints", shell=True)
-                subprocess.call('/home/rcsm17/Workspace/cnr/hh-neuron-builder/newvenv3/bin/activate; cd ' + up_folder + '; python opt_neuron.py --analyse --checkpoint ./checkpoints', shell=True)
+                subprocess.call('. /usr/local/hhnb-dev-/venv3/bin/activate; cd ' + up_folder + '; python opt_neuron.py --analyse --checkpoint ./checkpoints', shell=True)
 
             except Exception as e:
                 msg = traceback.format_exception(*sys.exc_info())
@@ -1232,11 +1283,9 @@ def run_analysis(request, exc="", ctx=""):
         try:
             resp = hpc_job_manager.OptResultManager.create_analysis_files(opt_res_folder, opt_res_file)
             up_folder = resp["up_folder"]
-            tempresp = subprocess.call(
-                "cd " + up_folder + "; nrnivmodl mechanisms; python opt_neuron.py --analyse --checkpoint ./checkpoints > /dev/null 2>&1 ",
-                shell=True)
+            print(up_folder)
+            tempresp = subprocess.call('. /usr/local/hhnb-dev/venv3/bin/activate; cd ' + up_folder + '; nrnivmodl mechanisms; python opt_neuron.py --analyse --checkpoint ./checkpoints > /dev/null 2>&1', shell=True)
             print(tempresp)
-
         except Exception as e:
             msg = traceback.format_exception(*sys.exc_info())
             resp = {"response": "KO", "msg": "An error occurred while analysis results. Check your files."}
@@ -1533,11 +1582,11 @@ def get_data_model_catalog(request, exc="", ctx=""):
     # headers = {'Authorization': get_auth_header(request.user.social_auth.get())}
     headers = {'Authorization': "Bearer " + storage_user_token}
     vf_url = "https://validation-v1.brainsimulation.eu/authorizedcollabparameterrest/?format=json&python_client=true"
-    res = requests.get(vf_url)
+    res = requests.get(vf_url, verify=False)
     default_values = res.json()
-
     data = {"default_values": default_values}
-
+    print('=========== DEFAULT ============', default_values)
+    print(fetch_opt_uuid)
     if not fetch_opt_uuid:
         data.update({
             "name": model_name,
@@ -1641,14 +1690,17 @@ def register_model_catalog(request, reg_collab="", exc="", ctx=""):
 
     # create model catalog instance and add to Collab if not present
     mc = ModelCatalog(token=clb_user_token)
-
+    print('============== TOKEN =================')
+    print(mc.auth.token)
+    print(mc.token)
     client = ebrains_drive.connect(token=mc.auth.token)
     repo = client.repos.get_repo_by_url("https://wiki.ebrains.eu/bin/view/Collabs/hhnb-registeredmodels/")
     seafdir = repo.get_dir('/hhnb_wf_model')
     mc_zip_uploaded = seafdir.upload_local_file(mc_zip_name_full)
 
-    reg_mod_url = 'https:///drive.ebrains.eu/lib/' + repo.id + '/file/hhnb_wf_model/' + mc_zip_name + '?dl=1'
-
+    reg_mod_url = 'https://drive.ebrains.eu/lib/' + repo.id + '/file/hhnb_wf_model/' + mc_zip_name + '?dl=1'
+    print(reg_mod_url)
+    print('============== FORM DATA ==================', form_data)
     auth_family_name = form_data["authorLastName"]
     auth_given_name = form_data["authorFirstName"]
     organization = form_data["modelOrganization"]
@@ -1685,7 +1737,7 @@ def register_model_catalog(request, reg_collab="", exc="", ctx=""):
                                   "license": license,
                               }])
     model_path_on_catalog = "https://model-catalog.brainsimulation.eu/#model_id.{}".format(model["id"])
-
+    print('==================URL=================', model_path_on_catalog)
     edit_message = "\
             The model was successfully registered in the Model Catalog.<br>\
             Model's info and metadata can be shown \
@@ -1713,26 +1765,22 @@ def workflow_upload(request, exc='', ctx=''):
             user_path = os.path.join(workflows_dir, 'user')
         else:
             user_path = os.path.join(workflows_dir, request.user.username)
-        print('USER_PATH %s' % user_path)
         if not os.path.exists(user_path):
             os.mkdir(user_path)
-        wf_zip = os.path.join(user_path, filename)
         crr_wf_folder = os.path.join(user_path, os.path.splitext(filename)[0])
         if os.path.exists(crr_wf_folder):
             shutil.rmtree(crr_wf_folder)
-        with open(os.path.join(user_path, filename), 'wb') as fd:
+        os.mkdir(crr_wf_folder)
+        with open(os.path.join(crr_wf_folder, filename), 'wb') as fd:
             fd.write(wf)
-        with open(wf_zip, 'rb') as fd:
+        with open(os.path.join(crr_wf_folder, filename), 'rb') as fd:
             zip_file = zipfile.ZipFile(fd)
-            zip_file.extractall(path=user_path)
-
-        os.remove(wf_zip)
-
-        target_path = ''
-        for f in os.listdir(user_path):
-            if f == filename.split('.zip')[0]:
-                target_path = os.path.join(user_path, f)
-
+            zip_file.extractall(path=crr_wf_folder)
+        os.remove(os.path.join(crr_wf_folder, filename))
+        if len(os.listdir(crr_wf_folder)) == 1:
+            target_path = os.path.join(crr_wf_folder, os.listdir(crr_wf_folder)[0])
+        else:
+            target_path = crr_wf_folder
         for c in filename[:14]:
             if c not in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']:
                 request.session[exc]['time_info'] = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
@@ -1740,8 +1788,8 @@ def workflow_upload(request, exc='', ctx=''):
                 # check if filename has changed
                 request.session[exc]['time_info'] = filename[:14]
                 break
+        
         request.session[exc]['wf_id'] = filename.split('.zip')[0]
-
         # overwrite keys if present in request.session
         request.session[exc]['user_dir'] = target_path
         request.session[exc]['user_dir_data'] = os.path.join(target_path, 'data')
@@ -1787,6 +1835,25 @@ def workflow_download(request, exc='', ctx=''):
     shutil.make_archive(os.path.join(tmp_dir, wf_id), 'zip', user_dir_split[0], user_dir_split[1])
 
     return FileResponse(open(os.path.join(tmp_dir, wf_id + '.zip'), 'rb'), as_attachment=True)
+
+
+def simulation_result_download(request, exc='', ctx=''):
+    tmp_dir = os.path.join(settings.MEDIA_URL, 'tmp')
+    if not os.path.exists(tmp_dir):
+        os.mkdir(tmp_dir)
+
+    # retrieve the file from the current working directory
+    wf_dir = request.session[exc]['workflows_dir']
+    user_id = request.user.username
+    wf_id = request.session[exc]['wf_id']
+    result_dir = os.path.abspath(os.path.join(wf_dir, user_id, wf_id, 'sim'))
+
+    for f in os.listdir(result_dir):
+        if f.endswith('.zip'):
+            print(os.path.join(result_dir, f))
+            return FileResponse(open(os.path.join(result_dir, f), 'rb'), as_attachment=True)
+
+    return HttpResponse(content=b'File not found', status=404)
 
 
 def get_user_avatar(request):

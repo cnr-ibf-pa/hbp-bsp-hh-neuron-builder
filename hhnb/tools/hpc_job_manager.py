@@ -461,29 +461,17 @@ class Unicore:
             
         elif hpc == "DAINT-CSCS":
             daint_client = UnicoreClient().get_instance(token).get_daint_client()
-
+            help(daint_client)
             for storage in daint_client.get_storages():
                 if storage.storage_url.endswith(job_url.split('/')[-1] + '-uspace'):
                     job_storage = storage
-            print(job_storage)
-
-            # if (r['status'] == 'SUCCESSFUL') or (r['status'] == 'FAILED'):
-            #     wd = unicore_client.get_working_directory(job_url, auth, proxies=proxies)
-            #     output_files = unicore_client.list_files(wd, auth, proxies=proxies)
-            #     for file_path in output_files:
-            #         _, f = os.path.split(file_path)
-            #         if (f == 'stderr') or (f == "stdout") or (f == "output.zip"):
-            #             content = unicore_client.get_file_content(wd + "/files" + file_path, auth, MAX_SIZE=cls.MAX_SIZE, proxies=proxies)
-            #             with open(os.path.join(dest_dir, f), "w") as local_file:
-            #                 local_file.write(content)
-            #             local_file.close()
-
-            results_list = job_storage.listdir('.')
+                    results_list = job_storage.listdir('.')
+                    break
+            
             for f in results_list:
                 if f == 'stderr' or f == 'stdout' or f == 'output.zip':
                     remote_file = job_storage.stat(f)
                     remote_file.download(os.path.join(dest_dir, f))
-                    print('downloaded %s' % os.path.join(dest_dir, f))
 
         OptFolderManager.create_opt_res_zip(fin_folder=dest_dir, filetype="optres", wf_id=wf_id)
 

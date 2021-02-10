@@ -22,10 +22,12 @@ $(document).ready(function(){
 
     $.getJSON("/hh-neuron-builder/model-loaded-flag/" + req_pattern, function(data){
         var o = data["response"];
+        console.log("var o = " + o);
         if (o == "KO"){
             window.location.href = "";
         } else {
-            document.getElementById("naas-frame").setAttribute("src","https://blue-naas.humanbrainproject.eu/#/model/" + o)
+            console.log("apro link !");
+            document.getElementById("naas-frame").setAttribute("src", "https://blue-naas-bsp-epfl.apps.hbp.eu/#/model/" + o);
         }
     });
 });
