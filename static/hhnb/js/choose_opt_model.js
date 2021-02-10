@@ -2,53 +2,69 @@ $(document).ready(function(){
     var mainDiv = document.getElementById("mainDivMod");
     mainDiv.style.display = "none";
     displayPleaseWaitDiv(message="Loading models");
-    var address = "https://raw.githubusercontent.com/lbologna/bsp_data_repository/master/optimizations/";
     var exc = sessionStorage.getItem("exc", exc) ?  sessionStorage.getItem("exc") : "";
     var ctx = sessionStorage.getItem("ctx", ctx) ? sessionStorage.getItem("ctx") : "";
 
     $.getJSON("/hh-neuron-builder/get_model_list/" + exc + "/" + ctx, function(data){
+        models = JSON.parse(data.models);
         var counter = 0;
-        $.each(data, function(idx, val){
-            $.each(val, function(index, e){
-                var model_uuid = e['meta']["id"];
-                var model_name = index;
+        $.each(models, function(idx, e){
+                var model_uuid = e.id;
+                var model_name = e.name;
                 $("#sub-title-div" ).after("<div  id=" + model_uuid + " name=" +
                         model_name + " class='model-info-div' style='width:100%; cursor:pointer'></div>");
-                $("#" + model_uuid).append("<div id=" + model_uuid + " class='model-info-div-title'>" + e['meta']['species'] + ' > ' + e['meta']['brain_region'] + ' > ' +  e['meta']['cell_type'] + "</div>");
+                $("#" + model_uuid).append("<div id=" + model_uuid + " class='model-info-div-title'>" + e.species + ' > ' + e.brain_region + ' > ' +  e.cell_type + ' > ' + e.name + "</div>");
                 $("#" + model_uuid).append("<div style='display:flex;' id=" + model_uuid + 'a' + " ></div>");
                 var img_div = document.createElement("DIV");
                 var spk_img = document.createElement("IMG");
                 var mor_img = document.createElement("IMG");
                 var mor_id = "crr_mor";
                 var spk_id = "crr_spk";
-                var spk_url = e["responses"]; 
-                var mor_url = e["morph"]; 
+                var spk_url = null; 
+                var mor_url = null; 
+                for (let i = 0; i < e.images.length; i++) {
+                    if (e.images[i].caption == "Morphology") {
+                        mor_url = e.images[i].url;
+                    }
+                    else if (e.images[i].caption == "Responses") {
+                        spk_url = e.images[i].url;
+                    }
+                }
                 img_div.setAttribute("style", "max-width:60%;");
                 mor_img.setAttribute("id", mor_id);
                 mor_img.setAttribute("style", "max-width:50%;");
                 spk_img.setAttribute("id", spk_id);
                 spk_img.setAttribute("style", "max-width:50%;");
                 spk_img.setAttribute("src", spk_url);
+                spk_img.setAttribute("alt", "Responses image not available");
                 mor_img.setAttribute("src", mor_url);
+                mor_img.setAttribute("alt", "Morphology image not available");
                 img_div.append(spk_img);
                 img_div.append(mor_img);
                 $("#" + model_uuid + 'a').append(img_div);
-                $('#' + model_uuid + 'a').append("<div style='max-width:40%;padding:5px;font-size:13px'>" + formatDescription(e['meta']) + "</div>");
+                $('#' + model_uuid + 'a').append("<div style='max-width:40%;padding:5px;font-size:13px'>" + formatDescription(e) + "</div>"); //e['meta']) + "</div>");
                 spk_img.onload = function(){
                     counter += 1;
-                    if (counter == 2 * data.length){
-                        closePleaseWaitDiv();
-                    }
-                };
-                mor_img.onload = function(){
-                    counter += 1;
-                    if (counter == 2 * data.length){
+                    if (counter == 2 * models.length){
                         closePleaseWaitDiv();
                         mainDiv.style.display = "block";
                     }
                 };
+                spk_img.onerror = function() {
+                    counter += 1;
+                }
+                mor_img.onload = function(){
+                    counter += 1;
+                    if (counter == 2 * models.length){
+                        closePleaseWaitDiv();
+                        mainDiv.style.display = "block";
+                    }
+                };
+                mor_img.onerror = function() {
+                    counter += 1;
+                }
             });
-        });
+        //});
     });
 });
 
@@ -58,11 +74,15 @@ $('body').on('click', '.model-info-div', function(){
     var optimization_name = $(this).attr('name');
     var optimization_id = $(this).attr('id');
     displayPleaseWaitDiv(message="Fetching model from the HBP Model Catalog");
-    $.get("/hh-neuron-builder/fetch-opt-set-file/" + optimization_name +
+    /*$.get("/hh-neuron-builder/fetch-opt-set-file/" + optimization_name +
             "/" + optimization_id + "/" + exc + "/" + ctx + "/", function(){
                 closePleaseWaitDiv();
                 window.location.href = "/hh-neuron-builder/workflow/";
-            });
+            });*/
+    $.get("/hh-neuron-builder/fetch-opt-set-file/" + optimization_id + "/" + exc + "/" + ctx + "/", function() {
+        closePleaseWaitDiv();
+        window.location.href = "/hh-neuron-builder/workflow/";
+    });
 });
 
 function setHPCParameters() {
@@ -95,8 +115,10 @@ function displayPleaseWaitDiv(message="") {
 }
 
 // Format description
-function formatDescription(meta = ""){
-    var description = meta['description']
+//function formatDescription(meta = ""){
+function formatDescription(value="") {
+    //var description = meta['description']
+    var description = value.description;
     var indexes = [];
     var all_strings = [];
     var final_string = "";
@@ -109,8 +131,8 @@ function formatDescription(meta = ""){
         "cell_type", "channels", "e_type", "morphology"
     ];
     var allowed_tag_author = ["contributors", "email", "affiliations"]
-    var res = description.replace(/\\\_/g, "_");
-
+    //var res = description.replace(/\\\_/g, "_");
+    var res = description.replace(/\\_/g, "_");
     var index = 0;
     while (index > -1) {
         index = res.indexOf('<br>');
@@ -139,7 +161,7 @@ function formatDescription(meta = ""){
             }
         }
     }
-    final_string_meta_app = final_string_meta_app + "<br><strong>" + "id : " + "</strong>" + meta["id"]
+    final_string_meta_app = final_string_meta_app + "<br><strong>" + "id : " + "</strong>" + value.id; //meta["id"]
     if (final_string_meta_app.length > 1){
         final_string = final_string + final_string_meta_title + final_string_meta_app;
     }
