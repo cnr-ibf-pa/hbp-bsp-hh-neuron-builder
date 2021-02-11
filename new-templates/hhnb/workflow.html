@@ -248,6 +248,17 @@
         </form>
     </div>
 
+    <div id="overlayoptupload" class="overlay-content">
+        <form id="uploadOptSetForm" action="" method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label for="opt-res-file" class="form-label">Upload optimization settings (".zip")</label>
+                <input class="form-control" type="file" id="opt-res-file" accept=".zip">
+            </div>
+            <button type="button" id="cancel-upload-file-btn" class="btn workflow-btn" onclick="closeOptSetUploadDiv()">Cancel</button>
+            <input type="submit" id="upload-opt-res-btn" disabled="true" name="upload_opt_res_button" class="btn workflow-btn" value="Upload"/>
+        </form>
+    </div>
     
 
     <!-- set hpc parameters -->
@@ -289,76 +300,6 @@
                     </div>
                 </div>
             </div>
-            <div class="param-title-div">
-                <strong>HPC system</strong>
-            </div>
-            <br>
-            <select id="hpc_sys" name="hpc_sys">
-                <option value="--" name="--">Select a HPC system</option>
-                <option value="DAINT-CSCS" name="DAINT-CSCS">CSCS-DAINT</option>
-                <option value="SA-CSCS" name="SA-CSCS">CSCS-DAINT Service Account</option>
-                <option value="NSG" name="NSG">NSG - NeuroScience Gateway</option>
-            </select>
-            <br>
-            <div id="hpc-param" class="collapse">
-                <div id="un-div" style="display:block">
-                    <br>
-                    <label class="" for="username_submit">Username</label>
-                    <br>
-                    <input class="" id="username_submit" type="text" name="username_submit">
-                    <br>
-                    <br>
-                </div>
-                <div id="pwd-div" style="display:block">
-                    <label class="" for="password_submit">Password</label>
-                    <br>
-                    <input class="" id="password_submit" type="password"
-                           name="password_submit">
-                </div>
-            </div>
-            <br>
-            <div id="daint_project_section" style="display: none">
-                <div class="param-title-div">
-                    <strong>Project</strong>
-                </div>
-                <br>
-                <label for="daint_project_id">Set project</label>
-                <br>
-                <input class="text-edit" type="text" name="project" id="daint_project_id"><br>
-                <br>
-            </div>
-            <div class="param-title-div">
-                <strong>Algorithm Parameters</strong>
-            </div>
-            <br>
-            <label for="gen-max">Number of generation (max 60)</label>
-            <br>
-            <input class="num-edit" type="number" name="gen-max" id="gen-max" step="1" min="1"><br>
-            <br>
-            <label for="offspring">Offspring size</label>
-            <br>
-            <input class="num-edit" type="number" name="offspring" id="offspring" step="1" min="1"><br>
-            <br>
-            <br>
-            <div class="param-title-div">
-                <strong>Optimization Run Parameters</strong>
-            </div>
-            <br>
-            <label for="node-num">Number of nodes</label>
-            <br>
-            <input type="number" name="node-num" id="node-num"><br>
-            <br>
-            <label for="core-num">Number of cores</label>
-            <br>
-            <input type="number" name="core-num" id="core-num"><br>
-            <br>
-            <label for="runtime">Runtime</label>
-            <br>
-            <input type="" name="runtime" id="runtime"><br>
-            <br>
-            <br>
-            <button id="cancel-param-btn" type="button" class="btn btn-primary closebtn">Cancel</button>
-            <button id="apply-param" class="btn btn-primary" disabled>Apply</button>
         </form>
     </div>
 

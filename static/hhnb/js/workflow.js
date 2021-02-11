@@ -568,15 +568,23 @@ function displayOptResUploadDiv() {
 
 
 // Manage optimization result upload button
-function displayOptSetUploadDiv() {
+/* function displayOptSetUploadDiv() {
     document.getElementById("opt-res-file").value = "";
     document.getElementById("opt-res-file").multiple = false;
     document.getElementById("opt-res-file").accept = ".zip";
     var type = "optset";
     var msg = 'Upload optimization settings (".zip")';
     openUploadDiv(type, msg);
+} */
+function displayOptSetUploadDiv() {
+    $("#overlaywrapper").css("display", "block");
+    $("#overlayoptupload").css("display", "block");
 }
 
+function closeOptSetUploadDiv() {
+    $("#overlaywrapper").css("display", "none");
+    $("#overlayoptupload").css("display", "none");
+}
 
 //
 function openUploadDiv(type, msg) {
@@ -608,7 +616,6 @@ function openUploadDiv(type, msg) {
 function closeUploadDiv() {
     $("#overlaywrapper").css("display", "none");
     $("#overlayfeatupload").css("display", "none");
-
 }
 
 
