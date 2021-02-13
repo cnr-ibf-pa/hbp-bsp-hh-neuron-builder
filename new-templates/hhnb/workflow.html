@@ -262,46 +262,380 @@
     
 
     <!-- set hpc parameters -->
-    <div id="overlayparam" class="overlay-content">
+
+    <!-- BOOTSTRAP 4 -->
+    <!-- <div id="overlayparam" class="overlay-content">
         <form id='submitRunParam' method='POST'>{% csrf_token %}
             <div class="container">
+                <div id="hpcChooserParams" class="accordion">
+                    <div class="row">
+                        <a class="list-group-item list-group-item-action" data-toggle="collapse" data-target="#daintCollapse" role="button" aria-expanded="false" 
+                            aria-controls="daintCollapse" id="DAINT-CSCS" value="DAINT-CSCS" name="DAINT-CSCS" onclick="setHPCSystem($(this).attr('value'))">
+                            CSCS-DAINT
+                        </a>
+                        <div id="daintCollapse" class="collapse" data-parent="#hpcChooserParams">
+                            <div class="hpc-param-chooser container">
+                                <div class="row">
+                                    <div class="input-group hpc-input-group-text">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text">Project ID</span>
+                                        </div>
+                                        <input type="text" class="form-control" id="daint_project_id" placeholder="Set project">
+                                    </div>
+                                </div>
+                                <div class="row row-separator"></div> 
+                                <div class="row">
+                                    <div class="col">
+                                        <div class="card input-card">
+                                            <div class="card-header input-card-header">Algorithm Parameters</div>
+                                            <div class="card-body ">
+                                                <!-- <label id="gen-max-label" for="gen-max" class="form-label range">Number of generation</label>
+                                                <input type="range" class="form-range" id="gen-max" name="gen-max" step="1" min="1" max="60"> -->
+                                                <!--<div class="input-group">
+                                                    <div class="input-group-prepend">
+                                                        <span class="input-group-text" title="Number of generation (max 60)"># Gen</span>
+                                                    </div>
+                                                    <input type="number" class="form-control small-placeholder" name="gen-max" id="gen-max" title="Number of generation (max 60)" placeholder="Number of generation (max 60)" step="1" min="1" max="60">
+                                                </div>
+                                                <br>
+                                                <div class="input-group">
+                                                    <div class="input-group-prepend">
+                                                        <span class="input-group-text" title="Offspring size">Offspring</span>
+                                                    </div>
+                                                    <input type="number" class="form-control" name="offspring" id="offspring" title="Offspring size" placeholder="Offspring size" step="1" min="1" max="60">
+                                                </div>
+                                                <br>
+                                                <div class="input-group" style="visibility: hidden;">
+                                                    <div class="input-group-prepend">
+                                                        <span class="input-group-text" title="Number of generation (max 60)"># Gen</span>
+                                                    </div>
+                                                    <input type="number" class="form-control" name="gen-max" id="gen-max" title="Number of generation (max 60)" placeholder="Number of generation (max 60)" step="1" min="1" max="60">
+                                                </div>
+                                                    
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col">
+                                        <div class="card">
+                                            <div class="card-header input-card-header">Optimization Run Parameters</div>
+                                            <div class="card-body">
+                                                <div class="input-group">
+                                                    <div class="input-group-prepend">
+                                                        <span class="input-group-text" title="Number of nodes"># Nodes</span>
+                                                    </div>
+                                                    <input type="number" class="form-control small-placeholder" name="node-number" id="node-number" title="Number of nodes" placeholder="Number of nodes" step="1" min="1">
+                                                </div>    
+                                                <br>
+                                                <div class="input-group">
+                                                    <div class="input-group-prepend">
+                                                        <span class="input-group-text" title="Number of cores"># Cores</span>
+                                                    </div>
+                                                    <input type="number" class="form-control small-placeholder" name="core-num" id="core-num" title="Number of cores" placeholder="Number of cores" step="1" min="1">
+                                                </div>   
+                                                <br>
+                                                <div class="input-group">
+                                                    <div class="input-group-prepend">
+                                                        <span class="input-group-text" title="Runtime">Runtime</span>
+                                                    </div>
+                                                    <input type="" class="form-control small-placeholder" name="runtime" id="runtime" title="Runtime" placeholder="Runtime">
+                                                </div>  
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>        
+                            </div>
+                        </div>
+                        <a class="list-group-item list-group-item-action" data-toggle="collapse" data-target="#serviceAccountCollapse" role="button" aria-expanded="false"
+                            aria-controls="servicAccountCollapse" id="SA-CSCS" value="SA-CSCS" name="SA-CSCS" onclick="setHPCSystem($(this).attr('value'))">
+                            CSCS-DAINT Service Account
+                        </a>
+                        <div id="serviceAccountCollapse" class="collapse" data-parent="#hpcChooserParams">
+                            <div class="hpc-param-chooser">
+                                <div>
+                                    ciao
+                                </div>
+                                <div>
+                                    mondo
+                                </div>
+                            </div>
+                        </div>
+                        <a class="list-group-item list-group-item-action" data-toggle="collapse" data-target="#nsgCollapse" role="button" aria-expanded="false"
+                            aria-controls="nsgCollapse" id="NSG" value="NSG" name="NSG" onclick="setHPCSystem($(this).attr('value'))">
+                            NSG
+                        </a>
+                        <div id="nsgCollapse" class="collapse" data-parent="#hpcChooserParams">
+                            <div class="hpc-param-chooser">
+                                <div>
+                                    ciao
+                                </div>
+                                <div>
+                                    mondo
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <br>
                 <div class="row">
                     <div class="col">
-                        <a class="list-group-item list-group-item-action" id="DAINT-CSCS" value="DAINT-CSCS" name="DAINT-CSCS" onclick="setHPCSystem($(this).attr('value'))">CSCS-DAINT</a>
-                        <a class="list-group-item list-group-item-action" id="SA-CSCS" value="SA-CSCS" name="SA-CSCS" onclick="setHPCSystem($(this).attr('value'))">CSCS-DAINT Service Account</a>
-                        <a class="list-group-item list-group-item-action" id="NSG" value="NSG" name="NSG" onclick="setHPCSystem($(this).attr('value'))">NSG</a>
+                        <button type="button" id="cancel-param-btn" class="btn workflow-btn" onclick="closeParameterDiv()">Cancel</button>
                     </div>
                     <div class="col">
-                        <div class="input-group mb-3">
-                            <div class="input-group-prepend">
-                              <span class="input-group-text" id="inputGroup-sizing-default">Project</span>
+                        <button type="button" id="apply-param" class="btn workflow-btn" onclick=""
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div> -->
+
+    <!-- BOOTSTRAP 5 -->
+    <div id="overlayparam" class="overlay-content">
+        <form id="submitRunParam" method='POST'>
+            {% csrf_token %}
+            <div class="container">
+                <div class="row">
+                    <div id="hpcChooserParams" class="accordion">
+                        <div class="accordion-item">
+                            <h2 id="DAINT-CSCS" class="accordion-header" name="DAINT-CSCS">
+                                <button type="button" id="accordionDaint" class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#daintCollapse" aria-expanded="false" aria-controls="daintCollapse">
+                                    CSCS-DAINT
+                                </button>
+                            </h2> 
+                            <div id="daintCollapse" class="accordion-collapse collapse" aria-labelledby="DAINT-CSCS" data-bs-parent="#hpcChooserParams">
+                                <div class="hpc-param-chooser container">
+                                    <div class="row">
+                                        <div class="input-group hpc-input-group-text">
+                                            <div class="input-group-prepend">
+                                                <span class="input-group-text">Project ID</span>
+                                            </div>
+                                            <input type="text" class="form-control" id="daint_project_id" placeholder="Set project">
+                                        </div>
+                                    </div>
+                                    <div class="row row-separator"></div> 
+                                    <div class="row">
+                                        <div class="col">
+                                            <div class="card input-card">
+                                                <div class="card-header input-card-header">Algorithm Parameters</div>
+                                                <div class="card-body ">
+                                                    <div class="input-group">
+                                                        <div class="input-group-prepend">
+                                                            <span class="input-group-text" title="Number of generation (max 60)"># Gen</span>
+                                                        </div>
+                                                        <input type="number" class="form-control small-placeholder" name="gen-max" id="gen-max" title="Number of generation (max 60)" placeholder="Number of generation (max 60)" step="1" min="1" max="60">
+                                                    </div>
+                                                    <br>
+                                                    <div class="input-group">
+                                                        <div class="input-group-prepend">
+                                                            <span class="input-group-text" title="Offspring size">Offspring</span>
+                                                        </div>
+                                                        <input type="number" class="form-control" name="offspring" id="offspring" title="Offspring size" placeholder="Offspring size" step="1" min="1" max="60">
+                                                    </div>
+                                                    <br>
+                                                    <div class="input-group" style="visibility: hidden;">
+                                                        <div class="input-group-prepend">
+                                                            <span class="input-group-text" title="Number of generation (max 60)"># Gen</span>
+                                                        </div>
+                                                        <input type="number" class="form-control" name="gen-max" id="gen-max" title="Number of generation (max 60)" placeholder="Number of generation (max 60)" step="1" min="1" max="60">
+                                                    </div>
+                                                        
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col">
+                                            <div class="card">
+                                                <div class="card-header input-card-header">Optimization Run Parameters</div>
+                                                <div class="card-body">
+                                                    <div class="input-group">
+                                                        <div class="input-group-prepend">
+                                                            <span class="input-group-text" title="Number of nodes"># Nodes</span>
+                                                        </div>
+                                                        <input type="number" class="form-control small-placeholder" name="node-number" id="node-number" title="Number of nodes" placeholder="Number of nodes" step="1" min="1">
+                                                    </div>    
+                                                    <br>
+                                                    <div class="input-group">
+                                                        <div class="input-group-prepend">
+                                                            <span class="input-group-text" title="Number of cores"># Cores</span>
+                                                        </div>
+                                                        <input type="number" class="form-control small-placeholder" name="core-num" id="core-num" title="Number of cores" placeholder="Number of cores" step="1" min="1">
+                                                    </div>   
+                                                    <br>
+                                                    <div class="input-group">
+                                                        <div class="input-group-prepend">
+                                                            <span class="input-group-text" title="Runtime">Runtime</span>
+                                                        </div>
+                                                        <input type="" class="form-control small-placeholder" name="runtime" id="runtime" title="Runtime" placeholder="Runtime">
+                                                    </div>  
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>        
+                                </div>
                             </div>
-                            <input type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
                         </div>
-                        <div class="row form-group">
-                            
-                            <label for="daint_project_id">Project</label>
-                            <input type="text" class="form-control" id="daint_project_id" placeholder="Set Project">                          
+                        <div class="accordion-item">
+                            <h2 id="SA-CSCS" class="accordion-header" name="SA-CSCS">
+                                <button type="button" id="accordionSADaint" class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#serviceAccountCollapse" aria-expanded="false" aria-controls="serviceAccountCollapse">
+                                    CSCS-DAINT Service Account
+                                </button>
+                            </h2>
+                            <div id="serviceAccountCollapse" class="accordion-collapse collapse" aria-labelledby="SA-CSCS" data-bs-parent="#hpcChooserParams">
+                                <div class="hpc-param-chooser container">
+                                    <div class="row">
+                                        <div class="col">
+                                            <div class="card input-card">
+                                                <div class="card-header input-card-header">Algorithm Parameters</div>
+                                                <div class="card-body ">
+                                                    <div class="input-group">
+                                                        <div class="input-group-prepend">
+                                                            <span class="input-group-text" title="Number of generation (max 60)"># Gen</span>
+                                                        </div>
+                                                        <input type="number" class="form-control small-placeholder" name="gen-max" id="gen-max" title="Number of generation (max 60)" placeholder="Number of generation (max 60)" step="1" min="1" max="60">
+                                                    </div>
+                                                    <br>
+                                                    <div class="input-group">
+                                                        <div class="input-group-prepend">
+                                                            <span class="input-group-text" title="Offspring size">Offspring</span>
+                                                        </div>
+                                                        <input type="number" class="form-control" name="offspring" id="offspring" title="Offspring size" placeholder="Offspring size" step="1" min="1" max="60">
+                                                    </div>
+                                                    <br>
+                                                    <div class="input-group" style="visibility: hidden;">
+                                                        <div class="input-group-prepend">
+                                                            <span class="input-group-text" title="Number of generation (max 60)"># Gen</span>
+                                                        </div>
+                                                        <input type="number" class="form-control" name="gen-max" id="gen-max" title="Number of generation (max 60)" placeholder="Number of generation (max 60)" step="1" min="1" max="60">
+                                                    </div>
+                                                        
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col">
+                                            <div class="card">
+                                                <div class="card-header input-card-header">Optimization Run Parameters</div>
+                                                <div class="card-body">
+                                                    <div class="input-group">
+                                                        <div class="input-group-prepend">
+                                                            <span class="input-group-text" title="Number of nodes"># Nodes</span>
+                                                        </div>
+                                                        <input type="number" class="form-control small-placeholder" name="node-number" id="node-number" title="Number of nodes" placeholder="Number of nodes" step="1" min="1">
+                                                    </div>    
+                                                    <br>
+                                                    <div class="input-group">
+                                                        <div class="input-group-prepend">
+                                                            <span class="input-group-text" title="Number of cores"># Cores</span>
+                                                        </div>
+                                                        <input type="number" class="form-control small-placeholder" name="core-num" id="core-num" title="Number of cores" placeholder="Number of cores" step="1" min="1">
+                                                    </div>   
+                                                    <br>
+                                                    <div class="input-group">
+                                                        <div class="input-group-prepend">
+                                                            <span class="input-group-text" title="Runtime">Runtime</span>
+                                                        </div>
+                                                        <input type="" class="form-control small-placeholder" name="runtime" id="runtime" title="Runtime" placeholder="Runtime">
+                                                    </div>  
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>        
+                                </div>
+                            </div>
                         </div>
-                        <div class="row form-group">
-                            <label for="">Algorithm Parameters</label>
-                            <label for="gen-max">Number of generation (max 60)</label>
-                            <br>
-                            <input class="num-edit" type="number" name="gen-max" id="gen-max" step="1" min="1"><br>
-                            <br>
-                            <label for="offspring">Offspring size</label>
-                            <br>
-                            <input class="num-edit" type="number" name="offspring" id="offspring" step="1" min="1"><br>
-                            <br>
+                        <div class="accordion-item">
+                            <h2 id="NSG" class="accordion-header" name="NSG">
+                                <button type="button" id="accordionNSG" class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#nsgCollapse" aria-expanded="false" aria-controls="nsgCollapse">
+                                    NSG - NeuronScience Gateway
+                                </button>
+                            </h2>
+                            <div id="nsgCollapse" class="accordion-collapse collapse" aria-labelledby="NSG" data-bs-parent="#hpcChooserParams">
+                                <div class="hpc-param-chooser container">
+                                    <div class="row">
+                                        <div class="input-group">
+                                            <div class="input-group-prepend">
+                                                <span class="input-group-text" title="NSG Username">Username</span>
+                                            </div>
+                                            <input type="text" class="form-control username" id="username_submit" name="username_submit" placeholder="NSG Username" style="border-top-right-radius: .25rem; border-bottom-right-radius: .25rem;">
+                                            <div class="input-group-prepend">
+                                                <span class="input-group-text password" title="NSG Password">Password</span>
+                                            </div>
+                                            <input type="password" class="form-control" id="password_submit" name="password_submit" placeholder="NSG Password">
+                                        </div>
+                                    </div>
+                                    <div class="row row-separator"></div> 
+                                    <div class="row">
+                                        <div class="col">
+                                            <div class="card input-card">
+                                                <div class="card-header input-card-header">Algorithm Parameters</div>
+                                                <div class="card-body ">
+                                                    <div class="input-group">
+                                                        <div class="input-group-prepend">
+                                                            <span class="input-group-text" title="Number of generation (max 60)"># Gen</span>
+                                                        </div>
+                                                        <input type="number" class="form-control small-placeholder" name="gen-max" id="gen-max" title="Number of generation (max 60)" placeholder="Number of generation (max 60)" step="1" min="1" max="60">
+                                                    </div>
+                                                    <br>
+                                                    <div class="input-group">
+                                                        <div class="input-group-prepend">
+                                                            <span class="input-group-text" title="Offspring size">Offspring</span>
+                                                        </div>
+                                                        <input type="number" class="form-control" name="offspring" id="offspring" title="Offspring size" placeholder="Offspring size" step="1" min="1" max="60">
+                                                    </div>
+                                                    <br>
+                                                    <div class="input-group" style="visibility: hidden;">
+                                                        <div class="input-group-prepend">
+                                                            <span class="input-group-text" title="Number of generation (max 60)"># Gen</span>
+                                                        </div>
+                                                        <input type="number" class="form-control" name="gen-max" id="gen-max" title="Number of generation (max 60)" placeholder="Number of generation (max 60)" step="1" min="1" max="60">
+                                                    </div>
+                                                        
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col">
+                                            <div class="card">
+                                                <div class="card-header input-card-header">Optimization Run Parameters</div>
+                                                <div class="card-body">
+                                                    <div class="input-group">
+                                                        <div class="input-group-prepend">
+                                                            <span class="input-group-text" title="Number of nodes"># Nodes</span>
+                                                        </div>
+                                                        <input type="number" class="form-control small-placeholder" name="node-number" id="node-number" title="Number of nodes" placeholder="Number of nodes" step="1" min="1">
+                                                    </div>    
+                                                    <br>
+                                                    <div class="input-group">
+                                                        <div class="input-group-prepend">
+                                                            <span class="input-group-text" title="Number of cores"># Cores</span>
+                                                        </div>
+                                                        <input type="number" class="form-control small-placeholder" name="core-num" id="core-num" title="Number of cores" placeholder="Number of cores" step="1" min="1">
+                                                    </div>   
+                                                    <br>
+                                                    <div class="input-group">
+                                                        <div class="input-group-prepend">
+                                                            <span class="input-group-text" title="Runtime">Runtime</span>
+                                                        </div>
+                                                        <input type="" class="form-control small-placeholder" name="runtime" id="runtime" title="Runtime" placeholder="Runtime">
+                                                    </div>  
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>        
+                                </div>
+                            </div>
                         </div>
-                        <div class="row form-group">
-                            Optimization Parameters
-                        </div>
+                    </div>
+                </div>
+                <br>
+                <div class="row">
+                    <div class="col">
+                        <button type="button" id="cancel-param-btn" class="btn workflow-btn" onclick="closeParameterDiv()">Cancel</button>
+                    </div>
+                    <div class="col">
+                        <button type="button" id="apply-param" class="btn workflow-btn" onclick="">Apply</button>
                     </div>
                 </div>
             </div>
         </form>
     </div>
+
 
     <!-- fetched jobs div -->
     <div id="overlaywrapperjobs" class="overlay-wrapper">

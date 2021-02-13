@@ -259,7 +259,7 @@ body {
 }
 .secondary-content.large {
     width: inherit;
-    min-width: 862px;
+    min-width: 864px;
     margin: 10px 0px;
 }
 
@@ -292,6 +292,7 @@ body {
     line-height: 1.2;
     transition: all 0.3s ease;
     width: 230px;
+    box-shadow: unset;
 }
 
 .workflow-btn:hover, .workflow-btn:focus{
@@ -377,8 +378,16 @@ body {
     margin: 0px auto;
 }
 
-
-
+/* .accordion-header */
+.accordion-button:not(.collapsed) {
+    background-color: rgb(0, 140, 255);
+    color: #ffffff;
+    box-shadow: unset;
+}
+.accordion-button.collapsed {
+    background-color: rgba(255, 255, 255, .5);
+    color: #0066ff;
+}
 
 /* choose opt model page content */
 .opt-model-container {
@@ -522,7 +531,22 @@ body {
     background-color: rgb(255, 255, 255, 0.8);
     box-shadow: 0 0 1rem 0 rgb(0, 0, 0, .8); 
     z-index: 100;
+    transition: all ease-out 0.3s;
 }
+.overlay-content.upper-daint {
+    /* --h: calc(((589px - 277px)/-4)); */
+    transform: translateY( -13% );
+}
+.overlay-content.upper-sa-daint {
+    /* --h: calc(((526px - 317px)/-4)); */
+    transform: translateY( -17% );
+}
+.overlay-content.upper-nsg {
+    /* --h: calc(((589px - 357px)/-4)); */
+    transform: translateY( -20% );
+}
+
+
 
 .overlay-content.overflow {
     overflow-y: auto;
@@ -541,20 +565,58 @@ body {
     /* color: #0066ff; */
     transition: all ease 0.3s;
 }
-.list-group-item:hover {
-
-}
 
 .form-label{
     /* width: max-content; */
     margin: 10px auto;
 }
-.form-control, .input-group-text {
-    border: solid 1px #0066ff;
+
+.input-group-text {
+    border-top-right-radius: 0px;
+    border-bottom-right-radius: 0px;
+    width: 100px;
 }
+
+.form-control.username {
+    margin-right: 12px;
+    border-top-right-radius: .25rem;
+    border-bottom-right-radius: .25rem;
+}
+
+.input-group-text.password {
+    margin-left: 12px;
+}
+
 .form-label {
     font-weight: bold;
 }
+
+.form-label.range {
+    font-weight: unset;
+    margin-right: 100px;
+}
+
+
+.hpc-param-chooser {
+    /* margin: 8px; */
+    /* height: 350px; */
+    width: 720px;    
+    background: rgba(255, 255, 255, .5);
+    padding: 16px;
+    /* border: solid 1px #0066ff; */
+}
+
+.hpc-input-group-text {
+    width: 96%;
+    margin: auto;
+}
+
+.input-card-header {
+    font-size: small;
+    padding: 0px 10px;
+    color: darkgray;
+}
+
 
 /* icons */
 
@@ -585,6 +647,10 @@ a > span.tutorial-icon {
 }
 
 /* single class style */
+small-placeholder::placeholder {
+    font-size: small;
+}
+
 .margin-auto {
     margin: auto;
 }

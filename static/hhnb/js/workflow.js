@@ -987,3 +987,35 @@ function manageOptSetInput(){
         }
     }
 }
+
+$("#daintCollapse")[0].addEventListener('show.bs.collapse', function () {
+    console.log("upper daint");
+    $("#overlayparam").addClass("upper-daint");
+    // $("#overlayparam").css("top", "calc(10%)");
+})
+
+$("#serviceAccountCollapse")[0].addEventListener('show.bs.collapse', function () {
+    $("#overlayparam").addClass("upper-sa-daint");
+    // $("#overlayparam").css("top", "calc(20%)");
+    console.log("upper SA");
+})
+$("#nsgCollapse")[0].addEventListener('show.bs.collapse', function () {
+    $("#overlayparam").addClass("upper-nsg");
+    // $("#overlayparam").css("top", "calc(40%)");
+    console.log("upper nsg");
+})
+
+$("#daintCollapse")[0].addEventListener('hide.bs.collapse', function () {
+    $("#overlayparam").removeClass("upper-daint");
+    console.log("lower daint");
+})
+
+$("#serviceAccountCollapse")[0].addEventListener('hide.bs.collapse', function () {
+    $("#overlayparam").removeClass("upper-sa-daint");
+    console.log("lower SA");
+})
+$("#nsgCollapse")[0].addEventListener('hide.bs.collapse', function () {
+    $("#overlayparam").removeClass("upper-nsg");
+    console.log("lower nsg")
+
+})
