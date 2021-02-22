@@ -211,12 +211,16 @@ class UnicoreClient:
             self.token = token
             self.tr = new_unicore_client.Transport(self.token.split('Bearer ')[1])
             self.daint_client = new_unicore_client.Client(self.tr, 'https://brissago.cscs.ch:8080/DAINT-CSCS/rest/core')
+            self.daint_storage = self.daint_client.get_storages()
 
         def get_token(self):
             return self.token
 
         def get_daint_client(self):
             return self.daint_client
+
+        def get_daint_storage(self):
+            return self.daint_storage
 
     instance = None
 
@@ -387,6 +391,37 @@ class Unicore:
 
         return job_list_dict
 
+
+    @classmethod
+    def fetch_job_list2(cls, hpc, token):
+
+        job_list_dict = collections.OrderedDict()
+        auth = unicore_client.get_oidc_auth(token="Bearer " + token)
+        base_url = unicore_client.get_sites()[hpc]['url']
+
+        if hpc == 'DAINT-CSCS':
+            # tr = new_unicore_client.Transport(token.split('Bearer ')[1])
+            # daint_client = new_unicore_client.Client(tr, 'https://brissago.cscs.ch:8080/DAINT-CSCS/rest/core')
+            # jobs = daint_client.get_jobs(tags=['hhnb'])
+
+            daint_client = UnicoreClient().get_instance(token).get_daint_client()
+            jobs = daint_client.get_jobs(tags=['hhnb'])
+
+            for j in jobs:
+                job_title = j.job_id
+                job_list_dict[job_title] = collections.OrderedDict()
+                job_list_dict[job_title]['url'] = j.links['self']
+
+        elif hpc == 'SA-CSCS':
+            jobs = unicore_client.get_properties(base_url + '/jobs/pizdaint/bsp_pizdaint_01/', auth)
+            for j in jobs:
+                job_title = j['job_id']
+                job_list_dict[job_title] = collections.OrderedDict()
+                job_list_dict[job_title]['url'] = base_url + '/jobs/pizdaint/bsp_pizdaint_01/' + job_title
+
+        return job_list_dict
+
+
     @classmethod
     def fetch_job_details(cls, hpc="", job_url="", job_id="", token="", proxies={}):
         # base_url = unicore_client.get_sites()[hpc]['url']
@@ -460,9 +495,9 @@ class Unicore:
                                     local_file.write(str(r.content))
             
         elif hpc == "DAINT-CSCS":
-            daint_client = UnicoreClient().get_instance(token).get_daint_client()
+            # daint_client = UnicoreClient().get_instance(token).get_daint_client()
 
-            for storage in daint_client.get_storages():
+            for storage in UnicoreClient().get_instance(token).get_daint_storage():
                 if storage.storage_url.endswith(job_url.split('/')[-1] + '-uspace'):
                     job_storage = storage
             print(job_storage)

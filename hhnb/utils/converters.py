@@ -95,3 +95,11 @@ class CurrentOrStorageCollabConverter:
     def to_url(self, value):
         return value
 
+class HpcConverter:
+    regex = 'DAINT-CSCS|SA-CSCS|NSG'
+
+    def to_python(self, value):
+        return value
+
+    def to_url(self, value):
+        return value

@@ -442,6 +442,11 @@ body {
 }
 
 
+#jobProcessingTitle {
+    font-weight: bold;
+    margin: 20px;
+}
+
 
 /* login section fixed css */
 
@@ -577,6 +582,10 @@ body {
     width: 100px;
 }
 
+.form-contro {
+    width: 100px;
+}
+
 .form-control.username {
     margin-right: 12px;
     border-top-right-radius: .25rem;
@@ -600,15 +609,79 @@ body {
 .hpc-param-chooser {
     /* margin: 8px; */
     /* height: 350px; */
-    width: 720px;    
+    width: 100%;    
     background: rgba(255, 255, 255, .5);
     padding: 16px;
     /* border: solid 1px #0066ff; */
 }
 
+.list-group {
+    width: 100%;
+    padding: 8px 0px;
+}
+.list-group-item {
+    padding: 5px;
+    width: 15rem;
+    background-color: rgba(255, 255, 255, .5);
+    transition: all ease 0.3s;
+    color: rgb(40, 40, 40);
+}
+.list-group-item:hover {
+    background-color: rgba(255, 255, 255, 1);
+    color: #0066ff;
+}
+.list-group-item.disabled {
+    background-color: rgba(220, 220, 220, .5);
+    border-color: unset;
+}
+.list-group-item.fetch-jobs {
+    width: 100%;
+    min-width: 15rem;
+}
+
+.row > .progress {
+    padding-left: 0px;
+    padding-right: 0px;
+}
+
 .hpc-input-group-text {
     width: 96%;
     margin: auto;
+}
+
+.job-list-table {
+    overflow: auto;
+    background-color: rgba(255, 255, 255, .5);
+    border-radius: 8px;
+    min-width: auto;
+    padding: 8px 8px;
+}
+
+#nsgLoginRow, #spinnerRow, #progressRow, #tableRow {
+    display: none;
+}
+
+.table-hover>tbody>tr:hover{
+    color: var(--bs-table-hover-color);
+    --bs-table-accent-bg: rgb(255, 255, 255);
+}
+
+td {
+    align-self: center;
+    line-height: 2;
+}
+
+.job-download-button {
+    width: auto;
+    margin: auto;
+}
+
+.alert {
+    top: 10vh;
+    z-index: -999;
+}
+.alert.show {
+    z-index: 999;
 }
 
 .input-card-header {
@@ -617,6 +690,18 @@ body {
     color: darkgray;
 }
 
+#checkNsgLoginCard {
+    padding-left: 0px;
+    padding-right: 0px;
+}
+
+#checkNsgLoginButton {
+    width: 100%;
+}
+#checkNsgSpinnerButton {
+    opacity: 0;
+    transition: all ease .3s;
+}
 
 /* icons */
 
@@ -712,4 +797,12 @@ small-placeholder::placeholder {
 
 .bg-lightgray {
     background-color: rgb(238, 238, 238);
+}
+
+.hidden {
+    visibility: hidden;
+}
+
+.visible {
+    visibility: visible;
 }

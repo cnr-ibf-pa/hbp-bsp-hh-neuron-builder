@@ -28,6 +28,7 @@ register_converter(converters.FeatOrOptsetOrModsimOrOptresConverter, 'feat_or_op
 register_converter(converters.SourceOptConverter, 'source_opt')
 register_converter(converters.WorkflowIdConverter, 'workflow_id')
 register_converter(converters.CurrentOrStorageCollabConverter, 'current_or_storage_collab')
+register_converter(converters.HpcConverter, 'hpc')
 
 required = '<exc:exc>/<uuid:ctx>'
 # required = ''
@@ -54,7 +55,9 @@ urlpatterns = [
     path('get_local_optimization_list', views.get_local_optimization_list),
     path('get_model_list/' + required, views.get_model_list),
     path('get-job-details/<uuid:jobid>/' + required + '/', views.get_job_details),
+    path('get-job-details2/<uuid:jobid>/' + required + '/', views.get_job_details2),
     path('get-job-list/' + required, views.get_job_list),
+    path('get-job-list/<hpc:hpc>/' + required, views.get_job_list2),
     path('get-user-clb-permissions/' + required, views.get_user_clb_permissions),
     path('initialize/' + required, views.initialize),
     path('model-loaded-flag/' + required, views.model_loaded_flag),
@@ -87,5 +90,6 @@ urlpatterns = [
     path('upload-files/modsim/' + required + '/', views.upload_modsim_files),
 
     path('get-authentication', views.get_authentication),
+    path('check-nsg-login/' + required + '/', views.check_nsg_login),
 ]
 

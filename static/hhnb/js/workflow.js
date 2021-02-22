@@ -6,27 +6,19 @@ $(window).bind("pageshow", function() {
     console.log("exc: " + exc.toString() + " cxt: " + ctx.toString());
     checkConditions();
     closeParameterDiv();
-    closeFetchParamDiv();
-    closeUploadDiv();
+    // closeFetchParamDiv();
+    closeUploadDiv(true);
     hideLoadingAnimation();
-    closeJobInfoDiv();
+    closeJobFetchDiv();
 });
 
 $(document).ready(function(){
     // check conditions on function activation
     //checkConditions();
-
-    $('#job-list-div').on('click', '.down-job-btn', function(){
-        downloadJob(this.id);
-    });
-
-    $('#job-list-body').on('click', '.down-job-btn', function(){
-        downloadJob(this.id);
-    });
-
+/* 
     $('#opt-res-file').on('change', function(){
         $('#upload-opt-res-btn').prop('disabled', !$('#opt-res-file').val());
-    });
+    }); */
 
     // manage form for submitting run parameters
     var $formrunparam = $('#submitRunParam');
@@ -53,7 +45,7 @@ $(document).ready(function(){
                 openErrorDiv(response['message'], 'error');
                 checkConditions();
             } else {
-                closeFetchParamDiv();
+                // closeFetchParamDiv();
                 displayJobInfoDiv();
                 checkConditions();
             } 
@@ -63,25 +55,32 @@ $(document).ready(function(){
 
 
     // manage form to upload simulation zip file 
-    var $uploadFileForm = $('#uploadFileForm');
+    // var $uploadFileForm = $('#uploadFileForm');
+    var $uploadFileForm = $('#uploadForm');
     $uploadFileForm.submit(function(e){
-        closeUploadDiv();
+        files = $("#formFile").prop("files");
+        closeUploadDiv(false);
         showLoadingAnimation("Loading");
-        changeMsgPleaseWaitDiv("Uploading file to the server");
-        var uploadFormData = new FormData($(this)[0]);
+        // changeMsgPleaseWaitDiv("Uploading file to the server");
+        var uploadFormData = new FormData($("#uploadForm")[0]);
+        for (let key of uploadFormData.entries()) {
+            console.log(key);
+        }
         $.ajax({
             url: $(this).attr("action"),
-            data:uploadFormData,
+            data: uploadFormData,
             type: 'POST',
             contentType: false,
             processData: false,
             async: false,
             success: function(resp){
+                console.log(resp);
                 if (resp["response"]=="KO"){
                     openErrorDiv(resp["message"], 'error');
                 } else {
                     checkConditions();
                 }
+                $("#formFile").val("");
             },  
         });
         e.preventDefault();
@@ -162,10 +161,13 @@ function efelPage() {
 }
 
 function inSilicoPage() {
+    showLoadingAnimation("Uploading to blue-naas...")
     console.log("inSilicoPage() called");
     $("#run-sim-btn").prop("disabled", true);
     $.getJSON("/hh-neuron-builder/upload-to-naas/" + req_pattern, function(uploaddata){
+        console.log(uploaddata);
         $.getJSON("/hh-neuron-builder/model-loaded-flag/" + req_pattern, function(data){
+            console.log(data);
             var o = data["response"];
             if (o == "KO"){
                 window.location.href = "";
@@ -189,10 +191,10 @@ function reloadCurrentPage() {
 // open div for optimization run parameter settings
 function openParameterDiv() {
     console.log("openParameterDiv() called.");
-    fetch('/hh-neuron-builder/get-authentication')
+    fetch("/hh-neuron-builder/get-authentication")
         .then(response => {
                 console.log(response);
-                if (response.ok) {
+                if (!response.ok) {
                     $("#overlaywrapper").css("display", "block");
                     $("#overlayparam").css("display", "block");
                 } else {
@@ -202,6 +204,13 @@ function openParameterDiv() {
             }
         )
 }
+
+// close side div for optimization run parameter settings
+function closeParameterDiv() {
+    $("#overlaywrapper").css("display", "none");
+    $("#overlayparam").css("display", "none");
+} 
+
 
 function setHPCSystem(hpc) {
     $(".list-group-item").removeClass("active");
@@ -300,20 +309,10 @@ function openDownloadWorkspaceDiv() {
     $("#overlaydownloadworkspace").css("display", "block");
 }
 
-// open side div for optimization run parameter settings
-
-// close side div for optimization run parameter settings
-function closeParameterDiv() {
-    document.getElementById("overlaywrapper").style.display = "none";
-    // document.getElementById("mainDiv").style.pointerEvents = "auto";
-    document.body.style.overflow = "auto";
-} 
-
-
 
 function closeDownloadWorkspaceDiv() {
     $("#overlaywrapper").css("display", "none");
-    $("#overlaywrapperdownloadworkspace").css("display", "none");
+    $("#overlaydownloadworkspace").css("display", "none");
 }
 
 //
@@ -375,58 +374,50 @@ function checkConditions(){
                 optParamBar.addClass("red");
                 optParamBar.html(data['opt_set']['message'])
             };
-            document.getElementById("node-num").value = data["opt_set"]["opt_sub_param_dict"]["number_of_nodes"]; 
-            document.getElementById("core-num").value = data["opt_set"]["opt_sub_param_dict"]["number_of_cores"]; 
-            document.getElementById("offspring").value = data["opt_set"]["opt_sub_param_dict"]["offspring_size"]; 
-            document.getElementById("runtime").value = data["opt_set"]["opt_sub_param_dict"]["runtime"]; 
-            document.getElementById("gen-max").value = data["opt_set"]["opt_sub_param_dict"]["number_of_generations"]; 
+            $("input[name=node-num").val(data["opt_set"]["opt_sub_param_dict"]["number_of_nodes"]); 
+            $("input[name=core-num").val(data["opt_set"]["opt_sub_param_dict"]["number_of_cores"]); 
+            $("input[name=offspring").val(data["opt_set"]["opt_sub_param_dict"]["offspring_size"]); 
+            $("input[name=runtime").val(data["opt_set"]["opt_sub_param_dict"]["runtime"]); 
+            $("input[name=gen-max").val(data["opt_set"]["opt_sub_param_dict"]["number_of_generations"]); 
 
             if (data['opt_res_files']['status']){
-                document.getElementById('down-opt-btn').disabled = false;
+                $("#down-opt-btn").prop("disabled", false);
             } else {
-                document.getElementById('down-opt-btn').disabled = true;
+                $("#down-opt-btn").prop("disabled", true);
             }
 
             // if optimization has been submitted
             if (data['opt_flag']['status']){
-                // document.getElementById("optlaunchimg").src = "/static/img/ok_red.png";
-                // document.getElementById("optlaunchtextspan").innerHTML = "Optimization job submitted";
-                document.getElementById("launch-opt-btn").disabled = true;  
-
+                $("#launch-opt-btn").prop("disabled", true);
                 // disable feature extraction buttons
-                document.getElementById("feat-efel-btn").disabled = true;
-                document.getElementById("feat-up-btn").disabled = true;
-                document.getElementById("del-feat-btn").disabled = true;
+                $("#feat-efel-btn").prop("disabled", true);
+                $("#feat-up-btn").prop("disabled", true);
+                $("#del-feat-btn").prop("disabled", true);
 
                 //disable optimization buttons
-                document.getElementById("opt-db-hpc-btn").disabled = true;
-                document.getElementById("opt-up-btn").disabled = true;
-                document.getElementById("del-opt").disabled = true;
+                $("#opt-db-hpc-btn").prop("disabled", true);
+                $("#opt-up-btn").prop("disabled", true);
+                $("#del-opt").prop("disabled", true);
 
                 // disable optimization settings buttons
-                document.getElementById("opt-set-btn").disabled = true;
+                $("#opt-set-btn").prop("disabled", true);
                 // if no optimization has been submitted
             } else {
                 // enable feature extraction buttons
-                document.getElementById("feat-efel-btn").disabled = false;
-                document.getElementById("feat-up-btn").disabled = false;
-
+                $("#feat-efel-btn").prop("disabled", false);
+                $("#feat-up-btn").prop("disabled", false);
+                
                 //enable optimization buttons
-                document.getElementById("opt-db-hpc-btn").disabled = false;
-                document.getElementById("opt-up-btn").disabled = false;
-
+                $("#opt-db-hpc-btn").prop("disabled", false);
+                $("#opt-up-btn").prop("disabled", false);
                 // disable optimization settings buttons
-                document.getElementById("opt-set-btn").disabled = false;
-
-                // document.getElementById("optlaunchimg").src = "/static/img/ko_red.png";
-                // document.getElementById("optlaunchtextspan").innerHTML = "No job submitted";
-                // document.getElementById("cell-opt-div").style.backgroundColor='rgba(255, 255, 255,0.0)';
+                $("#opt-set-btn").prop("disabled", false);
 
                 // if ready for submission, enable launch optimization button
                 if (data['feat']['status'] & data['opt_files']['status'] & data['opt_set']['status']){
-                    document.getElementById("launch-opt-btn").disabled = false;  
+                    $("#launch-opt-btn").prop("disabled", false);  
                 } else {
-                    document.getElementById("launch-opt-btn").disabled = true;  
+                    $("#launch-opt-btn").prop("disabled", true);  
                 }
             }
 
@@ -440,13 +431,13 @@ function checkConditions(){
                 $("#run-sim-btn").prop("disabled", false);
 
                 if (data['sim_flag']['status']){
-                    document.getElementById("del-sim-btn").disabled = true;  
-                    document.getElementById("opt-fetch-btn").disabled = true;  
-                    document.getElementById("opt-res-up-btn").disabled = true;  
+                    $("del-sim-btn").prop("disabled", true);  
+                    $("opt-fetch-btn").prop("disabled", true);  
+                    $("opt-res-up-btn").prop("disabled", true);  
                 } else {
-                    document.getElementById("del-sim-btn").disabled = false;  
-                    document.getElementById("opt-fetch-btn").disabled = false;  
-                    document.getElementById("opt-res-up-btn").disabled = false;  
+                    $("del-sim-btn").prop("disabled", false);  
+                    $("opt-fetch-btn").prop("disabled", false);  
+                    $("opt-res-up-btn").prop("disabled", false);  
                 } 
             } else {
                 let optResBar = $("#opt-res-bar");
@@ -454,11 +445,11 @@ function checkConditions(){
                 optResBar.addClass("red");
                 optResBar.html(data['run_sim']['message']);  
                 // document.getElementById("run-sim-div").style.backgroundColor='rgba(255, 255, 255, 0.06)';
-                document.getElementById("down-sim-btn").disabled = true;  
-                document.getElementById("del-sim-btn").disabled = true;  
-                document.getElementById("run-sim-btn").disabled = true;  
-                document.getElementById("opt-fetch-btn").disabled = false;  
-                document.getElementById("opt-res-up-btn").disabled = false;  
+                $("down-sim-btn").prop("disabled", true);  
+                $("del-sim-btn").prop("disabled", true);  
+                $("run-sim-btn").prop("disabled", true);  
+                $("opt-fetch-btn").prop("disabled", false);  
+                $("opt-res-up-btn").prop("disabled", false);  
             };
         };
     })
@@ -495,10 +486,9 @@ function deleteSimFiles() {
     }
 }
 
-
 // Run optimization on hpc system 
 function runOptimization() {
-    document.getElementById("run-sim-btn").disabled = true;
+    $("#launch-opt-btn").prop("disabled", true);
     showLoadingAnimation("Launching optimization on the hpc system");
     $.getJSON("/hh-neuron-builder/run-optimization/" + req_pattern, function(data){
         checkConditions();
@@ -510,7 +500,6 @@ function runOptimization() {
         }
     });
 }
-
 
 // Display operation ended message div
 function displayOpEndDiv() {
@@ -526,228 +515,301 @@ function hideOpEndDiv() {
     document.body.style.overflow = "auto";
 }
 
-// Manage feature files upload button
-/* function featUploadButton() {
-    document.getElementById("opt-res-file").value = "";
-    document.getElementById("opt-res-file").multiple = true;
-    document.getElementById("opt-res-file").accept = ".json";
-    var type = "feat";
-    var msg = 'Upload features files\n("features.json" and "protocols.json")';
-    openUploadDiv(type, msg);
-}
- */
-
-
 // handle on upload file event
-$(document).on("change", "#formFileMultiple", function(){
-    $("#upload-btn").prop("disabled", false);
+$(document).on("change", "#formFile", function(){
+    $("#uploadFormButton").prop("disabled", false);
 })
 
-function featUploadButton() {
-    $("#overlaywrapper").css("display", "block");
-    $("#overlayfeatupload").css("display", "block");
-    $("#uploadFeatForm").attr("action", "/hh-neuron-builder/upload-files/feat/" + exc + "/" + ctx + "/");
-    // document.getElementById("uploadFeatForm").setAttribute("action", "/hh-neuron-builder/upload-files/feat/" + exc + "/" + ctx + "/");
-
+function displayFeatUploadDiv() {
+    openUploadDiv("feat", "Upload features files (\"features.json\" and \"protocols.json\")");
 }
 
-function closeUploadFeat() {
-    $("#overlaywrapper").css("display", "none");
-    $("#overlayfeatupload").css("display", "none");
+function displayOptSetUploadDiv() {
+    openUploadDiv("optset", "Upload optimization settings (\".zip\")");
+}
+
+function displayOptResUploadDiv() {
+    openUploadDiv("modsim", "Upload model (\".zip\")");
 }
 
 // Manage optimization result upload button
-function displayOptResUploadDiv() {
+/* function displayOptResUploadDiv() {
     document.getElementById("opt-res-file").value = "";
     document.getElementById("opt-res-file").multiple = false;
     document.getElementById("opt-res-file").accept = ".zip";
     var type = "modsim";
     var msg = 'Upload model (".zip")';
     openUploadDiv(type, msg);
-}
-
-
-// Manage optimization result upload button
-/* function displayOptSetUploadDiv() {
-    document.getElementById("opt-res-file").value = "";
-    document.getElementById("opt-res-file").multiple = false;
-    document.getElementById("opt-res-file").accept = ".zip";
-    var type = "optset";
-    var msg = 'Upload optimization settings (".zip")';
-    openUploadDiv(type, msg);
 } */
-function displayOptSetUploadDiv() {
-    $("#overlaywrapper").css("display", "block");
-    $("#overlayoptupload").css("display", "block");
-}
 
-function closeOptSetUploadDiv() {
-    $("#overlaywrapper").css("display", "none");
-    $("#overlayoptupload").css("display", "none");
-}
-
-//
 function openUploadDiv(type, msg) {
-    var uploadForm = document.getElementById("uploadFileForm");
-    var uploadTitleDiv = document.getElementById("uploadTitleDiv");
-
-    uploadForm.setAttribute("action", "/hh-neuron-builder/upload-files/" + type + "/" + exc + "/" + ctx + "/");
-    uploadTitleDiv.innerHTML = "<strong>" + msg + "</strong>";
-
-    // display image if uploading simulztion .zip file
-    if (type == "modsim"){
-        document.getElementById("upload_sim_img_div").style.display = "block";
+    $("#overlaywrapper").css("display", "block");
+    $("#overlayupload").css("display", "block");
+    $("#uploadForm").attr("action", "/hh-neuron-builder/upload-files/" + type + "/" + req_pattern + "/");
+    $("#uploadFormLabel").html("<strong>" + msg + "</strong>");
+    $("#uploadFornButton").prop("disabled", true);
+    if (type == "feat") {
+        $("#formFile").prop("multiple", true).attr("accept", ".json");
+        console.log("feat formFile");
+        console.log(document.getElementById("formFile"));
     } else {
-        document.getElementById("upload_sim_img_div").style.display = "none";
+        $("#formFile").prop("multiple", false).attr("accept", ".zip");
+        console.log(document.getElementById("formFile"));
     }
-    $('#opt-res-file').val("");
-    $('#upload-opt-res-btn').prop('disabled', true);
-    document.getElementById("overlaywrapperoptres").style.display = "block";
-    document.getElementById("mainDiv").style.pointerEvents = "none";
-    document.body.style.overflow = "hidden";
+    if (type == "modsim") {
+        $("#uploadImg").css("display", "block");
+    } else {
+        $("#uploadImg").css("display", "none");
+    }
 }
 
-// Manage feature files upload button
-/* function closeUploadDiv() {
-    document.getElementById("overlaywrapperoptres").style.display = "none";
-    document.getElementById("mainDiv").style.pointerEvents = "auto";
-    document.body.style.overflow = "auto";
-} */
-function closeUploadDiv() {
+function closeUploadDiv(empty=true) {
     $("#overlaywrapper").css("display", "none");
-    $("#overlayfeatupload").css("display", "none");
+    $("#overlayupload").css("display", "none");
+    if (empty) {
+        $("#formFile").val("");
+    }
 }
 
-
-// Display fetch parameter div
-function displayFetchParamDiv() {
-    document.getElementById("overlaywrapperfetch").style.display = "block";
-    document.getElementById("mainDiv").style.pointerEvents = "none";
-    document.body.style.overflow = "hidden";
+function displayJobFetchDiv() {
+    $("#overlaywrapper").css("display", "block");
+    $("#overlayjobs").css("display", "block");
+    $(".list-group-item.fetch-jobs").attr("aria-disabled", "false").removeClass("disabled active");
 }
 
-// Manage feature files upload button
-function closeFetchParamDiv() {
-//     document.getElementById("overlaywrapperfetch").style.display = "none";
-//     document.getElementById("mainDiv").style.pointerEvents = "auto";
-//     document.body.style.overflow = "auto";
+function resetJobFetchDiv() {
+    $("#nsgLoginRow").css("display", "none");
+    $("#spinnerRow").css("display", "none");
+    $("#progressRow").css("display", "none");
+    $("#tableRow").css("display", "none");
+    $("#job-list-body").empty();
+    $("#jobsAuthAlert").removeClass("show");
+    $("#cancel-job-list-btn").prop("disabled", false);
+    $("#refresh-job-list-btn").prop("disabled", true);
+    $(".list-group-item.fetch-jobs").removeClass("disabled active").attr("aria-disabled", "false");
+    $("#checkNsgSpinnerButton").css("opacity", "0");
+    $("#usernameNsg").removeClass("is-invalid");
+    $("#passwordNsg").removeClass("is-invalid");
+    resetProgressBar();
 }
 
-function displayJobInfoDiv(){
-    displayJobInfo();
+function closeJobFetchDiv() {
+    $("#overlaywrapper").css("display", "none");
+    $("#overlayjobs").css("display", "none");
+    resetJobFetchDiv();
 }
 
-function refreshJobInfoDiv(){
-    closeJobInfoDiv();
-    displayJobInfo();
-}
+function checkNsgLogin() {
+    $("#checkNsgSpinnerButton").css("opacity", "1");
 
-// Manage job info div
-function displayJobInfo() {
-    displayPleaseWaitDiv();
-    changeMsgPleaseWaitDiv("Fetching job list");
-    var tableBody = document.getElementById("job-list-body");
-    $("#job-list-div").empty();
-    $.getJSON("/hh-neuron-builder/get-job-list/" + req_pattern, function(joblist){
-        if ($.isEmptyObject(joblist)){
-            closePleaseWaitDiv();
-            openErrorDiv("You have no job on the hpc system", 'info');
-            checkConditions();
-            return false; 
+    username = $("#usernameNsg").val()
+    password = $("#passwordNsg").val()
+
+    $.ajax({
+        url: "/hh-neuron-builder/check-nsg-login/" + req_pattern + "/",
+        method: "POST",
+        data: {
+            "username": username,
+            "password": password,
+        },
+        success: function(data) {
+            $("#checkNsgSpinnerButton").css("opacity", "0");
+            $("#usernameNsg").removeClass("is-invalid");
+            $("#passwordNsg").removeClass("is-invalid");
+            $("nsgLoginRow").css("display", "none");
+            displayJobList($("#jobsNSG"));
+        },
+        error: function(error) {
+            $("#checkNsgSpinnerButton").css("opacity", "0");
+            $("#usernameNsg").addClass("is-invalid").attr("aria-describedby", "User not valid");
+            $("#passwordNsg").addClass("is-invalid").attr("aria-describedby", "Password not valid");
         }
-        var job_list_len = Object.keys(joblist).length;
-        var job_key_list = Object.keys(joblist);
-        $("#job-list-body").empty();
-        for (var i = 0; i < job_list_len; i++){
-            (function(cnrt) {
-                crr_idx = 0;
-                $.getJSON("/hh-neuron-builder/get-job-details/" + encodeURIComponent(job_key_list[cnrt]) + "/" + req_pattern + "/", function(job_details){
-                    if (cnrt+1 > crr_idx) {
-                        print_idx = cnrt+1;
-                        crr_idx = print_idx;
-                    }
-                    changeMsgPleaseWaitDiv("Fetching details for job " + (print_idx) + " of " + job_list_len);
-                    var crr_job_json = job_details;
-                    console.log(crr_job_json);
+    })
+}
 
-                    var job_download_button2 = document.createElement("button");
-                    job_download_button2.id = crr_job_json['job_id'];
-                    job_download_button2.innerHTML = "Download";
-                    job_download_button2.className = "btn btn-default down-job-btn";
-                    job_download_button2.disabled = true;
+// Manage job list div
+function displayCSCSJobList(button) {
+    resetJobFetchDiv();
+    fetch("/hh-neuron-builder/get-authentication")
+            .then(response => {
+                console.log(response);
+                if (response.ok) {
+                    displayJobList(button)                    
+                } else {
+                    $("#jobsAuthAlert").addClass("show");
+                }
+            })
+}
 
-                    // 
-                    var crr_row = tableBody.insertRow(-1);
-                    var cell1 = crr_row.insertCell(0);
-                    var cell2 = crr_row.insertCell(1);
-                    var cell3 = crr_row.insertCell(2);
-                    var cell4 = crr_row.insertCell(3);
-                    var cell5 = crr_row.insertCell(4);
-                    cell1.className += "ttd";
-                    cell2.className += "ttd";
-                    cell3.className += "ttd";
-                    cell3.setAttribute("align", "center");
-                    cell4.className += "ttd";
-                    cell5.className += "ttd";
-                    cell1.innerHTML = "  " + crr_job_json["job_name"] + "  ";
-                    cell2.innerHTML = "  " + crr_job_json["job_id"] + "  ";
-                    cell3.innerHTML = "  " + crr_job_json["job_stage"] + "  " ;
+function displayNsgJobList() {
+    resetJobFetchDiv();
+    $("#jobsNSG").addClass("active");
+    $("#tableRow").css("display", "none");
+    $("#nsgLoginRow").css("display", "flex");
+}
 
-                    var datetime = crr_job_json["job_date_submitted"];
-                    var gmt_datetime = moment.utc(datetime).format();
-                    cell4.innerHTML = "  " + gmt_datetime + "  ";
-                    cell5.appendChild(job_download_button2);
+function refreshJobListDiv() {
+    $("#job-list-body").empty();
+    $("#tableRow").css("display", "none");
+    $("#refresh-job-list-btn").prop("disabled", true);
+    resetProgressBar();
+    displayJobList($(".list-group-item.fetch-jobs.active"));
+}
 
+function displayJobList(button) {
+    $("#cancel-job-list-btn").prop("disabled", true);
+    $("#spinnerRow").css("display", "flex");
+    $(".list-group-item.fetch-jobs").addClass("disabled").attr("aria-disabled", "true");
+    button.attr("aria-disabled", "false").removeClass("disabled").addClass("active");
 
-                    if (crr_job_json['job_stage'] == "COMPLETED" || 
-                            crr_job_json['job_stage'] == "SUCCESSFUL" || 
-                            crr_job_json['job_stage'] == "FAILED") {
-                        cell3.style.color = "#00802b";
-                        cell3.style.fontWeight = "bolder";
-                        cell3.style.fontSize = "14px";
-                        job_download_button2.disabled = false;
-                        if (crr_job_json['job_stage'] == "FAILED"){
-                            cell3.style.color = "#DD9900";
+    var tableBody = document.getElementById("job-list-body");
+    var hpc = button.attr("name");
+
+    $.getJSON("/hh-neuron-builder/get-job-list/" + hpc + "/" + req_pattern, async function(jobList) {
+        $("#spinnerRow").css("display", "none");
+        $("#progressRow").css("display", "flex");
+        
+        jobList = JSON.parse(jobList);
+        if ($.isEmptyObject(jobList)) {
+            closeJobFetchDiv();
+            openErrorDiv("You have no job on the hpc system", "info");
+            checkConditions();
+            return false;
+        }
+        
+        await sleep(500);
+        
+        step = 100 / (Object.keys(jobList).length + 1);
+        animateProgressBar(step);
+
+        $.each(jobList, function(id, job){
+            $.getJSON("/hh-neuron-builder/get-job-details2/" + id + "/" + req_pattern + "/", function(jobDetails){
+                jobDetails = JSON.parse(jobDetails);
+                console.log(jobDetails);
+                let downloadButton = document.createElement("button");
+                downloadButton.id = jobDetails.job_id;
+                downloadButton.innerHTML = "Download";
+                downloadButton.className = "btn workflow-btn job-download-button";
+                downloadButton.disabled = true;
+                // downloadButton.setAttribute("onclick", "downloadJob(this.id)");
+                downloadButton.setAttribute("onclick", "downloadJob(this)");
+
+                let tr = document.createElement("tr");
+                let tdWf = document.createElement("td");
+                let tdId = document.createElement("td");
+                let tdStatus = document.createElement("td");
+                let tdDate = document.createElement("td");
+                let tdButton = document.createElement("td");
+
+                tdWf.innerHTML = jobDetails.job_name;
+                tdId.innerHTML = jobDetails.job_id;
+                tdStatus.innerHTML = jobDetails.job_stage;
+                tdDate.innerHTML = moment.utc(jobDetails.job_date_submitted).format();
+                tdButton.appendChild(downloadButton);
+
+                tr.appendChild(tdWf);
+                tr.appendChild(tdId);
+                tr.appendChild(tdStatus);
+                tr.appendChild(tdDate);
+                tr.appendChild(tdButton);
+                tableBody.appendChild(tr);
+
+                if (jobDetails.job_stage == "COMPLETED" || 
+                            jobDetails.job_stage == "SUCCESSFUL" || 
+                            jobDetails.job_stage == "FAILED") {
+                        tdStatus.style.color = "#00802b";
+                        tdStatus.style.fontWeight = "bolder";
+                        // tdStatus.style.fontSize = "14px";
+                        downloadButton.disabled = false;
+                        if (jobDetails.job_stage == "FAILED"){
+                            tdStatus.style.color = "#DD9900";
                         }
                     } else {
-                        cell3.style.color = "#DD9900";
-                        cell3.style.fontWeight = "bolder";
-                        cell3.style.fontSize = "14px";
-                        job_download_button2.disabled = true;
+                        tdStatus.style.color = "#DD9900";
+                        tdStatus.style.fontWeight = "bolder";
+                        // tdStatus.style.fontSize = "14px";
+                        downloadButton.disabled = true;
                     }
 
-                    //document.getElementById("job-list-div").prepend(crr_div);
-                    if (cnrt == job_list_len - 1) {
-                        setTimeout(function()
-                                {
-                                    closePleaseWaitDiv();
-                                    document.getElementById("overlaywrapperjobs").style.display = "block";
-                                    document.getElementById("mainDiv").style.pointerEvents = "none";
-                                    document.body.style.overflow = "hidden";
-                                    var jobth = document.getElementById("job-th");
-                                    jobth.click();
-                                    jobth.click();
-                                    var dtth = document.getElementById("dt-th");
-                                    dtth.click();
-                                    dtth.click();
-                                }, 2000);
-                    }
-                });
-            })(i);
+                animateProgressBar(step);
+            })
+        });
+        while (true) {
+            await sleep(1000);
+            if ($("#progressBar").attr("aria-valuenow") == "100") {
+                $("#progressRow").css("display", "none");
+                $("#tableRow").css("display", "flex");
+                $("#refresh-job-list-btn").prop("disabled", false).blur();
+                $("#cancel-job-list-btn").prop("disabled", false);
+                $(".list-group-item.fetch-jobs").attr("aria-disabled", "false").removeClass("disabled");
+                return true;
+            }
         }
     });
-    return true;
 }
 
-//
-function closeJobInfoDiv() {
-    document.getElementById("overlaywrapperjobs").style.display = "none";
-    // document.getElementById("mainDiv").style.pointerEvents = "auto";
-    document.body.style.overflow = "auto";
+function closeDownloadJob() {
+    resetProgressBar();
+    $("#overlaywrapper").css("display", "none");
+    $("#overlayjobprocessing").css("display", "none");
 }
 
-//
+async function downloadJob(button) {
+    console.log("downloadJob() called");
+    // disable all buttons
+    jobId = button.id;
+    closeJobFetchDiv();
+    $("#overlaywrapper").css("display", "block");
+    $("#overlayjobprocessing").css("display", "block");
+    $("#jobProcessingTitle").html("Downloading job: " + jobId);
+    await sleep(2000);
+    animateProgressBar(20);
+    $.getJSON("/hh-neuron-builder/download-job/" + jobId + "/" + req_pattern + "/", function(data) {
+        if (data["response"] == "KO") {
+            closeDownloadJob();
+            openErrorDiv(data["message"], "error");
+            return false;
+        }
+        animateProgressBar(50);
+        $("#jobProcessingTitle").html("Running Analysis");
+        var p = $.getJSON("/hh-neuron-builder/run-analysis/" + req_pattern, function(modifydata) {
+            var resp_flag = false;
+            if (modifydata["response"] == "KO") {
+                closeDownloadJob();
+                openErrorDiv(data["message", "error"]);
+                return false;
+            } else {
+                var resp_flag = true;
+                animateProgressBar(80);
+                $("#jobProcessingTitle").html("Creating ZIP file")
+                $.getJSON("/hh-neuron-builder/zip-sim/" + jobId + "/" + req_pattern, async function(zip_data) {
+                    if (zip_data["response"] == "KO") {
+                        closeDownloadJob();
+                        openErrorDiv(zip_data["message"], "error");
+                        return false;
+                    } else {
+                        $("#jobProcessingTitle").html("Completing...");
+                        animateProgressBar(100);
+                        await sleep(2000);
+                    }
+                    checkConditions();
+                });
+            }
+        });
+        setTimeout(function(){ 
+            if (resp_flag) {
+            } else { 
+                p.abort();
+                closePleaseWaitDiv();
+                openErrorDiv("Your request has expired.<br>Please verify that you are not behind a firewall and/or your data are not too big to be processed in less than 10 minutes", 'error')
+            }
+        }, 600000);
+    });
+}
+
+/*
 function downloadJob(jobid) {
+    console.log("downloadJob() called: " + jobid);
     displayPleaseWaitDiv();
     closeJobInfoDiv();
     changeMsgPleaseWaitDiv("Downloading job results and analyzing data.<br>This operation may take several minutes.");
@@ -786,7 +848,7 @@ function downloadJob(jobid) {
             }
         }, 600000);
     });
-}
+}*/
 
 //
 function downloadLocalSim(){
@@ -803,21 +865,20 @@ function downloadLocalOptSet(){
     downloadLocal("optset");
 }
 
-//
 function downloadLocalFeat(){
     downloadLocal("feat");
 }
 
-//
 function downloadLocal(filetype) {
-    displayPleaseWaitDiv();
+    // displayPleaseWaitDiv();
+    showLoadingAnimation();
     window.location.href = "/hh-neuron-builder/download-zip/" + filetype + "/" +
         exc + "/" + ctx + "/";
     checkConditions();
-    closePleaseWaitDiv();
+    // closePleaseWaitDiv();
+    hideLoadingAnimation();
 }
 
-//
 function newWorkflow() {
     displayPleaseWaitDiv();
     $.getJSON("/hh-neuron-builder/create-wf-folders/new/" + exc + "/" + ctx, function(data){
@@ -832,29 +893,12 @@ function newWorkflow() {
 }
 
 function cloneWorkflow() {
-//    displayPleaseWaitDiv();
     $.getJSON("/hh-neuron-builder/clone-workflow/" + req_pattern + "/", function(data) {
         console.log(data);
         let win = window.open("/hh-neuron-builder/workflow/" + data.exc + "/" + data.ctx + "/", "_blank");
         win.focus();
     });
-    // $.getJSON('/hh-neuron-builder/create-wf-folders/cloned/' + req_pattern, function(zip_data){
-    //     checkConditions();
-    //     closePleaseWaitDiv();
-    //     let win = window.open('/hh-neuron-builder/workflow', "_blank");
-    //     win.focus();
-    // });
 }
-
-//
-/*function saveWorkflow() {
-    displayPleaseWaitDiv(message="Saving workflow to storage");
-    $.getJSON('/hh-neuron-builder/save-wf-to-storage/' + req_pattern, function(zip_data){
-        checkConditions();
-        closePleaseWaitDiv();
-    });
-}*/
-
 
 function downloadURI(uri, name) {
   var link = document.createElement("a");
@@ -1019,3 +1063,21 @@ $("#nsgCollapse")[0].addEventListener('hide.bs.collapse', function () {
     console.log("lower nsg")
 
 })
+
+function animateProgressBar(progress) {
+    current_progress = parseInt($(".progress-bar").attr("aria-valuenow"));
+    next_progress = current_progress + progress;
+    $(".progress-bar").css("width", next_progress + "%").attr("aria-valuenow", next_progress);
+}
+
+function resetProgressBar() {
+    $(".progress-bar").css("width", "0%").attr("aria-valuenow", "0");
+}
+
+function dismissAlert() {
+    $("#jobsAuthAlert").removeClass("show");
+}
+
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+ }

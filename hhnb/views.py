@@ -898,7 +898,8 @@ def upload_modsim_files(request, exc='', ctx=''):
 
 
 def upload_files(request, filetype='', exc='', ctx=''):
-    filename_list = request.FILES.getlist('opt-res-file')
+    filename_list = request.FILES.getlist('formFile')
+    print(request.FILES)
     if filetype == "feat":
         final_res_folder = request.session[exc]['user_dir_data_feat']
         ext = '.json'
@@ -964,9 +965,30 @@ def upload_files(request, filetype='', exc='', ctx=''):
             return HttpResponse(json.dumps({"response": "KO", "message": msg}), content_type="application/json")
         request.session['fetch_opt_uuid'] = ""
 
+
     request.session.save()
 
     return HttpResponse(json.dumps({"response": "OK", "message": ""}), content_type="application/json")
+
+
+def get_job_list2(request, hpc, exc='', ctx=''):
+
+    request.session[exc]['hpc_sys_fetch'] = hpc;
+
+    if hpc == "NSG":
+        username_fetch = request.session[exc]['username_fetch']
+        password_fetch = request.session[exc]['password_fetch']
+
+        resp = hpc_job_manager.Nsg.fetch_job_list(username_fetch=username_fetch, password_fetch=password_fetch)
+
+    elif hpc == 'DAINT-CSCS' or hpc == 'SA-CSCS':
+        access_token = 'Bearer ' + request.session['oidc_access_token']
+        resp = hpc_job_manager.Unicore.fetch_job_list2(hpc, access_token)
+
+    request.session[exc]['hpc_fetch_job_list'] = resp
+    request.session.save()
+
+    return JsonResponse(data=json.dumps(resp), status=200, safe=False)
 
 
 def get_job_list(request, exc="", ctx=""):
@@ -1011,10 +1033,32 @@ def get_job_list(request, exc="", ctx=""):
     #         resp[key]["wf"] = {"wf_id": "No workflow id associated", "hpc_sys": hpc_sys_fetch}
 
     request.session[exc]['hpc_fetch_job_list'] = resp
-
+    
     request.session.save()
 
     return HttpResponse(json.dumps(resp), content_type="application/json")
+
+
+def get_job_details2(request, jobid='', exc='', ctx=''):
+    jobid = str(jobid)
+
+    hpc_sys_fetch = request.session[exc]['hpc_sys_fetch']
+    print(request.session[exc]['hpc_fetch_job_list'])
+
+    # if job has to be fetched from NSG
+    if hpc_sys_fetch == 'NSG':
+        username_fetch = request.session[exc]['username_fetch']
+        password_fetch = request.session[exc]['password_fetch']
+
+        resp = hpc_job_manager.Nsg.fetch_job_details(job_id=jobid, username_fetch=username_fetch, password_fetch=password_fetch)
+
+    elif hpc_sys_fetch == 'DAINT-CSCS' or hpc_sys_fetch == 'SA-CSCS':
+        fetch_job_list = request.session[exc]["hpc_fetch_job_list"]
+        job_url = fetch_job_list[jobid]["url"]
+        access_token = request.session.get('oidc_access_token')
+        resp = hpc_job_manager.Unicore.fetch_job_details(hpc=hpc_sys_fetch, job_url=job_url, job_id=jobid,
+                                                         token="Bearer " + access_token)
+    return JsonResponse(data=json.dumps(resp), status=200, safe=False)
 
 
 def get_job_details(request, jobid="", exc="", ctx=""):
@@ -1891,3 +1935,21 @@ def get_authentication(request):
     if request.user.is_authenticated:
         return HttpResponse(status=200)
     return HttpResponse(status=401)
+
+
+def check_nsg_login(request, exc='', ctx=''):
+    data = request.POST
+    print(json.dumps(data, indent=4))
+    
+    print((data['username']).encode('utf-16'))
+    print((data['password']).encode('utf-16'))
+
+    request.session[exc]['username_fetch'] = data['username']
+    request.session[exc]['password_fetch'] = data['password']
+    request.session.save()
+
+    resp = hpc_job_manager.Nsg.check_nsg_login(username=data['username'], password=data['password'])
+
+    if resp['response'] == 'OK':
+        return JsonResponse(status=200, data=json.dumps(resp), safe=False)
+    return JsonResponse(status=403, data=json.dumps(resp), safe=False)

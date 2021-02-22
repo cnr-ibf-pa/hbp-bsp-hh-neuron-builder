@@ -53,16 +53,16 @@
                             <button type="button" id="feat-efel-btn" class="btn workflow-btn" onclick="efelPage()">Extract features</button>
                         </div>
                         <div class="row">
-                            <button type="button" id="feat-up-btn" class="btn workflow-btn" onclick="featUploadButton()">Upload files</button>
+                            <button type="button" id="feat-up-btn" class="btn workflow-btn" onclick="displayFeatUploadDiv()">Upload files</button>
                         </div>
                         <div class="row">
                             <div class="col flex-center">
-                                <button id="down-feat-btn" title="Download feature files" type="button" class="btn btn-link">
+                                <button id="down-feat-btn" title="Download feature files" type="button" class="btn btn-link" onclick="downloadLocalFeat()">
                                     Download
                                 </button>
                             </div>
                             <div class="col flex-center">
-                                <button id="del-feat-btn" title="Delete feature files" type="button" class="btn btn-link"disabled>
+                                <button id="del-feat-btn" title="Delete feature files" type="button" class="btn btn-link" onclick="deleteFeatureFiles()" disabled>
                                     Delete
                                 </button>
                             </div>
@@ -98,13 +98,13 @@
                     </div>
                     <div class="row">
                         <div class="col flex-center">
-                            <button id="down-opt-set-btn" title="Download optimization files" type="button"
-                                class="btn btn-link">Download
+                            <button id="down-opt-set-btn" title="Download optimization files" type="button" class="btn btn-link" onclick="downloadLocalOptSet()">
+                                Download
                             </button>
                         </div>
                         <div class="col flex-center">
-                            <button id="del-opt" title="Delete optimization files" type="button" class="btn btn-link"
-                                disabled>Delete
+                            <button id="del-opt" title="Delete optimization files" type="button" class="btn btn-link" onclick="deleteOptFiles()" disabled>
+                                Delete
                             </button>                        
                         </div>
                     </div>
@@ -138,7 +138,7 @@
             </div> 
         </div>
         <div class="row ">
-            <button id="launch-opt-btn" type="button" class="btn main-panel-btn extends no-scale" disabled="true">Run Optimization</button>
+            <button id="launch-opt-btn" type="button" class="btn main-panel-btn extends no-scale" onclick="runOptimization()" disabled>Run Optimization</button>
         </div>
     </div>
     <div class="container main-content workflow-content">
@@ -169,10 +169,10 @@
                         </div>
                         <div class="row" style="margin: 8px 0px">
                             <div class="col flex-center">
-                                <button type="button" id="opt-fetch-btn" class="btn workflow-btn lg">Fetch results</button>
+                                <button type="button" id="opt-fetch-btn" class="btn workflow-btn lg" onclick="displayJobFetchDiv()">Fetch results</button>
                             </div>
                             <div class="col flex-center">
-                                <button type="button" id="opt-res-up-btn" class="btn workflow-btn x1-5 lg">Upload file</button>
+                                <button type="button" id="opt-res-up-btn" class="btn workflow-btn x1-5 lg" onclick="displayOptResUploadDiv()">Upload file</button>
                             </div>
                         </div>
                         <div class="row">
@@ -200,43 +200,15 @@
             </div>
         </div>
         <div class="row ">
-            <button type="button" id="run-sim-btn" class="btn main-panel-btn extends no-scale" disabled="true">Run Simulation</button>
+            <button type="button" id="run-sim-btn" class="btn main-panel-btn extends no-scale" onclick="inSilicoPage()" disabled>Run Simulation</button>
         </div>
     </div>
 </div>
- 
-
-<!-- Upload div -->
-<!-- <div id="overlaywrapperoptres" class="overlay-wrapper">
-    <div id="overlayoptres" class="overlay-content">
-        <form id="uploadFileForm" action="" method="POST" enctype="multipart/form-data">{% csrf_token %}
-            <div id="uploadTitleDiv" class="param-title-div">
-            </div>
-            <br>
-            <div id="upload_sim_img_div">
-                <img src="{% static "hhnb/img/expected_sim_zip.jpg" %}"
-                style="width:100%" alt="Expected sim zip file">
-                <br>
-                <br>
-            </div>
-            <label for="opt-res-file" style="overflow-x:scroll">
-                <input style="overflow-x:scroll" type="file" name="opt-res-file" id="opt-res-file"
-                       class="btn btn-default" accept=".zip"/>
-                <span style="overflow-x:scroll" class="custom-file-control"></span>
-            </label>
-            <br>
-            <button type="button" id="cancel-upload-file-btn" class="btn workflow-btn">Cancel</button>
-            <input type="submit" id="upload-opt-res-btn" disabled name="upload_opt_res_button" class="btn workflow-btn"
-                   value="Upload"/>
-        </form>
-    </div>
-</div> -->
-<!-- -->
 
 <div id="overlaywrapper" class="overlay-wrapper">
     
     <!-- upload feat params -->
-    <div id="overlayfeatupload" class="overlay-content">
+    <!-- <div id="overlayfeatupload" class="overlay-content">
         <form id="uploadFeatForm" action="" method="POST" enctype="multipart/form-data">
             {% csrf_token %}
             <div class="mb-3">
@@ -258,8 +230,22 @@
             <button type="button" id="cancel-upload-file-btn" class="btn workflow-btn" onclick="closeOptSetUploadDiv()">Cancel</button>
             <input type="submit" id="upload-opt-res-btn" disabled="true" name="upload_opt_res_button" class="btn workflow-btn" value="Upload"/>
         </form>
-    </div>
+    </div> -->
     
+    <div id="overlayupload" class="overlay-content">
+        <form id="uploadForm" action="" method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label id="uploadFormLabel" for="formFile" class="form-label"></label>
+                <!-- <div id="uploadImg">
+                    <img src="{% static "hhnb/img/expected_sim_zip.jpg" %}" style="width: 100%" alt="Expected sim zip file">
+                </div> -->
+                <input id="formFile" name="formFile" type="file" class="form-control">
+            </div>
+            <button type="button" id="cancelUploadFormButton" class="btn workflow-btn" onclick="closeUploadDiv(true)">Cancel</button>
+            <input type="submit" id="uploadFormButton" disabled class="btn workflow-btn" value="Upload"/>
+        </form>
+    </div>
 
     <!-- set hpc parameters -->
 
@@ -442,14 +428,14 @@
                                             </div>
                                         </div>
                                         <div class="col">
-                                            <div class="card">
+                                            <div class="card input-card">
                                                 <div class="card-header input-card-header">Optimization Run Parameters</div>
                                                 <div class="card-body">
                                                     <div class="input-group">
                                                         <div class="input-group-prepend">
                                                             <span class="input-group-text" title="Number of nodes"># Nodes</span>
                                                         </div>
-                                                        <input type="number" class="form-control small-placeholder" name="node-number" id="node-number" title="Number of nodes" placeholder="Number of nodes" step="1" min="1">
+                                                        <input type="number" class="form-control small-placeholder" name="node-num" id="node-num" title="Number of nodes" placeholder="Number of nodes" step="1" min="1">
                                                     </div>    
                                                     <br>
                                                     <div class="input-group">
@@ -510,14 +496,14 @@
                                             </div>
                                         </div>
                                         <div class="col">
-                                            <div class="card">
+                                            <div class="card input-card">
                                                 <div class="card-header input-card-header">Optimization Run Parameters</div>
                                                 <div class="card-body">
                                                     <div class="input-group">
                                                         <div class="input-group-prepend">
                                                             <span class="input-group-text" title="Number of nodes"># Nodes</span>
                                                         </div>
-                                                        <input type="number" class="form-control small-placeholder" name="node-number" id="node-number" title="Number of nodes" placeholder="Number of nodes" step="1" min="1">
+                                                        <input type="number" class="form-control small-placeholder" name="node-num" id="node-num" title="Number of nodes" placeholder="Number of nodes" step="1" min="1">
                                                     </div>    
                                                     <br>
                                                     <div class="input-group">
@@ -591,14 +577,14 @@
                                             </div>
                                         </div>
                                         <div class="col">
-                                            <div class="card">
+                                            <div class="card input-card">
                                                 <div class="card-header input-card-header">Optimization Run Parameters</div>
                                                 <div class="card-body">
                                                     <div class="input-group">
                                                         <div class="input-group-prepend">
                                                             <span class="input-group-text" title="Number of nodes"># Nodes</span>
                                                         </div>
-                                                        <input type="number" class="form-control small-placeholder" name="node-number" id="node-number" title="Number of nodes" placeholder="Number of nodes" step="1" min="1">
+                                                        <input type="number" class="form-control small-placeholder" name="node-num" id="node-num" title="Number of nodes" placeholder="Number of nodes" step="1" min="1">
                                                     </div>    
                                                     <br>
                                                     <div class="input-group">
@@ -636,48 +622,97 @@
         </form>
     </div>
 
-
-    <!-- fetched jobs div -->
-    <div id="overlaywrapperjobs" class="overlay-wrapper">
-        <div id="overlayjobs"
-             class="overlay-content overflow width-95p height-90p">
-            <div id="fetch-job-title" class="align-center">
-                <h4><strong>Download job results</strong></h4>
+    <!-- fetch jobs div -->
+    <div id="overlayjobs" class="overlay-content"> 
+        <div class="container">
+            <div class="row">
+                <div id="hpcSource" class="list-group list-group-horizontal">
+                    <button type="button" id="jobsDaint" name="DAINT-CSCS" class="list-group-item fetch-jobs list-group-item-action" onclick="displayCSCSJobList($(this));">CSCS-DAINT</button>
+                    <button type="button" id="jobsSADaint" name="SA-CSCS" class="list-group-item fetch-jobs list-group-item-action" onclick="displayCSCSJobList($(this));">CSCS-DAINT<br>Service Account</button>
+                    <button type="button" id="jobsNSG" name="NSG" class="list-group-item fetch-jobs list-group-item-action" onclick="displayNsgJobList($(this));">NSG<br>NeuronScience Gateway</button>
+                </div>
             </div>
-    
-            <table id="job-list-table" style="overflow:auto"
-                   class="sortable height-90p" cellpadding="10">
-                <thead>
-                <tr>
-                    <th id="wf-th" class="tth">Workflow ID</th>
-                    <th id="job-th" class="tth">Job ID</th>
-                    <th class="tth">Status</th>
-                    <th id="dt-th" class="tth">Date/Time (UTC)</th>
-                    <th class="sorttable_nosort"></th>
-                </tr>
-                <tbody id="job-list-body">
-                </tbody>
-                </thead>
-    
-            </table>
-    
-            <div id="job-list-div" class="height-90p"
-                 style="overflow:auto;">
+            <div class="row-separator"></div>
+            <div id="nsgLoginRow" class="row">
+                <div id="checkNsgLoginCard" class="card">
+                    <div class="card-header input-card-header">
+                        <div class="text-center">Check NSG Login</div>
+                    </div>
+                    <div class="card-body ">
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text" title="NSG Username">Username</span>
+                            </div>
+                            <input type="text" class="form-control username" id="usernameNsg" name="username_submit" placeholder="NSG Username" style="border-top-right-radius: .25rem; border-bottom-right-radius: .25rem;">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text password" title="NSG Password">Password</span>
+                            </div>
+                            <input type="password" class="form-control" id="passwordNsg" name="password_submit" placeholder="NSG Password">
+                            <!-- <input type="button" class="btn" onclick="checkNsgLogin()" value="Check"> -->
+                        </div>
+                        <br>
+                        <button id="checkNsgLoginButton" class="btn workflow-btn" type="button" onclick="checkNsgLogin()">
+                            <span id="checkNsgSpinnerButton" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                            Check
+                          </button>
+                    </div>
+                </div>
             </div>
-            <br>
-            <div class="center-container row-center-container">
-                <button id="refresh-job-list-btn" type="button"
-                        class="btn btn-default col-xs-6">Refresh
-                </button>
-                <button id="cancel-job-list-btn" type="button"
-                        class="btn btn-default col-xs-6">Cancel
-                </button>
+            <div id="spinnerRow" class="row">
+                <div id="jobSpinner" class="text-center">
+                    <div class="spinner-border" role="status"></div>
+                </div>
             </div>
-            <br>
+            <div id="progressRow" class="row">
+                <div id="progressDiv" class="progress">
+                    <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%"></div>
+                </div>
+            </div>
+            <div class="row-separator"></div>
+            <div id="tableRow" class="row">
+                <table id="job-list-table" class="table table-hover job-list-table">
+                    <thead>
+                        <tr class="table-title">
+                            <th id="wf-th" scope="col">Workflow ID</th>
+                            <th id="job-th" scope="col">Job ID</th>
+                            <th scope="col">Status</th>
+                            <th id="dt-th" scope="col">Date/Time (UTC)</th>
+                            <th scope="col"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="job-list-body" class="job-list-body"></tbody>
+                </table>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <button type="button" id="cancel-job-list-btn" class="btn workflow-btn" onclick="closeJobFetchDiv()">Cancel</button>
+                </div>
+                <div class="col">
+                    <button type="button" id="refresh-job-list-btn" class="btn workflow-btn" onclick="refreshJobListDiv()" disabled>Refresh</button>
+                </div>
+            </div>
         </div>
     </div>
 
-      
+    <!-- alert if user is trying to fetch jobs without being authenticated -->
+    <div id="jobsAuthAlert" class="alert alert-danger alert-dismissible fade" role="alert">
+        <strong>You need to authenticate with Ebrains to fetch jobs on this System!</strong>
+        <button type="button" class="btn-close" onclick="dismissAlert()" aria-label="Close"></button>
+    </div>
+
+    <div id="overlayjobprocessing" class="overlay-content">
+        <div class="container">
+            <div class="row">
+                <div id="jobProcessingTitle" class="text-center"></div>
+            </div>
+            <div id="jobProcessingProgress" class="row">
+                <div class="progress">
+                    <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- error div -->
     <div id="overlaywrappererror" class="overlay-content">
         <div id="overlayerror" class="error-content">
@@ -705,6 +740,7 @@
         </div>
     </div>
 
+    <!-- donwload workspace before authenticate -->
     <div id="overlaydownloadworkspace" class="overlay-content">
         <div id="downloadworkspacetext" class="downloadworkspace-content">
             You need to authenticate with Ebrains to go on...<br>
@@ -718,7 +754,6 @@
             Download workspace
         </button>
     </div>
-
 
 </div>
 
