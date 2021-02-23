@@ -29,6 +29,7 @@ register_converter(converters.SourceOptConverter, 'source_opt')
 register_converter(converters.WorkflowIdConverter, 'workflow_id')
 register_converter(converters.CurrentOrStorageCollabConverter, 'current_or_storage_collab')
 register_converter(converters.HpcConverter, 'hpc')
+register_converter(converters.JobIdConverter, 'jobid')
 
 required = '<exc:exc>/<uuid:ctx>'
 # required = ''
@@ -45,7 +46,7 @@ urlpatterns = [
     path('copy-feature-files/<any:feature_folder>/' + required + '/', views.copy_feature_files),
     path('create-wf-folders/<new_or_cloned:wf_type>/' + required, views.create_wf_folders, name='create_wf_folders'),
     path('delete-files/<feat_or_optset_or_modsim:file_type>/' + required + '/', views.delete_files),
-    path('download-job/<uuid:job_id>/' + required + '/', views.download_job),
+    path('download-job/<jobid:job_id>/' + required + '/', views.download_job),
     path('download-zip/<feat_or_optset_or_modsim_or_optres:file_type>/' + required + '/', views.download_zip),
     path('embedded-efel-gui/', views.embedded_efel_gui),
     path('embedded-naas/' + required + '/', views.embedded_naas),
@@ -55,7 +56,7 @@ urlpatterns = [
     path('get_local_optimization_list', views.get_local_optimization_list),
     path('get_model_list/' + required, views.get_model_list),
     path('get-job-details/<uuid:jobid>/' + required + '/', views.get_job_details),
-    path('get-job-details2/<uuid:jobid>/' + required + '/', views.get_job_details2),
+    path('get-job-details2/<jobid:jobid>/' + required + '/', views.get_job_details2),
     path('get-job-list/' + required, views.get_job_list),
     path('get-job-list/<hpc:hpc>/' + required, views.get_job_list2),
     path('get-user-clb-permissions/' + required, views.get_user_clb_permissions),

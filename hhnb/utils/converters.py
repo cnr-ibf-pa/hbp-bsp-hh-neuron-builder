@@ -103,3 +103,12 @@ class HpcConverter:
 
     def to_url(self, value):
         return value
+
+class JobIdConverter:
+    regex = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|[A-Z0-9-_]+'
+
+    def to_python(self, value):
+        return value
+
+    def to_url(self, value):
+        return value

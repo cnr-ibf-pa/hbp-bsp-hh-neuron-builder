@@ -940,8 +940,11 @@ def upload_files(request, filetype='', exc='', ctx=''):
             final_file.close()
 
     if filetype == "optset":
+        print('Im here')
         request.session[exc]['source_opt_name'] = os.path.splitext(filename)[0]
         request.session[exc]['source_opt_zip'] = final_res_file
+        print(request.session[exc]['source_opt_name'], request.session[exc]['source_opt_zip'], sep='\n')
+        
         check_resp = wf_file_manager.CheckConditions.check_uploaded_model(file_path=final_res_file,
                                                                           folder_path=final_res_folder)
         if check_resp["response"] == "KO":
@@ -972,14 +975,16 @@ def upload_files(request, filetype='', exc='', ctx=''):
 
 
 def get_job_list2(request, hpc, exc='', ctx=''):
-
+    print('get_job_list2() called.')
     request.session[exc]['hpc_sys_fetch'] = hpc;
+    print(request.session[exc]['hpc_sys_fetch'])
 
     if hpc == "NSG":
         username_fetch = request.session[exc]['username_fetch']
         password_fetch = request.session[exc]['password_fetch']
 
         resp = hpc_job_manager.Nsg.fetch_job_list(username_fetch=username_fetch, password_fetch=password_fetch)
+        print(resp)
 
     elif hpc == 'DAINT-CSCS' or hpc == 'SA-CSCS':
         access_token = 'Bearer ' + request.session['oidc_access_token']
@@ -994,6 +999,7 @@ def get_job_list2(request, hpc, exc='', ctx=''):
 def get_job_list(request, exc="", ctx=""):
     """
     """
+    print("get_job_list() called.")
     hpc_sys_fetch = request.session[exc]['hpc_sys_fetch']
 
     # read job id file
@@ -1041,9 +1047,7 @@ def get_job_list(request, exc="", ctx=""):
 
 def get_job_details2(request, jobid='', exc='', ctx=''):
     jobid = str(jobid)
-
     hpc_sys_fetch = request.session[exc]['hpc_sys_fetch']
-    print(request.session[exc]['hpc_fetch_job_list'])
 
     # if job has to be fetched from NSG
     if hpc_sys_fetch == 'NSG':
@@ -1205,7 +1209,7 @@ def run_analysis(request, exc="", ctx=""):
             lines[370] = "\n"
             lines[371] = "\n"  # n is the line number you want to edit; subtract 1 as indexing of list starts from 0
             f.close()
-
+            
             f = open(full_file_path, 'w')
             f.writelines(lines)
             f.close()

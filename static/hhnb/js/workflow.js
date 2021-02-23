@@ -5,7 +5,7 @@ var req_pattern = exc + '/' + ctx;
 $(window).bind("pageshow", function() {
     console.log("exc: " + exc.toString() + " cxt: " + ctx.toString());
     checkConditions();
-    closeParameterDiv();
+    closeHpcParameterDiv();
     // closeFetchParamDiv();
     closeUploadDiv(true);
     hideLoadingAnimation();
@@ -30,7 +30,7 @@ $(document).ready(function(){
                 checkConditions();
             } else {
                 checkConditions();
-                closeParameterDiv();
+                closeHpcParameterDiv();
             } 
         },'json');
         return false;
@@ -53,10 +53,62 @@ $(document).ready(function(){
         return false;
     });
 
+    var $submitJobParamForm = $("#submitJobParamForm");
+    console.log($submitJobParamForm);
+    $submitJobParamForm.submit(function(e) {
+        e.preventDefault();
+        let hpc_sys = $(".accordion-button.active").attr("name");
+        var paramFormData = new FormData();
+        paramFormData.append("csrfmiddlewaretoken", $("input[name=csrfmiddlewaretoken]").val()) 
+        paramFormData.append("hpc_sys", hpc_sys);
+        if (hpc_sys == "DAINT-CSCS") {
+            paramFormData.append("gen-max", $("#daint-gen-max").val());
+            paramFormData.append("offspring", $("#daint-offspring").val());
+            paramFormData.append("node-num", $("#daint-node-num").val());
+            paramFormData.append("core-num", $("#daint-gen-max").val());
+            paramFormData.append("runtime", $("#daint-runtime").val());
+            paramFormData.append("project", $("#daint_project_id").val());
+        }
+        if (hpc_sys == "SA-CSCS") {
+            paramFormData.append("gen-max", $("#sa-daint-gen-max").val());
+            paramFormData.append("offspring", $("#sa-daint-offspring").val());
+            paramFormData.append("node-num", $("#sa-daint-node-num").val());
+            paramFormData.append("core-num", $("#sa-daint-gen-max").val());
+            paramFormData.append("runtime", $("#sa-daint-gen-max").val());
+        }
+        if (hpc_sys == "NSG") {
+            paramFormData.append("gen-max", $("#nsg-gen-max").val());
+            paramFormData.append("offspring", $("#nsg-offspring").val());
+            paramFormData.append("node-num", $("#nsg-node-num").val());
+            paramFormData.append("core-num", $("#nsg-gen-max").val());
+            paramFormData.append("runtime", $("#nsg-gen-max").val());
+            paramFormData.append("username_submit", $("#username_submit").val());
+            paramFormData.append("password_submit", $("#password_submit").val());    
+        }
+        for (let key of paramFormData.entries()) {
+            console.log(key);
+        }
+        $.ajax({
+            url: "/hh-neuron-builder/submit-run-param/" + req_pattern + "/",
+            data: paramFormData,
+            type: "POST",
+            contentType: false,
+            processData: false,
+            async: false,
+            success: function(response) {
+                if (response['response'] == "KO"){
+                    openErrorDiv("Username and/or password are wrong", 'error');
+                    checkConditions();
+                } else {
+                    checkConditions();
+                    closeHpcParameterDiv();
+                } 
+            }
+        })
+    })
 
     // manage form to upload simulation zip file 
-    // var $uploadFileForm = $('#uploadFileForm');
-    var $uploadFileForm = $('#uploadForm');
+    var $uploadFileForm = $("#uploadForm");
     $uploadFileForm.submit(function(e){
         files = $("#formFile").prop("files");
         closeUploadDiv(false);
@@ -86,6 +138,8 @@ $(document).ready(function(){
         e.preventDefault();
         hideLoadingAnimation();
     });
+
+    
 
 /*
     // assign functions to buttons' click
@@ -189,12 +243,13 @@ function reloadCurrentPage() {
 }
 
 // open div for optimization run parameter settings
-function openParameterDiv() {
+function openHpcParameterDiv() {
     console.log("openParameterDiv() called.");
+    manageOptSetInput();
     fetch("/hh-neuron-builder/get-authentication")
         .then(response => {
                 console.log(response);
-                if (!response.ok) {
+                if (response.ok) {
                     $("#overlaywrapper").css("display", "block");
                     $("#overlayparam").css("display", "block");
                 } else {
@@ -205,18 +260,36 @@ function openParameterDiv() {
         )
 }
 
+$(".accordion-button.hpc").on("click", function() {
+    $("#apply-param").prop("disabled", false);
+    $(".accordion-button").removeClass("active");
+    $(this).addClass("active");
+})
+
 // close side div for optimization run parameter settings
-function closeParameterDiv() {
+function closeHpcParameterDiv() {
     $("#overlaywrapper").css("display", "none");
     $("#overlayparam").css("display", "none");
+    $("#apply-param").prop("disabled", true);
 } 
 
-
-function setHPCSystem(hpc) {
+/* function setHPCSystem(hpc) {
     $(".list-group-item").removeClass("active");
     $("#" + hpc).addClass("active");
 }
-
+ */
+function applyJobParam() {
+    var submitJobParamForm = $("#submitJobParamForm");
+    submitJobParamForm.submit();
+    // console.log($submitJobForm);
+    // $submitJobForm.submit(function(e) {
+    //     console.log("submitJobForm.submit() called");
+    //     e.preventDefault();
+    //     $.post("/hh-neuron-builder/submit-run-param/" + req_pattern + "/", $(this).serialize(), function(response) {
+    //         console.log(response);
+    //     })
+    // })
+}
 
 function manageErrorDiv(open=false, close=false, message="", tag="") {
     let overlayWrapper = $("#overlaywrapper");
@@ -429,15 +502,17 @@ function checkConditions(){
                 optResBar.html(data['run_sim']['message'])
                 $("#down-sim-btn").prop("disabled", false);
                 $("#run-sim-btn").prop("disabled", false);
+                $("#opt-fetch-btn").prop("disabled", true);
+                $("#opt-res-up-btn").prop("disabled", true)
 
-                if (data['sim_flag']['status']){
-                    $("del-sim-btn").prop("disabled", true);  
-                    $("opt-fetch-btn").prop("disabled", true);  
-                    $("opt-res-up-btn").prop("disabled", true);  
+                if (data['sim_flag']['status']) {
+                    $("#del-sim-btn").prop("disabled", true);  
+                    $("#opt-fetch-btn").prop("disabled", true);  
+                    $("#opt-res-up-btn").prop("disabled", true);  
                 } else {
-                    $("del-sim-btn").prop("disabled", false);  
-                    $("opt-fetch-btn").prop("disabled", false);  
-                    $("opt-res-up-btn").prop("disabled", false);  
+                    $("#del-sim-btn").prop("disabled", false);  
+                    $("#opt-fetch-btn").prop("disabled", false);  
+                    $("#opt-res-up-btn").prop("disabled", false);  
                 } 
             } else {
                 let optResBar = $("#opt-res-bar");
@@ -445,11 +520,11 @@ function checkConditions(){
                 optResBar.addClass("red");
                 optResBar.html(data['run_sim']['message']);  
                 // document.getElementById("run-sim-div").style.backgroundColor='rgba(255, 255, 255, 0.06)';
-                $("down-sim-btn").prop("disabled", true);  
-                $("del-sim-btn").prop("disabled", true);  
-                $("run-sim-btn").prop("disabled", true);  
-                $("opt-fetch-btn").prop("disabled", false);  
-                $("opt-res-up-btn").prop("disabled", false);  
+                $("#down-sim-btn").prop("disabled", true);  
+                $("#del-sim-btn").prop("disabled", true);  
+                $("#run-sim-btn").prop("disabled", true);  
+                $("#opt-fetch-btn").prop("disabled", false);  
+                $("#opt-res-up-btn").prop("disabled", false);  
             };
         };
     })
@@ -616,7 +691,7 @@ function checkNsgLogin() {
             $("#checkNsgSpinnerButton").css("opacity", "0");
             $("#usernameNsg").removeClass("is-invalid");
             $("#passwordNsg").removeClass("is-invalid");
-            $("nsgLoginRow").css("display", "none");
+            $("#nsgLoginRow").css("display", "none");
             displayJobList($("#jobsNSG"));
         },
         error: function(error) {
@@ -670,6 +745,7 @@ function displayJobList(button) {
         $("#progressRow").css("display", "flex");
         
         jobList = JSON.parse(jobList);
+        console.log(jobList);
         if ($.isEmptyObject(jobList)) {
             closeJobFetchDiv();
             openErrorDiv("You have no job on the hpc system", "info");
@@ -691,7 +767,6 @@ function displayJobList(button) {
                 downloadButton.innerHTML = "Download";
                 downloadButton.className = "btn workflow-btn job-download-button";
                 downloadButton.disabled = true;
-                // downloadButton.setAttribute("onclick", "downloadJob(this.id)");
                 downloadButton.setAttribute("onclick", "downloadJob(this)");
 
                 let tr = document.createElement("tr");
@@ -736,7 +811,7 @@ function displayJobList(button) {
         });
         while (true) {
             await sleep(1000);
-            if ($("#progressBar").attr("aria-valuenow") == "100") {
+            if (parseFloat($("#progressBar").attr("aria-valuenow")) >= 99.0) {
                 $("#progressRow").css("display", "none");
                 $("#tableRow").css("display", "flex");
                 $("#refresh-job-list-btn").prop("disabled", false).blur();
@@ -793,6 +868,7 @@ async function downloadJob(button) {
                         await sleep(2000);
                     }
                     checkConditions();
+                    $("#overlayjobprocessing").css("display", "none");
                 });
             }
         });
@@ -880,13 +956,13 @@ function downloadLocal(filetype) {
 }
 
 function newWorkflow() {
-    displayPleaseWaitDiv();
+    showLoadingAnimation();
     $.getJSON("/hh-neuron-builder/create-wf-folders/new/" + exc + "/" + ctx, function(data){
         if (data["response"] == "KO"){
-            closePleaseWaitDiv();
+            hideLoadingAnimation();
             openReloadDiv();
         } else {
-            closePleaseWaitDiv();
+            hideLoadingAnimation();
             window.location.href = "/hh-neuron-builder/workflow/";
         }
     });
@@ -898,6 +974,7 @@ function cloneWorkflow() {
         let win = window.open("/hh-neuron-builder/workflow/" + data.exc + "/" + data.ctx + "/", "_blank");
         win.focus();
     });
+    $("#wf-btn-clone-wf").blur();
 }
 
 function downloadURI(uri, name) {
@@ -936,13 +1013,43 @@ function saveWorkflowOnDiv() {
 
 //
 function goHome() {
-    displayPleaseWaitDiv(message="Loading ...");
+    showLoadingAnimation("Loading...");
     window.location.href='/hh-neuron-builder?ctx=' + ctx;
     closePleaseWaitDiv();
 }
 
+function manageOptSetInput() {
+    if ($("#daint-node-num").val() == "") {
+        $("#daint-node-num").val(6);
+    }
+    if ($("#daint-core-num").val() == "") {
+        $("#daint-core-num").val(24);
+    }
+    if ($("#daint-runtime").val() == "") {
+        $("#daint-runtime").val("120m");
+    }
+    if ($("#sa-daint-node-num").val() == "") {
+        $("#sa-daint-node-num").val(6);
+    }
+    if ($("#sa-daint-core-num").val() == "") {
+        $("#sa-daint-core-num").val(24);
+    }
+    if ($("#sa-daint-runtime").val() == "") {
+        $("#sa-daint-runtime").val(2);
+    }
+    if ($("#nsg-node-num").val() == "") {
+        $("#nsg-node-num").val(1);
+    }
+    if ($("#nsg-core-num").val() == "") {
+        $("#nsg-core-num").val(2);
+    }
+    if ($("#nsg-runtime").val() == "") {
+        $("#nsg-runtime").val(2);
+    }
+}
+
 //
-function manageOptSetInput(){
+/* function manageOptSetInput(){
 
     var select_el = $(this).closest('select').attr('id');
     var dd = document.getElementById(select_el);
@@ -1030,7 +1137,7 @@ function manageOptSetInput(){
             runtime.required = true;
         }
     }
-}
+} */
 
 $("#daintCollapse")[0].addEventListener('show.bs.collapse', function () {
     console.log("upper daint");

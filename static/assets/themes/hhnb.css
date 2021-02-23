@@ -642,12 +642,13 @@ body {
 .row > .progress {
     padding-left: 0px;
     padding-right: 0px;
+    min-width: 500px;
 }
 
-.hpc-input-group-text {
+/* .hpc-input-group-text {
     width: 96%;
     margin: auto;
-}
+} */
 
 .job-list-table {
     overflow: auto;
