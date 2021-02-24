@@ -96,8 +96,8 @@
 }
 
 .loading-animation.frames {
-    display: block;
-    visibility: hidden;
+    /* display: block; */
+    /* visibility: hidden; */
     position: relative;
     margin: auto;
     /* margin-top: 10px; */
@@ -110,12 +110,14 @@
 }
 
 .loading-animation.show {
-    visibility: visible;
+    /* visibility: visible; */
+    display: block;
     animation-play-state: initial;
 }
 
 .loading-animation.hide {
-    visibility: hidden;
+    /* visibility: hidden; */
+    display: none;
     animation-play-state: unset;
 }
 

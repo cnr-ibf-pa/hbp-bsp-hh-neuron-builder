@@ -26,10 +26,10 @@
         </div>
         <div class="row">
             <div class="col">
-                <button type="button" id="back-to-wf-btn" class="btn main-panel-btn maximize">Back to workflow</button>
+                <button type="button" id="back-to-wf-btn" class="btn main-panel-btn maximize" onclick="backToWorkflow()">Back to workflow</button>
             </div>
             <div class="col">
-                <button type="button" id="reg-mod-main-btn" class="btn main-panel-btn maximize"
+                <button type="button" id="reg-mod-main-btn" class="btn main-panel-btn maximize" onclick="registerModelMain()"
                         value="mc-register" title="The registration of the model in the Model Catalog
                         is currently being finalized for integration with the EBRAINS 
                         Collaboratory v2. It will be active again in a few days.">
@@ -202,10 +202,10 @@
                 </div>
                 <br>
                 <br>
-                <button id="cancel-model-register-btn" type="button"
+                <button id="cancel-model-register-btn" type="button" onclick="closeModelRegistrationDiv()"
                         class="btn btn-primary closebtn">Cancel
                 </button>
-                <button type="text" name="register_mc_form" id="register-model-btn"
+                <button type="text" name="register_mc_form" id="register-model-btn" onclick="registerModel()"
                         class="btn btn-primary">Register
                 </button>
             </form>

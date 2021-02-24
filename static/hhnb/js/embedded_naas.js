@@ -8,15 +8,10 @@ var _reg_collab;
 sessionStorage.setItem("mcModUrl", "");
 
 $(document).ready(function(){
-    document.getElementById("reg-mod-main-btn").innerHTML = "Register in Model Catalog";
     // set onclick events
-    document.getElementById("back-to-wf-btn").onclick = backToWorkflow;
     // document.getElementById("msg-continue-ok-btn").onclick = displayModelRegistrationDiv;
     // document.getElementById("msg-continue-cancel-btn").onclick = cancelRegistration;
     // document.getElementById("msg-ok-btn").onclick = closeMsgDiv;
-    document.getElementById("register-model-btn").onclick = registerModel;
-    document.getElementById("reg-mod-main-btn").onclick = registerModelMain;
-    document.getElementById("cancel-model-register-btn").onclick = closeModelRegistrationDiv;
 
     var reg_model = "";
 

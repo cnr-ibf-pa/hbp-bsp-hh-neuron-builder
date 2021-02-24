@@ -220,6 +220,10 @@ body {
     transform: unset;
     box-shadow: unset;
 }
+.main-panel-btn:disabled {
+    background-color: lightgray;
+    color: rgb(50, 50, 50);
+}
 
 /* Workflow page content */
 .workflow-id {
