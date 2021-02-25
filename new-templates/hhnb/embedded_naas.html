@@ -4,6 +4,7 @@
 {% block content %}
 
 <div class="page">
+
     <div id="home-main-div">
         <div class="hhnb-secondary-nav">
             <div class="page-title">Run Simulation</div>
@@ -35,6 +36,44 @@
                         Collaboratory v2. It will be active again in a few days.">
                     Register in Model Catalog    
                 </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Continue Message div -->
+    <div id="ow-msg-continue-naas" class="overlay-wrapper">
+        <div id="o-msg-continue-naas" style="top:35%;"
+            class="overlay-content standard-border">
+            <div id="continue-msg-text-naas" class="please-wait-text"></div>
+            <br>
+            <div class="center-container">
+                <div class="row-center-container">
+                    <button id="msg-continue-cancel-btn" type="button"
+                            class="btn btn-primary closebtn">Cancel
+                    </button>
+                    <button id="msg-continue-ok-btn" type="button"
+                            class="btn btn-primary closebtn">Proceed
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- -->
+
+    <div id="overlaywrappermsgnaas" class="overlay-wrapper">
+        <div id="overlaymsgnaas" style="top:35%;"
+             class="overlay-content standard-border">
+            <div id="spinning-wheel-naas" style="margin:auto;"
+                 class="spinning lg">
+            </div>
+            <div id="msgtextnaas" class="please-wait-text"></div>
+            <br>
+            <div class="center-container">
+                <div class="row-center-container">
+                    <button id="msg-ok-btn" type="button"
+                            class="btn btn-primary closebtn">Ok
+                    </button>
+                </div>
             </div>
         </div>
     </div>

@@ -8,20 +8,19 @@ $(window).bind("pageshow", function() {
     closeHpcParameterDiv();
     // closeFetchParamDiv();
     closeUploadDiv(true);
-    hideLoadingAnimation();
+    // hideLoadingAnimation();
     closeJobFetchDiv();
 });
 
 $(document).ready(function(){
+    showLoadingAnimation("Loading...");
+    checkConditions();
+    hideLoadingAnimation();
     // check conditions on function activation
     //checkConditions();
-/* 
-    $('#opt-res-file').on('change', function(){
-        $('#upload-opt-res-btn').prop('disabled', !$('#opt-res-file').val());
-    }); */
 
     // manage form for submitting run parameters
-    var $formrunparam = $('#submitRunParam');
+ /*    var $formrunparam = $('#submitRunParam');
     $formrunparam.submit(function(e){
         e.preventDefault();
         $.post('/hh-neuron-builder/submit-run-param/' + req_pattern + '/', $(this).serialize(), function(response){
@@ -52,7 +51,7 @@ $(document).ready(function(){
         },'json');
         return false;
     });
-
+ */
     var $submitJobParamForm = $("#submitJobParamForm");
     console.log($submitJobParamForm);
     $submitJobParamForm.submit(function(e) {
@@ -138,76 +137,7 @@ $(document).ready(function(){
         e.preventDefault();
         hideLoadingAnimation();
     });
-
-    
-
-/*
-    // assign functions to buttons' click
-    // manage top bar buttons
-    document.getElementById("wf-btn-home").onclick = goHome;
-    document.getElementById("wf-btn-new-wf").onclick = newWorkflow;
-    document.getElementById("wf-btn-clone-wf").onclick = cloneWorkflow;
-    document.getElementById("wf-btn-save").onclick = saveWorkflow;
-
-    // manage optimization settings buttons action
-    document.getElementById("opt-set-btn").onclick = openParameterDiv;
-    document.getElementById("cancel-param-btn").onclick = closeParameterDiv;
-    document.getElementById("down-opt-set-btn").onclick = downloadLocalOptSet;
-
-    // manage simulation run buttons
-    document.getElementById("run-sim-btn").onclick = inSilicoPage;
-    document.getElementById("down-sim-btn").onclick = downloadLocalSim;
-    document.getElementById("down-opt-btn").onclick = downloadLocalOpt;
-
-    // manage extract features button
-    // document.getElementById("feat-efel-btn").onclick = efelPage;
-
-    // manage feature upload buttons
-    document.getElementById("feat-up-btn").onclick = featUploadButton;
-
-    // manage choose optimization settings button
-    document.getElementById("opt-db-hpc-btn").onclick = chooseOptModel;
-
-    // manage upload optimization settings button
-    document.getElementById("opt-up-btn").onclick = displayOptSetUploadDiv;
-    document.getElementById("cancel-upload-file-btn").onclick = closeUploadDiv;
-    document.getElementById("hpc_sys").onchange = manageOptSetInput;
-
-    // manage buttons for insertion of fetch parameters
-    document.getElementById("opt-fetch-btn").onclick = displayFetchParamDiv;
-    // document.getElementById("cancel-param-fetch-btn").onclick = closeFetchParamDiv;
-    // document.getElementById("hpc_sys_fetch").onchange = manageOptSetInput;
-
-    // manage optimization results upload button
-    document.getElementById("opt-res-up-btn").onclick = displayOptResUploadDiv;
-
-    // manage button for deleting features
-    document.getElementById("del-feat-btn").onclick = deleteFeatureFiles;
-    document.getElementById("down-feat-btn").onclick = downloadLocalFeat;
-
-    // manage button for deleting optimization setting files
-    document.getElementById("del-opt").onclick = deleteOptFiles;
-
-    // manage button for deleting optimization setting files
-    document.getElementById("del-sim-btn").onclick = deleteSimFiles;
-
-    // manage button for running optimization
-    document.getElementById("launch-opt-btn").onclick = runOptimization;
-
-    // manage buttons for downloading jobs
-    document.getElementById("cancel-job-list-btn").onclick = closeJobInfoDiv;
-
-    // manage error message ok button
-    document.getElementById("ok-error-div-btn").onclick = closeErrorDiv;
-
-    // manage reload message ok button
-    document.getElementById("reload-div-btn").onclick = closeReloadDiv;
-
-    //manage button for refreshing job list
-    document.getElementById("refresh-job-list-btn").onclick = refreshJobInfoDiv;
-*/
 });
-
 
 // serve embedded-efel-gui page
 function efelPage() {
@@ -273,22 +203,9 @@ function closeHpcParameterDiv() {
     $("#apply-param").prop("disabled", true);
 } 
 
-/* function setHPCSystem(hpc) {
-    $(".list-group-item").removeClass("active");
-    $("#" + hpc).addClass("active");
-}
- */
 function applyJobParam() {
     var submitJobParamForm = $("#submitJobParamForm");
     submitJobParamForm.submit();
-    // console.log($submitJobForm);
-    // $submitJobForm.submit(function(e) {
-    //     console.log("submitJobForm.submit() called");
-    //     e.preventDefault();
-    //     $.post("/hh-neuron-builder/submit-run-param/" + req_pattern + "/", $(this).serialize(), function(response) {
-    //         console.log(response);
-    //     })
-    // })
 }
 
 function manageErrorDiv(open=false, close=false, message="", tag="") {
@@ -376,12 +293,10 @@ function closeReloadDiv() {
     window.location="/hh-neuron-builder/"
 }
 
-
 function openDownloadWorkspaceDiv() {
     $("#overlaywrapper").css("display", "block");
     $("#overlaydownloadworkspace").css("display", "block");
 }
-
 
 function closeDownloadWorkspaceDiv() {
     $("#overlaywrapper").css("display", "none");
@@ -532,7 +447,6 @@ function checkConditions(){
 
 // Delete features.json and protocol.json files from containing folder
 function deleteFeatureFiles() {
-
     var resp = confirm("Are you sure you want to delete current feature files?");
     if (resp) {
         $.getJSON("/hh-neuron-builder/delete-files/feat/" + req_pattern + "/", function(data){
@@ -576,20 +490,6 @@ function runOptimization() {
     });
 }
 
-// Display operation ended message div
-function displayOpEndDiv() {
-    document.getElementById("overlaywrapperop").style.display = "block";
-    document.getElementById("mainDiv").style.pointerEvents = "none";
-    document.body.style.overflow = "hidden";
-}
-
-// Hide please wait message div
-function hideOpEndDiv() {
-    document.getElementById("overlaywrapperop").style.display = "none";
-    document.getElementById("mainDiv").style.pointerEvents = "auto";
-    document.body.style.overflow = "auto";
-}
-
 // handle on upload file event
 $(document).on("change", "#formFile", function(){
     $("#uploadFormButton").prop("disabled", false);
@@ -606,16 +506,6 @@ function displayOptSetUploadDiv() {
 function displayOptResUploadDiv() {
     openUploadDiv("modsim", "Upload model (\".zip\")");
 }
-
-// Manage optimization result upload button
-/* function displayOptResUploadDiv() {
-    document.getElementById("opt-res-file").value = "";
-    document.getElementById("opt-res-file").multiple = false;
-    document.getElementById("opt-res-file").accept = ".zip";
-    var type = "modsim";
-    var msg = 'Upload model (".zip")';
-    openUploadDiv(type, msg);
-} */
 
 function openUploadDiv(type, msg) {
     $("#overlaywrapper").css("display", "block");
@@ -794,7 +684,6 @@ function displayJobList(button) {
                             jobDetails.job_stage == "FAILED") {
                         tdStatus.style.color = "#00802b";
                         tdStatus.style.fontWeight = "bolder";
-                        // tdStatus.style.fontSize = "14px";
                         downloadButton.disabled = false;
                         if (jobDetails.job_stage == "FAILED"){
                             tdStatus.style.color = "#DD9900";
@@ -802,7 +691,6 @@ function displayJobList(button) {
                     } else {
                         tdStatus.style.color = "#DD9900";
                         tdStatus.style.fontWeight = "bolder";
-                        // tdStatus.style.fontSize = "14px";
                         downloadButton.disabled = true;
                     }
 
@@ -869,7 +757,11 @@ async function downloadJob(button) {
                     }
                     checkConditions();
                     $("#overlayjobprocessing").css("display", "none");
-                });
+                    $("#overlaywrapper").css("display", "none");
+                }).fail(function (error) { 
+                    console.log("failing on zip-sim");
+                    console.log(error);
+                })
             }
         });
         setTimeout(function(){ 
@@ -882,49 +774,6 @@ async function downloadJob(button) {
         }, 600000);
     });
 }
-
-/*
-function downloadJob(jobid) {
-    console.log("downloadJob() called: " + jobid);
-    displayPleaseWaitDiv();
-    closeJobInfoDiv();
-    changeMsgPleaseWaitDiv("Downloading job results and analyzing data.<br>This operation may take several minutes.");
-    $.getJSON('/hh-neuron-builder/download-job/' + jobid + '/' + req_pattern + '/', function(data){
-        if (data["response"] == "KO"){
-            closePleaseWaitDiv();
-            openErrorDiv(data["message"], 'error');
-            return false;
-        }
-        var p = $.getJSON('/hh-neuron-builder/run-analysis/' + req_pattern, function(modifydata){
-            var resp_flag = false
-                if (modifydata["response"] == "KO") {
-                    closePleaseWaitDiv();
-                    openErrorDiv(modifydata["message"], 'error');
-                    return false;
-                } else {
-                    var resp_flag = true
-                        $.getJSON('/hh-neuron-builder/zip-sim/' + jobid + '/'  + req_pattern, function(zip_data){
-                            if (zip_data["response"] == "KO") {
-                                closePleaseWaitDiv();
-                                openErrorDiv(zip_data["message"], 'error');
-                                return false;
-                            } else {
-                                closePleaseWaitDiv();
-                            }
-                            checkConditions();
-                        });
-                };
-        });
-        setTimeout(function(){ 
-            if (resp_flag) {
-            } else { 
-                p.abort();
-                closePleaseWaitDiv();
-                openErrorDiv("Your request has expired.<br>Please verify that you are not behind a firewall and/or your data are not too big to be processed in less than 10 minutes", 'error')
-            }
-        }, 600000);
-    });
-}*/
 
 //
 function downloadLocalSim(){
@@ -946,12 +795,10 @@ function downloadLocalFeat(){
 }
 
 function downloadLocal(filetype) {
-    // displayPleaseWaitDiv();
     showLoadingAnimation();
     window.location.href = "/hh-neuron-builder/download-zip/" + filetype + "/" +
         exc + "/" + ctx + "/";
     checkConditions();
-    // closePleaseWaitDiv();
     hideLoadingAnimation();
 }
 
@@ -987,7 +834,6 @@ function downloadURI(uri, name) {
   delete link;
 }
 
-
 function saveWorkflow() {
     fetch("/hh-neuron-builder/workflow-download/" + req_pattern, {
         method: "GET"
@@ -997,7 +843,6 @@ function saveWorkflow() {
         error => console.log(error)
     );
 }
-
 
 function saveWorkflowOnDiv() {
     fetch("/hh-neuron-builder/workflow-download/" + req_pattern, {
@@ -1011,7 +856,6 @@ function saveWorkflowOnDiv() {
     );
 }
 
-//
 function goHome() {
     showLoadingAnimation("Loading...");
     window.location.href='/hh-neuron-builder?ctx=' + ctx;
@@ -1047,97 +891,6 @@ function manageOptSetInput() {
         $("#nsg-runtime").val(2);
     }
 }
-
-//
-/* function manageOptSetInput(){
-
-    var select_el = $(this).closest('select').attr('id');
-    var dd = document.getElementById(select_el);
-    var form_el = $(dd).closest('form').attr('id');
-    var sys = dd.options[dd.selectedIndex].getAttribute("name");
-
-    var corenum = document.getElementById("core-num");
-    var nodenum = document.getElementById("node-num");
-    var runtime = document.getElementById("runtime");
-    if (form_el == "submitRunParam") {
-        var pwd = document.getElementById("password_submit");
-        var un = document.getElementById("username_submit");
-        var pwd_div = document.getElementById("pwd-div");
-        var un_div = document.getElementById("un-div");
-        var hpc_param_container = document.getElementById("hpc-param");
-        var apply_param_button = document.getElementById("apply-param");
-        var daint_project_section = document.getElementById("daint_project_section");
-        var daint_project_param = document.getElementById("daint_project_id");
-    } else if (form_el == "submitFetchParam"){
-        var pwd = document.getElementById("password_fetch");
-        var un = document.getElementById("username_fetch");
-        var pwd_div = document.getElementById("pwd-fetch-div");
-        var un_div = document.getElementById("un-fetch-div");
-        var hpc_param_container = document.getElementById("hpc-param-fetch");
-        var apply_param_button = document.getElementById("apply-param-fetch");
-    }
-
-    if (sys == "--"){
-        daint_project_section.style.display = "none";
-        pwd_div.setAttribute("style", "display:none");
-        un_div.setAttribute("style", "display:none");
-        hpc_param_container.classList = "collapse";
-        apply_param_button.disabled = true;
-        pwd.required = false;
-        un.required = false;
-        if (form_el == "submitRunParam") {
-            corenum.value = "";
-            nodenum.value = "";
-            runtime.value = "";
-            corenum.required = false;
-            nodenum.required = false;
-            runtime.required = false;
-        }
-    }
-    else if (sys == "DAINT-CSCS" || sys == "SA-CSCS"){
-        rt_sys = {"DAINT-CSCS":"120m", "SA-CSCS":2}
-        pwd_div.setAttribute("style", "display:none");
-        un_div.setAttribute("style", "display:none");
-        pwd.setAttribute("value", "NONE");
-        hpc_param_container.setAttribute("style", "display:none");
-        apply_param_button.disabled = false;
-        pwd.required = false;
-        un.required = false;
-        if (form_el == "submitRunParam") {
-            if (sys == "DAINT-CSCS") {
-            daint_project_section.style.display = "block";
-            } else {
-                daint_project_section.style.display = "none";
-            }
-            corenum.value = 24;
-            nodenum.value = 6;
-            runtime.type = "string";
-            //runtime.value = "120m";
-            runtime.value = rt_sys[sys];
-            corenum.required = true;
-            nodenum.required = true;
-            runtime.required = true;
-        }
-    } else if (sys == "NSG"){
-        daint_project_section.style.display = "none";
-        pwd_div.setAttribute("style", "display:block;");
-        un_div.setAttribute("style", "display:block;");
-        pwd.setAttribute("value", "");
-        pwd.required = true;
-        un.required = true;
-        hpc_param_container.setAttribute("style", "display:block");
-        apply_param_button.disabled = false;
-        if (form_el == "submitRunParam") {
-            corenum.value = 2;
-            nodenum.value = 1;
-            runtime.type = "number";
-            runtime.value = 2;
-            corenum.required = true;
-            nodenum.required = true;
-            runtime.required = true;
-        }
-    }
-} */
 
 $("#daintCollapse")[0].addEventListener('show.bs.collapse', function () {
     console.log("upper daint");

@@ -1583,7 +1583,7 @@ def get_data_model_catalog(request, exc="", ctx=""):
     # headers = {'Authorization': get_auth_header(request.user.social_auth.get())}
     headers = {'Authorization': "Bearer " + storage_user_token}
     vf_url = "https://validation-v1.brainsimulation.eu/authorizedcollabparameterrest/?format=json&python_client=true"
-    res = requests.get(vf_url)
+    res = requests.get(vf_url, verify=False)
     default_values = res.json()
 
     data = {"default_values": default_values}

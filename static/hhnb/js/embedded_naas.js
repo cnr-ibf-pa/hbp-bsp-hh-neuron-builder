@@ -164,6 +164,7 @@ function checkEditValues(editList=[]){
 
 // manage register button clicks
 function registerModelMain(){
+    console.log("registerModelMain() called.");
     var mcModUrl = sessionStorage.getItem("mcModUrl");
     toggleElVisibility(displayBlock=["overlaywrappermsgnaas"], 
         displayNone=['overlaywrapmodreg'], eventsNone=["mainPageDiv"], 
