@@ -1,6 +1,4 @@
 $(document).ready(function(){
-    // var mainDiv = document.getElementById("mainDivMod");
-    // mainDiv.style.display = "none";
     showLoadingAnimation(message="Loading models");
     var address = "https://raw.githubusercontent.com/lbologna/bsp_data_repository/master/optimizations/";
     var exc = sessionStorage.getItem("exc", exc) ?  sessionStorage.getItem("exc") : "";
@@ -38,16 +36,14 @@ $(document).ready(function(){
                 spk_img.onload = function(){
                     counter += 1;
                     if (counter == 2 * data.length){
-                        // closePleaseWaitDiv();
                         hideLoadingAnimation();
                     }
                 };
                 mor_img.onload = function(){
                     counter += 1;
                     if (counter == 2 * data.length){
-                        // closePleaseWaitDiv();
                         hideLoadingAnimation();
-                        mainDiv.style.display = "block";
+                        $("#page").css("display", "block");
                     }
                 };
             });
@@ -78,23 +74,6 @@ function launchOptimizationHPC() {
 
 function reloadCurrentPage() {
     window.location.href = ""
-}
-
-// Hide please wait message div
-function closePleaseWaitDiv() {
-    document.getElementById("overlaywrapperwaitmod").style.display = "none";
-    document.getElementById("mainDivMod").style.pointerEvents = "auto";
-    document.body.style.overflow = "auto";
-}
-
-// Display please wait div
-function displayPleaseWaitDiv(message="") {
-    document.getElementById("overlaywrapperwaitmod").style.display = "block";
-    document.getElementById("mainDivMod").style.pointerEvents = "none";
-    document.body.style.overflow = "hidden";
-    if (message || !(message.length === 0)){
-        document.getElementById("waitdynamictextmod").innerHTML = message;
-    }
 }
 
 // Format description

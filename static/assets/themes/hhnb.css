@@ -439,7 +439,7 @@ body {
     font-size: 16px;
     min-height: 80px;
     /* margin: 20px auto; */
-    transition: all 0.3s ease;   
+    transition: all 0.2s ease;   
     /* margin: 20px auto; */
 
     /* box-shadow: 3px 3px 3px 3px #bbbbbb; */
@@ -448,8 +448,9 @@ body {
 }
 
 .model-info-div:hover {
-    box-shadow: 1px 1px 10px #0066ff;
-    border: #0066ff solid 1px;
+    box-shadow: 0 0 0 4px #0066ff77; /* rgb(190, 190, 190); */
+    /* border: #0066ff99 solid 2px; */
+    transform: scale(1.02, 1.02);
     /* transform: scale(1.02); */
 }
 
