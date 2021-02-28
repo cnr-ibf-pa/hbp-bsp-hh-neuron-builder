@@ -3,6 +3,7 @@
 
 {% block content %}
 
+
 <div id="home-main-div">
     <div class="hhnb-secondary-nav">
         <div class="page-title">Workflow</div>
@@ -12,17 +13,18 @@
         <button id="wf-btn-save" class="btn hhnb-title-btn" title="Download current workflow" onclick="saveWorkflow()">Save</button>
         <div class="separator-8"></div>
         <a href="https://humanbrainproject.github.io/hbp-sp6-guidebook/online_usecases/single_cell_building/hippocampus/p1_hh_neuron_builder/p1_hh_neuron_builder.html"
-           target="_blank">
-           <span class="info-icon" title="Read the Guidebook"></span>
+        target="_blank">
+        <span class="info-icon" title="Read the Guidebook"></span>
         </a>
         <a href="https://object.cscs.ch/v1/AUTH_c0a333ecf7c045809321ce9d9ecdfdea/web-resources-bsp/bsp-video-tutorials/HodgkinHuxleyNeuronBuilder/index.html"
-           target="_blank">
-           <span class="tutorial-icon" title="Watch the video tutorial"></span>
+        target="_blank">
+        <span class="tutorial-icon" title="Watch the video tutorial"></span>
         </a>
     </div>
 </div>
 
 <div class="page">
+
     <div class="container main-content workflow-content">
         <nav class="navbar navbar-light bg-light workflow-id">
             <span id="wf-title" class="col flex-grow-1 navbar-text">
@@ -212,9 +214,9 @@
             {% csrf_token %}
             <div class="mb-3">
                 <label id="uploadFormLabel" for="formFile" class="form-label"></label>
-                <!-- <div id="uploadImg">
-                    <img src="{% static "hhnb/img/expected_sim_zip.jpg" %}" style="width: 100%" alt="Expected sim zip file">
-                </div> -->
+                <div id="uploadImg">
+                    <img src="{% static "hhnb/img/expected_sim_zip.jpg" %}" alt="Expected sim zip file">
+                </div>
                 <input id="formFile" name="formFile" type="file" class="form-control">
             </div>
             <button type="button" id="cancelUploadFormButton" class="btn workflow-btn" onclick="closeUploadDiv(true)">Cancel</button>
@@ -366,9 +368,9 @@
                                 <div class="hpc-param-chooser container">
                                     <div class="row">
                                         <div class="input-group">
-                                            <div class="input-group-prepend">
+                                            <!-- <div class="input-group-prepend"> -->
                                                 <span class="input-group-text">Project ID</span>
-                                            </div>
+                                            <!-- </div> -->
                                             <input type="text" class="form-control" id="daint_project_id" placeholder="Set project" required>
                                         </div>
                                     </div>
@@ -379,16 +381,16 @@
                                                 <div class="card-header input-card-header">Algorithm Parameters</div>
                                                 <div class="card-body ">
                                                     <div class="input-group">
-                                                        <div class="input-group-prepend">
+                                                        <!-- <div class="input-group-prepend"> -->
                                                             <span class="input-group-text" title="Number of generation (max 60)"># Gen</span>
-                                                        </div>
+                                                        <!-- </div> -->
                                                         <input type="number" class="form-control small-placeholder" name="gen-max" id="daint-gen-max" title="Number of generation (max 60)" placeholder="Number of generation (max 60)" step="1" min="1" max="60">
                                                     </div>
                                                     <br>
                                                     <div class="input-group">
-                                                        <div class="input-group-prepend">
+                                                        <!-- <div class="input-group-prepend"> -->
                                                             <span class="input-group-text" title="Offspring size">Offspring</span>
-                                                        </div>
+                                                        <!-- </div> -->
                                                         <input type="number" class="form-control" name="offspring" id="daint-offspring" title="Offspring size" placeholder="Offspring size" step="1" min="1" max="60">
                                                     </div>
                                                     <br>
@@ -407,23 +409,23 @@
                                                 <div class="card-header input-card-header">Optimization Run Parameters</div>
                                                 <div class="card-body">
                                                     <div class="input-group">
-                                                        <div class="input-group-prepend">
+                                                        <!-- <div class="input-group-prepend"> -->
                                                             <span class="input-group-text" title="Number of nodes"># Nodes</span>
-                                                        </div>
+                                                        <!-- </div> -->
                                                         <input type="number" class="form-control small-placeholder" name="node-num" id="daint-node-num" title="Number of nodes" placeholder="Number of nodes" value="6" step="1" min="1" required>
                                                     </div>    
                                                     <br>
                                                     <div class="input-group">
-                                                        <div class="input-group-prepend">
+                                                        <!-- <div class="input-group-prepend"> -->
                                                             <span class="input-group-text" title="Number of cores"># Cores</span>
-                                                        </div>
+                                                        <!-- </div> -->
                                                         <input type="number" class="form-control small-placeholder" name="core-num" id="daint-core-num" title="Number of cores" placeholder="Number of cores" value="24" step="1" min="1" required>
                                                     </div>   
                                                     <br>
                                                     <div class="input-group">
-                                                        <div class="input-group-prepend">
+                                                        <!-- <div class="input-group-prepend"> -->
                                                             <span class="input-group-text" title="Runtime">Runtime</span>
-                                                        </div>
+                                                        <!-- </div> -->
                                                         <input type="text" class="form-control small-placeholder" name="runtime" id="daint-runtime" title="Runtime" placeholder="Runtime" value="120m" required>
                                                     </div>  
                                                 </div>
@@ -447,23 +449,23 @@
                                                 <div class="card-header input-card-header">Algorithm Parameters</div>
                                                 <div class="card-body ">
                                                     <div class="input-group">
-                                                        <div class="input-group-prepend">
+                                                        <!-- <div class="input-group-prepend"> -->
                                                             <span class="input-group-text" title="Number of generation (max 60)"># Gen</span>
-                                                        </div>
+                                                        <!-- </div> -->
                                                         <input type="number" class="form-control small-placeholder" name="gen-max" id="sa-daint-gen-max" title="Number of generation (max 60)" placeholder="Number of generation (max 60)" step="1" min="1" max="60">
                                                     </div>
                                                     <br>
                                                     <div class="input-group">
-                                                        <div class="input-group-prepend">
+                                                        <!-- <div class="input-group-prepend"> -->
                                                             <span class="input-group-text" title="Offspring size">Offspring</span>
-                                                        </div>
+                                                        <!-- </div> -->
                                                         <input type="number" class="form-control" name="offspring" id="sa-daint-offspring" title="Offspring size" placeholder="Offspring size" step="1" min="1" max="60">
                                                     </div>
                                                     <br>
                                                     <div class="input-group" style="visibility: hidden;">
-                                                        <div class="input-group-prepend">
+                                                        <!-- <div class="input-group-prepend"> -->
                                                             <span class="input-group-text"></span>
-                                                        </div>
+                                                        <!-- </div> -->
                                                         <input class="form-control">
                                                     </div>
                                                         
@@ -475,23 +477,23 @@
                                                 <div class="card-header input-card-header">Optimization Run Parameters</div>
                                                 <div class="card-body">
                                                     <div class="input-group">
-                                                        <div class="input-group-prepend">
+                                                        <!-- <div class="input-group-prepend"> -->
                                                             <span class="input-group-text" title="Number of nodes"># Nodes</span>
-                                                        </div>
+                                                        <!-- </div> -->
                                                         <input type="number" class="form-control small-placeholder" name="node-num" id="sa-daint-node-num" title="Number of nodes" placeholder="Number of nodes" value="6" step="1" min="1" required>
                                                     </div>    
                                                     <br>
                                                     <div class="input-group">
-                                                        <div class="input-group-prepend">
+                                                        <!-- <div class="input-group-prepend"> -->
                                                             <span class="input-group-text" title="Number of cores"># Cores</span>
-                                                        </div>
+                                                        <!-- </div> -->
                                                         <input type="number" class="form-control small-placeholder" name="core-num" id="sa-daint-core-num" title="Number of cores" placeholder="Number of cores" value="24" step="1" min="1" required>
                                                     </div>   
                                                     <br>
                                                     <div class="input-group">
-                                                        <div class="input-group-prepend">
+                                                        <!-- <div class="input-group-prepend"> -->
                                                             <span class="input-group-text" title="Runtime">Runtime</span>
-                                                        </div>
+                                                        <!-- </div> -->
                                                         <input type="" class="form-control small-placeholder" name="runtime" id="sa-daint-runtime" title="Runtime" placeholder="Runtime" value="2" required>
                                                     </div>  
                                                 </div>
@@ -503,7 +505,11 @@
                         </div>
                         <div class="accordion-item">
                             <h2 id="NSG" class="accordion-header">
-                                <button type="button" id="accordionNSG" name="NSG" class="accordion-button hpc collapsed" data-bs-toggle="collapse" data-bs-target="#nsgCollapse" aria-expanded="false" aria-controls="nsgCollapse">
+                                <button type="button" id="accordionNSG" name="NSG" class="accordion-button hpc collapsed disable" data-bs-toggle="collapse"  aria-expanded="false" aria-controls="nsgCollapse" title="Temporarily unavailable"> <!-- data-bs-target="#nsgCollapse" -->
+                                    <svg xmlns="http://www.w3.org/2000/svg" style="margin-right: 12px" width="16" height="16" fill="currentColor" class="bi bi-bug-fill" viewBox="0 0 16 16">
+                                        <path d="M4.978.855a.5.5 0 1 0-.956.29l.41 1.352A4.985 4.985 0 0 0 3 6h10a4.985 4.985 0 0 0-1.432-3.503l.41-1.352a.5.5 0 1 0-.956-.29l-.291.956A4.978 4.978 0 0 0 8 1a4.979 4.979 0 0 0-2.731.811l-.29-.956z"/>
+                                        <path d="M13 6v1H8.5v8.975A5 5 0 0 0 13 11h.5a.5.5 0 0 1 .5.5v.5a.5.5 0 1 0 1 0v-.5a1.5 1.5 0 0 0-1.5-1.5H13V9h1.5a.5.5 0 0 0 0-1H13V7h.5A1.5 1.5 0 0 0 15 5.5V5a.5.5 0 0 0-1 0v.5a.5.5 0 0 1-.5.5H13zm-5.5 9.975V7H3V6h-.5a.5.5 0 0 1-.5-.5V5a.5.5 0 0 0-1 0v.5A1.5 1.5 0 0 0 2.5 7H3v1H1.5a.5.5 0 0 0 0 1H3v1h-.5A1.5 1.5 0 0 0 1 11.5v.5a.5.5 0 1 0 1 0v-.5a.5.5 0 0 1 .5-.5H3a5 5 0 0 0 4.5 4.975z"/>
+                                    </svg>
                                     NSG - NeuronScience Gateway
                                 </button>
                             </h2>
@@ -511,13 +517,13 @@
                                 <div class="hpc-param-chooser container">
                                     <div class="row">
                                         <div class="input-group">
-                                            <div class="input-group-prepend">
+                                            <!-- <div class="input-group-prepend"> -->
                                                 <span class="input-group-text" title="NSG Username">Username</span>
-                                            </div>
+                                            <!-- </div> -->
                                             <input type="text" class="form-control username" id="username_submit" name="username_submit" placeholder="NSG Username" style="border-top-right-radius: .25rem; border-bottom-right-radius: .25rem;" required>
-                                            <div class="input-group-prepend">
+                                            <!-- <div class="input-group-prepend"> -->
                                                 <span class="input-group-text password" title="NSG Password">Password</span>
-                                            </div>
+                                            <!-- </div> -->
                                             <input type="password" class="form-control" id="password_submit" name="password_submit" placeholder="NSG Password" required>
                                         </div>
                                     </div>
@@ -528,23 +534,23 @@
                                                 <div class="card-header input-card-header">Algorithm Parameters</div>
                                                 <div class="card-body ">
                                                     <div class="input-group">
-                                                        <div class="input-group-prepend">
+                                                        <!-- <div class="input-group-prepend"> -->
                                                             <span class="input-group-text" title="Number of generation (max 60)"># Gen</span>
-                                                        </div>
+                                                        <!-- </div> -->
                                                         <input type="number" class="form-control small-placeholder" name="gen-max" id="nsg-gen-max" title="Number of generation (max 60)" placeholder="Number of generation (max 60)" step="1" min="1" max="60">
                                                     </div>
                                                     <br>
                                                     <div class="input-group">
-                                                        <div class="input-group-prepend">
+                                                        <!-- <div class="input-group-prepend"> -->
                                                             <span class="input-group-text" title="Offspring size">Offspring</span>
-                                                        </div>
+                                                        <!-- </div> -->
                                                         <input type="number" class="form-control" name="offspring" id="nsg-offspring" title="Offspring size" placeholder="Offspring size" step="1" min="1" max="60">
                                                     </div>
                                                     <br>
                                                     <div class="input-group" style="visibility: hidden;">
-                                                        <div class="input-group-prepend">
+                                                        <!-- <div class="input-group-prepend"> -->
                                                             <span class="input-group-text"></span>
-                                                        </div>
+                                                        <!-- </div> -->
                                                         <input class="form-control">
                                                     </div>
                                                         
@@ -556,23 +562,23 @@
                                                 <div class="card-header input-card-header">Optimization Run Parameters</div>
                                                 <div class="card-body">
                                                     <div class="input-group">
-                                                        <div class="input-group-prepend">
+                                                        <!-- <div class="input-group-prepend"> -->
                                                             <span class="input-group-text" title="Number of nodes"># Nodes</span>
-                                                        </div>
+                                                        <!-- </div> -->
                                                         <input type="number" class="form-control small-placeholder" name="node-num" id="nsg-node-num" title="Number of nodes" placeholder="Number of nodes" value="1" step="1" min="1" required>
                                                     </div>    
                                                     <br>
                                                     <div class="input-group">
-                                                        <div class="input-group-prepend">
+                                                        <!-- <div class="input-group-prepend"> -->
                                                             <span class="input-group-text" title="Number of cores"># Cores</span>
-                                                        </div>
+                                                        <!-- </div> -->
                                                         <input type="number" class="form-control small-placeholder" name="core-num" id="nsg-core-num" title="Number of cores" placeholder="Number of cores" value="2" step="1" min="1" required>
                                                     </div>   
                                                     <br>
                                                     <div class="input-group">
-                                                        <div class="input-group-prepend">
+                                                        <!-- <div class="input-group-prepend"> -->
                                                             <span class="input-group-text" title="Runtime">Runtime</span>
-                                                        </div>
+                                                        <!-- </div> -->
                                                         <input type="number" class="form-control small-placeholder" name="runtime" id="nsg-runtime" title="Runtime" placeholder="Runtime" value="2" required>
                                                     </div>  
                                                 </div>
@@ -604,7 +610,11 @@
                 <div id="hpcSource" class="list-group list-group-horizontal">
                     <button type="button" id="jobsDaint" name="DAINT-CSCS" class="list-group-item fetch-jobs list-group-item-action" onclick="displayCSCSJobList($(this));">CSCS-DAINT</button>
                     <button type="button" id="jobsSADaint" name="SA-CSCS" class="list-group-item fetch-jobs list-group-item-action" onclick="displayCSCSJobList($(this));">CSCS-DAINT<br>Service Account</button>
-                    <button type="button" id="jobsNSG" name="NSG" class="list-group-item fetch-jobs list-group-item-action" onclick="displayNsgJobList($(this));">NSG<br>NeuronScience Gateway</button>
+                    <button type="button" id="jobsNSG" name="NSG" class="list-group-item fetch-jobs list-group-item-action disable" onclick="/* displayNsgJobList($(this)); */" title="Temporarily unavailable">
+                        <svg xmlns="http://www.w3.org/2000/svg" style="margin-right: 12px" width="16" height="16" fill="currentColor" class="bi bi-bug-fill" viewBox="0 0 16 16">
+                            <path d="M4.978.855a.5.5 0 1 0-.956.29l.41 1.352A4.985 4.985 0 0 0 3 6h10a4.985 4.985 0 0 0-1.432-3.503l.41-1.352a.5.5 0 1 0-.956-.29l-.291.956A4.978 4.978 0 0 0 8 1a4.979 4.979 0 0 0-2.731.811l-.29-.956z"/>
+                            <path d="M13 6v1H8.5v8.975A5 5 0 0 0 13 11h.5a.5.5 0 0 1 .5.5v.5a.5.5 0 1 0 1 0v-.5a1.5 1.5 0 0 0-1.5-1.5H13V9h1.5a.5.5 0 0 0 0-1H13V7h.5A1.5 1.5 0 0 0 15 5.5V5a.5.5 0 0 0-1 0v.5a.5.5 0 0 1-.5.5H13zm-5.5 9.975V7H3V6h-.5a.5.5 0 0 1-.5-.5V5a.5.5 0 0 0-1 0v.5A1.5 1.5 0 0 0 2.5 7H3v1H1.5a.5.5 0 0 0 0 1H3v1h-.5A1.5 1.5 0 0 0 1 11.5v.5a.5.5 0 1 0 1 0v-.5a.5.5 0 0 1 .5-.5H3a5 5 0 0 0 4.5 4.975z"/>
+                        </svg>NSG<br>NeuronScience Gateway</button>
                 </div>
             </div>
             <div class="row-separator"></div>
@@ -615,13 +625,13 @@
                     </div>
                     <div class="card-body ">
                         <div class="input-group">
-                            <div class="input-group-prepend">
+                            <!-- <div class="input-group-prepend"> -->
                                 <span class="input-group-text" title="NSG Username">Username</span>
-                            </div>
+                            <!-- </div> -->
                             <input type="text" class="form-control username" id="usernameNsg" name="username_submit" placeholder="NSG Username" style="border-top-right-radius: .25rem; border-bottom-right-radius: .25rem;" required>
-                            <div class="input-group-prepend">
+                            <!-- <div class="input-group-prepend"> -->
                                 <span class="input-group-text password" title="NSG Password">Password</span>
-                            </div>
+                            <!-- </div> -->
                             <input type="password" class="form-control" id="passwordNsg" name="password_submit" placeholder="NSG Password" required>
                             <!-- <input type="button" class="btn" onclick="checkNsgLogin()" value="Check"> -->
                         </div>

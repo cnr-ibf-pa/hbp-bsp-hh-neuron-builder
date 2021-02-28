@@ -419,9 +419,10 @@ function checkConditions(){
                 $("#run-sim-btn").prop("disabled", false);
                 $("#opt-fetch-btn").prop("disabled", true);
                 $("#opt-res-up-btn").prop("disabled", true)
+                $("#del-sim-btn").prop("disabled", false);
 
                 if (data['sim_flag']['status']) {
-                    $("#del-sim-btn").prop("disabled", true);  
+                    // $("#del-sim-btn").prop("disabled", true);  
                     $("#opt-fetch-btn").prop("disabled", true);  
                     $("#opt-res-up-btn").prop("disabled", true);  
                 } else {
