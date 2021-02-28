@@ -8,16 +8,11 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width">
 
-<!--        {# Bower Dependencies #}-->
-        <link rel="stylesheet" href="{% static 'assets/themes/hbp-collaboratory-theme/dist/css/bootstrap.css' %}">
-<!--        <link rel="stylesheet" href="{% static 'css/cdp2.css' %}">-->
-
-        <!--<script type="text/javascript" src="{% static 'jquery/dist/jquery.min.js' %}"></script>-->
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-        <!--<script type="text/javascript" src="{% static 'plotly-latest.min.js' %}"></script>-->
-        <script src="https://pagecdn.io/lib/plotly-js/1.54.7/plotly.min.js" crossorigin="anonymous"></script>
-
-
+        {# Bower Dependencies #}
+        <link rel="stylesheet" href="{% static 'hbp-collaboratory-theme/dist/css/bootstrap.css' %}">
+        <link rel="stylesheet" href="{% static 'css/cdp2.css' %}">
+        <script type="text/javascript" src="{% static 'jquery/dist/jquery.min.js' %}"></script>
+        <script type="text/javascript" src="{% static 'plotly-latest.min.js' %}"></script>
     </head>
     <body>
         <div class="panel panel-info" width=100% id="input-groups">
@@ -37,8 +32,56 @@
                 <br>
             </div>
         </form>
+    {# Bower Dependencies #}
+    <script>
+        //$("#mydiv").append("<p>crr</p>");
+        /* $.getJSON('/features_dict', function(data) {
+            orderedOuterKeys = Object.keys(data).sort(function(a,b){
+                return a.toLowerCase().localeCompare(b.toLowerCase());
+            });
+        });*/
+    </script>
 
-<!--    <script type="text/javascript" src="{% static 'lodash/dist/lodash.min.js' %}"></script>-->
-<!--    <script type="text/javascript" src="{% static 'angular/angular.min.js' %}"></script>-->
+    <script>
+       /* 
+        $(document).on('submit', '#upload_files', function(e){
+            e.preventDefault();
+            var formData = new FormData($(this)[0]);
+            $.ajax({
+                type: 'POST', 
+                url:'/upload_files',
+                data: {
+                }
+            });
+        });
+        
+        */
+      /*  
+        $("form#upload_files").submit(function() {
+            var formData = new FormData($(this)[0]);
+
+            $.post([contentType:false; processData:false]);
+            $.post($(this).attr("action"), formData);
+            console.log(formData)
+            return false;
+        });
+        */
+    </script>
+    <!--
+    <script>
+        $("form#upload_files").submit(function() {
+        var formData = new FormData($(this)[0]);
+
+
+        $.post($(this).attr("action"), formData, function(data) {
+        alert(data);
+        }, false);
+        console.log(formData)
+        return false;
+        });
+    </script>
+    -->
+    <script type="text/javascript" src="{% static 'lodash/dist/lodash.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'angular/angular.min.js' %}"></script>
     </body>
 </html>
