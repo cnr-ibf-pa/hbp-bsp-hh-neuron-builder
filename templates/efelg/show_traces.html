@@ -2,246 +2,360 @@
 
 <!DOCTYPE html>
 <html>
-    <head>
-        <script type="text/javascript" src="{% static 'bspganalytics.js' %}">
-        </script>
 
-        <title>Feature extraction GUI</title>
+<head>
+    <script type="text/javascript" src="{% static 'bspganalytics.js' %}">
+    </script>
 
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width">
+    <title>Feature extraction GUI</title>
 
-        <link rel="stylesheet" href="{% static 'assets/themes/hbp-collaboratory-theme/dist/css/bootstrap.css' %}">
-        <link rel="stylesheet" href="{% static 'assets/themes/bspg.css' %}">
-        <link rel="stylesheet" href="{% static 'assets/themes/show_traces_custom.css' %}">
-    </head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
 
-    <body>
-        <div id="main-e-st-div">
-            <div class="fixed-page-title row center-container">
-                <div class="col-sm-4 align-left">Trace selection/upload</div>
-                <div class="col-sm-4 align-center"><h4>Feature Extraction</h4></div>
-                <div class="col-sm-4 align-right">
-                    <button id="home-btn" class="btn btn-link" style="color:white;" onclick="window.location.href='/efelg/overview/'">Home</button>
-                </div>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous">
+    <link rel="stylesheet" href="{% static 'assets/fontawesome/css/all.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/themes/bspg.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/themes/efelg.css' %}">
+    <link rel="icon" href="{% static 'efelg/img/favicon.ico' %}">
+</head>
+
+<body>
+    <header class="site-header sticky-top bg-primary text-white px-15 py-4 text-center">
+        <div class="row">
+            <div class="col-xl-3 col-md-6 text-start align-self-center">
+                <a href="https://ebrains.eu" target="_blank">
+                    <img src="{% static 'efelg/img/ebrains_logo.png' %}" alt="ebrains_logo" style="max-width:130px"/>
+                </a>
             </div>
-            <br>
-            <div class="panel panel-success" id="data-groups">
-                <div class="panel panel-heading" id="filter-groups-title">
-                    Filter dataset files and select individual traces
-                </div>
-
-                <div class='ctrl_box'>
-                    <label>Cell properties:</label>
-                    <div id="container">
-                        <div id="contributorsTitle" class="tableTitle">
-                            <label>Contributors</label>
-                        </div>
-                        <div id="contributorsD">
-                            <form>
-                                <table id="contributors"></table>
-                            </form>
-                        </div>
-                        <div id="speciesTitle" class="tableTitle">
-                            <label>Species</label>
-                        </div>
-                        <div id="speciesD">
-                            <form>
-                                <table id="species"></table>
-                            </form>
-                        </div>
-                        <div id="structureTitle" class="tableTitle">
-                            <label>Structure</label>
-                        </div>
-                        <div id="structureD">
-                            <form>
-                                <table id="structures"></table>
-                            </form>
-                        </div>
-                        <div id="regionTitle" class="tableTitle">
-                            <label>Region</label>
-                        </div>
-                        <div id="regionD">
-                            <form>
-                                <table id="regions"></table>
-                            </form>
-                        </div>
-                        <div id="typeTitle" class="tableTitle">
-                            <label>Type</label>
-                        </div>
-                        <div id="typeD">
-                            <form>
-                                <table id="types"></table>
-                            </form>
-                        </div>
-                        <div id="etypeTitle" class="tableTitle">
-                            <label>EType</label>
-                        </div>
-                        <div id="etypeD">
-                            <form>
-                                <table id="etypes"></table>
-                            </form>
-                        </div>
-                        <br>
-                        <div class="center-container">
-                            <div id="buttonD" class="row-center-container">
-                                <div id="citation-text"></div>
-                                <div id="ref-citation-text"></div>
-                                <button type="button" class="btn btn-default" id="apply" onclick="applySelection()" disabled>Apply</button>
-                                <button type="button" class="btn btn-default" id="reset" onclick="resetFields()">Reset</button>
-                            </div>
-                        </div>
-                    </div>
-                    <br>
-                    <div id='charts'></div>
-                </div>
-                <br>
-
-                <form id="upload_files" 
-                      name="upload_files_name" 
-                      method="POST"
-                      enctype="multipart/form-data"
-                      action="/efelg/upload_files">
-                    {% csrf_token  %}
-                    <div class="panel panel-success" id="input-groups">
-                        <div class="panel-heading">
-                            Upload your own file(s) and then select 
-                            individual traces
-                        </div>
-                        <br>
-
-                        <div class="panel">
-
-                            <!-- File uploaded box -->
-                            <div id="loadfile_box" style="display:none">
-                                <div class="panel-heading">
-                                    <div id="loadfile_info"></div> 
-                                </div>
-                            </div>
-                            <!-- -->
-
-                            <!-- File rejected box -->
-                            <div id="loadfile_box_rejected" style="display:none">
-                                <div class="panel-heading">
-                                    <div id="loadfile_info_rejected"></div> 
-                                </div>
-                            </div>
-                            <!-- -->
-
-                            <label class="btn btn-default btn-file">
-                                Browse files...
-                                <input type="file" 
-                                       name="user_files" 
-                                       id="user_files" 
-                                       accept=".abf" 
-                                       multiple style="display:none;"/>
-                                <span class="custom-file-control"></span>
-                            </label>
-
-                            <input type="submit" 
-                                   id="upload_button" 
-                                   name="upload_button_name" 
-                                   class="btn btn-default" 
-                                   value="Upload" />
-                        </div>
-                    </div>
-                </form>
-                <div id='charts_upload'></div>
-
+            <div class="col-xl-6 align-self-center order-last">
+                <h2 class="m-0"><strong><a class="text-white text-decoration-none" href="/efelg/overview/">NeuroFeatureExtract</a></strong></h2>
             </div>
-            <form id='gonextform' method='POST'
-                                   action= '/efelg/select_features/'> {% csrf_token %} 
-                                   <input name='data' type='hidden'>
-
-                                   <button onclick='submitAll()' 
-                                   class="btn btn-primary">
-                                       Next
-                                   </button>
-            </form>
-
+            <div class="col-xl-3 col-md-6 text-end align-self-center order-xl-last">
+                <a href="/efelg/overview/"><i class="fas fa-home text-white ms-4"></i></a>
+                <a href="/efelg/docs/" target="_blank"><i class="fas fa-info-circle text-white ms-4"></i></a>
+                <a href="https://object.cscs.ch/v1/AUTH_c0a333ecf7c045809321ce9d9ecdfdea/web-resources-bsp/bsp-video-tutorials/FeatureExtraction/index.html"
+                        target="_blank"><i class="fas fa-play text-white ms-4"></i>
+                </a>
+            </div>
         </div>
-
-
-        <!-- "No data selected" message div -->
-        <div id="e-st-warning-div" class="overlay-wrapper">
-            <div id="overlay-e-st-warn" style="top:35%;" class="overlay-content">
-                <div class="center-container">
-                    <div class="row-center-container">
-                        <div class="please-wait-text" 
-                             style="color:red; font-size: 18px;"> >> No data
-                             selected << </div>
-                        <br>
-                        <button id="e-st-warning-div-btn"
-                                type="button" 
-                                class="btn btn-default"
-                                onclick="closeMessageDiv('e-st-warning-div',
-                                'main-e-st-div')">
-                            Close
+        <div class="row mt-2">
+            <h4>Trace selection</h4>
+        </div>
+    </header>
+    <main id="main-e-st-div" class="text-dark">
+        <div class="mx-10 my-4">
+            <div class="bg-light-yellow text-center p-4 mt-4 mb-5" id="filter-groups-title">
+                <h4 class="mb-0">Select data from the EBRAINS Knowledge Graph</h4>
+            </div>
+            <div class="border border-primary rounded-3 px-1">
+                <div class="clickable mx-auto px-4 py-2" onclick="toggleParametersMenu(this)">
+                    <div class="row">
+                        <div class="col-11">
+                            <strong>Feature Extraction Parameters</strong>
+                        </div>
+                        <div class="col-1 text-end">
+                            <i class="fas fa-lg fa-angle-down"></i>
+                        </div>
+                    </div>
+                </div>
+                <div id="parameters_menu" class="openable open-animation mx-auto px-4">
+                    <div class="row mb-2">
+                        <div class="col-xl-2 col-lg-6 col-md-6">
+                            <label for="threshold_value" class="form-label mb-0">Threshold (mV): </label>
+                        </div>
+                        <div class="col-xl-3 col-lg-5 col-md-5">
+                            <input id="threshold_value" class="form-control shadow-none d-inline-block" type="number"
+                                value=-20>
+                            <i class="fas fa-minus ms-4" onclick="updateValue(this, -5)"></i>
+                            <i class="fas fa-plus ms-2" onclick="updateValue(this, 5)"></i>
+                        </div>
+                        <div class="col-xl-1 col-lg-1 col-md-1 col-sm-2 text-end order-xl-last">
+                            <i class="far fa-question-circle fa-lg"
+                                onclick="openInfo('Feature Extraction Parameters info', parameters_info)">
+                            </i>
+                        </div>
+                        <div class="col-xl-3 col-lg-6 col-md-6">
+                            <label for="events_value" class="form-label mb-0">Number of printed events per feature: </label>
+                        </div>
+                        <div class="col-xl-3 col-lg-5 col-md-5 col-sm-10">
+                            <input id="events_value" class="form-control shadow-none d-inline-block"
+                                type="number" value=5>
+                            <i class="fas fa-minus ms-4" onclick="updateEventsValue(this, -1)"></i>
+                            <i class="fas fa-plus ms-2" onclick="updateEventsValue(this, 1)"></i>
+                        </div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-xl-2 col-lg-6 col-md-6">
+                            <label class="form-label mb-0">Accept zero std: </label>
+                        </div>
+                        <div class="col-xl-3 col-lg-6 col-md-6">
+                            <input id="zero_std_false" type="radio" name="zero_std" value="False" checked="checked">
+                            <label for="zero_std_false" class="form-label mb-0">False</label>
+                            <input id="zero_std_true" type="radio" name="zero_std" value="True" class="ms-3">
+                            <label for="zero_std_true" class="form-label mb-0">True</label>
+                        </div>
+                        <div class="col-xl-7 col-lg-12 col-md-12">
+                            <span>Convert zero feature values to</span>
+                            <select id="zero_value" name="value" size="1" class="small-text mx-3 px-2"
+                                onclick="updateDropdownMenu(this)">
+                                <option value="null">-</option>
+                                <option value="nan">nan</option>
+                                <option value="stim_end">stim_end</option>
+                            </select>
+                            <span>for features</span>
+                            <div class="dropdown d-inline-block small-text mx-3 w-15">
+                                <button class="btn btn-secondary btn-sm dropdown-toggle w-100" type="button"
+                                    id="dropdownMenuButton" data-bs-flip="false" data-bs-toggle="dropdown"
+                                    aria-expanded="false" disabled></button>
+                                <ul id="mean_features_no_zeros" class="dropdown-menu w-100 bg-light"
+                                    aria-labelledby="dropdownMenuButton">
+                                    <li>
+                                        <label>
+                                            <input type="checkbox" class="mx-2" value="all"
+                                                name="mean_features_no_zeros"
+                                                onclick="selectAllCheckboxes(this)" />Select
+                                            all
+                                        </label>
+                                    </li>
+                                    <li>
+                                        <label>
+                                            <input type="checkbox" class="mx-2" value="inv_first_ISI"
+                                                name="mean_features_no_zeros" />inv first ISI
+                                        </label>
+                                    </li>
+                                    <li>
+                                        <label>
+                                            <input type="checkbox" class="mx-2" value="inv_second_ISI"
+                                                name="mean_features_no_zeros" />inv second ISI
+                                        </label>
+                                    </li>
+                                    <li>
+                                        <label>
+                                            <input type="checkbox" class="mx-2" value="inv_third_ISI"
+                                                name="mean_features_no_zeros" />inv third ISI
+                                        </label>
+                                    </li>
+                                    <li>
+                                        <label>
+                                            <input type="checkbox" class="mx-2" value="inv_fourth_ISI"
+                                                name="mean_features_no_zeros" />inv fourth ISI
+                                        </label>
+                                    </li>
+                                    <li>
+                                        <label>
+                                            <input type="checkbox" class="mx-2" value="inv_fifth_ISI"
+                                                name="mean_features_no_zeros" />inv fifth ISI
+                                        </label>
+                                    </li>
+                                    <li>
+                                        <label>
+                                            <input type="checkbox" class="mx-2" value="time_to_first_spike"
+                                                name="mean_features_no_zeros" />time to first spike
+                                        </label>
+                                    </li>
+                                    <li>
+                                        <label>
+                                            <input type="checkbox" class="mx-2" value="time_to_last_spike"
+                                                name="mean_features_no_zeros" />time to last spike
+                                        </label>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="border border-primary rounded-3 mx-auto my-5 p-4">
+                <div class="row">
+                    <div class="col-xl-2 col-lg-4 col-md-6">
+                        <div class="card bg-bg-primary h-100">
+                            <div class="card-header text-center bg-light-grey">
+                                <strong>Contributors</strong>
+                            </div>
+                            <div class="card-body" id="contributorsD">
+                                <form>
+                                    <table id="contributors"></table>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-lg-4 col-md-6">
+                        <div class="card bg-bg-primary h-100">
+                            <div class="card-header text-center bg-light-grey">
+                                <strong>Species</strong>
+                            </div>
+                            <div class="card-body" id="speciesD">
+                                <form>
+                                    <table id="species"></table>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-lg-4 col-md-6">
+                        <div class="card bg-bg-primary h-100">
+                            <div class="card-header text-center bg-light-grey">
+                                <strong>Structure</strong>
+                            </div>
+                            <div class="card-body" id="structureD">
+                                <form>
+                                    <table id="structures"></table>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-lg-4 col-md-6">
+                        <div class="card bg-bg-primary h-100">
+                            <div class="card-header text-center bg-light-grey">
+                                <strong>Region</strong>
+                            </div>
+                            <div class="card-body" id="regionD">
+                                <form>
+                                    <table id="regions"></table>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-lg-4 col-md-6">
+                        <div class="card bg-bg-primary h-100">
+                            <div class="card-header text-center bg-light-grey">
+                                <strong>Type</strong>
+                            </div>
+                            <div class="card-body" id="typeD">
+                                <form>
+                                    <table id="types"></table>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-lg-4 col-md-6">
+                        <div class="card bg-bg-primary h-100">
+                            <div class="card-header text-center bg-light-grey">
+                                <strong>EType</strong>
+                            </div>
+                            <div class="card-body" id="etypeD">
+                                <form>
+                                    <table id="etypes"></table>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row text-center mt-3">
+                    <div class="bg-light mb-4" id="citation-text"></div>
+                    <div class="col-sm-6">
+                        <button type="button" class="btn btn-outline-primary w-100" id="apply"
+                            onclick="applySelection()" disabled>
+                            Apply
+                        </button>
+                    </div>
+                    <div class="col-sm-6">
+                        <button type="button" class="btn btn-outline-primary w-100" id="reset"
+                            onclick="resetFields()">
+                            Reset
                         </button>
                     </div>
                 </div>
+                <div id='charts' class="text-center mx-auto mt-5 px-4"></div>
             </div>
-        </div>
-        <!-- -->
-
-        <!-- Wait Message div -->
-        <div id="wait-message-div" class="overlay-wrapper">
-            <div style="top: 40%;" class="overlay-content">
-                <div class="center-container">
-                    <div class="row-center-container">
-                        <div style="margin: auto;" class="spinning lg"></div>
-                        <br>
-                        <div>
-                            <div id="wmd-first"></div>
-                            <div id="wmd-second"></div>
-                        </div>
-                    </div>
+            <div class="bg-light-yellow text-center p-4 my-5" id="filter-groups-title">
+                <h4 class="mb-0">Upload your own files</h4>
+            </div>
+            <div id="upload_boxes">
+                <div class="text-end">
+                    <button id="add_cell_button" class="btn btn-primary" onclick="createUploadBox()">
+                        + Add Cell
+                    </button>
                 </div>
             </div>
-        </div>
-        <!-- -->
 
-        <!-- User's choice div -->
-        <div id="e-st-user-choice-div" class="overlay-wrapper">
-            <div id="overlay-e-st-user-choice" class="overlay-content">
-                <div style="position: sticky;"><strong>List of selected traces. 
-                        <br>
-                        Click "Confirm" to continue.
-                        <br>
-                        <br>
-                        <p style="color: red;">WARNING: no average will be 
-                        computed for stimulus amplitudes
-                        selected only once</p></strong> 
+            <form id='gonextform' method='POST' action='/efelg/select_features/'> {% csrf_token %}
+                <input name='data' type='hidden'>
+                <input name='global_parameters' type='hidden'>
+                <button onclick='submitAll()' class="btn btn-lg btn-outline-primary my-5 w-100">Next</button>
+            </form>
+        </div>
+    </main>
+
+
+    <!-- Wait div -->
+    <div id="wait-message-div" class="overlay-wrapper">
+        <div class="overlay-content text-center" style="top: 40%;">
+            <div class="mt-2">
+                <div class="spinner-border" role="status"></div>
+            </div>
+            <div class="mt-4">
+                <span id="wmd-first"></span>
+                <br />
+                <span id="wmd-second"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- User's choice div -->
+    <div id="e-st-user-choice-div" class="overlay-wrapper">
+        <div class="overlay-content" style="top: 20%;">
+            <div style="position: sticky;">
+                <strong>
+                    List of selected traces.
                     <br>
-                </div>
-                <div id="e-st-user-choice">
-                </div>
-                <br>
-                <button id="e-st-user-choice-accept-btn"
-                        type="button" 
-                        class="btn btn-default"
-                        style="margin:5px;"
-                        onclick="acceptUserChoiceList()">
+                    Click "Confirm" to continue.
+                    <br>
+                    <br>
+                    <p class="text-danger">
+                        WARNING: no average will be
+                        computed for stimulus amplitudes
+                        selected only once
+                    </p>
+                </strong>
+            </div>
+            <div id="e-st-user-choice">
+            </div>
+            <br>
+            <div class="text-center">
+                <button id="e-st-user-choice-accept-btn" class="btn btn-outline-primary mx-2 w-25"
+                    onclick="acceptUserChoiceList()">
                     Confirm
                 </button>
-                <button id="e-st-user-choice-cancel-btn"
-                        type="button" 
-                        class="btn btn-default"
-                        style="margin:5px;"
-                        onclick="closeUserChoiceList()">
+                <button id="e-st-user-choice-cancel-btn" class="btn btn-outline-primary mx-2 w-25"
+                    onclick="closeUserChoiceList()">
                     Cancel
                 </button>
             </div>
         </div>
-        <!-- -->
+    </div>
 
-    </body>
+    <!-- Info div -->
+    <div id="info-div" class="overlay-wrapper">
+        <div class="overlay-content">
+            <h3><strong id="info-title"></strong></h3>
+            </br>
+            <span id="info-text" class="text-justify"></span>
+            </br>
+            <button class="btn btn-outline-primary mb-2 w-50"
+                onclick="closeMessageDiv('info-div', 'main-e-st-div')">
+                Close
+            </button>
+        </div>
+    </div>
+
+    <!-- Warning div -->
+    <div id="warning-div" class="overlay-wrapper">
+        <div style="top:40%;" class="overlay-content">
+            <span id="warning-text" class="text-danger fs-5"></span>
+            <br>
+            <button class="btn btn-outline-primary mt-4 mb-2 w-50"
+                onclick="closeMessageDiv('warning-div', 'main-e-st-div')">
+                Close
+            </button>
+        </div>
+    </div>
+
+</body>
+
+<script type="text/javascript" src="https://code.jquery.com/jquery-3.5.1.min.js" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js" integrity="sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0" crossorigin="anonymous"></script>
+<script type="text/javascript" src="{% static 'common/js/global.js' %} "></script>
+<script type="text/javascript" src="{% static 'efelg/js/show_traces.js' %} "></script>
+<script type="text/javascript" src="{% static 'plotlyjs/plotly.js' %} "></script>
+
 </html>
-
-
-<!--<script type="text/javascript" src="{% static 'jquery/dist/jquery.min.js' %}"></script>-->
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-<script type="text/javascript" src="{% static 'assets/plotlyjs/plotly.js' %}"></script>
-<!--<script src="https://pagecdn.io/lib/plotly-js/1.54.7/plotly.min.js" crossorigin="anonymous"></script>-->
-<script type="text/javascript" src="{% static 'common/js/global.js' %}"></script>
-<script type="text/javascript" src="{% static 'efelg/js/show_traces.js' %}"></script>
