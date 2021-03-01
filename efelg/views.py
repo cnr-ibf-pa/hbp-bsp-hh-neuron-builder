@@ -55,7 +55,7 @@ def overview(request):
         if request.user.is_authenticated:
             username = request.user.username
         else:
-            username = 'anonymous' + time.time()
+            username = 'anonymous' + str(time.time())
         
         # TEMPORAL FIX: replacing userid with username
         userid = username

@@ -408,6 +408,13 @@ def choose_opt_model(request):
 
 
 def get_model_list(request, exc="", ctx=""):
+    model_file = request.session[exc]["singlecellmodeling_structure_path"]
+    with open(model_file) as json_file:
+        model_file_dict = json.load(json_file)
+
+    return HttpResponse(json.dumps(model_file_dict), content_type="application/json")
+
+def get_model_list2(request, exc="", ctx=""):
     """
     Serving api call to get list of optimization models
     """
@@ -468,12 +475,12 @@ def copy_feature_files(request, feature_folder="", exc="", ctx=""):
 
 
 # fetch model from dataset
-#def fetch_opt_set_file(request, source_opt_name="", source_opt_id="", exc="", ctx=""):
-def fetch_opt_set_file(request, source_opt_id='', exc='', ctx=''):
+def fetch_opt_set_file(request, source_opt_name="", source_opt_id="", exc="", ctx=""):
+#def fetch_opt_set_file(request, source_opt_id='', exc='', ctx=''):
     """
     Set optimization setting file
     """
-    source_opt_id = str(source_opt_id)
+    #source_opt_id = str(source_opt_id)
     response = {"response": "OK", "message": ""}
 
     # opt_model_path = request.session[exc]['optimization_model_path']
@@ -486,28 +493,28 @@ def fetch_opt_set_file(request, source_opt_id='', exc='', ctx=''):
     shutil.rmtree(user_dir_data_opt)
     os.makedirs(user_dir_data_opt)
 
-    # model_file = request.session[exc]["singlecellmodeling_structure_path"]
-    # with open(model_file) as json_file:
-    #     model_file_dict = json.load(json_file)
+    model_file = request.session[exc]["singlecellmodeling_structure_path"]
+    with open(model_file) as json_file:
+        model_file_dict = json.load(json_file)
 
-    # request.session[exc]['source_opt_name'] = source_opt_name
+    request.session[exc]['source_opt_name'] = source_opt_name
 
-    # for k in model_file_dict:
-    #     crr_k = str(list(k.keys())[0])
-    #     if crr_k == source_opt_name:
-    #         zip_url = k[crr_k]['meta']['zip_url']
-    #         break
+    for k in model_file_dict:
+        crr_k = str(list(k.keys())[0])
+        if crr_k == source_opt_name:
+            zip_url = k[crr_k]['meta']['zip_url']
+            break
 
-    mc = ModelCatalog(token=request.session['oidc_access_token'])
-    model = mc.get_model(model_id=source_opt_id)
-    source_opt_name = model['name']
+    #mc = ModelCatalog(token=request.session['oidc_access_token'])
+    #model = mc.get_model(model_id=source_opt_id)
+    #source_opt_name = model['name']
 
     # TODO: add version control on js
-    zip_url = ''
-    for instance in model['instances']:
-        if instance['source']:
-            zip_url = instance['source']
-            break
+    #zip_url = ''
+    #for instance in model['instances']:
+    #    if instance['source']:
+    #        zip_url = instance['source']
+    #        break
 
     r = requests.get(zip_url)
     opt_zip_path = os.path.join(user_dir_data_opt, source_opt_name + '.zip')
@@ -1249,22 +1256,22 @@ def run_analysis(request, exc="", ctx=""):
             up_folder = os.path.split(file_path)[0]
 
             # modify analysis.py file
-            f = open(full_file_path, 'r')
+            #f = open(full_file_path, 'r')
 
-            lines = f.readlines()
-            lines[228] = '    traces=[]\n'
-            lines[238] = '        traces.append(response.keys()[0])\n'
-            lines[242] = '\n    stimord={} \n    for i in range(len(traces)): \n        stimord[i]=float(traces[i][traces[i].find(\'_\')+1:traces[i].find(\'.soma\')]) \n    import operator \n    sorted_stimord = sorted(stimord.items(), key=operator.itemgetter(1)) \n    traces2=[] \n    for i in range(len(sorted_stimord)): \n        traces2.append(traces[sorted_stimord[i][0]]) \n    traces=traces2 \n'
-            lines[243] = '    plot_multiple_responses([responses], cp_filename, fig=model_fig, traces=traces)\n'
-            lines[366] = "def plot_multiple_responses(responses, cp_filename, fig, traces):\n"
-            lines[369] = "\n"
-            lines[370] = "\n"
-            lines[371] = "\n"  # n is the line number you want to edit; subtract 1 as indexing of list starts from 0
-            f.close()
+            #lines = f.readlines()
+            #lines[228] = '    traces=[]\n'
+            #lines[238] = '        traces.append(response.keys()[0])\n'
+            #lines[242] = '\n    stimord={} \n    for i in range(len(traces)): \n        stimord[i]=float(traces[i][traces[i].find(\'_\')+1:traces[i].find(\'.soma\')]) \n    import operator \n    sorted_stimord = sorted(stimord.items(), key=operator.itemgetter(1)) \n    traces2=[] \n    for i in range(len(sorted_stimord)): \n        traces2.append(traces[sorted_stimord[i][0]]) \n    traces=traces2 \n'
+            #lines[243] = '    plot_multiple_responses([responses], cp_filename, fig=model_fig, traces=traces)\n'
+            #lines[366] = "def plot_multiple_responses(responses, cp_filename, fig, traces):\n"
+            #lines[369] = "\n"
+            #lines[370] = "\n"
+            #lines[371] = "\n"  # n is the line number you want to edit; subtract 1 as indexing of list starts from 0
+            #f.close()
             
-            f = open(full_file_path, 'w')
-            f.writelines(lines)
-            f.close()
+            #f = open(full_file_path, 'w')
+            #f.writelines(lines)
+            #f.close()
 
             # modify evaluator.py if present
             if not os.path.exists(os.path.join(file_path, 'evaluator.py')):
@@ -1319,7 +1326,7 @@ def run_analysis(request, exc="", ctx=""):
                     shutil.rmtree(r_0_fold)
                 os.mkdir(r_0_fold)
 
-                subprocess.call('. /usr/local/hhnb-dev-/venv3/bin/activate; cd ' + up_folder + '; python opt_neuron.py --analyse --checkpoint ./checkpoints', shell=True)
+                subprocess.call('. /usr/local/hhnb-dev/venv3/bin/activate; cd ' + up_folder + '; python opt_neuron.py --analyse --checkpoint ./checkpoints', shell=True)
 
             except Exception as e:
                 msg = traceback.format_exception(*sys.exc_info())
