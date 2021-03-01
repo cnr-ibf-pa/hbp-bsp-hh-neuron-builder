@@ -1,7 +1,9 @@
 *.pyc
 *.log
 .idea/
-.vscode
+.vscode/
+
+*/migrations/
 
 */migrations/
 

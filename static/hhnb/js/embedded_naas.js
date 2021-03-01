@@ -8,15 +8,10 @@ var _reg_collab;
 sessionStorage.setItem("mcModUrl", "");
 
 $(document).ready(function(){
-    document.getElementById("reg-mod-main-btn").innerHTML = "Register in Model Catalog";
     // set onclick events
-    document.getElementById("back-to-wf-btn").onclick = backToWorkflow;
-    document.getElementById("msg-continue-ok-btn").onclick = displayModelRegistrationDiv;
-    document.getElementById("msg-continue-cancel-btn").onclick = cancelRegistration;
-    document.getElementById("msg-ok-btn").onclick = closeMsgDiv;
-    document.getElementById("register-model-btn").onclick = registerModel;
-    document.getElementById("reg-mod-main-btn").onclick = registerModelMain;
-    document.getElementById("cancel-model-register-btn").onclick = closeModelRegistrationDiv;
+    // document.getElementById("msg-continue-ok-btn").onclick = displayModelRegistrationDiv;
+    // document.getElementById("msg-continue-cancel-btn").onclick = cancelRegistration;
+    // document.getElementById("msg-ok-btn").onclick = closeMsgDiv;
 
     var reg_model = "";
 
@@ -31,12 +26,12 @@ $(document).ready(function(){
         }
     });
 });
-
+/* 
 function closeMsgDiv(){
     toggleElVisibility(displayBlock=[], displayNone=['overlaywrappermsgnaas'], 
             eventsNone=[], eventsAuto=["mainPageDiv"]);
 }
-
+ */
 
 // open div for model catalog registration
 function displayModelRegistrationDiv() {
@@ -103,11 +98,17 @@ function displayModelRegistrationDiv() {
     });
 } 
 
-// Close model registration div
+/* // Close model registration div
 function closeModelRegistrationDiv() {
     toggleElVisibility(displayBlock=[], displayNone=['overlaywrapmodreg'], 
             eventsNone=[], eventsAuto=["mainPageDiv"]);
 }
+ */
+function closeModelRegistrationDiv() {
+    $("#overlaywrapper").css("display", "none");
+    $("#overlaywrapmodreg").css("display", "none");
+}
+
 
 // 
 function backToWorkflow() {
@@ -168,7 +169,49 @@ function checkEditValues(editList=[]){
 }
 
 // manage register button clicks
-function registerModelMain(){
+
+function registerModelMain() {
+    $("#reg-mod-main-btn").blur();
+    var mcModUrl = sessionStorage.getItem("mcModUrl");
+    showLoadingAnimation("Loading...");
+    
+    // open model catalog div **** TEMPORARY *****
+    $("#overlaywrapper").css("display", "block");
+    $("#overlaywrapmodreg").css("display", "block");
+    hideLoadingAnimation();
+
+    if (mcModUrl == "") {
+        // Deprecated - TO UPDATE
+        /* $.getJSON("/hh-neuron-builder/get-user-clb-permission/" + req_pattern, function(data) {
+            hideLoadingAnimation();
+            if (data["response"] == "OK") {
+                console.log("I'm here");
+                _reg_collab = "current_collab";
+                $("#overlaywrapper").css("display", "block");
+                $("#overlaywrapmodereg").css("display", "block");
+            } else {
+                let msg = "You do not have write permissions for the present \
+                Collab: this will prevent you from saving your model \
+                in the Collab instance of the Model Catalog.<br><br>\
+                If you proceed, the model will be saved in a different\
+                Collab and its url will be shown after the registration.\
+                In this case, if you want to edit your model's metadata, \
+                you will need to contact <strong>support@humanbrainproject.eu.</strong><br><br>\
+                Alternatively, you can run the HH-Neuron-Builder \
+                tool in one of the Collabs you are a member of.\
+                This will give you full control on the registered model."
+                openErrorDiv(msg, "info");
+                _reg_collab = "storage_collab";
+            }
+        }); */
+    } else {
+        window.open(mcModUrl, '_blank');
+    }
+
+}
+
+/* function registerModelMain(){
+    console.log("registerModelMain() called.");
     var mcModUrl = sessionStorage.getItem("mcModUrl");
     toggleElVisibility(displayBlock=["overlaywrappermsgnaas"], 
         displayNone=['overlaywrapmodreg'], eventsNone=["mainPageDiv"], 
@@ -203,10 +246,57 @@ function registerModelMain(){
     } else {
         window.open(mcModUrl, '_blank');
     }
-}
-
+} */
+/* 
 function cancelRegistration(){
     toggleElVisibility( displayBlock=[], displayNone=['ow-msg-continue-naas', 'overlaywrappermsgnaas'], 
             eventsNone=[], eventsAuto=['mainPageDiv']);
 
 }
+ */
+
+function manageErrorDiv(open=false, close=false, message="", tag="") {
+    let overlayWrapper = $("#overlaywrapper");
+    let overlayWrapperError = $("#overlaywrappererror");
+    let errorDynamicText = $("#errordynamictext");
+    let button = $("#ok-error-div-btn");
+    button.removeClass("blue", "red", "green");
+    if (open) {
+        overlayWrapper.css("display", "block");
+        overlayWrapperError.css("display", "block");
+        errorDynamicText.html(message);
+        if (tag == "error") {
+            overlayWrapperError.css("box-shadow", "0 0 1rem 0 rgba(255, 0, 0, .8)");
+            overlayWrapperError.css("border-color", "red");
+            button.addClass("red");
+        } else if (tag == "info") {
+            overlayWrapperError.css("box-shadow", "0 0 1rem 0 rgba(0, 0, 255, .8)");
+            overlayWrapperError.css("border-color", "blue");
+            button.addClass("blue");
+        } else if (tag == "success") {
+            overlayWrapperError.css("box-shadow", "0 0 1rem 0 rgba(0, 255, 0, .8)");
+            overlayWrapperError.css("border-color", "green");
+            button.addClass("green");
+        }
+    } else if (close) {
+        overlayWrapper.css("display", "none");
+        overlayWrapperError.css("display", "none");
+    }
+}
+
+function openErrorDiv(message, tag) {
+    manageErrorDiv(open=true, close=false, message, tag);
+}
+
+function closeErrorDiv() {
+    manageErrorDiv(open=false, close=true);
+    checkConditions();
+}
+
+$("#modelPrivate").on("click", function() {
+    if (this.checked) {
+        $("#modelPrivateValue").html("Private");
+    } else {
+        $("#modelPrivateValue").html("Public");
+    }
+})

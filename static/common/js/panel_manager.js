@@ -43,9 +43,9 @@ function toggleElVisibility(displayBlock=[], displayNone=[],
     }
 
     // manage element visibility
-    for (var i = 0; i < eventsNone.length; i++){
-        document.getElementById(eventsNone[i]).style.pointerEvents = "none"
-    }
+    // for (var i = 0; i < eventsNone.length; i++){
+    //     document.getElementById(eventsNone[i]).style.pointerEvents = "none"
+    // }
 
     for (var i = 0; i < eventsAuto.length; i++){
         document.getElementById(eventsAuto[i]).style.pointerEvents = "auto"

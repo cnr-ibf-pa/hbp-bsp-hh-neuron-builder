@@ -32,7 +32,7 @@ class CheckConditions:
         filename_noext = os.path.splitext(basename)
         opt_folder = os.path.join(folder_path, filename_noext[0])        
         if not os.path.exists(opt_folder):
-            return {"KO", "The unzipped folder has not the same name as the .zip file. Please upload a well formatted .zip"}
+            return {"response": "KO", "message": "The unzipped folder has not the same name as the .zip file. Please upload a well formatted .zip"}
         else:
             # check that all folders exist
             folder_list = ["checkpoints", "config", "figures", "mechanisms", "model", "morphology", "tools", "opt_neuron.py", "__init__.py"]
@@ -54,6 +54,7 @@ class CheckConditions:
                 except ValueError:
                     return {"response": "KO", "message": "File '" + c_filename + "' is either not \
                             present or not readable in 'config' folder. Please check your .zip file"}
+            
             all_keys = list(set(keys))
             if len(all_keys) != 1:
                 return {"response": "KO", "message": "All .json files in the 'config' folder must \
