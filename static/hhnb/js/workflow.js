@@ -362,6 +362,7 @@ function checkConditions(){
                 optParamBar.addClass("red");
                 optParamBar.html(data['opt_set']['message'])
             };
+
             $("input[name=node-num").val(data["opt_set"]["opt_sub_param_dict"]["number_of_nodes"]); 
             $("input[name=core-num").val(data["opt_set"]["opt_sub_param_dict"]["number_of_cores"]); 
             $("input[name=offspring").val(data["opt_set"]["opt_sub_param_dict"]["offspring_size"]); 

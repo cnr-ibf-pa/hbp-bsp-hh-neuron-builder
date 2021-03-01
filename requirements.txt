@@ -32,7 +32,6 @@ igor==0.3
 ipaddr==2.2.0
 ipykernel==5.4.3
 ipyparallel==6.3.0
-ipython==7.19.0
 ipython-genutils==0.2.0
 jedi==0.18.0
 Jinja2==2.11.2
@@ -81,7 +80,6 @@ six==1.14.0
 sqlparse==0.4.1
 toml==0.10.2
 tornado==6.1
-traitlets==5.0.5
 urllib3==1.25.8
 validators==0.18.2
 wcwidth==0.2.5

@@ -19,6 +19,7 @@ import logging
 import sys
 import os
 import json
+import time
 
 import bluepyefe as bpefe
 
@@ -37,7 +38,6 @@ accesslogger.setLevel(logging.DEBUG)
 DEBUG = False
 
 import pprint
-# @login_required()
 def overview(request):
     # if not in DEBUG mode check whether authentication token is valid
 
@@ -48,51 +48,17 @@ def overview(request):
             context = request.GET.get('ctx', None)
         else:
             context = request.session['ctx']
-        print(context)
-
-        # if not ctx exit the application
-        # if not context:
-        #     return render(request, 'efelg/hbp_redirect.html')
 
         # set context
         request.session['ctx'] = context
 
-        # get headers for requests
-        # headers = {'Authorization': get_auth_header(request.user.social_auth.get())}
-
-        # build path for getting credentials
-        # my_url = settings.HBP_MY_USER_URL
-        # hbp_collab_service_url = settings.HBP_COLLAB_SERVICE_URL + 'collab/context/'
-
-        # request user and collab details
-        # res = requests.get(my_url, headers=headers)
-        # collab_res = requests.get(hbp_collab_service_url + context, headers=headers)
-        #
-        # if res.status_code != 200 or collab_res.status_code != 200:
-        #     manage_auth.Token.renewToken(request)
-        #
-        #     headers = {'Authorization': get_auth_header(request.user.social_auth.get())}
-        #
-        #     res = requests.get(my_url, headers=headers)
-        #     collab_res = requests.get(hbp_collab_service_url + context, headers=headers)
-        #
-        # if res.status_code != 200 or collab_res.status_code != 200:
-        #     return render(request, 'efelg/hbp_redirect.html')
-
-        # extract information on user credentials and collab
-        # username = res.json()['username']
-        # userid = res.json()['id']
-        # collab_id = collab_res.json()['collab']['id']
-        username = 'rsmirigliatest'
-        userid = '000001'
-        collab_id = '100000'
-
-    else:
-        username = 'test'
-        headers = {}
-        context = 'local'
-        collab_id = -1
-        userid = '00001'
+        if request.user.is_authenticated:
+            username = request.user.username
+        else:
+            username = 'anonymous' + time.time()
+        
+        # TEMPORAL FIX: replacing userid with username
+        userid = username
 
     # build data and json dir strings
     data_dir = os.path.join(settings.MEDIA_ROOT, 'efel_data', 'app_data', 'efelg_rawdata')
