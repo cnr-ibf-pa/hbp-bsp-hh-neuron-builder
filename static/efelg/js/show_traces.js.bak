@@ -1223,8 +1223,9 @@ function openInfoPanel() {
 }
 
 function checkUploadedFiles(id) {
+
     var files = $("input#user_files_" + id)[0].files;
-    var extension = $('input[type=radio][name=extension_' + id + ']:checked').val();
+    var extension = $('input[type=radio][name=extension_' + n_box + ']:checked').val();
     var refused_filenames = [];
     var missing_files = [];
 
@@ -1540,7 +1541,6 @@ function createUploadBox() {
                     index = 'user_div_' + id;
                     var cell_info = all_json_names[0].split("____");
                     var cell_header = createCellHeader(cell_info.slice(0, 6).join(" > "), cell_info[5]);
-                    cell_header.addClass("mt-4");
                     $('#charts_upload_' + id).append(cell_header);
                     cell_header.append('<div class="cell" id="' + index + '"></div>');
 

@@ -4,11 +4,14 @@
 <html>
 
 <head>
+    <script type="text/javascript" src="{% static 'bspganalytics.js' %}">
+    </script>
     <title>Feature extraction GUI</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous">
     <link rel="stylesheet" href="{% static 'assets/fontawesome/css/all.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/themes/bspg.css' %}">
     <link rel="stylesheet" href="{% static 'assets/themes/efelg.css' %}">
     <link rel="icon" href="{% static 'efelg/img/favicon.ico' %}">
 </head>
@@ -16,7 +19,7 @@
 <body>
     <header class="site-header sticky-top bg-primary text-white px-15 py-4 text-center">
         <div class="row">
-            <div class="col-xl-3 col-6 text-start align-self-center">
+            <div class="col-xl-3 col-md-6 text-start align-self-center">
                 <a href="https://ebrains.eu" target="_blank">
                     <img src="{% static 'efelg/img/ebrains_logo.png' %}" alt="ebrains_logo" style="max-width:130px"/>
                 </a>
@@ -24,7 +27,7 @@
             <div class="col-xl-6 align-self-center order-last">
                 <h2 class="m-0"><strong><a class="text-white text-decoration-none" href="/efelg/overview/">NeuroFeatureExtract</a></strong></h2>
             </div>
-            <div class="col-xl-3 col-6 text-end align-self-center order-xl-last">
+            <div class="col-xl-3 col-md-6 text-end align-self-center order-xl-last">
                 <a href="/efelg/overview/"><i class="fas fa-home text-white ms-4"></i></a>
                 <a href="/efelg/docs/" target="_blank"><i class="fas fa-info-circle text-white ms-4"></i></a>
                 <a href="https://object.cscs.ch/v1/AUTH_c0a333ecf7c045809321ce9d9ecdfdea/web-resources-bsp/bsp-video-tutorials/FeatureExtraction/index.html"
@@ -33,44 +36,38 @@
             </div>
         </div>
         <div class="row mt-2">
-            <h4>Feature selection</h4>
+            <h4>Result</h4>
         </div>
     </header>
-    <div id="main-sf-div" class="mx-10 my-3">
-        <div class="text-center">
-            <span>
-                For a complete description of the feature extraction python package adopted and for a list of
-                feature definitions and implementation, please refer to this
-                <a href="http://bluebrain.github.io/eFEL/eFeatures.html" target="_blank">link.</a>
-            </span>
-        </div>
-        <form id="select_feature_form" action="/efelg/results/" method="POST">{% csrf_token %}
-            <fieldset id="field_set">
-                <div id="mainDiv">
+    <div id="main-e-res-div" class="mx-10 my-5 text-center">
+        <!-- Execution completed div  -->
+        <button class="btn btn-lg btn-success my-5 w-50" onclick="window.location.href='/efelg/download_zip'">
+            Download results
+        </button>
+        <button class="btn btn-lg btn-outline-primary w-50" onclick="window.location.href='/efelg/overview/'">
+            Back to the homepage
+        </button>
+
+        <div id=hiddendiv></div>
+
+        <!-- Wait div -->
+        <div id="wait-div" class="overlay-wrapper">
+            <div class="overlay-content text-center" style="top: 40%;">
+                <div class="mt-2">
+                    <div class="spinner-border" role="status"></div>
                 </div>
-                <button class="btn btn-lg btn-outline-primary my-3 w-100" onclick="submitForm()">Next</button>
-            </fieldset>
-        </form>
-    </div>
-
-
-    <!-- Warnin div -->
-    <div id="warning-div" class="overlay-wrapper">
-        <div style="top:40%;" class="overlay-content">
-            <span id="warning-text" class="text-danger fs-5">No feature selected</span>
-            <br>
-            <button class="btn btn-outline-primary mt-4 mb-2 w-50"
-                onclick="closeMessageDiv('warning-div', 'main-sf-div')">
-                Close
-            </button>
+                <div class="mt-4">
+                    <span>Extracting features from traces. This may take a few minutes.</span>
+                    <br />
+                    <span>Please wait ...</span>
+                </div>
+            </div>
         </div>
     </div>
-
 </body>
 
 <script type="text/javascript" src="https://code.jquery.com/jquery-3.5.1.min.js" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
 <script type="text/javascript" src="{% static 'common/js/global.js' %}"></script>
-<script type="text/javascript" src="{% static 'efelg/js/select_features.js' %}"></script>
-<script type="text/javascript" src="{% static 'bspganalytics.js' %}"></script>
+<script type="text/javascript" src="{% static 'efelg/js/results.js' %}"></script>
 
 </html>

@@ -56,7 +56,16 @@ def stim_feats_from_header(header):
 
         # if field is not empty, read all stimulus segments
         else:
-            valid_epoch_dicts = [k for k, v in dictEpochInfoPerDAC.iteritems() if bool(v)]
+            # valid_epoch_dicts = [k for k, v in dictEpochInfoPerDAC.iteritems() if bool(v)]
+            k = None
+            valid_epoch_dicts = []
+            for kk, v in dictEpochInfoPerDAC.items():
+                if bool(v):
+                    k = kk
+                    valid_epoch_dicts.append(kk)
+            # valid_epoch_dicts = [k for k, v in dictEpochInfoPerDAC.items() if bool(v)]
+            # print(valid_epoch_dicts)
+            # print(len(valid_epoch_dicts))
 
             # if more than one channel is activated for the stimulus 
             # or a number of epochs different than 3 is found

@@ -19,10 +19,9 @@ import logging
 import sys
 import os
 import json
+import time
 
 import bluepyefe as bpefe
-
-
 
 # set logging up
 logging.basicConfig(stream=sys.stdout)
@@ -34,13 +33,11 @@ accesslogger = logging.getLogger('efelg_access.log')
 accesslogger.addHandler(logging.FileHandler('efelg_access.log'))
 accesslogger.setLevel(logging.DEBUG)
 
-
 # Create your views here.
 
 DEBUG = False
 
 import pprint
-# @login_required()
 def overview(request):
     # if not in DEBUG mode check whether authentication token is valid
 
@@ -51,51 +48,17 @@ def overview(request):
             context = request.GET.get('ctx', None)
         else:
             context = request.session['ctx']
-        print(context)
-
-        # if not ctx exit the application
-        # if not context:
-        #     return render(request, 'efelg/hbp_redirect.html')
 
         # set context
         request.session['ctx'] = context
 
-        # get headers for requests
-        # headers = {'Authorization': get_auth_header(request.user.social_auth.get())}
-
-        # build path for getting credentials
-        # my_url = settings.HBP_MY_USER_URL
-        # hbp_collab_service_url = settings.HBP_COLLAB_SERVICE_URL + 'collab/context/'
-
-        # request user and collab details
-        # res = requests.get(my_url, headers=headers)
-        # collab_res = requests.get(hbp_collab_service_url + context, headers=headers)
-        #
-        # if res.status_code != 200 or collab_res.status_code != 200:
-        #     manage_auth.Token.renewToken(request)
-        #
-        #     headers = {'Authorization': get_auth_header(request.user.social_auth.get())}
-        #
-        #     res = requests.get(my_url, headers=headers)
-        #     collab_res = requests.get(hbp_collab_service_url + context, headers=headers)
-        #
-        # if res.status_code != 200 or collab_res.status_code != 200:
-        #     return render(request, 'efelg/hbp_redirect.html')
-
-        # extract information on user credentials and collab
-        # username = res.json()['username']
-        # userid = res.json()['id']
-        # collab_id = collab_res.json()['collab']['id']
-        username = 'rsmirigliatest'
-        userid = '000001'
-        collab_id = '100000'
-
-    else:
-        username = 'test'
-        headers = {}
-        context = 'local'
-        collab_id = -1
-        userid = '00001'
+        if request.user.is_authenticated:
+            username = request.user.username
+        else:
+            username = 'anonymous' + str(time.time())
+        
+        # TEMPORAL FIX: replacing userid with username
+        userid = username
 
     # build data and json dir strings
     data_dir = os.path.join(settings.MEDIA_ROOT, 'efel_data', 'app_data', 'efelg_rawdata')
@@ -110,7 +73,6 @@ def overview(request):
     request.session['data_dir'] = data_dir
     request.session['json_dir'] = json_dir
     request.session['app_data_dir'] = app_data_dir
-    request.session['main_json_dir'] = main_json_dir
 
     # create folders for global data and json files if not existing
     if not os.path.exists(data_dir):
@@ -189,34 +151,9 @@ def status(request):
 
 # @login_required()
 def select_features(request):
-    """
+    """"
     This function serves the application select-features page
     """
-
-    # if not ctx exit the application
-    if "ctx" not in request.session:
-        return render(request, 'efelg/hbp_redirect.html', {"status": "KO", "message": "Problem"})
-
-    # read features groups
-    with open(os.path.join(settings.BASE_DIR, 'static', 'efelg', 'efel_features_final.json')) as json_file:
-        features_dict = json.load(json_file)
-    feature_names = efel.getFeatureNames()
-    selected_traces_rest = request.POST.get('data')
-    global_parameters = request.POST.get('global_parameters')
-    selected_traces_rest_json = json.loads(selected_traces_rest)
-    global_parameters_json = json.loads(global_parameters)
-    request.session['selected_traces_rest_json'] = selected_traces_rest_json
-    request.session['global_parameters_json'] = global_parameters_json
-    accesslogger.info(resources.string_for_log('select_features', request, page_spec_string=selected_traces_rest))
-
-    return render(request, 'efelg/select_features.html')
-
-
-"""
-def select_features(request):
-    ""
-    This function serves the application select-features page
-    ""
 
     # if not ctx exit the application
     if "ctx" not in request.session:
@@ -233,12 +170,11 @@ def select_features(request):
     accesslogger.info(resources.string_for_log('select_features', request, page_spec_string=selected_traces_rest))
 
     return render(request, 'efelg/select_features.html')
-"""
+
 
 # @login_required()
 def hbp_redirect(request):
     return render(request, 'efelg/hbp_redirect.html')
-
 
 
 # build .json files containing data and metadata
@@ -311,7 +247,8 @@ def get_list(request):
     if "ctx" not in request.session:
         return render(request, 'efelg/hbp_redirect.html')
 
-    output_file_path = os.path.join(request.session['main_json_dir'], 'all_traces_metadata.json')
+    # final list of authorized files
+    allfiles = []
 
     # retrieve data from session variables
     json_dir = request.session['json_dir']
@@ -324,9 +261,6 @@ def get_list(request):
 
     # retrieve the file containing the authorizations for each data file
     conf_dir = request.session['conf_dir']
-
-    # final list of authorized files
-    allfiles = []
     file_auth_fullpath = os.path.join(conf_dir, "files_authorization.json")
     with open(file_auth_fullpath) as f:
         files_auth = json.load(f)
@@ -346,15 +280,11 @@ def get_list(request):
 
     request.session["current_authorized_files"] = allfiles
 
-    # if metadata all already computed, avoid extraction
-    if os.path.isfile(output_file_path):
-        with open(output_file_path, 'r') as f:
-            output_json = json.load(f)
+    output_json = manage_json.generate_json_output(allfiles, json_dir)
 
-    else:
-        output_json = manage_json.generate_json_output(allfiles, json_dir)
-        with open(output_file_path, 'w') as f:
-            json.dump(output_json, f)
+    user_dir = request.session['user_res_dir']
+    with open(os.path.join(user_dir, 'output.json'), 'w') as f:
+        json.dump(output_json, f)
 
     # return HttpResponse(json.dumps(allfiles), content_type="application/json")
     return HttpResponse(json.dumps(output_json), content_type="application/json")
@@ -375,77 +305,6 @@ def get_list_new(request):
 
 #####
 # @login_required(login_url='/login/hbp/')
-def get_data(request, cellname=""):
-    # if not ctx exit the application
-    if "ctx" not in request.session:
-        return render(request, 'efelg/hbp_redirect.html')
-
-    disp_sampling_rate = 5000
-    json_dir = request.session['json_dir']
-    u_up_dir = request.session['u_up_dir']
-    current_authorized_files = request.session["current_authorized_files"]
-
-    if cellname not in current_authorized_files and not os.path.isfile(os.path.join(u_up_dir, cellname)):
-        return HttpResponse("")
-
-    if os.path.isfile(os.path.join(json_dir, cellname) + '.json'):
-        cellname_path = os.path.join(json_dir, cellname) + '.json'
-
-    elif os.path.isfile(os.path.join(u_up_dir, cellname) + '.json'):
-        cellname_path = os.path.join(u_up_dir, cellname) + '.json'
-
-    with open(cellname_path) as f:
-        content_json = f.read()
-    content = json.loads(content_json)
-
-    # extract data to be sent to frontend
-    crr_sampling_rate = int(content['sampling_rate'])
-    coefficient = int(math.floor(crr_sampling_rate / disp_sampling_rate))
-    if coefficient < 1:
-        coefficient = 1
-        disp_sampling_rate = crr_sampling_rate
-
-    trace_info = {}
-    trace_info['traces'] = {}
-    for key in content['traces'].keys():
-        trace_info['traces'][key] = content['traces'][key][::coefficient]
-
-    trace_info['md5'] = content['md5']
-    trace_info['sampling_rate'] = content['sampling_rate']
-    trace_info['etype'] = content['etype']
-    trace_info['type'] = content['type']
-    trace_info['contributors'] = content['contributors']
-    trace_info['coefficient'] = coefficient
-    trace_info['disp_sampling_rate'] = disp_sampling_rate
-
-    new_keys = {
-        "name": "cell_id",
-        "area": "brain_structure",
-        "sample": "filename",
-        "species": "animal_species",
-        "region": "cell_soma_location",
-        "amp_unit": "stimulus_unit",
-        "volt_unit": "voltage_unit"
-    }
-
-    for key in new_keys:
-        if new_keys[key] in content:
-            trace_info[new_keys[key]] = content[new_keys[key]]
-        elif key in content:
-            trace_info[new_keys[key]] = content[key]
-        else:
-            raise Exception(new_keys[key] + " not found!")
-
-    if 'contributors_affiliations' in content:
-        trace_info['contributors_affiliations'] = content['contributors_affiliations']
-    elif 'name' in content['contributors']:
-        trace_info['contributors_affiliations'] = content['contributors']['name']
-    else:
-        raise Exception("contributors_affiliations not found!")
-
-    return HttpResponse(json.dumps(json.dumps(trace_info)), content_type="application/json")
-
-"""
 def get_data(request, cellname=""):
     # if not ctx exit the application
     if "ctx" not in request.session:
@@ -496,7 +355,7 @@ def get_data(request, cellname=""):
     trace_info['disp_sampling_rate'] = disp_sampling_rate
 
     return HttpResponse(json.dumps(json.dumps(trace_info)), content_type="application/json")
-"""
+
 
 #####
 # @login_required(login_url='/login/hbp/')
@@ -504,241 +363,6 @@ def extract_features(request):
     # if not ctx exit the application
     if "ctx" not in request.session:
         return render(request, 'efelg/hbp_redirect.html')
-
-    print('EXTRACTING FEATURES')
-
-    data_dir = request.session['data_dir']
-    json_dir = request.session['json_dir']
-    selected_traces_rest_json = request.session['selected_traces_rest_json']
-    global_parameters_json = request.session['global_parameters_json']
-    allfeaturesnames = efel.getFeatureNames()
-
-    crr_user_folder = request.session['time_info']
-    full_crr_result_folder = request.session['u_crr_res_r_dir']
-    full_crr_uploaded_folder = request.session['u_up_dir']
-    full_crr_data_folder = request.session['u_crr_res_d_dir']
-    full_crr_user_folder = request.session['user_crr_res_dir']
-    check_features = request.session["check_features"]
-    request.session['selected_features'] = check_features
-    cell_dict = {}
-    selected_traces_rest = []
-
-    print('STEP 1')
-
-    for k in selected_traces_rest_json:    
-        crr_file_rest_name = k + '.json' 
-        if os.path.isfile(os.path.join(json_dir, crr_file_rest_name)):
-            crr_json_file = os.path.join(json_dir, crr_file_rest_name)
-        elif os.path.isfile(os.path.join(full_crr_uploaded_folder, crr_file_rest_name)):
-            crr_json_file = os.path.join(full_crr_uploaded_folder, crr_file_rest_name)
-        else:
-            continue
-
-        with open(crr_json_file) as f:
-            crr_file_dict_read = f.read()
-
-        crr_file_dict = json.loads(crr_file_dict_read)
-        crr_file_all_stim = crr_file_dict['traces'].keys()
-        crr_file_sel_stim = selected_traces_rest_json[k]['stim']
-        crr_vcorr = selected_traces_rest_json[k]['v_corr']
-
-        if "stimulus_unit" in crr_file_dict:
-            crr_file_amp_unit = crr_file_dict["stimulus_unit"]
-        elif "amp_unit" in crr_file_dict:
-            crr_file_amp_unit = crr_file_dict["amp_unit"]
-        else:
-            raise Exception("stimulus_unit not found!")
-
-        if "cell_id" in crr_file_dict:
-            crr_cell_name = crr_file_dict["cell_id"]
-        elif "name" in crr_file_dict:
-            crr_cell_name = crr_file_dict["name"]
-        else:
-            raise Exception("cell_id not found!")
-
-        if "filename" in crr_file_dict:
-            crr_sample_name = crr_file_dict["filename"]
-        elif "sample" in crr_file_dict:
-            crr_sample_name = crr_file_dict["sample"]
-        else:
-            raise Exception("filename not found!")
-
-        new_keys = [("animal_species", "species") , 
-                    ("brain_structure", "area"),
-                    ("cell_soma_location", "region"),
-                    ("cell_type", "cell_type"),
-                    ("etype", "etype"),
-                    ("cell_id", "name")]
-
-        keys = [t[0] if t[0] in crr_file_dict else t[1] for t in new_keys]
-
-        crr_key = '____'.join(keys)
-
-        crr_cell_data_folder = os.path.join(full_crr_data_folder, crr_cell_name)
-        crr_cell_data_folder = full_crr_data_folder
-        if not os.path.exists(crr_cell_data_folder):
-            os.makedirs(crr_cell_data_folder)
-        shutil.copy2(crr_json_file, crr_cell_data_folder)
-
-        print('STEP 1.5')
-
-        #
-        if crr_key in cell_dict:
-            cell_dict[crr_key]['stim'].append(crr_file_sel_stim)
-            cell_dict[crr_key]['files'].append(k)
-            cell_dict[crr_key]['v_corr'].append(float(crr_vcorr))
-        else:
-            cell_dict[crr_key] = {}
-            cell_dict[crr_key]['stim'] = [crr_file_sel_stim]
-            cell_dict[crr_key]['files'] = [k]
-            cell_dict[crr_key]['cell_name'] = crr_cell_name
-            cell_dict[crr_key]['all_stim'] = crr_file_all_stim
-            if crr_vcorr != '':
-                cell_dict[crr_key]['v_corr'] = [float(crr_vcorr)]
-            else:
-                cell_dict[crr_key]['v_corr'] = 0
-
-    print('STEP 2')
-
-    target = []
-    final_cell_dict = {}
-    final_exclude = []
-    for key in cell_dict:
-        crr_el = cell_dict[key]
-        v_corr = crr_el['v_corr']
-        for c_stim_el in crr_el['stim']:
-            [target.append(float(i)) for i in c_stim_el if float(i) not in target]
-        exc_stim_lists = [list(set(crr_el['all_stim']) - set(sublist)) for sublist in crr_el['stim']]
-        crr_exc = []
-        for crr_list in exc_stim_lists:
-            crr_stim_val = [float(i) for i in crr_list]
-            crr_exc.append(crr_stim_val)
-        final_cell_dict[cell_dict[key]['cell_name']] = \
-            {
-                'v_corr': 0,
-                'ljp': 0,
-                'experiments': {
-                    'step': {
-                        'location': 'soma',
-                        'files': [str(i) for i in crr_el['files']]
-                    }
-                },
-                'etype': 'etype',
-                'exclude': crr_exc,
-                'exclude_unit': [crr_file_amp_unit for i in range(len(crr_exc))]
-            }
-
-    print('STEP 3')
-    # build configuration dictionary
-
-    # MODIFIED
-    full_crr_result_folder = full_crr_result_folder.replace("u_res", request.session['time_info'] + "_fe_results")
-    crr_cell_data_folder = crr_cell_data_folder.replace("u_res", request.session['time_info'] + "_fe_results")
-
-    config = {}
-    config['features'] = {'step': [str(i) for i in check_features]}
-    config['path'] = crr_cell_data_folder
-    config['format'] = 'ibf_json'
-    config['comment'] = []
-    config['cells'] = final_cell_dict
-    config['options'] = {
-        # 'featconffile': './pt_conf.json',
-        # 'featzerotonan': False,
-        'zero_to_nan': {
-            'flag': bool(global_parameters_json['zero_to_nan']),
-            'value': global_parameters_json['value'],
-            'mean_features_no_zeros': global_parameters_json['mean_features_no_zeros']
-            },
-        'relative': False,
-        'tolerance': 0.02,
-        'target': target,
-        'target_unit': 'nA',
-        'delay': 500,
-        'nanmean': True,
-        'logging': True,
-        'nangrace': 0,
-        # 'spike_threshold': 1,
-        'amp_min': -1e22,
-        'zero_std': bool(global_parameters_json['zero_std']),
-        'trace_check': False,
-        'strict_stiminterval': {
-            'base': True
-        },
-        'print_table': {
-            'flag': True,
-            'num_events': int(global_parameters_json['num_events']),
-        }
-    }
-    try:
-        extractor = bpefe.Extractor(full_crr_result_folder, config)
-        extractor.create_dataset()
-        extractor.plt_traces()
-        if global_parameters_json['threshold'] != '':
-            extractor.extract_features(threshold=int(global_parameters_json['threshold']))
-        else:
-            extractor.extract_features(threshold=-20)
-        extractor.mean_features()
-        extractor.plt_features()
-        extractor.feature_config_cells(version="legacy")
-        extractor.feature_config_all(version="legacy")
-    except ValueError as e:
-        print('SOME ERROR OCCURED')
-        print(e)
-        # return render(request, 'efelg/hbp_redirect.html', {"status": "KO",
-        #                                                    "message": "An error occured while extracting the features. \
-        #         Either you selected too many data or the traces were corrupted."})
-
-    print('STEP 4')
-    conf_dir = request.session['conf_dir']
-    conf_cit = os.path.join(conf_dir, 'citation_list.json')
-    final_cit_file = os.path.join(full_crr_result_folder, 'HOWTOCITE.txt')
-    resources.print_citations(selected_traces_rest_json, conf_cit, final_cit_file)
-
-    crr_result_folder = request.session['time_info']
-    output_path = os.path.join(full_crr_user_folder, crr_user_folder + '_fe_results.zip')
-    request.session['fe_result_file_zip'] = output_path
-    request.session['fe_result_file_zip_name'] = crr_user_folder + '_fe_results.zip'
-    parent_folder = os.path.dirname(full_crr_result_folder)
-    contents = os.walk(full_crr_result_folder)
-    try:
-        zip_file = zipfile.ZipFile(output_path, 'w', zipfile.ZIP_DEFLATED)
-        for root, folders, files in contents:
-            for folder_name in folders:
-                absolute_path = os.path.join(root, folder_name)
-                relative_path = absolute_path.replace(parent_folder + os.sep, '')
-                zip_file.write(absolute_path, relative_path)
-            for file_name in files:
-                absolute_path = os.path.join(root, file_name)
-                relative_path = absolute_path.replace(parent_folder + os.sep, '')
-                zip_file.write(absolute_path, relative_path)
-                print('STEP 5')
-    except IOError as message:
-        print(message)
-        sys.exit(1)
-    except OSError as message:
-        print(message)
-        sys.exit(1)
-    except zip_file.BadZipfile as message:
-        print(message)
-        sys.exit(1)
-    finally:
-        zip_file.close()
-
-    print('EXTRACTION OK 200')
-    # accesslogger.info(resources.string_for_log('extract_features', request, page_spec_string='___'.join(check_features)))
-    return HttpResponse(json.dumps({"status": "OK"}))
-
-
-
-"""
-#####
-# @login_required(login_url='/login/hbp/')
-def extract_features(request):
-    # if not ctx exit the application
-    if "ctx" not in request.session:
-        return render(request, 'efelg/hbp_redirect.html')
-
-    print('EXTRACTING FEATURES')
 
     data_dir = request.session['data_dir']
     json_dir = request.session['json_dir']
@@ -754,8 +378,6 @@ def extract_features(request):
     request.session['selected_features'] = check_features
     cell_dict = {}
     selected_traces_rest = []
-
-    print('STEP 1')
 
     for k in selected_traces_rest_json:
         # crr_vcorr = selected_traces_rest_json[k]['vcorr']
@@ -787,8 +409,6 @@ def extract_features(request):
             os.makedirs(crr_cell_data_folder)
         shutil.copy2(crr_json_file, crr_cell_data_folder)
 
-        print('STEP 1.5')
-
         #
         if crr_key in cell_dict:
             cell_dict[crr_key]['stim'].append(crr_file_sel_stim)
@@ -801,8 +421,6 @@ def extract_features(request):
             cell_dict[crr_key]['cell_name'] = crr_cell_name
             cell_dict[crr_key]['all_stim'] = crr_file_all_stim
             # cell_dict[crr_key]['vcorr'] = [float(crr_vcorr)]
-
-    print('STEP 2')
 
     target = []
     final_cell_dict = {}
@@ -833,7 +451,6 @@ def extract_features(request):
                 'exclude_unit': [crr_file_amp_unit for i in range(len(crr_exc))]
             }
 
-    print('STEP 3')
     # build configuration dictionary
     config = {}
     config['features'] = {'step': [str(i) for i in check_features]}
@@ -872,16 +489,14 @@ def extract_features(request):
         extractor.extract_features(threshold=-30)
         extractor.mean_features()
         extractor.plt_features()
-        extractor.feature_config_cells()  # version="legacy")
-        extractor.feature_config_all()  # version="legacy")
+        extractor.feature_config_cells(version="legacy")
+        extractor.feature_config_all(version="legacy")
     except ValueError as e:
         print('SOME ERROR OCCURED')
         print(e)
         # return render(request, 'efelg/hbp_redirect.html', {"status": "KO",
         #                                                    "message": "An error occured while extracting the features. \
         #         Either you selected too many data or the traces were corrupted."})
-
-    print('STEP 4')
 
     conf_dir = request.session['conf_dir']
     conf_cit = os.path.join(conf_dir, 'citation_list.json')
@@ -894,6 +509,7 @@ def extract_features(request):
     request.session['result_file_zip_name'] = crr_user_folder + '_results.zip'
     parent_folder = os.path.dirname(full_crr_result_folder)
     contents = os.walk(full_crr_result_folder)
+
     try:
         zip_file = zipfile.ZipFile(output_path, 'w', zipfile.ZIP_DEFLATED)
         for root, folders, files in contents:
@@ -918,10 +534,8 @@ def extract_features(request):
     finally:
         zip_file.close()
 
-    print('EXTRACTION OK 200')
     # accesslogger.info(resources.string_for_log('extract_features', request, page_spec_string='___'.join(check_features)))
     return HttpResponse(json.dumps({"status": "OK"}))
-"""
 
 
 #####
@@ -947,8 +561,8 @@ def download_zip(request):
         return render(request, 'efelg/hbp_redirect.html')
 
     # accesslogger.info(resources.string_for_log('download_zip', request))
-    result_file_zip = request.session['fe_result_file_zip']
-    result_file_zip_name = request.session['fe_result_file_zip_name']
+    result_file_zip = request.session['result_file_zip']
+    result_file_zip_name = request.session['result_file_zip_name']
     zip_file = open(result_file_zip, 'rb')
     response = HttpResponse(zip_file, content_type='application/force-download')
     response['Content-Disposition'] = 'attachment; filename="%s"' % result_file_zip_name
@@ -1034,104 +648,6 @@ def upload_files(request):
     """
     Upload file to local folder
     """
-
-    u_up_dir = request.session['u_up_dir']
-    if not os.path.exists(u_up_dir):
-        os.makedirs(u_up_dir)
-
-    user_files = request.FILES.getlist('user_files')
-    # list of modified names of uploaded files
-    # name_abf_list = []
-
-    # list of json files that have the corresponding abf file
-    # name_json_list = []
-
-    # list of standalone json files
-    # name_standalone_json_list = []
-
-    # list of uploaded files full paths
-    names_full_path = []
-
-    #print(request.POST.get('upload_files_'))
-    data_name_dict = {"all_json_names": [], "refused_files": []}
-
-    cell_name = "up_cell_" + request.POST['cell_name']
-
-    # for every files to be uploaded, save them on local folders:
-    for k in user_files:
-        if k.name.endswith('.abf') or k.name.endswith('.json'):
-            crr_file_name = k.name
-            crr_file_name = re.sub('-', '_', k.name)
-            crr_local_filename = os.path.join(u_up_dir, crr_file_name)
-
-            # if file exists delete and recreate it
-            if os.path.isfile(crr_local_filename):
-                os.remove(crr_local_filename)
-            
-            # MODIFIED
-            final_file = open(crr_local_filename, 'wb')
-
-            # save chunks or entire file based on dimensions
-            if k.multiple_chunks():
-                for chunk in k.chunks():
-                    final_file.write(chunk)
-                final_file.close()
-            else:
-                final_file.write(k.read())
-                final_file.close()
-
-            if not k.name.endswith('_metadata.json'):
-                names_full_path.append(crr_local_filename)
-
-            """
-            if k.name.endswith('.abf'):
-                name_abf_list.append(crr_file_name)
-                names_full_path.append(crr_local_filename)
-            elif k.name.endswith('_metadata.json'):
-                name_json_list.append(crr_file_name)
-            else:
-                name_standalone_json_list.append(crr_file_name)
-                names_full_path.append(crr_local_filename)
-            """
-
-            """            
-            if resources.check_file_validity(crr_local_filename):
-                name_abf_list.append(crr_file_name)
-                names_full_path.append(crr_local_filename)
-            else:
-                os.remove(crr_local_filename)
-            """
-
-    all_authorized_files = request.session["current_authorized_files"]
-    for name in names_full_path:
-        try:
-            data = manage_json.extract_data(name, request.POST)
-
-            #outfilename = '____'.join(manage_json.get_cell_info(metadata, upload_flag=True, cell_name=cell_name)) + '.json'
-            outfilename = manage_json.create_file_name(data)
-            outfilepath = os.path.join(u_up_dir, outfilename)
-            if os.path.isfile(outfilepath):
-                os.remove(outfilepath)
-            with open(outfilepath, 'w') as f:
-                json.dump(data, f)
-            if outfilename[:-5] not in data_name_dict['all_json_names']:
-                data_name_dict['all_json_names'].append(outfilename[:-5])
-                all_authorized_files.append(outfilename[:-5])
-        except:
-            pass   
-
-
-    request.session["current_authorized_files"] = all_authorized_files
-
-    # accesslogger.info(resources.string_for_log('upload_files', request, page_spec_string=str(len(names_full_path))))
-    return HttpResponse(json.dumps(data_name_dict), content_type="application/json")
-
-
-"""
-def upload_files(request):
-    ""
-    Upload file to local folder
-    ""
     u_up_dir = request.session['u_up_dir']
     if not os.path.exists(u_up_dir):
         os.makedirs(u_up_dir)
@@ -1160,7 +676,7 @@ def upload_files(request):
         # if file exists delete and recreate it
         if os.path.isfile(crr_local_filename):
             os.remove(crr_local_filename)
-        final_file = open(crr_local_filename, 'w')
+        final_file = open(crr_local_filename, 'wb')
 
         # save chunks or entire file based on dimensions
         if k.multiple_chunks():
@@ -1185,6 +701,9 @@ def upload_files(request):
         outfilepath = os.path.join(u_up_dir, outfilename)
 
         data = manage_json.gen_data_struct(name, name, upload_flag=True)
+
+        # print(data)
+        # print(type(data))
         if os.path.isfile(outfilepath):
             os.remove(outfilepath)
         with open(outfilepath, 'w') as f:
@@ -1198,7 +717,7 @@ def upload_files(request):
     # accesslogger.info(resources.string_for_log('upload_files', request, page_spec_string=str(len(names_full_path))))
 
     return HttpResponse(json.dumps(data_name_dict), content_type="application/json")
-"""
+
 
 # @login_required(login_url='/login/hbp/')
 def get_directory_structure(request):
@@ -1265,12 +784,3 @@ def upload_zip_file_to_storage(request):
     #
         # render to html page
     return HttpResponse("")
-
-
-def index_docs(request):
-    # render to html
-    return render(request, 'efelg/docs/index.html')
-
-def file_formats_docs(request):
-    # render to html
-    return render(request, 'efelg/docs/file-formats.html')

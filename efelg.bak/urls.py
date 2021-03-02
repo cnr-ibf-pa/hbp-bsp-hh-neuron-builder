@@ -28,7 +28,4 @@ urlpatterns = [
     path('upload_files', views.upload_files),
     path('upload_zip_file_to_storage', views.upload_zip_file_to_storage),
     path('hbp-redirect/', views.hbp_redirect),
-    path('docs/', views.index_docs),
-    path('docs/index/', views.index_docs),
-    path('docs/file-formats/', views.file_formats_docs)
 ]
