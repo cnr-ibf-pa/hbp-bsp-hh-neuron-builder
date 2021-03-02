@@ -171,10 +171,7 @@ body {
 }
 
 .main-content.extends {
-    /* margin:25px ; */
     max-width: 95%;
-    width: fit-content;
-    /* position: absolute; */
     padding: 25px;
     top: 1px;
     left: 0;
