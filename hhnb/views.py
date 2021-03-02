@@ -66,14 +66,46 @@ def home(request, exc=None, ctx=None):
     #     ctx = request.GET.get('ctx', None)
     #     if not ctx:
     #         return render(request, 'efelg/hbp_redirect.html')
-
     if not exc:
-        exc = "tab_" + datetime.datetime.now().strftime('%Y%m%d%H%M%S')
+        exc = 'tab_' + datetime.datetime.now().strftime('%Y%m%d%H%M%S')
     if not ctx:
-        # generate random uuid for ctx
         ctx = uuid.uuid4()
 
+    old_wf = request.session.get('old_wf', None)
+    old_exc = request.session.get('old_exc', None)
+    old_ctx = request.session.get('old_ctx', None)
+
+    if old_exc == exc:
+        print('EXC EQUEALS')
+    else:
+        print('NEW EXC: %s' % exc)
+
+    print(old_wf)
+    print(old_exc)
+    print(old_ctx)
+
+    if old_wf:
+        r0 = set_exc_tags(request, exc, ctx)
+        r1 = initialize(request, exc, ctx)
+        r2 = create_wf_folders(request, wf_type='restore', exc=exc, ctx=ctx) 
+        
+        request.session['old_wf'] = None
+        request.session['old_exc'] = None
+        request.session['old_ctx'] = None
+        
+        request.session.save()
+        
+        return render(request, 'hhnb/workflow.html', context={"exc": exc, "ctx": str(ctx)})
+
+    #if not exc:
+    #    exc = "tab_" + datetime.datetime.now().strftime('%Y%m%d%H%M%S')
+    #if not ctx:
+    #    # generate random uuid for ctx
+    #    ctx = uuid.uuid4()
+
     context = {"exc": exc, "ctx": str(ctx)}
+    
+
     return render(request, 'hhnb/home.html', context)
 
 
@@ -103,7 +135,6 @@ def set_exc_tags(request, exc="", ctx=""):
 
 def initialize(request, exc="", ctx=""):
     print('initialize() called.')
-
     if exc not in request.session.keys():
         return HttpResponse(json.dumps({"response": "KO",
                                         "message": "An error occured while loading the application.<br><br>Please reload."}),
@@ -179,6 +210,8 @@ def create_wf_folders(request, wf_type="new", exc="", ctx=""):
     Create folders for current workflow
     """
 
+    print('create_wf_folders() called.')
+
     if exc not in request.session.keys() or "workflows_dir" not in request.session[exc]:
         response = {"response": "KO", "message": "An error occurred while loading the application.<br><br>Please reload."}
         return HttpResponse(json.dumps(response), content_type="application/json")
@@ -186,12 +219,30 @@ def create_wf_folders(request, wf_type="new", exc="", ctx=""):
     time_info = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
     workflows_dir = request.session[exc]['workflows_dir']
     username = request.session[exc]['username']
-    # userid = '000001'
     wf_id = time_info + '_' + username
-
     request.session[exc]['time_info'] = time_info
     request.session[exc]['wf_id'] = wf_id
+    
+    if wf_type == 'restore':
+        old_wf = request.session.get('old_wf', None)
+        if old_wf:
+            #request.session[exc]['user_dir'] = os.path.join(workflows_dir, username, wf_id)
+            
+            
+            shutil.copytree(old_wf, os.path.join(workflows_dir, username, wf_id))
+            
+            request.session[exc]['user_dir'] = os.path.join(workflows_dir, username, wf_id)
+            request.session[exc]['user_dir_data'] = os.path.join(workflows_dir, username, wf_id, 'data')
+            request.session[exc]['user_dir_data_feat'] = os.path.join(workflows_dir, username, wf_id, 'data', 'features')
+            request.session[exc]['user_dir_data_opt_set'] = os.path.join(workflows_dir, username, wf_id, 'data', 'opt_settings')
+            request.session[exc]['user_dir_data_opt_launch'] = os.path.join(workflows_dir, username, wf_id, 'data', 'opt_launch')
+            request.session[exc]['user_dir_results'] = os.path.join(workflows_dir, username, wf_id, 'results')
+            request.session[exc]['user_dir_results_opt'] = os.path.join(workflows_dir, username, wf_id, 'results', 'opt')
+            request.session[exc]['user_dir_sim_run'] = os.path.join(workflows_dir, username, wf_id, 'sim')
+            request.session.save()
 
+            return HttpResponse(json.dumps({"response": "OK"}), content_type="application/json")
+        
     if wf_type == "new":
         # delete keys if present in request.session
         request.session[exc].pop('gennum', None)
@@ -808,6 +859,10 @@ def check_cond_exist(request, exc="", ctx=""):
     """
 
     if exc not in request.session or "user_dir" not in request.session[exc]:
+        print('error 2')
+        print('exc: %s' % request.session.get(exc, None))
+        print(exc)
+        print('user_dir: %s' % request.session.get(exc, None))
         resp = {"response": "KO", "message": "An error occurred while loading the application.<br><br>Please reload."}
         return HttpResponse(json.dumps(resp), content_type="application/json")
 
@@ -835,6 +890,10 @@ def check_cond_exist(request, exc="", ctx=""):
     res_dir = request.session[exc]['user_dir_results']
     wf_id = request.session[exc]['wf_id']
     dest_dir = request.session[exc]['user_dir_data_opt_launch']
+
+    print('============== WF_ID ===============')
+    print(request.session[exc]['wf_id'])
+    print(exc)
 
     # check if feature files exist
     if os.path.isfile(os.path.join(data_feat, "features.json")) and \
@@ -2010,3 +2069,27 @@ def check_nsg_login(request, exc='', ctx=''):
     if resp['response'] == 'OK':
         return JsonResponse(status=200, data=json.dumps(resp), safe=False)
     return JsonResponse(status=403, data=json.dumps(resp), safe=False)
+
+
+def store_workflow_in_session(request, exc='', ctx=''):
+    print('STORE WORKFLOW')
+    
+    old_wf = request.session.get('old_wf', None)
+    old_exc = request.session.get('old_exc', None)
+    old_ctx = request.session.get('old_ctx', None)
+
+    wf_dir = request.session[exc]['workflows_dir']
+    username = request.session[exc]['username']
+    wf_id = request.session[exc]['wf_id']
+
+    request.session['old_wf'] = os.path.join(wf_dir, username, wf_id)
+    request.session['old_exc'] = exc
+    request.session['old_ctx'] = str(ctx)
+    
+    print(request.session['old_wf'])
+    print(request.session['old_exc'])
+    print(request.session['old_ctx'])
+    
+    request.session.save()
+
+    return HttpResponse(status=200)

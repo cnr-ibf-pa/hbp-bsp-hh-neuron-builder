@@ -75,7 +75,7 @@
                         <div class="user-img">
                             <img src="{% static 'assets/img/user.png' %}">
                         </div>
-                        <a class="login" href="{% url 'oidc_authentication_init' %}">
+                        <a id="loginButton" class="login" href="{% url 'oidc_authentication_init' %}">
                             <img src="{% static 'assets/img/login_ico_white.png' %}">
                             <strong >Log-in</strong>
                         </a>
@@ -95,6 +95,5 @@
                 <div class="loading-animation frames hide"></div>
             </div>
         </div>
-
     </body>
 </html>

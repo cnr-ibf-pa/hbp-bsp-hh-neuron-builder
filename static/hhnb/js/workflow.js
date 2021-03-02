@@ -270,7 +270,7 @@ function closeExpirationDiv() {
 
 function manageReloadDiv(open=false, close=false, message="") {
     let overlayWrapper = $("#overlaywrapper");
-    let overlayWrapperReload = $("#overlayWrapperReload");
+    let overlayWrapperReload = $("#overlaywrapperreload");
     let reloadDynamicText = $("#reloaddynamictext");
     if (open) {
         overlayWrapper.css("display", "block");
@@ -942,4 +942,16 @@ function dismissAlert() {
 
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
- }
+}
+
+$("#loginButton").on("click", function() {
+    showLoadingAnimation("Loading...");
+    $.ajax({
+        url: "/hh-neuron-builder/store-workflow-in-session/" + req_pattern + "/",
+        method: "GET",
+        success: function(data) {
+            window.location.href = "/oidc/authenticate";
+        }
+    });
+    return false;
+});
