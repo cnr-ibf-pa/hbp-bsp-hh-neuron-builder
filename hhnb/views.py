@@ -75,15 +75,6 @@ def home(request, exc=None, ctx=None):
     old_exc = request.session.get('old_exc', None)
     old_ctx = request.session.get('old_ctx', None)
 
-    if old_exc == exc:
-        print('EXC EQUEALS')
-    else:
-        print('NEW EXC: %s' % exc)
-
-    print(old_wf)
-    print(old_exc)
-    print(old_ctx)
-
     if old_wf:
         r0 = set_exc_tags(request, exc, ctx)
         r1 = initialize(request, exc, ctx)
@@ -226,19 +217,29 @@ def create_wf_folders(request, wf_type="new", exc="", ctx=""):
     if wf_type == 'restore':
         old_wf = request.session.get('old_wf', None)
         if old_wf:
-            #request.session[exc]['user_dir'] = os.path.join(workflows_dir, username, wf_id)
-            
-            
             shutil.copytree(old_wf, os.path.join(workflows_dir, username, wf_id))
             
-            request.session[exc]['user_dir'] = os.path.join(workflows_dir, username, wf_id)
-            request.session[exc]['user_dir_data'] = os.path.join(workflows_dir, username, wf_id, 'data')
-            request.session[exc]['user_dir_data_feat'] = os.path.join(workflows_dir, username, wf_id, 'data', 'features')
-            request.session[exc]['user_dir_data_opt_set'] = os.path.join(workflows_dir, username, wf_id, 'data', 'opt_settings')
-            request.session[exc]['user_dir_data_opt_launch'] = os.path.join(workflows_dir, username, wf_id, 'data', 'opt_launch')
-            request.session[exc]['user_dir_results'] = os.path.join(workflows_dir, username, wf_id, 'results')
-            request.session[exc]['user_dir_results_opt'] = os.path.join(workflows_dir, username, wf_id, 'results', 'opt')
-            request.session[exc]['user_dir_sim_run'] = os.path.join(workflows_dir, username, wf_id, 'sim')
+            old_exc_dict = request.session[request.session['old_exc']]
+            old_user_dir = old_exc_dict['user_dir']
+            new_exc_dict = request.session[exc]
+            new_user_dir = os.path.join(workflows_dir, username, wf_id)
+
+            for k in old_exc_dict:
+                if k not in new_exc_dict:    
+                    if k == 'analysis_id':
+                        if k not in new_exc_dict:
+                            new_exc_dict.update({k: []})
+                        for a in old_exc_dict[k]:
+                            if type(a) == str:
+                                a = a.replace(old_user_dir, new_user_dir)
+                            new_exc_dict[k].append(a)
+                    else:
+                        if type(old_exc_dict[k]) == str:
+                            v = old_exc_dict[k].replace(old_user_dir, new_user_dir)
+                        else:
+                            v = old_exc_dict[k]
+                        new_exc_dict.update({k: v})  
+
             request.session.save()
 
             return HttpResponse(json.dumps({"response": "OK"}), content_type="application/json")
@@ -859,10 +860,6 @@ def check_cond_exist(request, exc="", ctx=""):
     """
 
     if exc not in request.session or "user_dir" not in request.session[exc]:
-        print('error 2')
-        print('exc: %s' % request.session.get(exc, None))
-        print(exc)
-        print('user_dir: %s' % request.session.get(exc, None))
         resp = {"response": "KO", "message": "An error occurred while loading the application.<br><br>Please reload."}
         return HttpResponse(json.dumps(resp), content_type="application/json")
 
@@ -890,10 +887,6 @@ def check_cond_exist(request, exc="", ctx=""):
     res_dir = request.session[exc]['user_dir_results']
     wf_id = request.session[exc]['wf_id']
     dest_dir = request.session[exc]['user_dir_data_opt_launch']
-
-    print('============== WF_ID ===============')
-    print(request.session[exc]['wf_id'])
-    print(exc)
 
     # check if feature files exist
     if os.path.isfile(os.path.join(data_feat, "features.json")) and \
