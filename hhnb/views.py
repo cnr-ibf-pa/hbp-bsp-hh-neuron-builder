@@ -2123,3 +2123,15 @@ def store_workflow_in_session(request, exc='', ctx=''):
     request.session.save()
 
     return HttpResponse(status=200)
+
+
+def hhf_comm(request, hhf_dict):
+    print('============= HHF_COMM ==============')
+    print('hhf-comm called()')
+    
+    print(json.dumps(hhf_dict, indent=4))
+
+    if hhf_dict:
+        return HttpResponse(status=204)
+    
+    return HttpResponse(status=400)

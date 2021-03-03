@@ -95,5 +95,7 @@ urlpatterns = [
     path('check-nsg-login/' + required + '/', views.check_nsg_login),
 
     path('store-workflow-in-session/' + required + '/', views.store_workflow_in_session),
+
+    path('hhf-comm/<any:hhf_dict>', views.hhf_comm),
 ]
 
