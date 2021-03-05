@@ -312,9 +312,9 @@ function checkConditions(){
             hideLoadingAnimation();
             openReloadDiv(data["message"]);
         } else {
-            var textnode = document.createTextNode("Workflow id: " + data["wf_id"]); 
-            document.getElementById("wf-title").innerHTML = "";
-            document.getElementById("wf-title").appendChild(textnode);
+            // var textnode = document.createTextNode("Workflow id: " + data["wf_id"]); 
+            document.getElementById("wf-title").innerHTML = "Workflow id: <bold>" + data["wf_id"] + "</bold>";
+            // document.getElementById("wf-title").appendChild(textnode);
             if (data['expiration']){
                 openExpirationDiv("The workflow directory tree is expired on the server.<br>Please go to the Home page and start a new workflow.<br>");
                 return false
