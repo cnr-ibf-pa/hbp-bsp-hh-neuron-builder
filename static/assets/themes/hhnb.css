@@ -49,9 +49,9 @@ body {
 
 .hhnb-main-nav {
     position: fixed;
-    /* min-width: 955px; */
+    min-width: 1000px;
     width: 100%;
-    height: 68px;
+    height: 12.5%;
     top: 0;
     z-index: 90;
     background-color: rgb(255, 99, 71);
@@ -60,14 +60,11 @@ body {
     margin-bottom: 0px;
     border-radius: 0px;
     justify-content: space-between;
+    padding: 0 10%;
 }
 
 .hhnb-main-nav-left-separator {
-    display: invisible;
-    margin-right: auto;
-    margin-left: 16px;
-    min-width: 10px;
-    width: 60px;
+    margin-right: 10%;
 }
 
 .hhnb-main-nav-center-content {
@@ -82,25 +79,39 @@ body {
     text-align: center;
 }
 
+
 .main-title {
     text-align: center;
+    font-weight: bolder;
+    color: white;
+}
+.main-title > h1 {
+    font-size: 3rem;
+}
+.main-title > h5 {
+    font-size: 1.5rem;
+}
+.main-title > h1, h5 {
+    margin: -10px 0;
+    padding: 0;
     font-weight: bold;
 }
 
 .hhnb-secondary-nav {
-    /* min-width: 955px; */
+    min-width: 1000px;
     position: fixed;
-    top: 68px;
+    top: 12.5%;
     width: 100%;
-    height: 34px;
+    height: 5%;
     z-index: 85;
     background-color:rgb(255, 99, 71);
-    border-top: solid 2px rgb(255, 152, 134);
-    padding: 4px;
+    border-top: solid .2rem rgb(255, 152, 134);
+    padding-left: 10%;
+    padding-right: 10%;
     color: white;
     display: flex;
     box-shadow: 0 5px 10px 0 rgba(80, 80, 80, .8);
-    align-items: baseline;
+    align-items: center;
 }
 .hhnb-secondary-nav > a {
     /* align-self: flex-end; */
@@ -108,16 +119,17 @@ body {
     height: 24px;
 }
 .hhnb-secondary-nav > button {
-    height: 24px;
-    text-align: center;
-    padding: 0px 12px;
+    height: 28px;
+    /* text-align: center; */
+    /* padding: 0px 12px; */
     text-decoration: none;
     color: white;
-    align-self: center;
+    /* align-self: center; */
     transition: all 0.3s ease;
-    margin: 0px 4px;
+    /* margin: 0px 4px; */
+    margin: 1% 1%;
     line-height: 0;
-    vertical-align: auto;
+    /* vertical-align: auto; */
 }
 .hhnb-secondary-nav > button:hover, .hhnb-secondary-nav > button:focus {
     background-color: white;
@@ -125,15 +137,16 @@ body {
 }
 
 .page-title {
-    margin: auto 0px;
-    margin-right: auto;
+    margin: auto;
+    margin-left: 0;
+    font-size: 1.5rem;
 }
 
 .page {
-    padding-top: 20px;
-    height: calc(100vh - 102px);
+    padding-top: 3%;
+    height: calc(100vh - 17.5%);
     overflow: auto;
-    top: 102px;
+    top: 17.5%;
     left: 0px;
     right: 0px;
     position: fixed;
@@ -341,6 +354,15 @@ body {
     color: white;
 } 
 
+.floating-btn {
+    position: fixed;
+    width: 50%;
+    height: 8%;
+    left: 25%;
+    z-index: 50;
+    font-size: 1.5rem;
+}
+
 .btn-link:hover, .btn-link:focus, .btn-link:active {
     box-shadow: unset;    
 }
@@ -476,43 +498,36 @@ body {
 /* login section fixed css */
 
 .login-section {
-    align-self: center;
-    margin-left: auto;
-    margin-right: 16px;
-    width: 160px;
-    display: inline-flex;
+    width: max-content;
+    display: flex;
+    justify-content: center;
 }
 
 .login-section > .user-img {
     margin: auto;
+    margin-right: 12px;
 }
 .login-section > .user-img > img {
-    border-radius: 64px;
+    width: 3rem;
+    border-radius: 3rem;
     border: solid 1px #0066ff;
 }
 
-.login-section > .logout {
-    align-self: center;
+.login, .logout {
     cursor: pointer;
-    display: flex;
     text-decoration: none;
-}
-.login-section > .login {
     align-self: center;
-    cursor: pointer;
-    display: flex;
-    text-decoration: none;
 }
 .login-section > .logout > img,
 .login-section > .login > img {
     margin: auto;
-    margin-right: 4px;
+    margin-right: 12px;
 }
 .login-section > .logout > strong,
 .login-section > .login > strong {
     text-align: center;
     color: #eeeeee;
-    font-size: 18px;
+    font-size: 1.3rem;
 }
 
 
@@ -784,6 +799,7 @@ a > span.info-icon {
 a > span.tutorial-icon {
     display: inline-block;
     margin-left: 0px;
+    margin-right: 10%;
 }
 
 .col > .info-icon {
@@ -795,6 +811,10 @@ a > span.tutorial-icon {
 /* single class style */
 small-placeholder::placeholder {
     font-size: small;
+}
+
+.no-text-decorator {
+    text-decoration: none;
 }
 
 .margin-auto {
@@ -815,6 +835,14 @@ small-placeholder::placeholder {
  
 .margin-bottom-12 {
     margin-bottom: 12px;
+}
+
+.padding-right-10 {
+    padding-right: 10%;
+}
+
+.padding-left-10 {
+    padding-left: 10%;
 }
 
 .separator-8 {
@@ -875,3 +903,10 @@ small-placeholder::placeholder {
 .visible {
     visibility: visible;
 }
+
+i.white {
+    color: white;
+}
+i.blue {
+    color: #0066ff;
+} 

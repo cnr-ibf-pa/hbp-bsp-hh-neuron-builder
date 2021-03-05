@@ -22,6 +22,7 @@
         <script type="text/javascript" src="{% static 'common/js/sorttable.js' %}"></script>
         <script type="text/javascript" src="{% static 'common/js/moment-with-locales.js' %}"></script>
         <link rel="stylesheet" type="text/css" href="{% static 'assets/themes/hhnb.css' %}">
+        <link rel="stylesheet" type="text/css" href="{% static 'assets/fontawesome/css/all.css' %}">
 
 
         <!-- loading animation -->
@@ -50,21 +51,30 @@
     <body>
         <div id="title-div-container">
             <nav class="navbar navbar-expand-lg hhnb-main-nav">
-                <!-- <div class="hhnb-main-nav-left-separator"></div> -->
-                <div class="col flex-grow-1 hhnb-main-nav-left-separator"></div>
+                <div class="col flex-grow-1">
+                    <a href="https://ebrains.eu">
+                        <img src="{% static 'assets/img/ebrains_logo.svg' %}" height="48px" width="auto" alt="">
+                    </a>
+                </div>
                 <div class="col flex-grow-4 flex-center">
                     <div class="hhnb-main-nav-center-content">
-                        <h3 class="hhnb-main-nav-title">Hodgkin-Huxley Neuron Builder</h3>
+                        <a href="/hh-neuron-builder" class="no-text-decorator">
+                            <div class="main-title">
+                                <h5>Hodgkin-Huxley</h5>
+                                <h1>Neuron Builder</h1> 
+                            </div>
+                        </a>   
                     </div>
                 </div>
-                <div class="col flex-grow-1">
+                <div class="col flex-grow-1 ">
                     <div class="login-section">
                         {% if user.is_authenticated %}                   
                         <a class="user-img" href="/hh-neuron-builder/get-user-page">
                             <img src="/hh-neuron-builder/get-user-avatar" alt="{% static 'assets/img/user.png' %}">
                         </a>
                         <a class="logout" onclick="logout(this);">
-                            <img src="{% static 'assets/img/logout_ico_white.png' %}">
+                            <!-- <img src="{% static 'assets/img/logout_ico_white.png' %}"> -->
+                            <i class="fas fa-sign-out-alt fa-lg 4x white"></i>
                             <strong>Log-out</strong>
                         </a>
                         <form style="display: none" id="logout-form" action="{% url 'oidc_logout' %}" method="post">
@@ -72,12 +82,9 @@
                             <input id="logout-submit-input-button" type="submit" value="logout">
                         </form>
                         {% else %}
-                        <div class="user-img">
-                            <img src="{% static 'assets/img/user.png' %}">
-                        </div>
                         <a id="loginButton" class="login" href="{% url 'oidc_authentication_init' %}">
-                            <img src="{% static 'assets/img/login_ico_white.png' %}">
-                            <strong >Log-in</strong>
+                            <i class="fas fa-sign-in-alt fa-lg 4x white"></i>
+                            <strong>Log-in</strong>
                         </a>
                         {% endif %}
                     </div>
