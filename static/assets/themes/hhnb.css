@@ -3,6 +3,7 @@ html {
     -ms-text-size-adjust: 100%;
     -webkit-text-size-adjust: 100%;
     overflow: hidden;
+    min-width: 650px;
 }
 
 * {
@@ -79,6 +80,18 @@ body {
     text-align: center;
 }
 
+.hhnb-main-nav-icon{
+    width: max-content;
+    justify-content: center;
+    display: flex;
+    /* right: 2%; */
+}
+.hhnb-main-nav-icon > a {
+    text-decoration: none;
+    margin: auto;
+    margin-left: 8px;
+}
+
 
 .main-title {
     text-align: center;
@@ -149,7 +162,7 @@ body {
 
 .page-title {
     margin: auto;
-    margin-left: 0;
+    /* margin-left: 0; */
     font-size: 1.5rem;
 }
 
@@ -505,6 +518,17 @@ body {
 
 
 /* login section fixed css */
+
+.user-img > img{
+    border-radius: 64px;
+    width: 36px;
+    height: auto;
+    color: white;
+    font-size: 1.3rem;
+    line-height: 38px;
+    text-decoration: underline;
+    background-image: url("{% static 'assets/img/user-circle-solid.svg' %}"); 
+}
 
 .login-section {
     width: max-content;
@@ -870,23 +894,16 @@ small-placeholder::placeholder {
     flex-grow: 1
 }
 
+.flex-grow-2 {
+    flex-grow: 2;
+}
+
 .flex-grow-4 {
     flex-grow: 8
 }
 
 .fix-width-950 {
     min-width: 950px;
-}
-
-/* animations */
-.fade-out {
-    opacity: 0;
-    transition: opacity 1s;
-}
-
-.fade-in {
-    opacity: 1;
-    transition: opacity 1s;
 }
 
 .bg-tomato {
@@ -919,3 +936,14 @@ i.white {
 i.blue {
     color: #0066ff;
 } 
+
+/* animations */
+.fade-out {
+    opacity: 0;
+    transition: opacity 1s;
+}
+
+.fade-in {
+    opacity: 1;
+    transition: opacity 1s;
+}

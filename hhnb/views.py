@@ -441,7 +441,7 @@ def workflow(request, exc='', ctx=''):
     Serving page for rendering workflow page
     """
 
-    if exc and ctx:
+    if exc and ctx: 
         context = {'exc': exc, 'ctx': str(ctx)}
 
         return render(request, 'hhnb/workflow.html', context)
