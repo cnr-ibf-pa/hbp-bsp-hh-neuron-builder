@@ -320,7 +320,7 @@ body {
     padding-bottom: 2rem;
 }
 .secondary-content.large {
-    width: 100%;
+    min-width: 100%;
 }
 
 .secondary-content > .row {
