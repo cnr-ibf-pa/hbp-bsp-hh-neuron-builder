@@ -17,77 +17,69 @@
 </div>
 
 <div class="page">
-
     <div class="container main-content workflow-content">
-        <nav class="navbar navbar-light bg-light workflow-id">
-            <span class="col flex-grow-1"></span>
-            <span class="navbar-text main-title col flex-grow-1">Cell Optimization</span>
-            <span class="col flex-grow-1 flex-end"><div class="info-icon"></div></span>
+        <nav class="navbar main-content-title">
+            <div class="col"></div>
+            <div class="title col">Cell Optimization</div>
+            <div class="col flex-justify-end"><i class="fas fa-info-circle fa-lg white margin-right-1"></i></div>
         </nav>
         <div class="row">
-            <!-- <div class="main-title workflow-title" title="placeholder">Cell Optimization</div> -->
             <div class="col">
                 <div class="container secondary-content">
                     <div class="row">
-                        <div class="col flex-grow-4">
+                        <div class="col"></div>
+                        <div class="col flex-grow-4 flex-center">
                             <div class="box-title">Feature extraction</div>
                         </div>
-                        <div class="col flex-grow-1">
-                            <div class="info-icon"
+                        <div class="col flex-grow-1 flex-end">
+                            <i class="far fa-question-circle fa-lg" 
                                 title="Click the 'Extract features' button to compute electrophysiological features (from the HBP dataset or your own experimental files) to be used in your optimization process. You can also upload your own features.json and protocols.json files by clicking on 'Upload file'">
-                            </div>
-                        </div>
-                        <div class="row-separator">
-                            <div class="dark-gray-line"></div>
+                            </i>
                         </div>
                     </div>
-                    <!-- <div class="row"> -->
-                        <div class="row">
-                            <button type="button" id="feat-efel-btn" class="btn workflow-btn" onclick="efelPage()">Extract features</button>
+                    <br>
+                    <div class="row">
+                        <button type="button" id="feat-efel-btn" class="btn workflow-btn" onclick="efelPage()">Extract features</button>
+                    </div>
+                    <div class="row">
+                        <button type="button" id="feat-up-btn" class="btn workflow-btn" onclick="displayFeatUploadDiv()">Upload files</button>
+                    </div>
+                    <div class="row">
+                        <div class="col flex-center">
+                            <button id="down-feat-btn" title="Download feature files" type="button" class="btn btn-link" onclick="downloadLocalFeat()">
+                                Download
+                            </button>
                         </div>
-                        <div class="row">
-                            <button type="button" id="feat-up-btn" class="btn workflow-btn" onclick="displayFeatUploadDiv()">Upload files</button>
-                        </div>
-                        <div class="row">
-                            <div class="col flex-center">
-                                <button id="down-feat-btn" title="Download feature files" type="button" class="btn btn-link" onclick="downloadLocalFeat()">
-                                    Download
-                                </button>
-                            </div>
-                            <div class="col flex-center">
-                                <button id="del-feat-btn" title="Delete feature files" type="button" class="btn btn-link" onclick="deleteFeatureFiles()" disabled>
-                                    Delete
-                                </button>
-                            </div>
-                            
-                        </div>
-                    <!-- </div> -->
+                        <div class="col flex-center">
+                            <button id="del-feat-btn" title="Delete feature files" type="button" class="btn btn-link" onclick="deleteFeatureFiles()" disabled>
+                                Delete
+                            </button>
+                        </div>                        
+                    </div>
                 </div>
                 <div id="feat-bar" class="row status-bar status-bar-text red">
-                    features.json and/or protocols.json NOT present
+                    "features.json" and "protocols.json" NOT present
                 </div>
             </div>
             <div class="col">
                 <div class="container secondary-content">
                     <div class="row">
-                        <div class="col flex-grow-4">
+                        <div class="col"></div>
+                        <div class="col flex-grow-4 flex-center">
                             <div class="box-title">Optimization files</div>
                         </div>
-                        <div class="col flex-grow-1">
-                            <div class="info-icon"
+                        <div class="col flex-grow-1 flex-end">
+                            <i class="far fa-question-circle fa-lg" 
                                 title="Choose a model from the HBP dataset by clicking the 'Choose from database' button. Alternative, you can upload a properly formatted .zip file containing the model folders/files. For further details, please refer to the HBP Brain Simulation Platform Guidebook">
-                            </div>
+                            </i>
                         </div>
-                        <div class="row-separator">
-                            <div class="dark-gray-line"></div>
-                        </div>
-                    </div>                
+                    </div>         
+                    <br>       
                     <div class="row">
                         <button type="button" id="opt-db-hpc-btn" class="btn workflow-btn" onclick="chooseOptModel()" title="Use optimization files from database">Choose from Model Catalog</button>
                     </div>
                     <div class="row">
                         <button type="button" id="opt-up-btn" class="btn workflow-btn" onclick="displayOptSetUploadDiv()">Upload files</button>
-
                     </div>
                     <div class="row">
                         <div class="col flex-center">
@@ -109,20 +101,26 @@
             <div class="col">
                 <div class="container secondary-content">
                     <div class="row">
-                        <div class="col flex-grow-4">
+                        <div class="col"></div>
+                        <div class="col flex-grow-4 flex-center">
                             <div class="box-title">Optimization settings</div>
                         </div>
-                        <div class="col flex-grow-1 ">
-                            <div class="info-icon"
+                        <div class="col flex-grow-1 flex-end">
+                            <i class="far fa-question-circle fa-lg"
                                 title="Click the 'Set parameters/Choose HPC button' to set the optimization (i.e. BluePyOpt) and execution (e.g. number of cores, runtime, etc.) parameters">
-                            </div>
-                        </div>
-                        <div class="row-separator">
-                            <div class="dark-gray-line"></div>
+                            </i>
                         </div>
                     </div>
+                    <br>                    
                     <div class="row">
                         <button type="button" id="opt-set-btn" class="btn workflow-btn x2" onclick="openHpcParameterDiv()">Set parameters/Choose HPC</button>
+                    </div>
+                    <div class="row">
+                        <div class="col flex-center">
+                            <button type="button" class="btn btn-link hidden">
+                                Download
+                            </button>
+                        </div>
                     </div>
                 </div>
                 <div id="opt-param-bar" class="row status-bar status-bar-text red">
@@ -130,60 +128,54 @@
                 </div>
             </div> 
         </div>
-        <div class="row ">
+        <div class="row">
             <button id="launch-opt-btn" type="button" class="btn main-panel-btn extends" onclick="runOptimization()" disabled>Run Optimization</button>
         </div>
     </div>
     <div class="container main-content workflow-content">
-        <nav class="navbar navbar-light bg-light workflow-id">
-            <span class="col"></span>
-            <span class="col navbar-text main-title" title="placeholder">
-                Single Cell Simulation Run
-            </span>
-            <span class="col"><div class="info-icon"></div></span>
+        <nav class="navbar main-content-title">
+            <div class="col"></div>
+            <div class="title col">Single Cell Simulation Run</div>
+            <div class="col flex-end"><i class="fas fa-info-circle fa-lg white"></i></div>
         </nav>
-        <div class="row margin-bottom-12"></div>
         <div class="row">
             <div class="col">
                 <div class="container secondary-content large">
                     <div class="row">
-                        <div class="col flex-grow-4">
+                        <div class="col"></div>
+                        <div class="col flex-center">
                             <div class="box-title">Optimization files</div>
                         </div>
-                        <div class="col flex-grow-1">
-                            <div class="info-icon"
-                                data-toggle="popover"
-                                data-trigger="hover" data-content="Test"
+                        <div class="col flex-end">
+                            <i class="far fa-question-circle fa-lg"
                                 title="Fetch optimization results from HPC systems by clicking the 'Fetch results' button. Alternative, you can upload a properly formatted .zip file containing the optimized  model folders/files ready for simulation. For further details, please refer to the HBP Brain Simulation Platform Guidebook">
-                            </div>
+                            </i>
                         </div>
-                        <div class="row-separator">
-                            <div class="dark-gray-line"></div>
+                    </div>
+                    <br>
+                    <div class="row">
+                        <div class="col flex-center">
+                            <button type="button" id="opt-fetch-btn" class="btn workflow-btn lg" onclick="displayJobFetchDiv()">Fetch results</button>
                         </div>
-                        <div class="row" style="margin: 8px 0px">
-                            <div class="col flex-center">
-                                <button type="button" id="opt-fetch-btn" class="btn workflow-btn lg" onclick="displayJobFetchDiv()">Fetch results</button>
-                            </div>
-                            <div class="col flex-center">
-                                <button type="button" id="opt-res-up-btn" class="btn workflow-btn x1-5 lg" onclick="displayOptResUploadDiv()">Upload file</button>
-                            </div>
+                        <div class="col flex-center">
+                            <button type="button" id="opt-res-up-btn" class="btn workflow-btn lg" onclick="displayOptResUploadDiv()">Upload file</button>
                         </div>
-                        <div class="row">
-                            <div class="col flex-center">
-                                <button id="down-opt-btn" title="Download optimization files" type="button" onclick="downloadLocalOpt()"
-                                    class="btn btn-link">Download results
-                                </button>
-                            </div>
-                            <div class="col flex-center">
-                                <button id="down-sim-btn" title="Download model files" type="button" class="btn btn-link" onclick="downloadLocalSim()"
-                                    disabled>Download model
-                                </button>                        
-                            </div>
-                            <div class="col flex-center">
-                                <button id="del-sim-btn" title="Delete optimization files" type="button" class="btn btn-link" onclick="deleteSimFiles()"
-                                    disabled>Delete
-                                </button>                        
-                            </div>
+                    </div>
+                    <div class="row">
+                        <div class="col flex-center">
+                            <button id="down-opt-btn" title="Download optimization files" type="button" onclick="downloadLocalOpt()"
+                                class="btn btn-link">Download results
+                            </button>
+                        </div>
+                        <div class="col flex-center">
+                            <button id="down-sim-btn" title="Download model files" type="button" class="btn btn-link" onclick="downloadLocalSim()"
+                                disabled>Download model
+                            </button>                        
+                        </div>
+                        <div class="col flex-center">
+                            <button id="del-sim-btn" title="Delete optimization files" type="button" class="btn btn-link" onclick="deleteSimFiles()"
+                                disabled>Delete
+                            </button>                        
                         </div>
                     </div>
                 </div>
@@ -200,18 +192,26 @@
 
 <div id="overlaywrapper" class="overlay-wrapper">
     
-    <div id="overlayupload" class="overlay-content">
+    <div id="overlayupload" class="container overlay-content">
         <form id="uploadForm" action="" method="POST" enctype="multipart/form-data">
             {% csrf_token %}
-            <div class="mb-3">
-                <label id="uploadFormLabel" for="formFile" class="form-label"></label>
-                <div id="uploadImg">
-                    <img src="{% static "hhnb/img/expected_sim_zip.jpg" %}" alt="Expected sim zip file">
+            <div class="row">
+                <div class="mb-3">
+                    <label id="uploadFormLabel" for="formFile" class="form-label"></label>
+                    <div id="uploadImg">
+                        <img src="{% static "hhnb/img/expected_sim_zip.jpg" %}" alt="Expected sim zip file">
+                    </div>
+                    <input id="formFile" name="formFile" type="file" class="form-control">
                 </div>
-                <input id="formFile" name="formFile" type="file" class="form-control">
             </div>
-            <button type="button" id="cancelUploadFormButton" class="btn workflow-btn" onclick="closeUploadDiv(true)">Cancel</button>
-            <input type="submit" id="uploadFormButton" disabled class="btn workflow-btn" value="Upload"/>
+            <div class="row">
+                <div class="col">
+                    <button type="button" id="cancelUploadFormButton" class="btn workflow-btn extends" onclick="closeUploadDiv(true)">Cancel</button>
+                </div>
+                <div class="col">
+                    <input type="submit" id="uploadFormButton" disabled class="btn workflow-btn extends" value="Upload"/>
+                </div>
+            </div>
         </form>
     </div>
 
@@ -653,10 +653,10 @@
             </div>
             <div class="row">
                 <div class="col">
-                    <button type="button" id="cancel-job-list-btn" class="btn workflow-btn" onclick="closeJobFetchDiv()">Cancel</button>
+                    <button type="button" id="cancel-job-list-btn" class="btn workflow-btn extends" onclick="closeJobFetchDiv()">Cancel</button>
                 </div>
                 <div class="col">
-                    <button type="button" id="refresh-job-list-btn" class="btn workflow-btn" onclick="refreshJobListDiv()" disabled>Refresh</button>
+                    <button type="button" id="refresh-job-list-btn" class="btn workflow-btn extends" onclick="refreshJobListDiv()" disabled>Refresh</button>
                 </div>
             </div>
         </div>

@@ -19,39 +19,6 @@ $(document).ready(function(){
     // check conditions on function activation
     //checkConditions();
 
-    // manage form for submitting run parameters
- /*    var $formrunparam = $('#submitRunParam');
-    $formrunparam.submit(function(e){
-        e.preventDefault();
-        $.post('/hh-neuron-builder/submit-run-param/' + req_pattern + '/', $(this).serialize(), function(response){
-            if (response['response'] == "KO"){
-                openErrorDiv("Username and/or password are wrong", 'error');
-                checkConditions();
-            } else {
-                checkConditions();
-                closeHpcParameterDiv();
-            } 
-        },'json');
-        return false;
-    });
-
-    // manage form for submitting fetch parameters
-    var $formfetchparam = $('#submitFetchParam');
-    $formfetchparam.submit(function(e){
-        e.preventDefault();
-        $.post('/hh-neuron-builder/submit-fetch-param/' + req_pattern + '/', $(this).serialize(), function(response){
-            if (response['response'] == "KO"){
-                openErrorDiv(response['message'], 'error');
-                checkConditions();
-            } else {
-                // closeFetchParamDiv();
-                displayJobInfoDiv();
-                checkConditions();
-            } 
-        },'json');
-        return false;
-    });
- */
     var $submitJobParamForm = $("#submitJobParamForm");
     console.log($submitJobParamForm);
     $submitJobParamForm.submit(function(e) {
@@ -312,9 +279,7 @@ function checkConditions(){
             hideLoadingAnimation();
             openReloadDiv(data["message"]);
         } else {
-            // var textnode = document.createTextNode("Workflow id: " + data["wf_id"]); 
             document.getElementById("wf-title").innerHTML = "Workflow id: <bold>" + data["wf_id"] + "</bold>";
-            // document.getElementById("wf-title").appendChild(textnode);
             if (data['expiration']){
                 openExpirationDiv("The workflow directory tree is expired on the server.<br>Please go to the Home page and start a new workflow.<br>");
                 return false
@@ -506,6 +471,7 @@ function displayOptSetUploadDiv() {
 }
 
 function displayOptResUploadDiv() {
+    $("#overlayupload").addClass("upper-daint");
     openUploadDiv("modsim", "Upload model (\".zip\")");
 }
 
@@ -536,6 +502,7 @@ function closeUploadDiv(empty=true) {
     if (empty) {
         $("#formFile").val("");
     }
+    $("#overlayupload").removeClass("upper-daint");
 }
 
 function displayJobFetchDiv() {

@@ -3,7 +3,7 @@ html {
     -ms-text-size-adjust: 100%;
     -webkit-text-size-adjust: 100%;
     overflow: hidden;
-    min-width: 650px;
+    min-width: 1000px;
 }
 
 * {
@@ -26,14 +26,12 @@ html {
     background: #000;
 }
 
-
 body {
+    min-width: 1000px;
     margin: 0;
     background-color: rgb(240, 240, 240);
     overflow-y: visible;
 }
-
-
 
 .flex-center {
     display: flex;
@@ -136,8 +134,8 @@ body {
     height: 5%;
     background-color: rgb(255, 99, 71);
     color: white;
-    padding-left: 20%;
-    padding-right: 20%;
+    padding-left: 10%;
+    padding-right: 10%;
     box-shadow: 0 5px 10px 0 rgba(80, 80, 80, .8);
     z-index: 85;
 }
@@ -160,6 +158,15 @@ body {
     font-size: 1.15rem;
 }
 
+.main-content-title > .title{
+    font-size: 1.4rem;
+    font-weight: normal;
+    /* color: rgb(50, 50, 50); */
+    color: white;
+    text-align: center;
+    margin: auto;
+}
+
 .page-title {
     margin: auto;
     /* margin-left: 0; */
@@ -167,7 +174,8 @@ body {
 }
 
 .page {
-    padding-top: 3%;
+    padding: 3% 5%;
+    /* padding-top: 3%; */
     height: calc(100vh - 22.5%);
     overflow: auto;
     top: 22.5%;
@@ -179,17 +187,22 @@ body {
 
 .main-content {
     background-color: white;
-    border: solid 1px lightgray;
-    border-radius: 8px;
-    margin: 4rem auto;
-    padding: 40px;
+    border-radius: .75rem;
+    margin-top: 2rem;
+    margin-bottom: 4rem;
     box-shadow: 0px 5px 15px lightgray;
-    max-width: 1000px;
+    max-width: 80%;
+    min-width: 980px;
+    /* margin: auto; */
+    padding: 0 2.5rem;
 }
 .main-content.home {
-    /* top: 10%; */
-    /* position: relative; */
-    padding: 4em;
+    padding: 5%;
+    font-size: 1.2rem;
+    font-weight: 500;
+}
+.main-content.home > .row > .col {
+    margin: auto 1rem;
 }
 
 .main-content.opt-model-content {
@@ -200,13 +213,12 @@ body {
     margin-top: -40px;
 }
 
-
 .main-content > .row > .col {
-    padding: 20px;
+    padding: .2rem;
 }
 
 .main-content.extends {
-    max-width: 95%;
+    /* max-width: 95%; */
     padding: 25px;
     top: 1px;
     left: 0;
@@ -235,16 +247,19 @@ body {
     background-color: rgb(255, 152, 134);
     color: white;
     transition: all 0.3s ease;
-    max-width: 500px;
+    font-size: 1.2rem;
+    font-weight: 600;
+    border-radius: .5rem;
 }
 .main-panel-btn.maximize {
-    width: 100%;
     max-width: unset;
 }
 .main-panel-btn.extends {
-    /* width: inherit; */
-    max-width: 864px;
     height: 50px;
+    width: 100%;
+    margin: 0 auto;
+    margin-top: .5rem;
+    margin-bottom: 2rem;
 }
 .main-panel-btn:hover, .main-panel-btn:focus, .btn.focus {
     background-color: rgb(255, 99, 71);
@@ -271,17 +286,18 @@ body {
 }
 
 /* Workflow page content */
-.workflow-id {
-    margin-top: -40px;
-    margin-left: -40px;
-    margin-right: -40px;
-    padding: 0px 12px;
+.main-content-title {
+    margin: 0 -2.5rem;
+    margin-bottom: unset;
+    background-color: tomato;
     border-top-right-radius: inherit;
     border-top-left-radius: inherit;
 }
 
 .workflow-content {
-    width: 930px;
+    /* width: 90%; */
+    /* min-width: 924px; */
+    /* margin-bottom: 2rem; */
 }
 
 .workflow-title {
@@ -293,32 +309,30 @@ body {
 }
 
 .workflow-content > .row > .col {
-    padding: 0px 4px;
+    /* padding: 0 4px; */
 }
 
 .secondary-content {
     border: solid 1px darkgray;
-    border-radius: 4px;
-    margin-top: 24px;
-    padding: 14px;
-    padding-bottom: 0px;
-    width: 280px;
-    height: 210px;
-    margin-bottom: 24px;
+    border-radius: .5rem;
+    margin-top: 1.5rem;
+    padding: 1rem;
+    padding-bottom: 2rem;
 }
 .secondary-content.large {
-    width: inherit;
-    min-width: 864px;
-    margin: 10px 0px;
+    width: 80%;
 }
 
 .secondary-content > .row {
     justify-content: center;
 }
 .box-title {
-    margin: auto;
-    margin-left: 8px;
+    /* margin: auto; */
+    /* margin-left: 1rem; */
     width: auto;
+    font-size: 1rem;
+    font-weight: 600;
+    text-align: center;
 }
 
 .row-separator {
@@ -334,14 +348,15 @@ body {
 }
 
 .workflow-btn {
-    margin: 4px 0px;
+    margin: .5rem 0;
     color:rgb(0, 91, 165);
     /* border: solid 2px rgb(212, 30, 30); */
     border: solid 1.5px rgb(0, 140, 255);
     line-height: 1.2;
     transition: all 0.3s ease;
-    width: 230px;
+    width: 80%;
     box-shadow: unset;
+    border-radius: .5rem;
 }
 
 .workflow-btn:hover, .workflow-btn:focus{
@@ -360,7 +375,7 @@ body {
 
 .workflow-btn.green {
     border: solid 1.5px green;
-    color: green;   
+    color: green; 
 }
 .workflow-btn.green:hover, .workflow-btn.green:focus {
     background-color: green;
@@ -390,34 +405,38 @@ body {
 }
 
 .workflow-btn.x2 {
-    height: 76px;
+    height: 81.6px;
 }
-.workflow-btn.x1-5 {
-    height: 50px;
+.workflow-btn.extends {
+    width: 100%;
+    height: 80%;
 }
 .workflow-btn.lg {
-    width: 350px;
+    /* width: 350px; */
+    height: 4rem;
 }
 .status-bar-text {
-    font-size: 12px;
+    font-size: .9rem;
     color: white;
     text-align: center;
     justify-content: center;
-    margin: auto;
+    margin: 0;
+    /* margin: auto; */
+    /* font-weight: ; */
 }
 
 .status-bar {
     position: relative;
     /* left: 13px; */
-    top: -39px;
-    width: 280px;
+    top: -20px;
+    /* width: 280px; */
     height: max-content;
     min-height: 20px;
     margin:auto;
     /* border: solid 1px darkgray; */
     border-top: unset;
-    border-bottom-right-radius: 4px;
-    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: .5rem;
+    border-bottom-left-radius: .5rem;
     transition: all 0.3s ease;
 }
 .status-bar:hover {
@@ -431,8 +450,7 @@ body {
 }
 
 .status-bar.extends {
-    top: -25px;
-    min-width: 864px;
+    width: 80%;
     margin: 0px auto;
 }
 
@@ -600,10 +618,11 @@ body {
     margin: auto;
     top: calc(30%);
     width: max-content;
+    min-width: 50%;
     height: max-content;
     /* background-color: rgba(255, 255, 255, 0.144); */
     border: solid 1px black;
-    padding: 25px;
+    padding: 2rem;
     text-align: center;
     border-radius: 20px;
     background-color: rgb(255, 255, 255, 0.8);
@@ -667,7 +686,7 @@ body {
 
 .form-label{
     /* width: max-content; */
-    margin: 10px auto;
+    margin: 1rem auto;
 }
 
 .form-select {
@@ -731,6 +750,7 @@ body {
     transition: all ease 0.3s;
     color: rgb(40, 40, 40);
 }
+
 .list-group-item:hover {
     background-color: rgba(255, 255, 255, 1);
     color: #0066ff;
@@ -850,12 +870,29 @@ small-placeholder::placeholder {
     text-decoration: none;
 }
 
+.flex-end {
+    display: flex;
+    justify-content: end;
+    align-self: center;
+}
+.flex-end > i {
+    margin-right: 1rem;
+}
+
+.margin-right-05 {
+    margin-right: 0rem;
+}
+
 .margin-auto {
     margin: auto;
 }
 
 .margin-top-12 {
     margin-top: 12px;
+}
+
+.margin-right-1 {
+    margin-right: 1rem;
 }
 
 .margin-right-4 {

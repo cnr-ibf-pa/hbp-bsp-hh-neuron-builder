@@ -866,7 +866,7 @@ def check_cond_exist(request, exc="", ctx=""):
     # set responses dictionary
     response = {
         "expiration": False,
-        "feat": {"status": False, "message": "'features.json and/or 'protocols.json' NOT present"},
+        "feat": {"status": False, "message": '"features.json" and "protocols.json" NOT present'},
         "opt_files": {"status": False, "message": "Optimization files NOT present"},
         "opt_set": {"status": False, "message": "Optimization parameters NOT set"},
         "run_sim": {"status": False, "message": ""},
@@ -889,10 +889,21 @@ def check_cond_exist(request, exc="", ctx=""):
     dest_dir = request.session[exc]['user_dir_data_opt_launch']
 
     # check if feature files exist
-    if os.path.isfile(os.path.join(data_feat, "features.json")) and \
-            os.path.isfile(os.path.join(data_feat, "protocols.json")):
+    features_file = False
+    protocols_file = False
+    if os.path.isfile(os.path.join(data_feat, 'features.json')):
+        features_file = True 
+    if os.path.isfile(os.path.join(data_feat, "protocols.json")):
+        protocols_file = True
+    if features_file and protocols_file:
         response['feat']['status'] = True
         response['feat']['message'] = ""
+    elif features_file and not protocols_file:
+        response['feat']['status'] = False
+        response['feat']['message'] = '"protocols.json" NOT present'
+    elif protocols_file and not features_file:
+        response['feat']['status'] = False
+        response['feat']['message'] = '"features.json" NOT present'
 
     # check if optimization file exist
     if os.path.exists(data_opt) and not os.listdir(data_opt) == []:

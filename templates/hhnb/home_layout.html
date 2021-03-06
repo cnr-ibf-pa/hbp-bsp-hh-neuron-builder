@@ -66,42 +66,37 @@
                         </a>   
                     </div>
                 </div>
-                <div class="col flex-grow-2">
-                    <div class="hhnb-main-nav-icon">
-                        <a href="/hh-neuron-builder">
-                            <i class="fas fa-home fa-lg white" title="Home"></i>
-                        </a>
-                        <a href="https://humanbrainproject.github.io/hbp-sp6-guidebook/online_usecases/single_cell_building/hippocampus/p1_hh_neuron_builder/p1_hh_neuron_builder.html"
-                           target="_blank">
-                           <i class="fas fa-info-circle fa-lg white" title="Read the Guidebook"></i>
-                        </a>
-                        <a href="https://object.cscs.ch/v1/AUTH_c0a333ecf7c045809321ce9d9ecdfdea/web-resources-bsp/bsp-video-tutorials/HodgkinHuxleyNeuronBuilder/index.html"
-                           target="_blank">
-                           <i class="fas fa-play-circle fa-lg white" title="Watch the video tutorial"></i>
-                        </a>
-                        <div style="width: 16px"></div>
-                        <!-- <div class="login-section"> -->
-                            {% if user.is_authenticated %}                   
-                            <a class="logout" onclick="logout(this);">
-                                <i class="fas fa-sign-out-alt fa-lg white" title="Log-out"></i>
-                                <!-- <strong>Log-out</strong> -->
-                            </a>
-                            <a class="user-img" href="/hh-neuron-builder/get-user-page">
-                                <img src="/hh-neuron-builder/get-user-avatar" alt="user" onerror=this.src="{% static 'assets/img/user-circle-solid.svg' %}">
-                            </a>
-                            <form style="display: none" id="logout-form" action="{% url 'oidc_logout' %}" method="post">
-                                {% csrf_token %}
-                                <input id="logout-submit-input-button" type="submit" value="logout">
-                            </form>
-                            {% else %}
-                            <a id="loginButton" class="login" href="{% url 'oidc_authentication_init' %}">
-                                <i class="fas fa-sign-in-alt fa-lg white" title="Log-in"></i>
-                                <!-- <strong>Log-in</strong> -->
-                            </a>
-                            {% endif %}
-                        <!-- </div> -->
-                    </div>
-
+                <div class="col flex-grow-2 hhnb-main-nav-icon">
+                    <a href="/hh-neuron-builder">
+                        <i class="fas fa-home fa-lg white" title="Home"></i>
+                    </a>
+                    <a href="https://humanbrainproject.github.io/hbp-sp6-guidebook/online_usecases/single_cell_building/hippocampus/p1_hh_neuron_builder/p1_hh_neuron_builder.html"
+                        target="_blank">
+                        <i class="fas fa-info-circle fa-lg white" title="Read the Guidebook"></i>
+                    </a>
+                    <a href="https://object.cscs.ch/v1/AUTH_c0a333ecf7c045809321ce9d9ecdfdea/web-resources-bsp/bsp-video-tutorials/HodgkinHuxleyNeuronBuilder/index.html"
+                        target="_blank">
+                        <i class="fas fa-play-circle fa-lg white" title="Watch the video tutorial"></i>
+                    </a>
+                    <div style="width: 16px"></div>
+                    {% if user.is_authenticated %}                   
+                    <a class="logout" onclick="logout(this);">
+                        <i class="fas fa-sign-out-alt fa-lg white" title="Log-out"></i>
+                        <!-- <strong>Log-out</strong> -->
+                    </a>
+                    <a class="user-img" href="/hh-neuron-builder/get-user-page">
+                        <img src="/hh-neuron-builder/get-user-avatar" alt="user" onerror=this.src="{% static 'assets/img/user-circle-solid.svg' %}">
+                    </a>
+                    <form style="display: none" id="logout-form" action="{% url 'oidc_logout' %}" method="post">
+                        {% csrf_token %}
+                        <input id="logout-submit-input-button" type="submit" value="logout">
+                    </form>
+                    {% else %}
+                    <a id="loginButton" class="login" href="{% url 'oidc_authentication_init' %}">
+                        <i class="fas fa-sign-in-alt fa-lg white" title="Log-in"></i>
+                        <!-- <strong>Log-in</strong> -->
+                    </a>
+                    {% endif %}
                 </div>
             </nav>
         </div>
