@@ -184,6 +184,13 @@ body {
     position: fixed;
 }
 
+.page.choose-opt-model {
+    padding: 5%
+}
+
+.page.iframe {
+    padding: 0;
+}
 
 .main-content {
     background-color: white;
@@ -219,21 +226,26 @@ body {
 
 .main-content.extends {
     /* max-width: 95%; */
-    padding: 25px;
-    top: 1px;
-    left: 0;
-    bottom: 0;
-    right: 0;
+    padding: 2rem;
+    height: 90%;
+    width: 100%;
 }
 .object-iframe {
-    width: 100%;
-    height: 600px;
+    width: calc(100% * (1/0.75));
+    height: calc(98% * (1/0.75));
+    position: relative;
     overflow: visible;
     border: solid 1px lightgray;
-    border-radius: 4px;
+    border-radius: .5rem;
     scrollbar-width: thin;
-    /* box-shadow: 0px 5px 5px lightgray; */
-
+    zoom: 0.75;
+    -ms-zoom: 0.75;
+    -moz-transform: scale(0.75);
+    -moz-transform-origin: 0 0;
+    -o-transform: scale(0.75);
+    -o-transform-origin: 0 0;
+    -webkit-transform: scale(0.75);
+    -webkit-transform-origin: 0 0;
 }
 
 /* Overview page content */
@@ -250,9 +262,6 @@ body {
     font-size: 1.2rem;
     font-weight: 600;
     border-radius: .5rem;
-}
-.main-panel-btn.maximize {
-    max-width: unset;
 }
 .main-panel-btn.extends {
     height: 50px;
@@ -398,6 +407,11 @@ body {
     left: 25%;
     z-index: 50;
     font-size: 1.5rem;
+    opacity: .3;
+    transition: all ease 0.3s;
+}
+.floating-btn:hover {
+    opacity: 1;
 }
 
 .btn-link:hover, .btn-link:focus, .btn-link:active {
@@ -495,17 +509,13 @@ body {
 
 
 .model-info-div {
-    padding: 18px;
+    padding: 2rem;
     border: solid 1px lightgray;
-    border-radius: 8px;
-    font-size: 16px;
-    min-height: 80px;
-    /* margin: 20px auto; */
+    border-radius: 1rem;
+    font-size: 1rem;
+    /* min-height: 40%; */
     transition: all 0.2s ease;   
-    /* margin: 20px auto; */
-
-    /* box-shadow: 3px 3px 3px 3px #bbbbbb; */
-    /* width:100%; */
+    margin: 6rem auto 2rem auto;
     cursor: pointer;
 }
 
@@ -518,16 +528,15 @@ body {
 
 .model-info-div-title {
     /* font-size: 22px; */
-    /* background: rgb(194,214,214, 0.5); */
+    margin: -2rem;
+    margin-bottom: 2rem;
+    background: #3887ff;;
     /* background: lightgray; */
     border-top-left-radius: inherit;
     border-top-right-radius: inherit;
-    margin-top: -18px;
-    margin-left: -18px;
-    margin-right: -18px;
-    margin-bottom: 18px;
-    padding: 12px;
-    color: rgb(100, 100, 100);
+    padding: 1rem;
+    /* color: rgb(100, 100, 100); */
+    color: white;
     font-weight: bold;
 }
 

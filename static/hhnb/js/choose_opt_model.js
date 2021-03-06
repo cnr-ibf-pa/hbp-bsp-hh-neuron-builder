@@ -12,7 +12,7 @@ $(document).ready(function(){
                 var model_uuid = index; //e['meta']["id"];
                 var model_name = index;
                 $("#sub-title-div" ).after("<div  id=" + model_uuid + " name=" +
-                        model_name + " class='main-content model-info-div' style='width:100%; cursor:pointer'></div>");
+                        model_name + " class='main-content model-info-div'></div>");
                 $("#" + model_uuid).append("<div id=" + model_uuid + " class='model-info-div-title'>" + e['meta']['species'] + ' > ' + e['meta']['brain_region'] + ' > ' +  e['meta']['cell_type'] + ' > ' + model_name + "</div>");
                 $("#" + model_uuid).append("<div style='display:flex;' id=" + model_uuid + 'a' + " ></div>");
                 var img_div = document.createElement("DIV");
@@ -128,3 +128,14 @@ function formatDescription(meta = ""){
 
     return final_string
 }
+
+$(".model-info-div").hover(
+    function() {
+        console.log("hover model");
+        $("#back-to-wf-btn").addClass("hidden");
+    },
+    function() {
+        console.log("dishover mode");
+        $("#back-to-wf-btn").removeClass("hidden");
+    }
+)

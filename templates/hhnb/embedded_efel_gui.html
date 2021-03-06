@@ -4,23 +4,21 @@
 
 {% block content %}
 
-<div class="page">
-    <div id="home-main-div">
-        <div class="hhnb-secondary-nav">
-            <div class="page-title">Fetaures Extraction</div>
-            <a href="https://humanbrainproject.github.io/hbp-sp6-guidebook/online_usecases/single_cell_building/hippocampus/p1_hh_neuron_builder/p1_hh_neuron_builder.html"
-            target="_blank">
-            <span class="info-icon" title="Read the Guidebook"></span>
-            </a>
-            <a href="https://object.cscs.ch/v1/AUTH_c0a333ecf7c045809321ce9d9ecdfdea/web-resources-bsp/bsp-video-tutorials/HodgkinHuxleyNeuronBuilder/index.html"
-            target="_blank">
-            <span class="tutorial-icon" title="Watch the video tutorial"></span>
-            </a>
-        </div>
+<div id="home-main-div">
+    <div class="hhnb-secondary-nav">
+        <div class="page-title">Feature Extraction</div>
     </div>
+    <div class="hhnb-navbar navbar">
+        <div id="wf-title" class="workflow-id-text">Workflow id:</div>
+        <button id="wf-btn-new-wf" class="btn hhnb-navbar-btn"title="Create a new workflow" onclick="newWorkflow()">New</button>
+        <button id="wf-btn-clone-wf" class="btn hhnb-navbar-btn" title="Clone current workflow" onclick="cloneWorkflow()">Clone</button>
+        <button id="wf-btn-save" class="btn hhnb-navbar-btn" title="Download current workflow" onclick="saveWorkflow()">Save</button>
+    </div>
+</div>
 
+<div class="page iframe">
     <div class="container main-content extends">
-        <div class="row">
+        <div class="row" style="height: 90%;">
             <div id="efelgui-frame-div">
                 <iframe onload="checkLastPage(this)" id="efelgui-frame" class="object-iframe" type="text/html"
                     onload="this.style.height=this.contentDocument.body.scrollHeight +'px';">
@@ -28,11 +26,11 @@
             </div>
         </div>
         <div class="row">
-            <div class="col flex-center">
-                <button type="button" id="back-to-workflow" class="btn main-panel-btn maximize">Cancel</button>
+            <div class="col flex-center" style="padding: 0 .5rem">
+                <button type="button" id="back-to-workflow" class="btn main-panel-btn extends">Cancel</button>
             </div>
-            <div class="col flex-center">
-                <button type="button" id="save-feature-files" class="btn main-panel-btn maximize" disabled="true">Save to workflow</button>
+            <div class="col flex-center" style="padding: 0 .5rem">
+                <button type="button" id="save-feature-files" class="btn main-panel-btn extends" disabled="true">Save to workflow</button>
             </div>
         </div>
     </div>
