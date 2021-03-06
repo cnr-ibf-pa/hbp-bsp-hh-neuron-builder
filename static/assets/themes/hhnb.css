@@ -320,7 +320,7 @@ body {
     padding-bottom: 2rem;
 }
 .secondary-content.large {
-    width: 80%;
+    width: 100%;
 }
 
 .secondary-content > .row {
@@ -450,7 +450,7 @@ body {
 }
 
 .status-bar.extends {
-    width: 80%;
+    width: 100%;
     margin: 0px auto;
 }
 
