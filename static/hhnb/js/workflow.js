@@ -6,9 +6,9 @@ $(window).bind("pageshow", function() {
     console.log("exc: " + exc.toString() + " cxt: " + ctx.toString());
     checkConditions();
     closeHpcParameterDiv();
-    // closeFetchParamDiv();
+    closeFetchParamDiv();
     closeUploadDiv(true);
-    // hideLoadingAnimation();
+    hideLoadingAnimation();
     closeJobFetchDiv();
 });
 
@@ -16,8 +16,6 @@ $(document).ready(function(){
     showLoadingAnimation("Loading...");
     checkConditions();
     hideLoadingAnimation();
-    // check conditions on function activation
-    //checkConditions();
 
     var $submitJobParamForm = $("#submitJobParamForm");
     console.log($submitJobParamForm);
@@ -78,7 +76,7 @@ $(document).ready(function(){
     $uploadFileForm.submit(function(e){
         files = $("#formFile").prop("files");
         closeUploadDiv(false);
-        showLoadingAnimation("Loading");
+        showLoadingAnimation("Loading...");
         // changeMsgPleaseWaitDiv("Uploading file to the server");
         var uploadFormData = new FormData($("#uploadForm")[0]);
         for (let key of uploadFormData.entries()) {
@@ -99,10 +97,10 @@ $(document).ready(function(){
                     checkConditions();
                 }
                 $("#formFile").val("");
+                hideLoadingAnimation();
             },  
         });
         e.preventDefault();
-        hideLoadingAnimation();
     });
 });
 
@@ -388,7 +386,7 @@ function checkConditions(){
                 $("#del-sim-btn").prop("disabled", false);
 
                 if (data['sim_flag']['status']) {
-                    // $("#del-sim-btn").prop("disabled", true);  
+                    $("#del-sim-btn").prop("disabled", true);  
                     $("#opt-fetch-btn").prop("disabled", true);  
                     $("#opt-res-up-btn").prop("disabled", true);  
                 } else {
@@ -401,7 +399,6 @@ function checkConditions(){
                 optResBar.removeClass("green");
                 optResBar.addClass("red");
                 optResBar.html(data['run_sim']['message']);  
-                // document.getElementById("run-sim-div").style.backgroundColor='rgba(255, 255, 255, 0.06)';
                 $("#down-sim-btn").prop("disabled", true);  
                 $("#del-sim-btn").prop("disabled", true);  
                 $("#run-sim-btn").prop("disabled", true);  
