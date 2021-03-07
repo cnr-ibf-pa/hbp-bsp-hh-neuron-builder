@@ -1,8 +1,11 @@
 $(document).ready(function(){
     showLoadingAnimation("Loading models");
-    var address = "https://raw.githubusercontent.com/lbologna/bsp_data_repository/master/optimizations/";
     var exc = sessionStorage.getItem("exc", exc) ?  sessionStorage.getItem("exc") : "";
     var ctx = sessionStorage.getItem("ctx", ctx) ? sessionStorage.getItem("ctx") : "";
+
+    $.getJSON("/hh-neuron-builder/check-cond-exist/" + exc + "/" + ctx, function(data){
+        $("#wf-title").html("Workflow id: <bold>" + data["wf_id"] + "</bold>");
+    });
 
     $.getJSON("/hh-neuron-builder/get_model_list/" + exc + "/" + ctx, function(data){
         var counter = 0;
@@ -129,13 +132,49 @@ function formatDescription(meta = ""){
     return final_string
 }
 
-$(".model-info-div").hover(
-    function() {
-        console.log("hover model");
-        $("#back-to-wf-btn").addClass("hidden");
-    },
-    function() {
-        console.log("dishover mode");
-        $("#back-to-wf-btn").removeClass("hidden");
-    }
-)
+function newWorkflow() {
+    $("#wf-btn-new-wf").blur();
+    showLoadingAnimation("Starting new workflow...");
+    $.getJSON("/hh-neuron-builder/create-wf-folders/new/" + exc + "/" + ctx, function(data){
+        if (data["response"] == "KO"){
+            openReloadDiv();
+        } else {
+            window.location.href = "/hh-neuron-builder/workflow/";
+        }
+        hideLoadingAnimation();
+    });
+}
+
+function cloneWorkflow() {
+    $("#wf-btn-clone-wf").blur();
+    showLoadingAnimation("Cloning workflow...");
+    $.getJSON("/hh-neuron-builder/clone-workflow/" + req_pattern + "/", function(data) {
+        console.log(data);
+        let win = window.open("/hh-neuron-builder/workflow/" + data.exc + "/" + data.ctx + "/", "_blank");
+        win.focus();
+        hideLoadingAnimation();
+    });
+}
+
+function downloadURI(uri, name) {
+  var link = document.createElement("a");
+  link.download = name;
+  link.href = uri;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  delete link;
+}
+
+function saveWorkflow() {
+    $("#wf-btn-save").blur();
+    showLoadingAnimation("Loading...");
+    fetch("/hh-neuron-builder/workflow-download/" + req_pattern, {
+        method: "GET"
+    }).then(
+        data => downloadURI(data.url, 'workflow')
+    ).catch(
+        error => console.log(error)
+    );
+}
+

@@ -6,16 +6,14 @@ $(window).bind("pageshow", function() {
     console.log("exc: " + exc.toString() + " cxt: " + ctx.toString());
     checkConditions();
     closeHpcParameterDiv();
-    closeFetchParamDiv();
     closeUploadDiv(true);
-    hideLoadingAnimation();
     closeJobFetchDiv();
+    hideLoadingAnimation();
 });
 
 $(document).ready(function(){
     showLoadingAnimation("Loading...");
     checkConditions();
-    hideLoadingAnimation();
 
     var $submitJobParamForm = $("#submitJobParamForm");
     console.log($submitJobParamForm);
@@ -102,6 +100,8 @@ $(document).ready(function(){
         });
         e.preventDefault();
     });
+
+    hideLoadingAnimation();
 });
 
 // serve embedded-efel-gui page
@@ -277,7 +277,7 @@ function checkConditions(){
             hideLoadingAnimation();
             openReloadDiv(data["message"]);
         } else {
-            document.getElementById("wf-title").innerHTML = "Workflow id: <bold>" + data["wf_id"] + "</bold>";
+            $("#wf-title").html("Workflow id: <bold>" + data["wf_id"] + "</bold>");
             if (data['expiration']){
                 openExpirationDiv("The workflow directory tree is expired on the server.<br>Please go to the Home page and start a new workflow.<br>");
                 return false
@@ -769,25 +769,27 @@ function downloadLocal(filetype) {
 }
 
 function newWorkflow() {
-    showLoadingAnimation();
+    $("#wf-btn-new-wf").blur();
+    showLoadingAnimation("Starting new workflow...");
     $.getJSON("/hh-neuron-builder/create-wf-folders/new/" + exc + "/" + ctx, function(data){
         if (data["response"] == "KO"){
-            hideLoadingAnimation();
             openReloadDiv();
         } else {
-            hideLoadingAnimation();
             window.location.href = "/hh-neuron-builder/workflow/";
         }
+        hideLoadingAnimation();
     });
 }
 
 function cloneWorkflow() {
+    $("#wf-btn-clone-wf").blur();
+    showLoadingAnimation("Cloning workflow...");
     $.getJSON("/hh-neuron-builder/clone-workflow/" + req_pattern + "/", function(data) {
         console.log(data);
         let win = window.open("/hh-neuron-builder/workflow/" + data.exc + "/" + data.ctx + "/", "_blank");
         win.focus();
+        hideLoadingAnimation();
     });
-    $("#wf-btn-clone-wf").blur();
 }
 
 function downloadURI(uri, name) {
@@ -801,10 +803,14 @@ function downloadURI(uri, name) {
 }
 
 function saveWorkflow() {
+    $("#wf-btn-save").blur();
+    showLoadingAnimation("Loading...")
     fetch("/hh-neuron-builder/workflow-download/" + req_pattern, {
         method: "GET"
     }).then(
         data => downloadURI(data.url, 'workflow')
+    ).then(
+        hideLoadingAnimation()
     ).catch(
         error => console.log(error)
     );
