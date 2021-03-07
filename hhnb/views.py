@@ -2132,6 +2132,17 @@ def hhf_comm(request, hhf_dict):
     print(json.dumps(hhf_dict, indent=4))
 
     if hhf_dict:
-        return HttpResponse(status=204)
-    
+
+        # createing exc and ctx tag
+        exc = 'tab_' + datetime.datetime.now().strftime('%Y%m%d%H%M%S')
+        ctx = uuid.uuid4()
+         
+        r0 = set_exc_tags(request, exc, ctx)
+        r1 = initialize(request, exc, ctx)
+        r2 = create_wf_folders(request, wf_type='new', exc=exc, ctx=ctx) 
+        
+        request.session.save()
+         
+        return render(request, 'hhnb/workflow.html', context={"exc": exc, "ctx": str(ctx)})
+
     return HttpResponse(status=400)
