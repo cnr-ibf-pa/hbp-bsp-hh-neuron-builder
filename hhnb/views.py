@@ -908,10 +908,13 @@ def check_cond_exist(request, exc="", ctx=""):
         response['run_sim']['message'] = resp_sim['message']
 
     # check if ANY optimization results zip file exists
-    for i in os.listdir(res_dir):
-        if i.endswith('_opt_res.zip'):
-            response['opt_res_files']['status'] = True
-            break
+    try:
+        for i in os.listdir(res_dir):
+            if i.endswith('_opt_res.zip'):
+                response['opt_res_files']['status'] = True
+                break
+    except FileNotFoundError:
+        return HttpResponse(content=json.dumps({'response': 'KO', 'message': 'Content empty'}))
 
     # check if optimization has been submitted
     if os.path.exists(os.path.join(dest_dir, request.session[exc]['opt_sub_flag_file'])):
@@ -1861,85 +1864,107 @@ def register_model_catalog(request, reg_collab="", exc="", ctx=""):
 # tmp dir workflow
 def workflow_upload(request, exc='', ctx=''):
     print('upload_workflow endpoint.')
-
     if request.method == 'POST':
         wf = request.body
         filename = request.META['HTTP_CONTENT_DISPOSITION'].split('filename="')[1].split('"')[0]
+
         workflows_dir = request.session[exc]['workflows_dir']
-        # TODO: add user id and ctx on workflow file name
 
         if not request.user.is_authenticated:
-            user_path = os.path.join(workflows_dir, 'user')
+            username = 'anonymouse'
         else:
-            user_path = os.path.join(workflows_dir, request.user.username)
-        if not os.path.exists(user_path):
-            os.mkdir(user_path)
-        crr_wf_folder = os.path.join(user_path, os.path.splitext(filename)[0])
+            username = request.user.username
+        if not os.path.exists(os.path.join(workflows_dir, username)):
+            os.mkdir(os.path.join(workflows_dir, username))
+
+        crr_wf_folder = os.path.join(workflows_dir, username, filename.split('_')[0] + '_' + username)
         if os.path.exists(crr_wf_folder):
             shutil.rmtree(crr_wf_folder)
         os.mkdir(crr_wf_folder)
+        
+        # overwrite wf_id
+        request.session[exc]['wf_id'] = crr_wf_folder.split('/')[-1]
+        
         with open(os.path.join(crr_wf_folder, filename), 'wb') as fd:
             fd.write(wf)
         with open(os.path.join(crr_wf_folder, filename), 'rb') as fd:
             zip_file = zipfile.ZipFile(fd)
             zip_file.extractall(path=crr_wf_folder)
         os.remove(os.path.join(crr_wf_folder, filename))
-        if len(os.listdir(crr_wf_folder)) == 1:
-            target_path = os.path.join(crr_wf_folder, os.listdir(crr_wf_folder)[0])
-        else:
-            target_path = crr_wf_folder
-        for c in filename[:14]:
-            if c not in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']:
-                request.session[exc]['time_info'] = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
-            else:
-                # check if filename has changed
-                request.session[exc]['time_info'] = filename[:14]
-                break
-        
-        request.session[exc]['wf_id'] = filename.split('.zip')[0]
-        # overwrite keys if present in request.session
-        request.session[exc]['user_dir'] = target_path
-        request.session[exc]['user_dir_data'] = os.path.join(target_path, 'data')
-        request.session[exc]['user_dir_data_feat'] = os.path.join(target_path, 'data', 'features')
-        request.session[exc]['user_dir_data_opt_set'] = os.path.join(target_path, 'data', 'opt_settings')
-        request.session[exc]['user_dir_data_opt_launch'] = os.path.join(target_path, 'data', 'opt_launch')
-        request.session[exc]['user_dir_results'] = os.path.join(target_path, 'results')
-        request.session[exc]['user_dir_results_opt'] = os.path.join(target_path, 'results', 'opt')
-        request.session[exc]['user_dir_sim_run'] = os.path.join(target_path, 'sim')
 
-        user_dir_data_opt = request.session[exc]['user_dir_data_opt_set']
+        crr_session_dict = request.session[exc]
+
         try:
-            for crr_f in os.listdir(user_dir_data_opt):
-                if crr_f.endswith(".zip"):
-                    request.session[exc]['source_opt_name'] = os.path.splitext(crr_f)[0]
-                    request.session[exc]['source_opt_zip'] = os.path.join(user_dir_data_opt, crr_f)
-                    break
+            with open(os.path.join(crr_wf_folder, 'wf_session_dict.json'), 'r') as fd:
+                uploaded_session_dict = json.load(fd)
         except FileNotFoundError:
-            print('Uploaded empty workspace')
+            resp = {'response': 'KO', 'message': 'Uploaded old workflow'}
+            return HttpResponse(content=json.dumps(resp), content_type='application/json', status=200)
+
+        old_user_dir = uploaded_session_dict['user_dir']
+
+        for k in uploaded_session_dict.keys():
+            if k not in crr_session_dict:    
+                if k == 'analysis_id':
+                    if k not in crr_session_dict:
+                        crr_session_dict.update({k: []})
+                    for a in uploaded_session_dict[k]:
+                        if type(a) == str:
+                            a = a.replace(old_user_dir, crr_wf_folder)
+                        crr_session_dict[k].append(a)
+                else:
+                    if type(uploaded_session_dict[k]) == str:
+                        v = uploaded_session_dict[k].replace(old_user_dir, crr_wf_folder)
+                    else:
+                        v = uploaded_session_dict[k]
+                    crr_session_dict.update({k: v})
+        
+        os.remove(os.path.join(crr_wf_folder, 'wf_session_dict.json'))
+
+        r = check_cond_exist(request, exc, str(crr_session_dict['ctx']))
+        rj = json.loads(r.content)
+
+        try:
+            if rj['response'] == 'KO':
+                resp = {'response': 'KO', 'message': 'Uploaded broken workflow'}
+        except KeyError:
+            if rj['expiration']:
+                resp = {'response': 'KO', 'message': 'Uploaded broken or empty workflow'}
+            else:
+                resp = {'response': 'OK'}
 
         request.session.save()
+        if resp['response'] == 'KO':
+            return HttpResponse(content=json.dumps(resp), content_type='application/json', status=200)
+        return HttpResponse(content=json.dumps(resp), content_type='application/json', status=200)
 
-        return JsonResponse(data={'response': 'OK'})
-
-    # shutil.rmtree(user_path)
-    return JsonResponse(data={'response': 'KO'})
+    return HttpResponse(content=json.dumps({'response': 'KO', 'message': 'Error'}), content_type='application/json', status=200)
 
 
 def workflow_download(request, exc='', ctx=''):
+    print('================ SESSION ==================')
+    print(json.dumps(request.session[exc]))
+
     tmp_dir = os.path.join(settings.MEDIA_ROOT, 'tmp')
     if not os.path.exists(tmp_dir):
         os.mkdir(tmp_dir)
 
     # retrieve data from request.session
     wf_id = request.session[exc]['wf_id']
-    wf_dir = request.session[exc]['workflows_dir']
-
-    # to change with ebrains username
-    username = request.session[exc]['username']
-
     user_dir = request.session[exc]['user_dir']
-    user_dir_split = os.path.split(user_dir)
-    shutil.make_archive(os.path.join(tmp_dir, wf_id), 'zip', user_dir_split[0], user_dir_split[1])
+
+    wf_session_dict = request.session.get(exc, 'None')
+    print(wf_session_dict)
+    if wf_session_dict:
+        with open(os.path.join(user_dir, 'wf_session_dict.json'), 'w') as fd:
+            json.dump(wf_session_dict, fd, indent=4)
+
+    tmp_wf_dir = os.path.join(tmp_dir, wf_id)
+    if os.path.exists(tmp_wf_dir):
+        shutil.rmtree(tmp_wf_dir)
+    os.mkdir(tmp_wf_dir)    
+
+    shutil.make_archive(tmp_wf_dir , 'zip', user_dir)
 
     return FileResponse(open(os.path.join(tmp_dir, wf_id + '.zip'), 'rb'), as_attachment=True)
 

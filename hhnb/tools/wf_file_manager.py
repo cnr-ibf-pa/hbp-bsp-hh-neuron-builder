@@ -148,40 +148,42 @@ class CheckConditions:
     @classmethod
     def check_sim_files(cls, sim_path=""):
         sim_name = ''
-        list_dir = os.listdir(sim_path) 
-        for i in list_dir:
-            if i.endswith('.zip'):
-                sim_name = os.path.splitext(i)[0]
-                break
-        if sim_name == "":
-            return {"response": "KO", "message": "NO simulation .zip file or NO correct output from optimization"}
+        try:
+            list_dir = os.listdir(sim_path) 
+            for i in list_dir:
+                if i.endswith('.zip'):
+                    sim_name = os.path.splitext(i)[0]
+                    break
+            if sim_name == "":
+                return {"response": "KO", "message": "NO simulation .zip file or NO correct output from optimization"}
 
-        check_folder = os.path.join(sim_path, sim_name, 'checkpoints')
-        mec_folder = os.path.join(sim_path, sim_name, 'mechanisms')
-        morph_folder = os.path.join(sim_path, sim_name, 'morphology')
+            check_folder = os.path.join(sim_path, sim_name, 'checkpoints')
+            mec_folder = os.path.join(sim_path, sim_name, 'mechanisms')
+            morph_folder = os.path.join(sim_path, sim_name, 'morphology')
 
-        if not os.path.isdir(check_folder):
-            return {"response": "KO", "message": "'checkpoints' folder NOT present"}
+            if not os.path.isdir(check_folder):
+                return {"response": "KO", "message": "'checkpoints' folder NOT present"}
 
-        if not os.path.isdir(morph_folder):
-            return {"response": "KO", "message": "'morphology' folder NOT present"}
-        elif not os.listdir(morph_folder):
-            return {"response": "KO", "message": "The folder 'morphology' is empty"}
-        
-        if not os.path.isdir(mec_folder):
-            return {"response": "KO", "message": "'mechanisms' folder NOT present"}
-        else:
-            mec_list_dir = os.listdir(mec_folder)
-            list_mod = [i for i in mec_list_dir if i.endswith('.mod')] 
-            if not list_mod:
-                return {"response": "KO", "message": "The folder 'mechanisms' does NOT contain any .mod file'"}
+            if not os.path.isdir(morph_folder):
+                return {"response": "KO", "message": "'morphology' folder NOT present"}
+            elif not os.listdir(morph_folder):
+                return {"response": "KO", "message": "The folder 'morphology' is empty"}
+            
+            if not os.path.isdir(mec_folder):
+                return {"response": "KO", "message": "'mechanisms' folder NOT present"}
+            else:
+                mec_list_dir = os.listdir(mec_folder)
+                list_mod = [i for i in mec_list_dir if i.endswith('.mod')] 
+                if not list_mod:
+                    return {"response": "KO", "message": "The folder 'mechanisms' does NOT contain any .mod file'"}
 
-        if not os.path.isfile(os.path.join(check_folder, 'cell.hoc')) and not (os.path.isfile(os.path.join(sim_path, 'template.hoc'))):
-            return {"response": "KO", "message": "Neither 'cell.hoc' nor 'template.hoc' file present in the final simulation folder"}
+            if not os.path.isfile(os.path.join(check_folder, 'cell.hoc')) and not (os.path.isfile(os.path.join(sim_path, 'template.hoc'))):
+                return {"response": "KO", "message": "Neither 'cell.hoc' nor 'template.hoc' file present in the final simulation folder"}
 
-        # if all conditions are met
-        return {"response": "OK", "message": "All needed files are present"}
-
+            # if all conditions are met
+            return {"response": "OK", "message": "All needed files are present"}
+        except FileNotFoundError:
+            return {'response': 'KO', 'message': 'Content empty'}
 
 class FetchFiles:
 

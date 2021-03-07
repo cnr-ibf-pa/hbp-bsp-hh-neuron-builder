@@ -86,6 +86,25 @@
         </div>
 
         {% block content %}{% endblock %}
+        
+        <!-- error div -->
+        <div id="overlaywrapperhome" class="overlay-wrapper">
+            <div id="overlaywrappererrorhome" class="overlay-content">
+                <div id="overlayerrorhome" class="error-content">
+                    <div id="errordynamictexthome"></div>
+                    <br>
+                    <button id="ok-error-div-btn-home" class="btn workflow-btn" onclick="closeErrorDiv()">Ok</button>
+                </div>
+            </div>
+            <!-- reload div -->
+            <div id="overlaywrapperreloadhome" class="overlay-content">
+                <div id="overlayreloadhome" class="reload-content">
+                    <div id="reloaddynamictexthome"></div>
+                    <br>
+                    <button id="reload-div-btn-home" class="btn workflow-btn" onclick="closeReloadDiv()">Reload</button>
+                </div>
+            </div>
+        </div>
 
         <div class="loading-animation sublayer hide">
             <div class="loading-animation container-glass hide">
@@ -95,5 +114,6 @@
                 <div class="loading-animation frames hide"></div>
             </div>
         </div>
+
     </body>
 </html>
