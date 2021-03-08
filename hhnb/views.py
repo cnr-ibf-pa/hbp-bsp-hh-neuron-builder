@@ -1187,6 +1187,7 @@ def get_job_details2(request, jobid='', exc='', ctx=''):
         access_token = request.session.get('oidc_access_token')
         resp = hpc_job_manager.Unicore.fetch_job_details(hpc=hpc_sys_fetch, job_url=job_url, job_id=jobid,
                                                          token="Bearer " + access_token)
+
     return JsonResponse(data=json.dumps(resp), status=200, safe=False)
 
 

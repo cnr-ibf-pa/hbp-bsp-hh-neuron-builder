@@ -597,6 +597,7 @@ function displayJobList(button) {
     var hpc = button.attr("name");
 
     $.getJSON("/hh-neuron-builder/get-job-list/" + hpc + "/" + req_pattern, async function(jobList) {
+
         $("#spinnerRow").css("display", "none");
         $("#progressRow").css("display", "flex");
         
@@ -663,9 +664,23 @@ function displayJobList(button) {
                 animateProgressBar(step);
             })
         });
+
         while (true) {
             await sleep(1000);
             if (parseFloat($("#progressBar").attr("aria-valuenow")) >= 99.0) {
+                var tableRows = []
+                for (let i = 0; i < tableBody.children.length; i++) {
+                    tableRows[i] = tableBody.children[i];
+                }
+                tableRows.sort(function(a, b) {
+                    return moment.utc(a.children[3].innerHTML) - moment.utc(b.children[3].innerHTML);
+                });
+                tableRows.reverse();
+                $("#job-list-body").empty();
+                for (let i = 0; i < tableRows.length; i++) {
+                    tableBody.appendChild(tableRows[i]);
+                }
+
                 $("#progressRow").css("display", "none");
                 $("#tableRow").css("display", "flex");
                 $("#refresh-job-list-btn").prop("disabled", false).blur();
@@ -897,7 +912,7 @@ $("#nsgCollapse")[0].addEventListener('hide.bs.collapse', function () {
 })
 
 function animateProgressBar(progress) {
-    current_progress = parseInt($(".progress-bar").attr("aria-valuenow"));
+    current_progress = parseFloat($(".progress-bar").attr("aria-valuenow"));
     next_progress = current_progress + progress;
     $(".progress-bar").css("width", next_progress + "%").attr("aria-valuenow", next_progress);
 }

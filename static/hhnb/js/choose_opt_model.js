@@ -9,6 +9,9 @@ $(document).ready(function(){
 
     $.getJSON("/hh-neuron-builder/get_model_list/" + exc + "/" + ctx, function(data){
         var counter = 0;
+        if (data.length == 0) {
+            alert("Something goes wrong. Please reload the page.");
+        }
         $.each(data, function(idx, val){
             $.each(val, function(index, e){
                 console.log(e);

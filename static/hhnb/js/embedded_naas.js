@@ -8,10 +8,14 @@ var _reg_collab;
 sessionStorage.setItem("mcModUrl", "");
 
 $(document).ready(function(){
+    showLoadingAnimation("Loading...");
     // set onclick events
     // document.getElementById("msg-continue-ok-btn").onclick = displayModelRegistrationDiv;
     // document.getElementById("msg-continue-cancel-btn").onclick = cancelRegistration;
     // document.getElementById("msg-ok-btn").onclick = closeMsgDiv;
+    $.getJSON("/hh-neuron-builder/check-cond-exist/" + exc + "/" + ctx, function(data){
+        $("#wf-title").html("Workflow id: <bold>" + data["wf_id"] + "</bold>");
+    });
 
     var reg_model = "";
 
@@ -24,6 +28,7 @@ $(document).ready(function(){
             console.log("apro link !");
             document.getElementById("naas-frame").setAttribute("src", "https://blue-naas-bsp-epfl.apps.hbp.eu/#/model/" + o);
         }
+        hideLoadingAnimation();
     });
 });
 /* 
