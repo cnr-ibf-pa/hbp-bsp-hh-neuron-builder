@@ -32,7 +32,7 @@
                             <div class="box-title">Feature extraction</div>
                         </div>
                         <div class="col flex-grow-1 flex-end">
-                            <i class="far fa-question-circle fa-lg" 
+                            <i class="far fa-question-circle fa-lg brown" 
                                 title="Click the 'Extract features' button to compute electrophysiological features (from the HBP dataset or your own experimental files) to be used in your optimization process. You can also upload your own features.json and protocols.json files by clicking on 'Upload file'">
                             </i>
                         </div>
@@ -69,7 +69,7 @@
                             <div class="box-title">Optimization files</div>
                         </div>
                         <div class="col flex-grow-1 flex-end">
-                            <i class="far fa-question-circle fa-lg" 
+                            <i class="far fa-question-circle fa-lg brown" 
                                 title="Choose a model from the HBP dataset by clicking the 'Choose from database' button. Alternative, you can upload a properly formatted .zip file containing the model folders/files. For further details, please refer to the HBP Brain Simulation Platform Guidebook">
                             </i>
                         </div>
@@ -106,7 +106,7 @@
                             <div class="box-title">Optimization settings</div>
                         </div>
                         <div class="col flex-grow-1 flex-end">
-                            <i class="far fa-question-circle fa-lg"
+                            <i class="far fa-question-circle fa-lg brown"
                                 title="Click the 'Set parameters/Choose HPC button' to set the optimization (i.e. BluePyOpt) and execution (e.g. number of cores, runtime, etc.) parameters">
                             </i>
                         </div>
@@ -147,7 +147,7 @@
                             <div class="box-title">Optimization files</div>
                         </div>
                         <div class="col flex-end">
-                            <i class="far fa-question-circle fa-lg"
+                            <i class="far fa-question-circle fa-lg brown"
                                 title="Fetch optimization results from HPC systems by clicking the 'Fetch results' button. Alternative, you can upload a properly formatted .zip file containing the optimized  model folders/files ready for simulation. For further details, please refer to the HBP Brain Simulation Platform Guidebook">
                             </i>
                         </div>
@@ -206,10 +206,10 @@
             </div>
             <div class="row">
                 <div class="col">
-                    <button type="button" id="cancelUploadFormButton" class="btn workflow-btn extends" onclick="closeUploadDiv(true)">Cancel</button>
+                    <button type="button" id="cancelUploadFormButton" class="btn workflow-btn fill-background extends" onclick="closeUploadDiv(true)">Cancel</button>
                 </div>
                 <div class="col">
-                    <input type="submit" id="uploadFormButton" disabled class="btn workflow-btn extends" value="Upload"/>
+                    <input type="submit" id="uploadFormButton" disabled class="btn workflow-btn fill-background extends" value="Upload"/>
                 </div>
             </div>
         </form>
@@ -580,10 +580,10 @@
                 <br>
                 <div class="row">
                     <div class="col">
-                        <button type="button" id="cancel-param-btn" class="btn workflow-btn extends" onclick="closeHpcParameterDiv()">Cancel</button>
+                        <button type="button" id="cancel-param-btn" class="btn workflow-btn fill-background extends" onclick="closeHpcParameterDiv()">Cancel</button>
                     </div>
                     <div class="col">
-                        <button type="button" id="apply-param" class="btn workflow-btn extends" onclick="applyJobParam()" disabled>Apply</button>
+                        <button type="button" id="apply-param" class="btn workflow-btn fill-background extends" onclick="applyJobParam()" disabled>Apply</button>
                     </div>
                 </div>
             </div>
@@ -653,10 +653,10 @@
             </div>
             <div class="row">
                 <div class="col">
-                    <button type="button" id="cancel-job-list-btn" class="btn workflow-btn extends" onclick="closeJobFetchDiv()">Cancel</button>
+                    <button type="button" id="cancel-job-list-btn" class="btn workflow-btn fill-background extends" onclick="closeJobFetchDiv()">Cancel</button>
                 </div>
                 <div class="col">
-                    <button type="button" id="refresh-job-list-btn" class="btn workflow-btn extends" onclick="refreshJobListDiv()" disabled>Refresh</button>
+                    <button type="button" id="refresh-job-list-btn" class="btn workflow-btn fill-background extends" onclick="refreshJobListDiv()" disabled>Refresh</button>
                 </div>
             </div>
         </div>
@@ -696,7 +696,7 @@
         <div id="overlayreload" class="reload-content">
             <div id="reloaddynamictext"></div>
             <br>
-            <button id="reload-div-btn" class="btn workflow-btn" onclick="closeReloadDiv()">Reload</button>
+            <button id="reload-div-btn" class="btn workflow-btn fill-background" onclick="closeReloadDiv()">Reload</button>
         </div>
     </div>
 
@@ -705,7 +705,7 @@
         <div id="overlayexpiration" class="expiration-content">
             <div id="expirationdynamictext"></div>
             <br>
-            <button id="home-expiration-div-btn" class="btn workflow-btn" onclick="window.location.href='/hh-neuron-builder/'">Home</button>
+            <button id="home-expiration-div-btn" class="btn workflow-btn fill-background" onclick="window.location.href='/hh-neuron-builder/'">Home</button>
         </div>
     </div>
 
@@ -716,10 +716,10 @@
             Please download your current workspace and then upload it to continue this session !
         </div>
         <br>
-        <button id="cancel-div-btn" class="btn workflow-btn" onclick="closeDownloadWorkspaceDiv()">
+        <button id="cancel-div-btn" class="btn workflow-btn fill-background" onclick="closeDownloadWorkspaceDiv()">
             Cancel
         </button>
-        <button id="download-workspace-div-btn" class="btn workflow-btn" onclick="saveWorkflowOnDiv()">
+        <button id="download-workspace-div-btn" class="btn workflow-btn fill-background" onclick="saveWorkflowOnDiv()">
             Download workspace
         </button>
     </div>
