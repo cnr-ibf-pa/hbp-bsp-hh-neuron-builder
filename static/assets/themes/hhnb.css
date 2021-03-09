@@ -46,7 +46,7 @@ html {
 body {
     min-width: 1000px;
     margin: 0;
-    background-color: #f0f0f0ff;
+    background-color: rgb(240, 240, 240);
     overflow-y: visible;
 }
 
