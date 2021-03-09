@@ -436,6 +436,8 @@ body {
 }
 .floating-btn:hover {
     opacity: 1;
+    box-shadow: unset;
+    transform: unset;
 }
 
 .btn-link:hover, .btn-link:focus, .btn-link:active {
