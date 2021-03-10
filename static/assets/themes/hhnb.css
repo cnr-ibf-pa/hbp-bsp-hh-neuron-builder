@@ -78,6 +78,7 @@ body {
     border-radius: 0px;
     justify-content: space-between;
     padding: 0 10%;
+    border-bottom: 2px solid #c6a23acf;
 }
 
 .hhnb-main-nav-left-separator {
@@ -134,7 +135,7 @@ body {
     height: 5%;
     z-index: 85;
     /* background-color: rgb(255, 152, 134); */
-    background-color: #b79530a6; /*#a68c41; /*#b25811ff;*/
+    background-color: #a68c41; /*#b25811ff;*/
     padding-left: 10%;
     padding-right: 10%;
     color: white;
@@ -152,7 +153,7 @@ body {
     width: 100%;
     height: 5%;
     /* background-color: rgb(255, 99, 71); */
-    background-color: #a68c41; /*#b79530a6; #d2d2d2ff;*/
+    background-color: #c6a23acf; /*#b79530a6; #d2d2d2ff;*/
     color: #ffffff; /*#793802ff;*/
     padding-left: 10%;
     padding-right: 10%;
