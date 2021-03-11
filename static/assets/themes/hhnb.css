@@ -161,24 +161,25 @@ body {
     height: 5%;
     /* background-color: rgb(255, 99, 71); */
     background-color: #ffe9b5;
-    color: #a25e17cf;
+    /* color: #a25e17cf; */
+    color: rgb(80, 80, 80);
     padding-left: 10%;
     padding-right: 10%;
-    box-shadow: 0 5px 10px 0 rgba(80, 80, 80, .8);
+    /* box-shadow: 0 5px 10px 0 rgba(80, 80, 80, .8); */
+    box-shadow: 0rem 1rem 10px -6px rgba(0, 0, 0, .45);
     z-index: 84;
 }
 
 .hhnb-navbar-btn {
     height: 28px;
     text-decoration: none;
-    color: #a25e17cf; /*#d7a938; /*#ffffff; /*#793802ff;*/
+    color: rgb(80, 80, 80);
     transition: all 0.3s ease;
     margin-left: 1%;
     line-height: 0;   
-    /* margin:  */
 }
 .hhnb-navbar-btn:hover, hhnb-navbar-btn:focus {
-    background-color: #793802ff;
+    background-color: #ffa93a;
     color: white;
 }
 .workflow-id-text {
@@ -226,7 +227,7 @@ body {
     border: solid 1px #ffa93a;
     margin-top: 2rem;
     margin-bottom: 4rem;
-    box-shadow: 0rem 1rem 5px -6px darkgray;
+    box-shadow: 0rem 1rem 5px -6px rgba(0, 0, 0, .35);
     max-width: 80%;
     min-width: 980px;
     /* margin: auto; */
@@ -306,6 +307,9 @@ body {
     box-shadow: 0px 5px 15px darkgray;
     transform: scale(1.03) perspective(1px);
 }
+.main-panel-btn:disabled {
+    border: none;
+}
 .main-panel-btn.disable {
     background-color:rgb(210, 210, 210);
     color: rgb(50, 50, 50);
@@ -353,7 +357,7 @@ body {
 }
 
 .secondary-content {
-    border: solid 1px darkgray;
+    border: solid 1px #ffa93a;
     border-radius: .5rem;
     margin-top: 1.5rem;
     padding: 1rem;
@@ -373,7 +377,8 @@ body {
     font-size: 1rem;
     font-weight: 600;
     text-align: center;
-    color: #793802ff;
+    /* color: #793802ff; */
+    color: black;
 }
 
 .row-separator {
@@ -390,7 +395,8 @@ body {
 
 .workflow-btn {
     margin: .5rem 0;
-    color: #793802ff;
+    /* color: #793802ff; */
+    color: rgb(80, 80, 80);
     border: solid 1.5px #e6c35f; /*#fbd25dff;*/  
     line-height: 1.2;
     transition: all 0.3s ease;
@@ -405,7 +411,7 @@ body {
 
 .workflow-btn:hover, .workflow-btn:focus{
     background-color: #ffe9b5; /*#fbd25dff;*/
-    color: #793802ff;
+    /* color: #793802ff; */
 }
 
 .workflow-btn.red {
@@ -437,18 +443,21 @@ body {
 
 .floating-btn {
     position: fixed;
-    width: 50%;
+    width: 80%;
     height: 8%;
-    left: 25%;
+    left: 10%;
     z-index: 50;
     font-size: 1.5rem;
     opacity: .3;
-    transition: all ease 0.3s;
+    transition: all ease-out 0.3s;
 }
 .floating-btn:hover {
     opacity: 1;
     box-shadow: unset;
     transform: unset;
+}
+.floating-btn.dissolved {
+    transform: translateY(-200px);
 }
 
 .btn-link:hover, .btn-link:focus, .btn-link:active {
@@ -557,7 +566,7 @@ body {
 
 .model-info-div {
     padding: 2rem;
-    border: solid 1px lightgray;
+    border: solid 1px #ffa93a;
     border-radius: 1rem;
     font-size: 1rem;
     /* min-height: 40%; */
