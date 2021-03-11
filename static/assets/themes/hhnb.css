@@ -1054,6 +1054,9 @@ i.blue {
 i.brown {
     color: #793802ff;
 }
+i.black {
+    color: black; 
+}
 
 /* animations */
 .fade-out {
