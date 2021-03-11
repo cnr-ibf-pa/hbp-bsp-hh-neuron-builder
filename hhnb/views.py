@@ -2145,4 +2145,4 @@ def hhf_comm(request, hhf_dict):
          
         return render(request, 'hhnb/workflow.html', context={"exc": exc, "ctx": str(ctx)})
 
-    return HttpResponse(status=400)
+    return home(request)
