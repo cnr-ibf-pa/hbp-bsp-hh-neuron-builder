@@ -71,14 +71,14 @@ body {
     top: 0;
     z-index: 90;
     /* background-color: rgb(255, 99, 71); */
-    background-color:  #a68c41; /*#b25811ff;*/
+    background-color:  #ffa93a; /*#ff872ec9; /*#fd6c00b8; /*#a68c41; /*#b25811ff;*/
     display: flex;
     margin: 0px;
     margin-bottom: 0px;
     border-radius: 0px;
     justify-content: space-between;
     padding: 0 10%;
-    border-bottom: 2px solid #c6a23acf;
+    border-bottom: 1.5px solid #ffe4a5;
 }
 
 .hhnb-main-nav-left-separator {
@@ -135,7 +135,7 @@ body {
     height: 5%;
     z-index: 85;
     /* background-color: rgb(255, 152, 134); */
-    background-color: #a68c41; /*#b25811ff;*/
+    background-color: #ffa93a; /*#fd6c00b8; /*#b25811ff;*/
     padding-left: 10%;
     padding-right: 10%;
     color: white;
@@ -153,8 +153,8 @@ body {
     width: 100%;
     height: 5%;
     /* background-color: rgb(255, 99, 71); */
-    background-color: #c6a23acf; /*#b79530a6; #d2d2d2ff;*/
-    color: #ffffff; /*#793802ff;*/
+    background-color: #ffe4a5; /*#f4c24a80; /*#ffb40080; /*#f9b002d1; /*#b79530a6; #d2d2d2ff;*/
+    color: #a25e17cf; /*#ffffff; /*#793802ff;*/
     padding-left: 10%;
     padding-right: 10%;
     /* box-shadow: 0 5px 10px 0 rgba(80, 80, 80, .8); */
@@ -164,7 +164,7 @@ body {
 .hhnb-navbar-btn {
     height: 28px;
     text-decoration: none;
-    color: #ffffff; /*#793802ff;*/
+    color: #a25e17cf; /*#d7a938; /*#ffffff; /*#793802ff;*/
     transition: all 0.3s ease;
     margin-left: 1%;
     line-height: 0;   
@@ -277,7 +277,7 @@ body {
 
 .main-panel-btn {
     margin: auto;
-    background-color: #e6c35f; /*#fbd25dff;*/
+    background-color: #dfba62; /*#e6c35f; /*#fbd25dff;*/
     color: white;
     transition: all 0.3s ease;
     font-size: 1.2rem;
@@ -319,7 +319,7 @@ body {
 .main-content-title {
     margin: 0 -2.5rem;
     margin-bottom: unset;
-    background-color: #7d6323; /*#daa520ff;*/
+    background-color: #d07430; /*#dfba62; /*#c69727b8; /*#dba627b8; /*#a25e17cf; /*#7d6323; /*#daa520ff;*/
     border-top-right-radius: inherit;
     border-top-left-radius: inherit;
 }
@@ -487,10 +487,10 @@ body {
     background-color: rgb(0, 210, 0);
 }
 .status-bar.red {
-    background-color: #d04c35; /*#ff6249ff;*/
+    background-color: #d04c35d4; /*#d04c35; /*#ff6249ff;*/
 }
 .status-bar.green {
-    background-color: #0c6f0c; /*#32cd32ff;*/
+    background-color: #0c6f0cb3; /*#0c6f0c; /*#32cd32ff;*/
 }
 
 .status-bar.extends {
