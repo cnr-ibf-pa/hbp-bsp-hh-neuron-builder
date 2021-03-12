@@ -37,12 +37,23 @@ function saveFeatures(){
     var innerDiv = document.getElementById("efelgui-frame").contentDocument || 
         getElementById("efelgui-frame").contentWindow.document;
     var folderNameOrig = innerDiv.getElementById("hiddendiv").classList[0];
+    
+    console.log(folderNameOrig)
     folderName = folderNameOrig.replace(/\./g, "______")
-    $.getJSON('/hh-neuron-builder/copy-feature-files/' + folderName + '/' + 
-        exc + '/' + ctx +'/', 
-            function(data){
+    
+    $.ajax({
+        url: "/hh-neuron-builder/copy-feature-files/" + exc + "/" + ctx + "/",
+        method: "POST",
+        data: {"folder": folderName},
+        success: function(result) {
+            console.log(result);
+            if (result.resp == "OK") {
                 window.location.href = "/hh-neuron-builder/workflow";
-            });    
+            } else {
+                alert("Something goes wrong. Please download the Features files and upload them manually."); 
+            }
+        }
+    });
 }
 
 //
