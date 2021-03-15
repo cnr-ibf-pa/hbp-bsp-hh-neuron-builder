@@ -954,7 +954,7 @@ $("#modFolderIcon").hover(
         $(this).removeClass("fa-folder-open");
         $(this).addClass("fa-folder");
     }
-)
+);
 
 $("#modFolderIcon").on("click", function() {
     console.log("Hello everybody");
@@ -962,18 +962,25 @@ $("#modFolderIcon").on("click", function() {
         console.log(data);
         $("#overlaywrapper").css("display", "block");
         $("#overlaymodfiles").css("display", "block");
-//        fileList = JSON.parse(data);
-//        console.log(fileList);
-        for (let i = 0; i < data.morphology.length; i++) {
-            name = data.morphology[i]
-            $("#morpSection").append("<div id=" + name + " class='morp-item'><span class='far fa-file'></span>" + name + "</div>")
+        if (data.morphology) {
+            for (let i = 0; i < data.morphology.length; i++) {
+                name = data.morphology[i]
+                $("#morpSection").append("<div id=" + name + " class='morp-item'><span class='far fa-file'></span>" + name + "</div>");
+            }
+        } else {
+            $("#morpSection").append("<div class='morp-item'>Empty</div>");
         }
-        for (let i = 0; i < data.mod_files.length; i++) {
-            name = data.mod_files[i]
-            $("#modSection").append("<div id=" + name + " class='mod-item'><span class='far fa-file'></span>" + name + "</div>")
+        if (data.mod_files) {
+            for (let i = 0; i < data.mod_files.length; i++) {
+                name = data.mod_files[i]
+                $("#modSection").append("<div id=" + name + " class='mod-item'><span class='far fa-file'></span>" + name + "</div>");
+            }
+        } else {
+            $("#modSection").append("<div class='mod-item'>Empty</div>");
         }
-    })
-})
+    });
+});
+
 
 function closeOverlayModFiles() {
     $("#overlaywrapper").css("display", "none");

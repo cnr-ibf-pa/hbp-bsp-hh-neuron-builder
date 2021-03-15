@@ -2187,8 +2187,12 @@ def get_hhf_files(request, exc, ctx):
     hhf_dir = os.path.join(user_dir, 'hhf')
 
     hhf_file_list = {'morphology': None, 'mod_files': []}
-    hhf_file_list.update({'morphology': os.listdir(os.path.join(hhf_dir, 'morphology'))})
-    for m in os.listdir(os.path.join(hhf_dir, 'mods')):
-        hhf_file_list['mod_files'].append(m)
-    print(hhf_file_list)
+    
+    if os.path.exists(os.path.join(hhf_dir, 'morphology')):
+        hhf_file_list.update({'morphology': os.listdir(os.path.join(hhf_dir, 'morphology'))})
+    
+    if os.path.exists(os.path.join(hhf_dir, 'mods')):
+        for m in os.listdir(os.path.join(hhf_dir, 'mods')):
+            hhf_file_list['mod_files'].append(m)
+    
     return HttpResponse(content=json.dumps(hhf_file_list), content_type='application/json', status=200)
