@@ -2128,14 +2128,8 @@ def store_workflow_in_session(request, exc='', ctx=''):
 
 def hhf_comm(request):
     print('hhf-comm called()')
-
-    qs = urllib.parse.unquote(urllib.parse.urlparse(request.get_full_path())[4])
-    print(qs)
-    i = qs.index('=')
-    qs = qs[i+1:]
-    print(qs)
-    hhf_dict = json.loads(qs)
-    print(json.dumps(hhf_dict, indent=4))
+    
+    hhf_dict = json.loads(request.GET.get('hhf_dict', None))
 
     if hhf_dict:
 
