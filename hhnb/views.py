@@ -488,10 +488,16 @@ def get_model_list2(request, exc="", ctx=""):
     return HttpResponse(status=404)
 
 
-def copy_feature_files(request, feature_folder="", exc="", ctx=""):
+#def copy_feature_files(request, feature_folder="", exc="", ctx=""):
+def copy_feature_files(request, exc='', ctx=''):
+    feature_folder = request.POST.get('folder', None)
+    
+    feature_folder = feature_folder.replace('u_res', '')  
+    
+    
     feature_folder = feature_folder.replace("______",".")
     response = {"expiration": False}
-    
+   
     if not os.path.exists(feature_folder):
         feature_folder = '/' + feature_folder
     
@@ -500,11 +506,21 @@ def copy_feature_files(request, feature_folder="", exc="", ctx=""):
         response = {"expiration": True}
         return HttpResponse(json.dumps(response), content_type="application/json")
 
-    response["folder"] = feature_folder
-    shutil.copy(os.path.join(feature_folder, 'features.json'),
+    print(feature_folder)
+    for d in os.listdir(feature_folder):
+        if d.endswith('fe_results'):
+            feature_folder = feature_folder + d
+            break
+    print(feature_folder)
+
+    if os.path.isfile(os.path.join(feature_folder, 'features.json')) and os.path.isfile(os.path.join(feature_folder, 'protocols.json')):
+        shutil.copy2(os.path.join(feature_folder, 'features.json'),
+                request.session[exc]['user_dir_data_feat'])
+        shutil.copy2(os.path.join(feature_folder, 'protocols.json'),
             request.session[exc]['user_dir_data_feat'])
-    shutil.copy(os.path.join(feature_folder, 'protocols.json'),
-            request.session[exc]['user_dir_data_feat'])
+        response = {'resp': 'OK', 'message': 'features files copied'}
+    else:
+        response = {'resp': 'KO', 'message': 'features files not found'}
 
     return HttpResponse(json.dumps(response), content_type="application/json")
 
