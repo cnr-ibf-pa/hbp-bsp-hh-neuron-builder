@@ -32,7 +32,7 @@
                             <div class="box-title">Feature extraction</div>
                         </div>
                         <div class="col flex-grow-1 flex-end">
-                            <i class="far fa-question-circle fa-lg brown" 
+                            <i class="far fa-question-circle fa-lg black"
                                 title="Click the 'Extract features' button to compute electrophysiological features (from the HBP dataset or your own experimental files) to be used in your optimization process. You can also upload your own features.json and protocols.json files by clicking on 'Upload file'">
                             </i>
                         </div>
@@ -64,12 +64,14 @@
             <div class="col">
                 <div class="container secondary-content">
                     <div class="row">
-                        <div class="col"></div>
+                        <div class="col flex-grow-1 flex-start">
+                            <i id="modFolderIcon" class="far fa-folder fa-lg black" style="display: none" title="Show morphology and mod files"></i>
+                        </div>
                         <div class="col flex-grow-4 flex-center">
                             <div class="box-title">Optimization files</div>
                         </div>
                         <div class="col flex-grow-1 flex-end">
-                            <i class="far fa-question-circle fa-lg brown" 
+                            <i class="far fa-question-circle fa-lg black"
                                 title="Choose a model from the HBP dataset by clicking the 'Choose from database' button. Alternative, you can upload a properly formatted .zip file containing the model folders/files. For further details, please refer to the HBP Brain Simulation Platform Guidebook">
                             </i>
                         </div>
@@ -106,7 +108,7 @@
                             <div class="box-title">Optimization settings</div>
                         </div>
                         <div class="col flex-grow-1 flex-end">
-                            <i class="far fa-question-circle fa-lg brown"
+                            <i class="far fa-question-circle fa-lg black"
                                 title="Click the 'Set parameters/Choose HPC button' to set the optimization (i.e. BluePyOpt) and execution (e.g. number of cores, runtime, etc.) parameters">
                             </i>
                         </div>
@@ -147,7 +149,7 @@
                             <div class="box-title">Optimization files</div>
                         </div>
                         <div class="col flex-end">
-                            <i class="far fa-question-circle fa-lg brown"
+                            <i class="far fa-question-circle fa-lg black"
                                 title="Fetch optimization results from HPC systems by clicking the 'Fetch results' button. Alternative, you can upload a properly formatted .zip file containing the optimized  model folders/files ready for simulation. For further details, please refer to the HBP Brain Simulation Platform Guidebook">
                             </i>
                         </div>
@@ -724,8 +726,36 @@
         </button>
     </div>
 
-</div>
+    <div id="overlaymodfiles" class="overlay-content">
+        <div id="fileListAccordion" class="accordion accordion-flush">
+            <div class="accordion-item">
+                <h5 id="morpAccordionHeader" class="accordion-header">
+                    <button class="accordion-button" type="button" data-bs-target="#morpAccordion" data-bs-toggle="collapse" aria-expanded="true" aria-controls="morpAccordion">
+                        Morphologies
+                    </button>
+                </h5>
+                <div id="morpAccordion" class="accordion-collapse collapse show" aria-labelledby="morpAccordionHeader" data-bs-parent="#fileListAccordion">
+                    <div id="morpSection" class="accordion-body"></div>
+                </div>
+            </div>
+            <div class="accordion-item">
+                <h5 id="modAccordionHeader" class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-target="#modAccordion" data-bs-toggle="collapse" aria-expanded="false" aria-controls="modAccordion">
+                        Mod files
+                    </button>
+                </h5>
+                <div id="modAccordion" class="accordion-collapse collapse" aria-labelledby="modAccordionHeader" data-bs-parent="#fileListAccordion">
+                    <div id="modSection" class="accordion-body"></div>
+                </div>
+            </div>
+        </div>
+         <div class="row">
+                <button type="button" class="btn workflow-btn margin-auto" onclick="closeOverlayModFiles()">Close</button>
+            </div>
+        </div>
+    </div>
 
+</div>
 
 
 <script>

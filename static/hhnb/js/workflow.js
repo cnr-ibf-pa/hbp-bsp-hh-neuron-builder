@@ -282,6 +282,9 @@ function checkConditions(){
                 openExpirationDiv("The workflow directory tree is expired on the server.<br>Please go to the Home page and start a new workflow.<br>");
                 return false
             }
+            if (data['from_hhf']['status']) {
+                $("#modFolderIcon").css("display", "block");
+            }
             if (data['feat']['status']){
                 let featBar = $("#feat-bar");
                 featBar.removeClass("red");
@@ -940,3 +943,39 @@ $("#loginButton").on("click", function() {
     });
     return false;
 });
+
+
+$("#modFolderIcon").hover(
+    function() {
+        $(this).addClass("fa-folder-open");
+        $(this).removeClass("fa-folder");
+    },
+    function() {
+        $(this).removeClass("fa-folder-open");
+        $(this).addClass("fa-folder");
+    }
+)
+
+$("#modFolderIcon").on("click", function() {
+    console.log("Hello everybody");
+    $.getJSON("/hh-neuron-builder/get-hhf-files/" + req_pattern + "/", function(data) {
+        console.log(data);
+        $("#overlaywrapper").css("display", "block");
+        $("#overlaymodfiles").css("display", "block");
+//        fileList = JSON.parse(data);
+//        console.log(fileList);
+        for (let i = 0; i < data.morphology.length; i++) {
+            name = data.morphology[i]
+            $("#morpSection").append("<div id=" + name + " class='morp-item'><span class='far fa-file'></span>" + name + "</div>")
+        }
+        for (let i = 0; i < data.mod_files.length; i++) {
+            name = data.mod_files[i]
+            $("#modSection").append("<div id=" + name + " class='mod-item'><span class='far fa-file'></span>" + name + "</div>")
+        }
+    })
+})
+
+function closeOverlayModFiles() {
+    $("#overlaywrapper").css("display", "none");
+    $("#overlaymodfiles").css("display", "none");
+}

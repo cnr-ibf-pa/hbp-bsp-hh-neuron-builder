@@ -96,6 +96,8 @@ urlpatterns = [
 
     path('store-workflow-in-session/' + required + '/', views.store_workflow_in_session),
 
-    path('hhf-comm/<any:hhf_dict>', views.hhf_comm),
+    # path('hhf-comm/<any:hhf_dict>', views.hhf_comm),
+    path('hhf-comm', views.hhf_comm),
+    path('get-hhf-files/' + required + '/', views.get_hhf_files),
 ]
 
