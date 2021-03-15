@@ -404,6 +404,9 @@ body {
     box-shadow: unset;
     border-radius: .5rem;
 }
+.workflow-btn.full {
+    width: 100%;
+}
 
 .workflow-btn.fill-background {
     background-color: #e6c35f; /*#fbd25dff;*/  
@@ -910,6 +913,35 @@ td {
     transition: all ease .3s;
 }
 
+#fileListAccordion {
+    min-width: 450px;
+    margin: 1rem 0;
+}
+.list-files {
+    border: 1px solid #ffa93a;
+    border-radius: .75rem;
+    background-color: rgba(255, 255, 255, .65);
+}
+.list-files:first-child {
+    border-top-left-radius: .75rem;
+    border-top-right-radius: .75rem;
+}
+.list-files:last-child {
+    border-bottom-left-radius: .75rem;
+    border-bottom-right-radius: .75rem;
+}
+
+.morp-item, .mod-item {
+    cursor: pointer;
+   // background-color: rgba(255, 255, 255, .7);
+}
+.morp-item:hover, .mod-item:hover {
+    background-color: white;
+}
+.morp-item > span, .mod-item > span {
+    margin-right: 28px;
+}
+
 /* icons */
 
 .info-icon {
@@ -946,6 +978,15 @@ small-placeholder::placeholder {
 
 .no-text-decorator {
     text-decoration: none;
+}
+
+.flex-start {
+    display: flex;
+    justify-content: start;
+    align-self: center;
+}
+.flex-start > i {
+    margin-left: 1rem;
 }
 
 .flex-end {
@@ -1067,4 +1108,8 @@ i.black {
 .fade-in {
     opacity: 1;
     transition: opacity 1s;
+}
+
+.fa-folder, .fa-folder-open {
+    cursor: pointer;
 }

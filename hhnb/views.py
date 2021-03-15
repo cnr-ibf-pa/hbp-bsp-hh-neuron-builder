@@ -10,38 +10,21 @@ import subprocess
 import shutil
 import tarfile
 import datetime
+import urllib
+import uuid
+import requests
+
 from itertools import takewhile
 
-import requests
-import uuid
-
-# import django libs
 from django.conf import settings
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, JsonResponse, FileResponse
 from django.contrib.auth.decorators import login_required
-# import hbp modules
 
-# TODO: to replace with new API
-# import hbp_service_client.storage_service.client as service_client
-# import hbp_service_client.storage_service.api as service_api_client
-# from hbp_service_client.document_service.service_locator import ServiceLocator
-# from hbp_service_client.document_service.client import Client
-# from hbp_service_client.document_service.requestor import DocNotFoundException, DocException
-# from hbp_validation_framework import ModelCatalog
-
-# import local tools
 from hbp_validation_framework import ModelCatalog
-
-from hhnb.tools import resources, hpc_job_manager, wf_file_manager
-
 import ebrains_drive
 
-# import common tools library for the bspg project
-
-# ctools used to renew token, not userd any more
-# sys.path.append(os.path.join(settings.BASE_DIR))
-# from ctools import manage_auth
+from hhnb.tools import resources, hpc_job_manager, wf_file_manager
 
 from mozilla_django_oidc.contrib.drf import get_oidc_backend
 
@@ -889,7 +872,9 @@ def check_cond_exist(request, exc="", ctx=""):
         "opt_flag": {"status": False},
         "sim_flag": {"status": False},
         # 'opt_res': {"status": False},
-        'opt_res_files': {"status": False}
+        "opt_res_files": {"status": False},
+
+        "from_hhf": {"status": request.session[exc].get('from_hhf', False)}
     }
 
     if not os.path.exists(request.session[exc]['user_dir']):
@@ -2139,3 +2124,71 @@ def store_workflow_in_session(request, exc='', ctx=''):
     request.session.save()
 
     return HttpResponse(status=200)
+
+
+def hhf_comm(request):
+    print('hhf-comm called()')
+
+    qs = urllib.parse.unquote(urllib.parse.urlparse(request.get_full_path())[4])
+    print(qs)
+    i = qs.index('=')
+    qs = qs[i+1:]
+    print(qs)
+    hhf_dict = json.loads(qs)
+    print(json.dumps(hhf_dict, indent=4))
+
+    if hhf_dict:
+
+        # create exc and ctx tag
+        exc = 'tab_' + datetime.datetime.now().strftime('%Y%m%d%H%M%S')
+        ctx = uuid.uuid4()
+         
+        r0 = set_exc_tags(request, exc, ctx)
+        r1 = initialize(request, exc, ctx)
+        r2 = create_wf_folders(request, wf_type='new', exc=exc, ctx=ctx) 
+
+        hhf_dir = os.path.join(request.session[exc]['user_dir'], 'hhf')
+
+        if os.path.exists(hhf_dir):
+            shutil.rmtree(hhf_dir)
+        os.mkdir(hhf_dir)
+
+        morp = hhf_dict['HHF-Comm'].get('morphology', None)
+        mod = hhf_dict['HHF-Comm'].get('modFiles', None)
+
+        if morp:
+            morp_dir = os.path.join(hhf_dir, 'morphology')
+            os.mkdir(morp_dir)
+            r = requests.get(morp['url'], verify=False)
+            with open(os.path.join(morp_dir, morp['name']), 'wb') as fd:
+                for chunk in r.iter_content():
+                    fd.write(chunk)
+
+        if mod:
+            mod_dir = os.path.join(hhf_dir, 'mods')
+            os.mkdir(mod_dir)
+            for m in mod:
+                r = requests.get(m['url'], verify=False)
+                with open(os.path.join(mod_dir, m['name']), 'wb') as fd:
+                    for chunk in r.iter_content():
+                        fd.write(chunk)
+
+        request.session[exc]['from_hhf'] = True
+        request.session.save()
+
+        return render(request, 'hhnb/workflow.html', context={"exc": exc, "ctx": str(ctx)})
+
+    return home(request)
+
+
+def get_hhf_files(request, exc, ctx):
+
+    user_dir = request.session[exc]['user_dir']
+    hhf_dir = os.path.join(user_dir, 'hhf')
+
+    hhf_file_list = {'morphology': None, 'mod_files': []}
+    hhf_file_list.update({'morphology': os.listdir(os.path.join(hhf_dir, 'morphology'))})
+    for m in os.listdir(os.path.join(hhf_dir, 'mods')):
+        hhf_file_list['mod_files'].append(m)
+    print(hhf_file_list)
+    return HttpResponse(content=json.dumps(hhf_file_list), content_type='application/json', status=200)
