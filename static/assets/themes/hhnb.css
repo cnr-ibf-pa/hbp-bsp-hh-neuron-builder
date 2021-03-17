@@ -446,12 +446,12 @@ body {
 
 .floating-btn {
     position: fixed;
-    width: 80%;
+    width: 70%;
     height: 8%;
-    left: 10%;
+    left: 15%;
     z-index: 50;
     font-size: 1.5rem;
-    opacity: .3;
+    opacity: .8;
     transition: all ease-out 0.3s;
 }
 .floating-btn:hover {
