@@ -146,8 +146,10 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static')
 ]
 
-
 MEDIA_ROOT = os.path.join("/apps", 'media')
+
+HHF_TEMPLATE_DIR = os.path.join(MEDIA_ROOT, 'hhnb', 'hhf_template')
+
 
 MODEL_CATALOG_FILTER = {
         'granule_models': {

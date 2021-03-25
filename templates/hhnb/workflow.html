@@ -10,7 +10,7 @@
     </div>
     <div class="hhnb-navbar navbar">
         <div id="wf-title" class="workflow-id-text">Workflow id:</div>
-        <button id="wf-btn-new-wf" class="btn hhnb-navbar-btn"title="Create a new workflow" onclick="newWorkflow()">New</button>
+        <button id="wf-btn-new-wf" class="btn hhnb-navbar-btn" title="Create a new workflow" onclick="newWorkflow()">New</button>
         <button id="wf-btn-clone-wf" class="btn hhnb-navbar-btn" title="Clone current workflow" onclick="cloneWorkflow()">Clone</button>
         <button id="wf-btn-save" class="btn hhnb-navbar-btn" title="Download current workflow" onclick="saveWorkflow()">Save</button>
     </div>
@@ -65,7 +65,7 @@
                 <div class="container secondary-content">
                     <div class="row">
                         <div class="col flex-grow-1 flex-start">
-                            <i id="modFolderIcon" class="far fa-folder fa-lg black" style="display: none" title="Show morphology and mod files"></i>
+                            <i id="openFileManagerIcon" class="far fa-folder fa-lg black hhf-integration-component" style="display: none" onclick="openFileManager()" title="Show morphology and mod files"></i>
                         </div>
                         <div class="col flex-grow-4 flex-center">
                             <div class="box-title">Optimization files</div>
@@ -84,6 +84,11 @@
                         <button type="button" id="opt-up-btn" class="btn workflow-btn" onclick="displayOptSetUploadDiv()">Upload files</button>
                     </div>
                     <div class="row">
+<!--                        <div class='col flex-center hhf-integration-component'>-->
+<!--                            <button type='button' id='showOptFolderbutton' class='btn btn-link' title='Show Optimization folder' onclick='showOptFolder()'>-->
+<!--                                Show-->
+<!--                            </button>-->
+<!--                        </div>-->
                         <div class="col flex-center">
                             <button id="down-opt-set-btn" title="Download optimization files" type="button" class="btn btn-link" onclick="downloadLocalOptSet()">
                                 Download
@@ -201,7 +206,7 @@
                 <div class="mb-3">
                     <label id="uploadFormLabel" for="formFile" class="form-label"></label>
                     <div id="uploadImg">
-                        <img src="{% static "hhnb/img/expected_sim_zip.jpg" %}" alt="Expected sim zip file">
+                        <img src="{% static 'hhnb/img/expected_sim_zip.jpg' %}" alt="Expected sim zip file">
                     </div>
                     <input id="formFile" name="formFile" type="file" class="form-control">
                 </div>
@@ -217,134 +222,6 @@
         </form>
     </div>
 
-    <!-- set hpc parameters -->
-
-    <!-- BOOTSTRAP 4 -->
-    <!-- <div id="overlayparam" class="overlay-content">
-        <form id='submitRunParam' method='POST'>{% csrf_token %}
-            <div class="container">
-                <div id="hpcChooserParams" class="accordion">
-                    <div class="row">
-                        <a class="list-group-item list-group-item-action" data-toggle="collapse" data-target="#daintCollapse" role="button" aria-expanded="false" 
-                            aria-controls="daintCollapse" id="DAINT-CSCS" value="DAINT-CSCS" name="DAINT-CSCS" onclick="setHPCSystem($(this).attr('value'))">
-                            CSCS-DAINT
-                        </a>
-                        <div id="daintCollapse" class="collapse" data-parent="#hpcChooserParams">
-                            <div class="hpc-param-chooser container">
-                                <div class="row">
-                                    <div class="input-group hpc-input-group-text">
-                                        <div class="input-group-prepend">
-                                            <span class="input-group-text">Project ID</span>
-                                        </div>
-                                        <input type="text" class="form-control" id="daint_project_id" placeholder="Set project">
-                                    </div>
-                                </div>
-                                <div class="row row-separator"></div> 
-                                <div class="row">
-                                    <div class="col">
-                                        <div class="card input-card">
-                                            <div class="card-header input-card-header">Algorithm Parameters</div>
-                                            <div class="card-body ">
-                                                <!-- <label id="gen-max-label" for="gen-max" class="form-label range">Number of generation</label>
-                                                <input type="range" class="form-range" id="gen-max" name="gen-max" step="1" min="1" max="60"> -->
-                                                <!--<div class="input-group">
-                                                    <div class="input-group-prepend">
-                                                        <span class="input-group-text" title="Number of generation (max 60)"># Gen</span>
-                                                    </div>
-                                                    <input type="number" class="form-control small-placeholder" name="gen-max" id="gen-max" title="Number of generation (max 60)" placeholder="Number of generation (max 60)" step="1" min="1" max="60">
-                                                </div>
-                                                <br>
-                                                <div class="input-group">
-                                                    <div class="input-group-prepend">
-                                                        <span class="input-group-text" title="Offspring size">Offspring</span>
-                                                    </div>
-                                                    <input type="number" class="form-control" name="offspring" id="offspring" title="Offspring size" placeholder="Offspring size" step="1" min="1" max="60">
-                                                </div>
-                                                <br>
-                                                <div class="input-group" style="visibility: hidden;">
-                                                    <div class="input-group-prepend">
-                                                        <span class="input-group-text" title="Number of generation (max 60)"># Gen</span>
-                                                    </div>
-                                                    <input type="number" class="form-control" name="gen-max" id="gen-max" title="Number of generation (max 60)" placeholder="Number of generation (max 60)" step="1" min="1" max="60">
-                                                </div>
-                                                    
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col">
-                                        <div class="card">
-                                            <div class="card-header input-card-header">Optimization Run Parameters</div>
-                                            <div class="card-body">
-                                                <div class="input-group">
-                                                    <div class="input-group-prepend">
-                                                        <span class="input-group-text" title="Number of nodes"># Nodes</span>
-                                                    </div>
-                                                    <input type="number" class="form-control small-placeholder" name="node-number" id="node-number" title="Number of nodes" placeholder="Number of nodes" step="1" min="1">
-                                                </div>    
-                                                <br>
-                                                <div class="input-group">
-                                                    <div class="input-group-prepend">
-                                                        <span class="input-group-text" title="Number of cores"># Cores</span>
-                                                    </div>
-                                                    <input type="number" class="form-control small-placeholder" name="core-num" id="core-num" title="Number of cores" placeholder="Number of cores" step="1" min="1">
-                                                </div>   
-                                                <br>
-                                                <div class="input-group">
-                                                    <div class="input-group-prepend">
-                                                        <span class="input-group-text" title="Runtime">Runtime</span>
-                                                    </div>
-                                                    <input type="" class="form-control small-placeholder" name="runtime" id="runtime" title="Runtime" placeholder="Runtime">
-                                                </div>  
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>        
-                            </div>
-                        </div>
-                        <a class="list-group-item list-group-item-action" data-toggle="collapse" data-target="#serviceAccountCollapse" role="button" aria-expanded="false"
-                            aria-controls="servicAccountCollapse" id="SA-CSCS" value="SA-CSCS" name="SA-CSCS" onclick="setHPCSystem($(this).attr('value'))">
-                            CSCS-DAINT Service Account
-                        </a>
-                        <div id="serviceAccountCollapse" class="collapse" data-parent="#hpcChooserParams">
-                            <div class="hpc-param-chooser">
-                                <div>
-                                    ciao
-                                </div>
-                                <div>
-                                    mondo
-                                </div>
-                            </div>
-                        </div>
-                        <a class="list-group-item list-group-item-action" data-toggle="collapse" data-target="#nsgCollapse" role="button" aria-expanded="false"
-                            aria-controls="nsgCollapse" id="NSG" value="NSG" name="NSG" onclick="setHPCSystem($(this).attr('value'))">
-                            NSG
-                        </a>
-                        <div id="nsgCollapse" class="collapse" data-parent="#hpcChooserParams">
-                            <div class="hpc-param-chooser">
-                                <div>
-                                    ciao
-                                </div>
-                                <div>
-                                    mondo
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <br>
-                <div class="row">
-                    <div class="col">
-                        <button type="button" id="cancel-param-btn" class="btn workflow-btn" onclick="closeParameterDiv()">Cancel</button>
-                    </div>
-                    <div class="col">
-                        <button type="button" id="apply-param" class="btn workflow-btn" onclick=""
-                    </div>
-                </div>
-            </div>
-        </form>
-    </div> -->
-
-    <!-- BOOTSTRAP 5 -->
     <div id="overlayparam" class="overlay-content">
         <form id="submitJobParamForm" method="POST">
             {% csrf_token %}
@@ -678,7 +555,7 @@
             <div class="row-separator"></div>
             <div id="jobProcessingProgress" class="row">
                 <div class="progress">
-                    <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%"></div>
+                    <div id="progressBarFetchJob" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%"></div>
                 </div>
             </div>
         </div>
@@ -726,31 +603,54 @@
         </button>
     </div>
 
-    <div id="overlaymodfiles" class="overlay-content">
-        <div id="fileListAccordion" class="accordion accordion-flush">
-            <div class="accordion-item">
-                <h5 id="morpAccordionHeader" class="accordion-header">
-                    <button class="accordion-button" type="button" data-bs-target="#morpAccordion" data-bs-toggle="collapse" aria-expanded="true" aria-controls="morpAccordion">
-                        Morphologies
-                    </button>
-                </h5>
-                <div id="morpAccordion" class="accordion-collapse collapse show" aria-labelledby="morpAccordionHeader" data-bs-parent="#fileListAccordion">
-                    <div id="morpSection" class="accordion-body"></div>
+    <div id="overlayfilemanager" class="overlay-content file-manager-content">
+        <div id="filemanager" class="file-manager">
+            <div class="container file-manager-container g-0">
+                <div class="row g-0 file-manager-ui-button">
+                    <div class="col flex-start">
+                        <i id="closeFileManagerButton" class="far fa-times-circle fa-lg" title="Close window"></i>
+                    </div>
+                    <div class="col flex-end">
+                        <i id="refreshFileListButton" class="ui-button fas fa-sync-alt fa-lg" title="Refresh"></i>
+                        <i id="selectAllButton" class="ui-button fas fa-check-double fa-lg" title="Select/Deselect all"></i>
+                        <i id="downloadFileButton" class="ui-button fas fa-file-download fa-lg" title="Download selection"></i>
+                        <i id="uploadFileButton" class="ui-button fas fa-file-upload fa-lg" title="Upload to this folder"></i>
+                        <i id="deleteFileButton" class="ui-button fas fa-trash fa-lg" title="Delete selection"></i>
+                    </div>
                 </div>
-            </div>
-            <div class="accordion-item">
-                <h5 id="modAccordionHeader" class="accordion-header">
-                    <button class="accordion-button collapsed" type="button" data-bs-target="#modAccordion" data-bs-toggle="collapse" aria-expanded="false" aria-controls="modAccordion">
-                        Mod files
-                    </button>
-                </h5>
-                <div id="modAccordion" class="accordion-collapse collapse" aria-labelledby="modAccordionHeader" data-bs-parent="#fileListAccordion">
-                    <div id="modSection" class="accordion-body"></div>
+                <div class="row full g-0 ">
+                    <div class="col-4 folder-selector">
+                        <ul class="list-group file-manager-group folder-group">
+                            <li id="morphologyFolder" class="list-group-item folder-item active" aria-current="true">Morphology</li>
+                            <li id="mechanismsFolder" class="list-group-item folder-item">Mechanisms</li>
+                            <li id="configFolder" class="list-group-item folder-item">Config</li>
+                            <li id="modelFolder" class="list-group-item folder-item">Model</li>
+                            <li id="parametersFolder" class="list-group-item folder-item">parameters.json</li>
+                            <li id="optNeuronFolder" class="list-group-item folder-item">opt_neuron.py</li>
+                        </ul>
+                        <div class="model-key-flex-col">
+                            <div id="modelKeydiv" class="input-group model-key-group">
+                                <input type="text" class="form-control model-key-input" placeholder="Set model key" aria-label="Model key">
+                                <button class="btn btn-outline-secondary model-key-btn" type="button" style="box-shadow: unset">Apply</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-8 file-selector">
+                        <div id="fileItemSpinner" class="spinner-border file-item" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        
+                        <ul id="morphologyFileList" class="list-group file-manager-group file-group" style="display: none;"></ul>
+                        <ul id="mechanismsFileList" class="list-group file-manager-group file-group" style="display: none"></ul>
+                        <ul id="configFileList" class="list-group file-manager-group file-group" style="display: none"></ul>
+                        <ul id="modelFileList" class="list-group file-manager-group file-group" style="display: none"></ul>
+                        <!-- <textarea id="parametersTextArea" class="file-textarea" style="display: none"><pre><code id="parametersCode" class="json"></code></pre></textarea> -->
+                        <!-- <textarea id="optNeuronTextArea" class="file-textarea" style="display: none"><pre><code id="optNeuronCode"></code></pre></textarea> -->
+                        <!-- <pre id="optNeuronTextArea" style="display: none"><code id="optNeuronCode" class="python"></code></pre> -->
+                        <!-- <pre id="parametersTextArea" style="display: none"><code id="parametersCode" class="json"></code></pre> -->
+                        <textarea id="parametersTextArea" class="file-textarea" val="<pre><code class='json'>{'k1': 'v1'}</code></pre>"></textarea>
+                    </div>
                 </div>
-            </div>
-        </div>
-         <div class="row">
-                <button type="button" class="btn workflow-btn margin-auto" onclick="closeOverlayModFiles()">Close</button>
             </div>
         </div>
     </div>
@@ -771,7 +671,12 @@
         console.log(ctx);
     }
 </script>
+
 <script type="text/javascript" src="{% static 'hhnb/js/workflow.js' %}"></script>
 <script type="text/javascript" src="{% static 'hhnb/js/common.js' %}"></script>
+ 
+<!-- Highlighter library -->
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.1/styles/default.min.css">
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.1/highlight.min.js"></script>
 
 {% endblock %}

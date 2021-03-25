@@ -18,7 +18,7 @@ from itertools import takewhile
 
 from django.conf import settings
 from django.shortcuts import render, redirect
-from django.http import HttpResponse, JsonResponse, FileResponse
+from django.http import HttpResponse, JsonResponse, FileResponse, HttpResponseBadRequest
 from django.contrib.auth.decorators import login_required
 
 from hbp_validation_framework import ModelCatalog
@@ -1983,7 +1983,7 @@ def workflow_download(request, exc='', ctx=''):
 
 
 def simulation_result_download(request, exc='', ctx=''):
-    tmp_dir = os.path.join(settings.MEDIA_URL, 'tmp')
+    tmp_dir = os.path.join(settings.MEDIA_ROOT, 'tmp')
     if not os.path.exists(tmp_dir):
         os.mkdir(tmp_dir)
 
@@ -2126,9 +2126,9 @@ def store_workflow_in_session(request, exc='', ctx=''):
     return HttpResponse(status=200)
 
 
-def hhf_comm(request):
+def hhf_comm(request, exc='', ctx=''):
     print('hhf-comm called()')
-    
+
     hhf_dict = json.loads(request.GET.get('hhf_dict', None))
 
     if hhf_dict:
@@ -2147,27 +2147,33 @@ def hhf_comm(request):
             shutil.rmtree(hhf_dir)
         os.mkdir(hhf_dir)
 
-        morp = hhf_dict['HHF-Comm'].get('morphology', None)
-        mod = hhf_dict['HHF-Comm'].get('modFiles', None)
+        # load template
+        if os.path.exists(os.path.join(request.session[exc]['user_dir'], 'hhf')):
+            shutil.rmtree(os.path.join(request.session[exc]['user_dir'], 'hhf'))
+        shutil.copytree(os.path.join(settings.MEDIA_ROOT, 'hhnb', 'hhf_template', 'hhf'), os.path.join(request.session[exc]['user_dir'], 'hhf'))
 
-        if morp:
-            morp_dir = os.path.join(hhf_dir, 'morphology')
-            os.mkdir(morp_dir)
-            r = requests.get(morp['url'], verify=False)
-            with open(os.path.join(morp_dir, morp['name']), 'wb') as fd:
-                for chunk in r.iter_content():
-                    fd.write(chunk)
+        # morp = hhf_dict['HHF-Comm'].get('morphology', None)
+        # mod = hhf_dict['HHF-Comm'].get('modFiles', None)
 
-        if mod:
-            mod_dir = os.path.join(hhf_dir, 'mods')
-            os.mkdir(mod_dir)
-            for m in mod:
-                r = requests.get(m['url'], verify=False)
-                with open(os.path.join(mod_dir, m['name']), 'wb') as fd:
-                    for chunk in r.iter_content():
-                        fd.write(chunk)
+        # if morp:
+        #     morp_dir = os.path.join(hhf_dir, 'morphology')
+        #     os.mkdir(morp_dir)
+        #     r = requests.get(morp['url'], verify=False)
+        #     with open(os.path.join(morp_dir, morp['name']), 'wb') as fd:
+        #         for chunk in r.iter_content():
+        #             fd.write(chunk)
+        #
+        # if mod:
+        #     mod_dir = os.path.join(hhf_dir, 'mechanisms')
+        #     os.mkdir(mod_dir)
+        #     for m in mod:
+        #         r = requests.get(m['url'], verify=False)
+        #         with open(os.path.join(mod_dir, m['name']), 'wb') as fd:
+        #             for chunk in r.iter_content():
+        #                 fd.write(chunk)
 
         request.session[exc]['from_hhf'] = True
+        request.session[exc]['hhf_dir'] = hhf_dir
         request.session.save()
 
         return render(request, 'hhnb/workflow.html', context={"exc": exc, "ctx": str(ctx)})
@@ -2177,16 +2183,128 @@ def hhf_comm(request):
 
 def get_hhf_files(request, exc, ctx):
 
-    user_dir = request.session[exc]['user_dir']
-    hhf_dir = os.path.join(user_dir, 'hhf')
+    hhf_dir = request.session[exc]['hhf_dir']
 
-    hhf_file_list = {'morphology': None, 'mod_files': []}
+    hhf_file_list = {'morphology': [], 'mechanisms': [], 'config': [], 'model': [], 'parameters.json': '', 'opt_neuron.py': ''}
     
+    # get morphology
     if os.path.exists(os.path.join(hhf_dir, 'morphology')):
-        hhf_file_list.update({'morphology': os.listdir(os.path.join(hhf_dir, 'morphology'))})
+        for m in os.listdir(os.path.join(hhf_dir, 'morphology')):
+            hhf_file_list['morphology'].append(m)
     
-    if os.path.exists(os.path.join(hhf_dir, 'mods')):
-        for m in os.listdir(os.path.join(hhf_dir, 'mods')):
-            hhf_file_list['mod_files'].append(m)
+    # list mechanisms files
+    if os.path.exists(os.path.join(hhf_dir, 'mechanisms')):
+        for m in os.listdir(os.path.join(hhf_dir, 'mechanisms')):
+            hhf_file_list['mechaninsms'].append(m)
+
+    # list config files
+    if os.path.exists(os.path.join(hhf_dir, 'config')):
+        for c in os.listdir(os.path.join(hhf_dir, 'config')):
+            hhf_file_list['config'].append(c)
+            if c == 'parameters.json':
+                with open(os.path.join(hhf_dir, 'config', 'parameters.json'), 'r') as fd:
+                    jj = json.load(fd)
+                    hhf_file_list['parameters.json'] = json.dumps(jj, indent=8)
+
+    # list model files
+    if os.path.exists(os.path.join(hhf_dir, 'model')):
+        for m in os.listdir(os.path.join(hhf_dir, 'model')):
+            hhf_file_list['model'].append(m)
+
+    if os.path.exists(os.path.join(hhf_dir, 'opt_neuron.py')):
+        with open(os.path.join(hhf_dir, 'opt_neuron.py'), 'r') as fd:
+            hhf_file_list['opt_neuron.py'] = fd.read()
     
     return HttpResponse(content=json.dumps(hhf_file_list), content_type='application/json', status=200)
+
+
+def download_hhf_files(request, exc, ctx):
+    try:
+        file_ids = json.loads(request.GET.get('file_list', None))
+        print(file_ids)
+        user_dir = request.session[exc]['user_dir']
+        morp_dir = os.path.join(user_dir, 'hhf', 'morphology')
+        mod_dir = os.path.join(user_dir, 'hhf', 'mechanisms')
+
+        if len(file_ids['id']) > 1:
+            # build zip archive
+            tmp_dir = os.path.join(user_dir, 'tmp')
+            if os.path.exists(tmp_dir):
+                shutil.rmtree(tmp_dir)
+            os.mkdir(tmp_dir)
+            os.mkdir(os.path.join(tmp_dir, 'mechanisms'))
+            os.mkdir(os.path.join(tmp_dir, 'morphology'))
+
+            for f in file_ids['id']:
+                if f.endswith('.mod'):
+                    shutil.copy2(os.path.join(mod_dir, f), os.path.join(tmp_dir, 'mechanisms', f))
+                else:
+                    shutil.copy2(os.path.join(morp_dir, f), os.path.join(tmp_dir, 'morphology', f))
+
+            shutil.make_archive(os.path.join(user_dir, 'files'), 'zip', tmp_dir)
+
+            return FileResponse(open(os.path.join(user_dir, 'files.zip'), 'rb'), as_attachment=True)
+
+        elif len(file_ids['id']) == 1:
+            f = file_ids['id'][0]
+            if f.endswith('.mod'):
+                return FileResponse(open(os.path.join(mod_dir, f), 'rb'), as_attachment=True)
+            else:
+                return FileResponse(open(os.path.join(morp_dir, f), 'rb'), as_attachment=True)
+
+        else:
+            return HttpResponseBadRequest()
+
+    except json.JSONDecodeError:
+        return HttpResponseBadRequest(content='file_dict Not present')
+
+
+def upload_hhf_files(request, folder, exc, ctx):
+
+    if request.method == 'POST':
+        file_content = request.body
+        filename = request.META['HTTP_CONTENT_DISPOSITION'].split('filename="')[1].split('"')[0]
+
+        user_dir = request.session[exc]['user_dir']
+
+        if folder == 'morpFolder':
+            dst_path = os.path.join(user_dir, 'hhf', 'morphology')
+        elif folder == 'modFolder':
+            dst_path = os.path.join(user_dir, 'hhf', 'mechanisms')
+
+        if not os.path.exists(dst_path):
+            os.mkdir(dst_path)
+
+        with open(os.path.join(dst_path, filename), 'wb') as fd:
+            fd.write(file_content)
+
+        return HttpResponse(status=200)
+
+    return HttpResponseBadRequest()
+
+
+def delete_hhf_files(request, folder, exc, ctx):
+
+    try:
+        file_ids = json.loads(request.GET.get('file_list', None))
+        
+        user_dir = request.session[exc]['user_dir']
+        morp_dir = os.path.join(user_dir, 'hhf', 'morphology')
+        mods_dir = os.path.join(user_dir, 'hhf', 'mechanisms')
+        # parameters_dir = os.path.join(user_dir, 'hhf', 'parameters')
+
+        if folder == 'morpFolder':
+            for f in file_ids['id']:
+                os.remove(os.path.join(morp_dir, f))
+        if folder == 'modFolder':
+            for f in file_ids['id']:
+                os.remove(os.path.join(mods_dir, f))
+        # if folder == 'parametersFolder':
+        #     os.remove(os.path.join(parameters_dir, f))
+
+        return HttpResponse(status=200)
+
+    except json.JSONDecodeError:
+        return HttpResponseBadRequest(content='Bad json')
+
+
