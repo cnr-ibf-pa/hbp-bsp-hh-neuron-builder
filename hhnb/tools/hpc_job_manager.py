@@ -734,8 +734,6 @@ class OptFolderManager:
         elif hpc == "DAINT-CSCS" or hpc == "SA-CSCS":
             OptFolderManager.remove_files_from_opt_folder(fin_dest_dir=fin_dest_dir, hpc=hpc)
             exc_name, job = OptFolderManager.add_exec_file(hpc, fin_dest_dir=fin_dest_dir, execname=execname, gennum=gennum, offsize=offsize, mod_path="", joblaunchname=joblaunchname, foldernameOPTstring=opt_name)
-            print('================= FILES ==================')
-            print(exc_name, job)
 
         # build optimization folder name
         crr_dir_opt = os.path.join(fin_opt_folder, opt_name)
@@ -785,6 +783,38 @@ class OptFolderManager:
                         foo.write(final_zip_fname, final_zip_fname.replace(fin_opt_folder, '', 1))
         foo.close()
         
+
+    @classmethod
+    def create_hhf_zip(cls, fin_dir, gennum, offsize, zfName, hpc, execname='', joblaunchname=''):
+        print('create_hhf_zip() called.')
+        print(fin_dir)
+
+        if not os.path.exists(fin_dir):
+            os.mkdir(fin_dir)
+
+        if hpc == 'NSG':
+            OptFolderManager.add_exec_file(hpc=hpc, fin_dest_dir=fin_dir, execname=execname, gennum=gennum, offsize=offsize, mod_path="")
+        elif hpc == 'DAINT-CSCS' or hpc == 'SA-CSCS':
+            OptFolderManager.add_exec_file(hpc, fin_dest_dir=fin_dir, execname=execname, gennum=gennum, offsize=offsize, mod_path="", joblaunchname=joblaunchname)
+            
+        checkpoints_dir = os.path.join(fin_dir, 'checkpoints')
+        figures_dir = os.path.join(fin_dir, 'figures')
+        r_0_dir = os.path.join(fin_dir, 'r_0')
+
+        if os.path.exists(checkpoints_dir):
+            shutil.rmtree(checkpoints_dir)
+        os.makedirs(checkpoints_dir)
+        if os.path.exists(figures_dir):
+            shutil.rmtree(figures_dir)
+        os.makedirs(figures_dir)
+        if os.path.exists(r_0_dir):
+            shutil.rmtree(r_0_dir)
+
+        shutil.make_archive(zfName, 'zip', fin_dir)
+        return zfName + '.zip'
+
+
+
     @classmethod
     def remove_files_from_opt_folder(cls, fin_dest_dir, hpc):
         """

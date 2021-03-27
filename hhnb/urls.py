@@ -30,6 +30,7 @@ register_converter(converters.WorkflowIdConverter, 'workflow_id')
 register_converter(converters.CurrentOrStorageCollabConverter, 'current_or_storage_collab')
 register_converter(converters.HpcConverter, 'hpc')
 register_converter(converters.JobIdConverter, 'jobid')
+register_converter(converters.FolderConverter, 'folder')
 
 required = '<exc:exc>/<uuid:ctx>'
 # required = ''
@@ -99,6 +100,13 @@ urlpatterns = [
 
     # path('hhf-comm/<any:hhf_dict>', views.hhf_comm),
     path('hhf-comm', views.hhf_comm),
+    path('hhf-comm/' + required + '/', views.hhf_comm),
     path('get-hhf-files/' + required + '/', views.get_hhf_files),
+    path('download-hhf-files/<folder:folder>/' + required, views.download_hhf_files),
+    path('download-hhf-files/parameters/' + required, views.download_hhf_parameters),
+    path('download-hhf-files/optneuron/' + required, views.download_hhf_optneuron),
+    path('upload-hhf-files/<folder:folder>/' + required + '/', views.upload_hhf_files),
+    path('delete-hhf-files/<folder:folder>/' + required, views.delete_hhf_files),
+    path('hhf-apply-model-key/' + required + '/<any:model_key>', views.apply_model_key),
 ]
 

@@ -228,7 +228,8 @@ body {
     margin-top: 2rem;
     margin-bottom: 4rem;
     box-shadow: 0rem 1rem 5px -6px rgba(0, 0, 0, .35);
-    max-width: 80%;
+    width: 80%;
+    max-width: 1100px;
     min-width: 980px;
     /* margin: auto; */
     padding: 0 2.5rem;
@@ -339,9 +340,8 @@ body {
 }
 
 .workflow-content {
-    /* width: 90%; */
-    /* min-width: 924px; */
-    /* margin-bottom: 2rem; */
+    min-width: 1000px;
+    max-width: 1100px;
 }
 
 .workflow-title {
@@ -780,10 +780,7 @@ body {
     min-width: 100px;
 }
 
-/* .form-contro {
-    width: 100px;
-}
- */
+
 .form-control.username {
     margin-right: 12px;
     border-top-right-radius: .25rem;
@@ -888,6 +885,9 @@ td {
 .alert {
     top: 10vh;
     z-index: -999;
+    position: absolute;
+    width: 80%;
+    left: 10%;
 }
 .alert.show {
     z-index: 999;
@@ -942,6 +942,164 @@ td {
     margin-right: 28px;
 }
 
+.hhf-integration-component {
+    display: none;
+}
+
+/* file manager ui */
+
+.file-manager {
+    width: 900px;
+    height: 500px;
+    border: solid rgba(250, 250, 250, .8) 8px;
+    background-color: rgba(250, 250, 250, .5);
+    border-radius: inherit;
+}
+
+.file-manager-container {
+    min-width: 884px;
+    line-height: 1.5;
+    height: 484px;
+}
+.file-manager-container > .row {
+    margin: 0;
+    padding: 0;
+}
+.file-manager-container > .row.full {
+    height: 93%;
+}
+.file-manager-ui-button {
+    height: 7%;
+}
+.file-manager-group {
+    width: auto;
+    padding: 0;
+}
+.file-manager-group:first-child {
+    border-top-right-radius: 0;
+    border-top-left-radius: 0;
+}
+.file-manager-group:last-child {
+    border-bottom-right-radius: 0;
+    border-bottom-left-radius: 0;
+}
+.file-manager-group > .list-group-item {
+    border-color: white;
+}
+.folder-group > .list-group-item:hover {
+    background-color: white;
+    color: #793802ff;
+}
+.folder-group > .list-group-item.active:hover {
+    background-color: #daa520ff;
+    color: white;
+}
+
+.file-selector {
+    background-color: rgba(255, 255, 255, .2);
+    line-height: 1;
+    height: calc( 484px - 7% );
+    overflow: auto;
+    scrollbar-width: thin;
+}
+.file-group {
+    background-color: none;
+}
+.file-group > .list-group-item:hover {
+    background-color: white;
+    color: #793802ff;
+}
+
+.file-selector > .list-group > .list-group-item:hover {
+    background-color: white;
+}
+.file-group > .list-group-item.active, .file-group > .list-group-item.active:hover  {
+    background-color: #daa5204d;
+    color: #793802ff;
+}
+
+.file-manager-group > .list-group-item {
+    width: inherit;
+}
+
+.overlay-content.file-manager-content {
+    top: calc( ( 50vh - 350px ) / 2 );
+    padding: 0rem;
+}
+
+.file-textarea {
+    /* width: 100%; */
+    /* height: 100%; */
+    /* font-size: .9rem; */
+    width: max-content;
+    border-radius: inherit;
+    border: none;
+    /* overflow-x: auto; */
+    /* scrollbar-width: thin; */
+    /* padding: 4px; */
+    /* background-color: inherit; */
+    /* resize: none; */
+    line-height: 1.5;
+    /* white-space: pre; */
+    text-align: left;
+}
+
+.file-item.empty {
+    background-color: unset;
+    border: unset;
+    font-size: 1.5rem;
+    color: rgb(180, 180, 180);
+    margin-top: calc(25% + 60px);
+    position: relative;
+    display: flex;
+    justify-content: center;
+    cursor: default;
+}/*
+.file-item.empty:hover, .file-item.empty.active {
+    background-color: unset;
+    border: unset;
+    color: rgb(180, 180, 180);
+}*/
+
+.spinner-border.file-item {
+    display: none;
+    position: relative;
+    top: calc( 50% - 18px );
+    left: calc( 50% - 18px );
+    color: rgb(180,180,180);
+    width: 48px;
+    height: 48px;
+    font-size: 1.2rem;
+}
+
+.model-key-flex-col {
+    display: flex;
+    height: calc( 100% - 211px );
+}
+.model-key-group {
+    align-self: end;
+    padding: 22px;
+}
+.model-key-input {
+    border: solid 1px white;
+}
+.model-key-input:hover, .model-key-input:focus-visible, .model-key-input:active {
+    border-color: #daa520ff;
+}
+
+.model-key-btn, .model-key-btn:hover {
+    border: solid 1px white;
+    box-shadow: unset;
+    background-color: #daa520ff;
+    color: white;
+    border-color: white;
+}
+
+.model-key-btn:active {
+    color: white;
+    background-color: #daa5204d;
+}
+
 /* icons */
 
 .info-icon {
@@ -984,6 +1142,7 @@ small-placeholder::placeholder {
     display: flex;
     justify-content: start;
     align-self: center;
+    width: 1rem;
 }
 .flex-start > i {
     margin-left: 1rem;
@@ -1110,6 +1269,65 @@ i.black {
     transition: opacity 1s;
 }
 
+
+/* Icons */
+
 .fa-folder, .fa-folder-open {
+    transition: all .3s ease;
     cursor: pointer;
+}
+
+.fa-times-circle {
+    cursor: pointer;
+    transition: all ease 0.3s;
+    /*margin-right: .5rem;*/
+}
+.fa-times-circle:hover {
+    color: #d20000;
+}
+
+.fa-file-upload {
+    cursor: pointer;
+    transition: all ease 0.3s;
+}
+.fa-file-upload:hover {
+    color: #009cf4ff;
+}
+
+.fa-file-download {
+    cursor: pointer;
+    transition: all ease 0.3s;
+}
+.fa-file-download:hover {
+    color: #55d400ff;
+}
+
+.fa-trash {
+    cursor: pointer;
+    transition: all ease .3s;
+}
+.fa-trash:hover {
+    color: #d20000;
+}
+.fa-check-double {
+    cursor: pointer;
+    transition: all ease .3s;
+}
+.fa-check-double:hover {
+    color: #daa520ff;
+}
+.fa-sync-alt {
+    cursor: pointer;
+    transition: all ease .3s;
+}
+.fa-sync-alt:hover {
+    color: rgb(255, 115, 0);
+}
+
+i.disabled {
+    color: rgb(190, 190, 190);
+    cursor: unset;
+}
+i.disabled:hover {
+    color: rgb(190, 190, 190);
 }
