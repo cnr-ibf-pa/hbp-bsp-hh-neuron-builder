@@ -1185,7 +1185,8 @@ $("#uploadFileButton").click(function() {
                 if (response.status == 200) {
                     console.log("file " + file.name + " uploaded successfully");
                     counter += 1;
-                    if (counter == files) { 
+                    if (counter == files) {
+                        hideLoadingAnimation();
                         refreshHHFFileList();
                         console.log("refreshHHFFileList() on #uploadFileButton callback.")
                     }
@@ -1205,6 +1206,7 @@ $("#uploadFileButton").click(function() {
         console.log("files: " + files.toString());
         $(".file-group").css("display", "none");
         $("#fileItemSpinner").css("display", "flex");
+        showLoadingAnimation('Uploading files...');
         for (let i = 0; i < input.files.length; i++) {
             upload(input.files[i]);
         }

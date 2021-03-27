@@ -2246,6 +2246,14 @@ def store_workflow_in_session(request, exc='', ctx=''):
 def hhf_comm(request, exc='', ctx=''):
     print('hhf-comm called()')
 
+    if request.session.get('hhf_wfid', None):
+        print('hhf_wfid', request.session['hhf_wfid'], sep='\n')
+        for exc in request.session.keys():
+            if exc != 'hhf_wfid':
+                print(json.dumps(request.session[exc], indent=4))
+                if request.session['hhf_wfid'] == request.session[exc]['wf_id']: 
+                    return render(request, 'hhnb/workflow.html', context={"exc": exc, "ctx": request.session[exc]['ctx']})
+           
     hhf_dict = json.loads(request.GET.get('hhf_dict', None))
 
     if hhf_dict:
@@ -2274,37 +2282,38 @@ def hhf_comm(request, exc='', ctx=''):
         morp = hhf_dict['HHF-Comm'].get('morphology', None)
         mod = hhf_dict['HHF-Comm'].get('modFiles', None)
 
-        # if morp:
-        #     morp_dir = os.path.join(hhf_dir, 'morphology')
-        #     if not os.path.exists(morp_dir):
-        #         os.mkdir(morp_dir)
+        if morp:
+            morp_dir = os.path.join(hhf_dir, 'morphology')
+            if not os.path.exists(morp_dir):
+                os.mkdir(morp_dir)
             
-        #     # downloading morphology 
-        #     r = requests.get(morp['url'], verify=False)
-        #     with open(os.path.join(morp_dir, morp['name']), 'wb') as fd:
-        #         for chunk in r.iter_content():
-        #             fd.write(chunk)
+            # downloading morphology 
+            r = requests.get(morp['url'], verify=False)
+            with open(os.path.join(morp_dir, morp['name']), 'wb') as fd:
+                for chunk in r.iter_content():
+                    fd.write(chunk)
             
-        #     # writing morph.json
-        #     morp_dict = {hhf_model_key: morp['name']}
-        #     with open(os.path.join(hhf_dir, 'config', 'morph.json'), 'w') as fd:
-        #         json.dump(morp_dict, fd)
+            # writing morph.json
+            morp_dict = {hhf_model_key: morp['name']}
+            with open(os.path.join(hhf_dir, 'config', 'morph.json'), 'w') as fd:
+                json.dump(morp_dict, fd)
         
-        # if mod:
-        #     mod_dir = os.path.join(hhf_dir, 'mechanisms')
-        #     if not os.path.exists(mod_dir):
-        #         os.mkdir(mod_dir)
+        if mod:
+            mod_dir = os.path.join(hhf_dir, 'mechanisms')
+            if not os.path.exists(mod_dir):
+                os.mkdir(mod_dir)
 
-        #     # downloading mods files
-        #     for m in mod:
-        #         r = requests.get(m['url'], verify=False)
-        #         with open(os.path.join(mod_dir, m['name']), 'wb') as fd:
-        #             for chunk in r.iter_content():
-        #                 fd.write(chunk)
+            # downloading mods files
+            for m in mod:
+                r = requests.get(m['url'], verify=False)
+                with open(os.path.join(mod_dir, m['name']), 'wb') as fd:
+                    for chunk in r.iter_content():
+                        fd.write(chunk)
 
         request.session[exc]['from_hhf'] = True
         request.session[exc]['hhf_dir'] = hhf_dir
         request.session[exc]['hhf_model_key'] = hhf_model_key
+        request.session['hhf_wfid'] = request.session[exc]['wf_id']
         request.session.save()
 
         return render(request, 'hhnb/workflow.html', context={"exc": exc, "ctx": str(ctx)})
