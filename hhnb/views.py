@@ -18,7 +18,7 @@ from itertools import takewhile
 
 from django.conf import settings
 from django.shortcuts import render, redirect
-from django.http import HttpResponse, JsonResponse, FileResponse, HttpResponseBadRequest
+from django.http import HttpResponse, JsonResponse, FileResponse, HttpResponseBadRequest, HttpResponseForbidden
 from django.contrib.auth.decorators import login_required
 
 from hbp_validation_framework import ModelCatalog
@@ -488,14 +488,9 @@ def get_model_list2(request, exc="", ctx=""):
     return HttpResponse(status=404)
 
 
-#def copy_feature_files(request, feature_folder="", exc="", ctx=""):
 def copy_feature_files(request, exc='', ctx=''):
+
     feature_folder = request.POST.get('folder', None)
-    
-    feature_folder = feature_folder.replace('u_res', '')  
-    
-    
-    feature_folder = feature_folder.replace("______",".")
     response = {"expiration": False}
    
     if not os.path.exists(feature_folder):
@@ -506,22 +501,28 @@ def copy_feature_files(request, exc='', ctx=''):
         response = {"expiration": True}
         return HttpResponse(json.dumps(response), content_type="application/json")
 
-    print(feature_folder)
     for d in os.listdir(feature_folder):
         if d.endswith('fe_results'):
             feature_folder = feature_folder + d
             break
-    print(feature_folder)
 
     if os.path.isfile(os.path.join(feature_folder, 'features.json')) and os.path.isfile(os.path.join(feature_folder, 'protocols.json')):
-        shutil.copy2(os.path.join(feature_folder, 'features.json'),
-                request.session[exc]['user_dir_data_feat'])
-        shutil.copy2(os.path.join(feature_folder, 'protocols.json'),
-            request.session[exc]['user_dir_data_feat'])
+        if request.session[exc].get('from_hhf', None):
+            dst_dir = os.path.join(request.session[exc]['hhf_dir'], 'config')
+        else:
+            dst_dir = request.session[exc]['user_dir_data_feat']
+
+        shutil.copy2(os.path.join(feature_folder, 'features.json'), dst_dir)
+        shutil.copy2(os.path.join(feature_folder, 'protocols.json'), dst_dir)
         response = {'resp': 'OK', 'message': 'features files copied'}
+
     else:
         response = {'resp': 'KO', 'message': 'features files not found'}
 
+    # set hhf model key if features are fetched/uploaded after set files in HHF 
+    if request.session[exc].get('hhf_model_key', None):
+        apply_model_key(request, exc, ctx, request.session[exc]['hhf_model_key'])
+    
     return HttpResponse(json.dumps(response), content_type="application/json")
 
 
@@ -582,6 +583,7 @@ def run_optimization(request, exc="", ctx=""):
     """
     Run optimization on remote systems
     """
+    print(json.dumps(request.session[exc], indent=4))
 
     # fetch information from the session variable
     core_num = request.session[exc]['corenum']
@@ -590,24 +592,42 @@ def run_optimization(request, exc="", ctx=""):
     gennum = request.session[exc]['gennum']
     time_info = request.session[exc]['time_info']
     offsize = request.session[exc]['offsize']
-    source_opt_id = request.session[exc]['source_opt_id']
-    source_opt_name = request.session[exc]['source_opt_name']
-    source_opt_zip = request.session[exc]['source_opt_zip']
-    dest_dir = request.session[exc]['user_dir_data_opt_launch']
-    user_dir_data_opt = request.session[exc]['user_dir_data_opt_set']
     hpc_sys = request.session[exc]['hpc_sys']
-    source_feat = request.session[exc]['user_dir_data_feat']
-    opt_res_dir = request.session[exc]['user_dir_results_opt']
+
     workflows_dir = request.session[exc]['workflows_dir']
     username = request.session[exc]['username']
 
-    idx = source_opt_name.rfind('_')
+    if request.session[exc].get('from_hhf', None):
+        from_hhf = True 
+        source_opt_id = request.session[exc]['hhf_model_key']
+        source_opt_name =  request.session[exc]['hhf_model_key']
+        source_opt_zip = None
+        dest_dir = os.path.join(request.session[exc]['user_dir'], 'hhf_opt')
+        if not os.path.exists(dest_dir):
+            os.mkdir(dest_dir)
+        opt_name = source_opt_name
+    
+        fin_opt_folder = request.session[exc]['hhf_dir']
+        zfName = os.path.join(dest_dir, opt_name)
 
-    # build new optimization name
-    opt_name = source_opt_name[:idx] + "_" + time_info
-    zfName = os.path.join(dest_dir, opt_name + '.zip')
-    fin_opt_folder = os.path.join(dest_dir, opt_name)
+    else:
+        from_hhf = False
+        source_opt_id = request.session[exc]['source_opt_id']
+        source_opt_name = request.session[exc]['source_opt_name']
+        source_opt_zip = request.session[exc]['source_opt_zip']
+        dest_dir = request.session[exc]['user_dir_data_opt_launch']
+        user_dir_data_opt = request.session[exc]['user_dir_data_opt_set']
+        source_feat = request.session[exc]['user_dir_data_feat']
+        opt_res_dir = request.session[exc]['user_dir_results_opt']
 
+        idx = source_opt_name.rfind('_')
+        opt_name = source_opt_name[:idx] + "_" + time_info
+
+        # build new optimization name
+        fin_opt_folder = os.path.join(dest_dir, opt_name)
+    
+        zfName = os.path.join(dest_dir, opt_name + '.zip')
+    
     wf_id = request.session[exc]['wf_id']
 
     if hpc_sys == "NSG":
@@ -617,9 +637,14 @@ def run_optimization(request, exc="", ctx=""):
         username_submit = request.session[exc]['username_submit']
         password_submit = request.session[exc]['password_submit']
 
-        hpc_job_manager.OptFolderManager.createzip(fin_opt_folder=fin_opt_folder, source_opt_zip=source_opt_zip,
-                                                   opt_name=opt_name, source_feat=source_feat, gennum=gennum,
-                                                   offsize=offsize, zfName=zfName, hpc=hpc_sys, execname="init.py")
+        if from_hhf:
+            zfName = hpc_job_manager.OptFolderManager.create_hhf_zip(fin_dir=fin_opt_folder, gennum=gennum, offsize=offsize, zfName=zfName,
+                                                            hpc=hpc_sys, execname='init.py')
+
+        else:
+            hpc_job_manager.OptFolderManager.createzip(fin_opt_folder=fin_opt_folder, source_opt_zip=source_opt_zip,
+                                                       opt_name=opt_name, source_feat=source_feat, gennum=gennum,
+                                                       offsize=offsize, zfName=zfName, hpc=hpc_sys, execname="init.py")
 
         resp = hpc_job_manager.Nsg.runNSG(username_submit=username_submit, password_submit=password_submit,
                                           core_num=core_num, node_num=node_num, runtime=runtime, zfName=zfName)
@@ -636,15 +661,20 @@ def run_optimization(request, exc="", ctx=""):
         # retrieve access_token
         access_token = 'Bearer ' + request.session['oidc_access_token']  # get access token with new method
 
-        hpc_job_manager.OptFolderManager.createzip(fin_opt_folder=fin_opt_folder, source_opt_zip=source_opt_zip,
-                                                   opt_name=opt_name, source_feat=source_feat, gennum=gennum,
-                                                   offsize=offsize, zfName=zfName, hpc=hpc_sys, execname=execname,
-                                                   joblaunchname=joblaunchname)
+        if from_hhf:
+            zfName = hpc_job_manager.OptFolderManager.create_hhf_zip(fin_dir=fin_opt_folder, gennum=gennum, offsize=offsize, zfName=zfName,
+                                                            hpc=hpc_sys, execname='init.py', joblaunchname=joblaunchname)
+
+        else:
+            hpc_job_manager.OptFolderManager.createzip(fin_opt_folder=fin_opt_folder, source_opt_zip=source_opt_zip,
+                                                       opt_name=opt_name, source_feat=source_feat, gennum=gennum,
+                                                       offsize=offsize, zfName=zfName, hpc=hpc_sys, execname=execname,
+                                                       joblaunchname=joblaunchname)
 
         # launch job on cscs-pizdaint
         resp = hpc_job_manager.Unicore.run_unicore_opt(hpc=hpc_sys, filename=zfName, joblaunchname=joblaunchname,
                                                        token=access_token, jobname=wf_id, core_num=core_num,
-                                                       node_num=node_num, runtime=runtime, foldname=opt_name, project=project_id)  # , proxies=PROXIES)
+                                                       node_num=node_num, runtime=runtime, foldname=opt_name, project=project_id)
 
     elif hpc_sys == "SA-CSCS":
         PROXIES = {}
@@ -654,15 +684,19 @@ def run_optimization(request, exc="", ctx=""):
         # retrieve access_token
         access_token = 'Bearer ' + request.session['oidc_access_token']  # get access token with new method
 
-        hpc_job_manager.OptFolderManager.createzip(fin_opt_folder=fin_opt_folder, source_opt_zip=source_opt_zip,
-                                                   opt_name=opt_name, source_feat=source_feat, gennum=gennum,
-                                                   offsize=offsize, zfName=zfName, hpc=hpc_sys, execname=execname,
-                                                   joblaunchname=joblaunchname)
+        if from_hhf:
+            zfName = hpc_job_manager.OptFolderManager.create_hhf_zip(fin_dir=fin_opt_folder, gennum=gennum, offsize=offsize, zfName=zfName,
+                                                            hpc=hpc_sys, execname='init.py', joblaunchname=joblaunchname)
+        else:
+            hpc_job_manager.OptFolderManager.createzip(fin_opt_folder=fin_opt_folder, source_opt_zip=source_opt_zip,
+                                                       opt_name=opt_name, source_feat=source_feat, gennum=gennum,
+                                                       offsize=offsize, zfName=zfName, hpc=hpc_sys, execname=execname,
+                                                       joblaunchname=joblaunchname)
 
         # launch job on cscs-pizdaint
         resp = hpc_job_manager.Unicore.run_unicore_opt(hpc=hpc_sys, filename=zfName, joblaunchname=joblaunchname,
                                                        token=access_token, jobname=wf_id, core_num=core_num,
-                                                       node_num=node_num, runtime=runtime, foldname=opt_name)  # , proxies=PROXIES)
+                                                       node_num=node_num, runtime=runtime, foldname=opt_name)
 
     if resp['response'] == "OK":
         crr_job_name = resp['jobname']
@@ -882,7 +916,10 @@ def check_cond_exist(request, exc="", ctx=""):
         return HttpResponse(json.dumps(response), content_type="application/json")
 
     # retrieve folder paths
-    data_feat = request.session[exc]['user_dir_data_feat']
+    if request.session[exc].get('from_hhf', None):
+        data_feat = os.path.join(request.session[exc]['hhf_dir'], 'config')
+    else:
+        data_feat = request.session[exc]['user_dir_data_feat']
     data_opt = request.session[exc]['user_dir_data_opt_set']
     sim_dir = request.session[exc]['user_dir_sim_run']
     res_dir = request.session[exc]['user_dir_results']
@@ -907,7 +944,42 @@ def check_cond_exist(request, exc="", ctx=""):
         response['feat']['message'] = '"features.json" NOT present'
 
     # check if optimization file exist
-    if os.path.exists(data_opt) and not os.listdir(data_opt) == []:
+    if request.session[exc].get('from_hhf', None):
+        hhf_dir = request.session[exc]['hhf_dir']
+        morph_file = False
+        mechanisms_file = False
+        morph_dict = False
+        params_dict = False
+        config_dir = os.path.join(hhf_dir, 'config')
+        morph_dir = os.path.join(hhf_dir, 'morphology')
+        mechanisms_dir = os.path.join(hhf_dir, 'mechanisms')
+        if os.path.exists(config_dir):
+            if os.path.isfile(os.path.join(config_dir, 'morph.json')):
+                morph_dict = True
+            if os.path.isfile(os.path.join(config_dir, 'parameters.json')):
+                params_dict = True
+        if os.path.exists(morph_dir):
+            if len(os.listdir(morph_dir)) == 1:
+                morph_file = True
+        if os.path.exists(mechanisms_dir):
+            if len(os.listdir(mechanisms_dir)) > 0:
+                mechanisms_file = True
+        
+        if morph_file and mechanisms_file and morph_dict and params_dict:
+            response['opt_files']['status'] = True
+        else:
+            response['opt_files']['status'] = False
+            response['opt_files']['message'] = ''
+            if not morph_file:
+                response['opt_files']['message'] += 'Morphology file NOT present<br>'
+            if not mechanisms_file:
+                response['opt_files']['message'] += 'Mechanisms files NOT present<br>'
+            if not morph_dict:
+                response['opt_files']['message'] += '"morph.json" NOT present<br>'
+            if not params_dict:
+                response['opt_files']['message'] += '"parameters.json" NOT present<br>'
+    
+    elif os.path.exists(data_opt) and not os.listdir(data_opt) == []:
         response['opt_files']['status'] = True
 
     # check if simulation files exist
@@ -999,6 +1071,12 @@ def check_cond_exist(request, exc="", ctx=""):
 # delete feature files
 def delete_files(request, file_type="", exc="", ctx=""):
     if file_type == "feat":
+        
+        if request.session[exc].get('from_hhf', None):
+            os.remove(os.path.join(request.session[exc]['hhf_dir'], 'config', 'features.json'))
+            os.remove(os.path.join(request.session[exc]['hhf_dir'], 'config', 'protocols.json'))
+            return HttpResponse(json.dumps({"resp": True}), content_type="application/json")
+            
         folder = request.session[exc]['user_dir_data_feat']
     elif file_type == "optset":
         folder = request.session[exc]['user_dir_data_opt_set']
@@ -1012,7 +1090,11 @@ def delete_files(request, file_type="", exc="", ctx=""):
 
 
 def upload_feat_files(request, exc='', ctx=''):
-    return upload_files(request, 'feat', exc, ctx)
+    response = upload_files(request, 'feat', exc, ctx)
+    # set hhf model key if features are fetched/uploaded after set files in HHF 
+    if request.session[exc].get('hhf_model_key', None):
+        apply_model_key(request, exc, ctx, request.session[exc]['hhf_model_key'])
+    return response
 
 
 def upload_optset_files(request, exc='', ctx=''):
@@ -1025,9 +1107,12 @@ def upload_modsim_files(request, exc='', ctx=''):
 
 def upload_files(request, filetype='', exc='', ctx=''):
     filename_list = request.FILES.getlist('formFile')
-    print(request.FILES)
+    
     if filetype == "feat":
-        final_res_folder = request.session[exc]['user_dir_data_feat']
+        if request.session[exc].get('from_hhf', None):
+            final_res_folder = os.path.join(request.session[exc]['hhf_dir'], 'config')
+        else:
+            final_res_folder = request.session[exc]['user_dir_data_feat']
         ext = '.json'
 
     elif filetype == "optset":
@@ -1066,17 +1151,15 @@ def upload_files(request, filetype='', exc='', ctx=''):
             final_file.close()
 
     if filetype == "optset":
-        print('Im here')
         request.session[exc]['source_opt_name'] = os.path.splitext(filename)[0]
         request.session[exc]['source_opt_zip'] = final_res_file
-        print(request.session[exc]['source_opt_name'], request.session[exc]['source_opt_zip'], sep='\n')
         
-        check_resp = wf_file_manager.CheckConditions.check_uploaded_model(file_path=final_res_file,
-                                                                          folder_path=final_res_folder)
+        check_resp = wf_file_manager.CheckConditions.check_uploaded_model(file_path=final_res_file, folder_path=final_res_folder)
         if check_resp["response"] == "KO":
             shutil.rmtree(final_res_folder)
             os.mkdir(final_res_folder)
             return HttpResponse(json.dumps(check_resp), content_type="application/json")
+
         request.session[exc]['source_opt_id'] = ""
         request.session.save()
 
@@ -1094,9 +1177,7 @@ def upload_files(request, filetype='', exc='', ctx=''):
             return HttpResponse(json.dumps({"response": "KO", "message": msg}), content_type="application/json")
         request.session['fetch_opt_uuid'] = ""
 
-
     request.session.save()
-
     return HttpResponse(json.dumps({"response": "OK", "message": ""}), content_type="application/json")
 
 
@@ -1528,38 +1609,74 @@ def download_zip(request, file_type="", exc="", ctx=""):
     """
     download files to local machine
     """
-    current_working_dir = os.getcwd()
-    if file_type == "feat":
-        fetch_folder = request.session[exc]['user_dir_data_feat']
-        zipname = os.path.join(fetch_folder, "features.zip")
-        foo = zipfile.ZipFile(zipname, 'w', zipfile.ZIP_DEFLATED)
-        foo.write(os.path.join(fetch_folder, "features.json"), "features.json")
-        foo.write(os.path.join(fetch_folder, "protocols.json"), "protocols.json")
-        foo.close()
-    elif file_type == "optset":
-        fetch_folder = request.session[exc]['user_dir_data_opt_set']
-    elif file_type == "modsim":
-        fetch_folder = request.session[exc]['user_dir_sim_run']
-    elif file_type == "optres":
-        fetch_folder = request.session[exc]['user_dir_results']
+    
+    user_dir = request.session[exc]['user_dir']
+    tmp_dir = os.path.join(user_dir, 'tmp')
 
-    zip_file_list = []
+    if os.path.exists(tmp_dir):
+        shutil.rmtree(tmp_dir)
+    os.mkdir(tmp_dir)
 
-    # create a list with all .zip files in folder, but use only the first one
-    for i in os.listdir(fetch_folder):
-        if i.endswith(".zip"):
-            zip_file_list.append(i)
+    if file_type == 'feat':
+        if request.session[exc].get('from_hhf', None):
+            src_dir = os.path.join(request.session[exc]['hhf_dir'], 'config')
+        else:
+            src_dir = request.session[exc]['user_dir_data_feat']
+        zipname = os.path.join(tmp_dir, 'features.zip')
+        z = zipfile.ZipFile(zipname, 'w', zipfile.ZIP_DEFLATED)
+        z.write(os.path.join(src_dir, 'features.json'), 'features.json')
+        z.write(os.path.join(src_dir, 'protocols.json'), 'protocols.json')
+        z.close()
+        return FileResponse(open(zipname, 'rb'), as_attachment=True)
 
-    crr_file = zip_file_list[0]
-    full_file_path = os.path.join(fetch_folder, crr_file)
-    crr_file_full = open(full_file_path, "rb")
-    response = HttpResponse(crr_file_full, content_type="application/zip")
+    elif file_type == 'optset':
+        src_dir = request.session[exc]['user_dir_data_opt_set']
+    elif file_type == 'modsim':
+        src_dir = request.session[exc]['user_dir_sim_run']
+    elif file_type == 'optres':
+        src_dir = request.session[exc]['user_dir_results'] 
+        
+    for f in os.listdir(src_dir):
+        if f.endswith('.zip'):
+            # shutil.copy2(os.path.join(src_dir, f), os.path.join(tmp_dir, f))
+            return FileResponse(open(os.path.join(src_dir, f), 'rb'), as_attachment=True)
 
-    request.session.save()
+    return HttpResponseBadRequest()
 
-    response['Content-Disposition'] = 'attachment; filename="%s"' % crr_file
+    # if file_type == "feat":
+    #     if request.session[exc].get('from_hhf', None):
+    #         fetch_folder = os.path.join(request.session[exc]['hhf_dir'], 'config')
+    #     else:
+    #         fetch_folder = request.session[exc]['user_dir_data_feat']
+    #     zipname = os.path.join(fetch_folder, "features.zip")
+    #     foo = zipfile.ZipFile(zipname, 'w', zipfile.ZIP_DEFLATED)
+    #     foo.write(os.path.join(fetch_folder, "features.json"), "features.json")
+    #     foo.write(os.path.join(fetch_folder, "protocols.json"), "protocols.json")
+    #     foo.close()
+    # elif file_type == "optset":
+    #     fetch_folder = request.session[exc]['user_dir_data_opt_set']
+    # elif file_type == "modsim":
+    #     fetch_folder = request.session[exc]['user_dir_sim_run']
+    # elif file_type == "optres":
+    #     fetch_folder = request.session[exc]['user_dir_results']
 
-    return response
+    # zip_file_list = []
+
+    # # create a list with all .zip files in folder, but use only the first one
+    # for i in os.listdir(fetch_folder):
+    #     if i.endswith(".zip"):
+    #         zip_file_list.append(i)
+
+    # crr_file = zip_file_list[0]
+    # full_file_path = os.path.join(fetch_folder, crr_file)
+    # crr_file_full = open(full_file_path, "rb")
+    # response = HttpResponse(crr_file_full, content_type="application/zip")
+
+    # request.session.save()
+
+    # response['Content-Disposition'] = 'attachment; filename="%s"' % crr_file
+
+    # return response
 
 
 @deprecated(reason='method dismissed with Ebrains')
@@ -2142,6 +2259,7 @@ def hhf_comm(request, exc='', ctx=''):
         r2 = create_wf_folders(request, wf_type='new', exc=exc, ctx=ctx) 
 
         hhf_dir = os.path.join(request.session[exc]['user_dir'], 'hhf')
+        hhf_model_key = request.session[exc]['wf_id']
 
         if os.path.exists(hhf_dir):
             shutil.rmtree(hhf_dir)
@@ -2151,21 +2269,33 @@ def hhf_comm(request, exc='', ctx=''):
         if os.path.exists(os.path.join(request.session[exc]['user_dir'], 'hhf')):
             shutil.rmtree(os.path.join(request.session[exc]['user_dir'], 'hhf'))
         shutil.copytree(os.path.join(settings.MEDIA_ROOT, 'hhnb', 'hhf_template', 'hhf'), os.path.join(request.session[exc]['user_dir'], 'hhf'))
+        
 
-        # morp = hhf_dict['HHF-Comm'].get('morphology', None)
-        # mod = hhf_dict['HHF-Comm'].get('modFiles', None)
+        morp = hhf_dict['HHF-Comm'].get('morphology', None)
+        mod = hhf_dict['HHF-Comm'].get('modFiles', None)
 
         # if morp:
         #     morp_dir = os.path.join(hhf_dir, 'morphology')
-        #     os.mkdir(morp_dir)
+        #     if not os.path.exists(morp_dir):
+        #         os.mkdir(morp_dir)
+            
+        #     # downloading morphology 
         #     r = requests.get(morp['url'], verify=False)
         #     with open(os.path.join(morp_dir, morp['name']), 'wb') as fd:
         #         for chunk in r.iter_content():
         #             fd.write(chunk)
-        #
+            
+        #     # writing morph.json
+        #     morp_dict = {hhf_model_key: morp['name']}
+        #     with open(os.path.join(hhf_dir, 'config', 'morph.json'), 'w') as fd:
+        #         json.dump(morp_dict, fd)
+        
         # if mod:
         #     mod_dir = os.path.join(hhf_dir, 'mechanisms')
-        #     os.mkdir(mod_dir)
+        #     if not os.path.exists(mod_dir):
+        #         os.mkdir(mod_dir)
+
+        #     # downloading mods files
         #     for m in mod:
         #         r = requests.get(m['url'], verify=False)
         #         with open(os.path.join(mod_dir, m['name']), 'wb') as fd:
@@ -2174,6 +2304,7 @@ def hhf_comm(request, exc='', ctx=''):
 
         request.session[exc]['from_hhf'] = True
         request.session[exc]['hhf_dir'] = hhf_dir
+        request.session[exc]['hhf_model_key'] = hhf_model_key
         request.session.save()
 
         return render(request, 'hhnb/workflow.html', context={"exc": exc, "ctx": str(ctx)})
@@ -2195,7 +2326,7 @@ def get_hhf_files(request, exc, ctx):
     # list mechanisms files
     if os.path.exists(os.path.join(hhf_dir, 'mechanisms')):
         for m in os.listdir(os.path.join(hhf_dir, 'mechanisms')):
-            hhf_file_list['mechaninsms'].append(m)
+            hhf_file_list['mechanisms'].append(m)
 
     # list config files
     if os.path.exists(os.path.join(hhf_dir, 'config')):
@@ -2204,7 +2335,7 @@ def get_hhf_files(request, exc, ctx):
             if c == 'parameters.json':
                 with open(os.path.join(hhf_dir, 'config', 'parameters.json'), 'r') as fd:
                     jj = json.load(fd)
-                    hhf_file_list['parameters.json'] = json.dumps(jj, indent=8)
+                    hhf_file_list['parameters.json'] = json.dumps(jj, indent=4)
 
     # list model files
     if os.path.exists(os.path.join(hhf_dir, 'model')):
@@ -2218,13 +2349,13 @@ def get_hhf_files(request, exc, ctx):
     return HttpResponse(content=json.dumps(hhf_file_list), content_type='application/json', status=200)
 
 
-def download_hhf_files(request, exc, ctx):
+def download_hhf_files(request, folder, exc, ctx):
     try:
         file_ids = json.loads(request.GET.get('file_list', None))
-        print(file_ids)
+        hhf_dir = request.session[exc]['hhf_dir']
         user_dir = request.session[exc]['user_dir']
-        morp_dir = os.path.join(user_dir, 'hhf', 'morphology')
-        mod_dir = os.path.join(user_dir, 'hhf', 'mechanisms')
+
+        src_dir = os.path.join(hhf_dir, folder.split('Folder')[0])
 
         if len(file_ids['id']) > 1:
             # build zip archive
@@ -2232,25 +2363,16 @@ def download_hhf_files(request, exc, ctx):
             if os.path.exists(tmp_dir):
                 shutil.rmtree(tmp_dir)
             os.mkdir(tmp_dir)
-            os.mkdir(os.path.join(tmp_dir, 'mechanisms'))
-            os.mkdir(os.path.join(tmp_dir, 'morphology'))
 
             for f in file_ids['id']:
-                if f.endswith('.mod'):
-                    shutil.copy2(os.path.join(mod_dir, f), os.path.join(tmp_dir, 'mechanisms', f))
-                else:
-                    shutil.copy2(os.path.join(morp_dir, f), os.path.join(tmp_dir, 'morphology', f))
+                shutil.copy2(os.path.join(src_dir, f), os.path.join(tmp_dir, f))
 
             shutil.make_archive(os.path.join(user_dir, 'files'), 'zip', tmp_dir)
 
             return FileResponse(open(os.path.join(user_dir, 'files.zip'), 'rb'), as_attachment=True)
 
         elif len(file_ids['id']) == 1:
-            f = file_ids['id'][0]
-            if f.endswith('.mod'):
-                return FileResponse(open(os.path.join(mod_dir, f), 'rb'), as_attachment=True)
-            else:
-                return FileResponse(open(os.path.join(morp_dir, f), 'rb'), as_attachment=True)
+            return FileResponse(open(os.path.join(src_dir, file_ids['id'][0]), 'rb'), as_attachment=True)
 
         else:
             return HttpResponseBadRequest()
@@ -2259,24 +2381,53 @@ def download_hhf_files(request, exc, ctx):
         return HttpResponseBadRequest(content='file_dict Not present')
 
 
+def download_hhf_parameters(request, exc, ctx):
+    hhf_dir = request.session[exc]['hhf_dir']
+    return FileResponse(open(os.path.join(hhf_dir, 'config', 'parameters.json'), 'rb'), as_attachment=True)
+
+
+def download_hhf_optneuron(request, exc, ctx):
+    hhf_dir = request.session[exc]['hhf_dir']
+    return FileResponse(open(os.path.join(hhf_dir, 'opt_neuron.py'), 'rb'), as_attachment=True)
+
+
 def upload_hhf_files(request, folder, exc, ctx):
 
     if request.method == 'POST':
         file_content = request.body
         filename = request.META['HTTP_CONTENT_DISPOSITION'].split('filename="')[1].split('"')[0]
 
-        user_dir = request.session[exc]['user_dir']
+        hhf_dir = request.session[exc]['hhf_dir']
 
-        if folder == 'morpFolder':
-            dst_path = os.path.join(user_dir, 'hhf', 'morphology')
-        elif folder == 'modFolder':
-            dst_path = os.path.join(user_dir, 'hhf', 'mechanisms')
+        if folder == 'parametersFolder':
+            # try:
+            with open(os.path.join(hhf_dir, 'config', 'parameters.json'), 'w') as fd:
+                fd.write(file_content.decode());
+            try:
+                with open(os.path.join(hhf_dir, 'config', 'parameters.json'), 'r') as fd:
+                    json.load(fd)
+            except json.JSONDecodeError:
+                os.remove(os.path.join(hhf_dir, 'config', 'parameters.json'))
+                return HttpResponseBadRequest(content=json.dumps({'message': 'Wrong file type. Accept only ".json" format.<br><br>Uploaded file deleted !'}))
+            
+            return HttpResponse(status=200)
+            # except D
 
-        if not os.path.exists(dst_path):
-            os.mkdir(dst_path)
+        if folder != 'morphologyFolder' and folder != 'mechanismsFolder':
+            return HttpResponseForbidden()
 
-        with open(os.path.join(dst_path, filename), 'wb') as fd:
+        dst_dir = os.path.join(hhf_dir, folder.split('Folder')[0])
+
+        if not os.path.exists(dst_dir):
+            os.mkdir(dst_dir)
+
+        with open(os.path.join(dst_dir, filename), 'wb') as fd:
             fd.write(file_content)
+
+        if folder == 'morphologyFolder':
+            morp_dict = {request.session[exc]['hhf_model_key']: filename}
+            with open(os.path.join(hhf_dir, 'config', 'morph.json'), 'w') as fd:
+                json.dump(morp_dict, fd)
 
         return HttpResponse(status=200)
 
@@ -2293,10 +2444,11 @@ def delete_hhf_files(request, folder, exc, ctx):
         mods_dir = os.path.join(user_dir, 'hhf', 'mechanisms')
         # parameters_dir = os.path.join(user_dir, 'hhf', 'parameters')
 
-        if folder == 'morpFolder':
+        if folder == 'morphologyFolder':
             for f in file_ids['id']:
                 os.remove(os.path.join(morp_dir, f))
-        if folder == 'modFolder':
+            os.remove(os.path.join(hhf_dir, 'config', 'morph.json'))
+        if folder == 'mechanismsFolder':
             for f in file_ids['id']:
                 os.remove(os.path.join(mods_dir, f))
         # if folder == 'parametersFolder':
@@ -2308,3 +2460,49 @@ def delete_hhf_files(request, folder, exc, ctx):
         return HttpResponseBadRequest(content='Bad json')
 
 
+def apply_model_key(request, exc, ctx, model_key):
+    print('apply_model_key() called.')
+
+    if model_key == 'workflow_id':
+        model_key = request.session[exc]['wf_id']
+    request.session[exc]['hhf_model_key'] = model_key
+
+    hhf_dir = request.session[exc]['hhf_dir']
+
+    config_files = [
+        os.path.join(hhf_dir, 'config', 'parameters.json'),
+        os.path.join(hhf_dir, 'config', 'features.json'),
+        os.path.join(hhf_dir, 'config', 'protocols.json'),
+        os.path.join(hhf_dir, 'config', 'morph.json'),
+    ]
+
+    jj_new = {model_key: ''}
+    for f in config_files:
+        if os.path.exists(f):
+            # overwriting first json file key if different
+            with open(f, 'r') as fd:
+                jj_old = json.load(fd)
+                k = list(jj_old.keys())[0]
+                if k != model_key:
+                    jj_new.update({model_key: jj_old[k]})
+                else:
+                    continue
+            with open(f, 'w') as fd:
+                json.dump(jj_new, fd, indent=4)
+
+    # overwriting model line on opt_neuron.py
+    if os.path.exists(os.path.join(hhf_dir, 'opt_neuron.py')):
+        with open(os.path.join(hhf_dir, 'opt_neuron.py'), 'r') as fd:
+            lines = fd.readlines()
+        for l in lines:
+            if l.startswith('evaluator = model.evaluator.create'):
+                x = l.split("'")
+                y = x[0] + "'" + model_key + "'" + x[2]
+                z = lines.index(l)
+                lines[z] = y
+
+        with open(os.path.join(hhf_dir, 'opt_neuron.py'), 'w') as fd:
+            fd.writelines(lines)
+
+    request.session.save()
+    return HttpResponse(status=200)

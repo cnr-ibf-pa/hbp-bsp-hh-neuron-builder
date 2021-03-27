@@ -885,6 +885,9 @@ td {
 .alert {
     top: 10vh;
     z-index: -999;
+    position: absolute;
+    width: 80%;
+    left: 10%;
 }
 .alert.show {
     z-index: 999;
@@ -1025,18 +1028,20 @@ td {
 }
 
 .file-textarea {
-    width: 100%;
-    height: 100%;
-    font-size: .9rem;
+    /* width: 100%; */
+    /* height: 100%; */
+    /* font-size: .9rem; */
+    width: max-content;
     border-radius: inherit;
     border: none;
-    overflow-x: auto;
-    scrollbar-width: thin;
-    padding: 4px;
-    background-color: inherit;
-    resize: none;
+    /* overflow-x: auto; */
+    /* scrollbar-width: thin; */
+    /* padding: 4px; */
+    /* background-color: inherit; */
+    /* resize: none; */
     line-height: 1.5;
-    white-space: pre;
+    /* white-space: pre; */
+    text-align: left;
 }
 
 .file-item.empty {
@@ -1264,6 +1269,9 @@ i.black {
     transition: opacity 1s;
 }
 
+
+/* Icons */
+
 .fa-folder, .fa-folder-open {
     transition: all .3s ease;
     cursor: pointer;
@@ -1314,4 +1322,12 @@ i.black {
 }
 .fa-sync-alt:hover {
     color: rgb(255, 115, 0);
+}
+
+i.disabled {
+    color: rgb(190, 190, 190);
+    cursor: unset;
+}
+i.disabled:hover {
+    color: rgb(190, 190, 190);
 }

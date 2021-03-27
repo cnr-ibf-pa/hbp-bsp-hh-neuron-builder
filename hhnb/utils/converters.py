@@ -117,7 +117,7 @@ class JobIdConverter:
 
 
 class FolderConverter:
-    regex = 'morpFolder|modFolder|parameterFolder'
+    regex = 'morphologyFolder|mechanismsFolder|configFolder|modelFolder|parametersFolder|optNeuronFolder'
 
     def to_python(self, value):
         return value

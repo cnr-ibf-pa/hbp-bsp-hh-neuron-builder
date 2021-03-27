@@ -541,10 +541,15 @@
         </div>
     </div>
 
+    <!-- alert if user is trying to set parameters for DAINT-CSCS or SA-CSCS system without being authenticated -->
+    <div id="hpcAuthAlert" class="alert alert-danger alert-dismissible fade" role="alert">
+        <strong>You need to be logged in to use this HPC system !</strong>
+        <button type="button" class="btn-close" onclick="dismissAlert(this)" aria-label="Close"></button>
+    </div>
     <!-- alert if user is trying to fetch jobs without being authenticated -->
     <div id="jobsAuthAlert" class="alert alert-danger alert-dismissible fade" role="alert">
         <strong>You need to authenticate with Ebrains to fetch jobs on this System!</strong>
-        <button type="button" class="btn-close" onclick="dismissAlert()" aria-label="Close"></button>
+        <button type="button" class="btn-close" onclick="dismissAlert(this)" aria-label="Close"></button>
     </div>
 
     <div id="overlayjobprocessing" class="overlay-content">
@@ -589,7 +594,7 @@
     </div>
 
     <!-- donwload workspace before authenticate -->
-    <div id="overlaydownloadworkspace" class="overlay-content">
+    <!-- <div id="overlaydownloadworkspace" class="overlay-content">
         <div id="downloadworkspacetext" class="downloadworkspace-content">
             You need to authenticate with Ebrains to go on...<br>
             Please download your current workspace and then upload it to continue this session !
@@ -601,14 +606,14 @@
         <button id="download-workspace-div-btn" class="btn workflow-btn fill-background" onclick="saveWorkflowOnDiv()">
             Download workspace
         </button>
-    </div>
+    </div> -->
 
     <div id="overlayfilemanager" class="overlay-content file-manager-content">
         <div id="filemanager" class="file-manager">
             <div class="container file-manager-container g-0">
                 <div class="row g-0 file-manager-ui-button">
                     <div class="col flex-start">
-                        <i id="closeFileManagerButton" class="far fa-times-circle fa-lg" title="Close window"></i>
+                        <i id="closeFileManagerButton" class="far fa-times-circle fa-lg" title="Close window" onclick="closeFileManager()"></i>
                     </div>
                     <div class="col flex-end">
                         <i id="refreshFileListButton" class="ui-button fas fa-sync-alt fa-lg" title="Refresh"></i>
@@ -630,8 +635,8 @@
                         </ul>
                         <div class="model-key-flex-col">
                             <div id="modelKeydiv" class="input-group model-key-group">
-                                <input type="text" class="form-control model-key-input" placeholder="Set model key" aria-label="Model key">
-                                <button class="btn btn-outline-secondary model-key-btn" type="button" style="box-shadow: unset">Apply</button>
+                                <input id="modelKeyInput" type="text" class="form-control model-key-input" placeholder="Set model key" aria-label="Model key">
+                                <button id="modelKeyButton" class="btn btn-outline-secondary model-key-btn" type="button" onclick="setModelKey()" style="box-shadow: unset">Apply</button>
                             </div>
                         </div>
                     </div>
@@ -644,11 +649,8 @@
                         <ul id="mechanismsFileList" class="list-group file-manager-group file-group" style="display: none"></ul>
                         <ul id="configFileList" class="list-group file-manager-group file-group" style="display: none"></ul>
                         <ul id="modelFileList" class="list-group file-manager-group file-group" style="display: none"></ul>
-                        <!-- <textarea id="parametersTextArea" class="file-textarea" style="display: none"><pre><code id="parametersCode" class="json"></code></pre></textarea> -->
-                        <!-- <textarea id="optNeuronTextArea" class="file-textarea" style="display: none"><pre><code id="optNeuronCode"></code></pre></textarea> -->
-                        <!-- <pre id="optNeuronTextArea" style="display: none"><code id="optNeuronCode" class="python"></code></pre> -->
-                        <!-- <pre id="parametersTextArea" style="display: none"><code id="parametersCode" class="json"></code></pre> -->
-                        <textarea id="parametersTextArea" class="file-textarea" val="<pre><code class='json'>{'k1': 'v1'}</code></pre>"></textarea>
+                        <div id="parametersTextArea" class="file-textarea" style="display: none"><pre><code id="parametersCode" class="json"></code></pre></div>
+                        <div id="optNeuronTextArea" class="file-textarea" style="display: none"><pre><code id="optNeuronCode" class="python"></code></pre></div>
                     </div>
                 </div>
             </div>
