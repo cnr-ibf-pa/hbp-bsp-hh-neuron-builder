@@ -40,13 +40,15 @@ function saveFeatures(){
     
     console.log(folderNameOrig)
     folderName = folderNameOrig.replace(/\./g, "______")
-    
+   
+    showLoadingAnimation("Saving features...");
     $.ajax({
         url: "/hh-neuron-builder/copy-feature-files/" + exc + "/" + ctx + "/",
         method: "POST",
         data: {"folder": folderName},
         success: function(result) {
             console.log(result);
+            hideLoadingAnimation();
             if (result.resp == "OK") {
                 window.location.href = "/hh-neuron-builder/workflow";
             } else {

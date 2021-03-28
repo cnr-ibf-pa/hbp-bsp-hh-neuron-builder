@@ -491,6 +491,8 @@ def get_model_list2(request, exc="", ctx=""):
 def copy_feature_files(request, exc='', ctx=''):
 
     feature_folder = request.POST.get('folder', None)
+    feature_folder = feature_folder.replace('u_res', '')
+    
     response = {"expiration": False}
    
     if not os.path.exists(feature_folder):
