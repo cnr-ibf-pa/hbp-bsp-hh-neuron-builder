@@ -2248,13 +2248,13 @@ def store_workflow_in_session(request, exc='', ctx=''):
 def hhf_comm(request, exc='', ctx=''):
     print('hhf-comm called()')
 
-    if request.session.get('hhf_wfid', None):
-        print('hhf_wfid', request.session['hhf_wfid'], sep='\n')
-        for exc in request.session.keys():
-            if exc != 'hhf_wfid':
-                print(json.dumps(request.session[exc], indent=4))
-                if request.session['hhf_wfid'] == request.session[exc]['wf_id']: 
-                    return render(request, 'hhnb/workflow.html', context={"exc": exc, "ctx": request.session[exc]['ctx']})
+    #if request.session.get('hhf_wfid', None):
+    #    print('hhf_wfid', request.session['hhf_wfid'], sep='\n')
+    #    for exc in request.session.keys():
+    #        if exc != 'hhf_wfid':
+    #            print(json.dumps(request.session[exc], indent=4))
+    #            if request.session['hhf_wfid'] == request.session[exc]['wf_id']: 
+    #                return render(request, 'hhnb/workflow.html', context={"exc": exc, "ctx": request.session[exc]['ctx']})
            
     hhf_dict = json.loads(request.GET.get('hhf_dict', None))
 

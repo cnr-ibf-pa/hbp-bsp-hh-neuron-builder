@@ -5,6 +5,7 @@ var req_pattern = exc + '/' + ctx;
 
 $(window).bind("pageshow", function() {
     console.log("exc: " + exc.toString() + " cxt: " + ctx.toString());
+    showLoadingAnimation("Loading...");
 });
 
 var is_user_authenticated = false;
@@ -291,7 +292,7 @@ function closeDownloadWorkspaceDiv() {
 //
 function checkConditions(){
     console.log("checkConditions() called.");
-    showLoadingAnimation("Loading workflow...");
+    showLoadingAnimation("Loading...");
     $.getJSON('/hh-neuron-builder/check-cond-exist/' + req_pattern, function(data){
         console.log(data);
         if (data["response"] == "KO"){
@@ -740,14 +741,14 @@ async function downloadJob(button) {
     $("#overlayjobprocessing").css("display", "block");
     $("#jobProcessingTitle").html("Downloading job: " + jobId);
     await sleep(2000);
-    animateProgressBar(20);
+    setProgressBarValue(20);
     $.getJSON("/hh-neuron-builder/download-job/" + jobId + "/" + req_pattern + "/", function(data) {
         if (data["response"] == "KO") {
             closeDownloadJob();
             openErrorDiv(data["message"], "error");
             return false;
         }
-        animateProgressBar(50);
+        setProgressBarValue(50);
         $("#jobProcessingTitle").html("Running Analysis");
         var p = $.getJSON("/hh-neuron-builder/run-analysis/" + req_pattern, function(modifydata) {
             var resp_flag = false;
@@ -757,7 +758,7 @@ async function downloadJob(button) {
                 return false;
             } else {
                 var resp_flag = true;
-                animateProgressBar(80);
+                setProgressBarValue(80);
                 $("#jobProcessingTitle").html("Creating ZIP file")
                 $.getJSON("/hh-neuron-builder/zip-sim/" + jobId + "/" + req_pattern, async function(zip_data) {
                     if (zip_data["response"] == "KO") {
@@ -766,7 +767,7 @@ async function downloadJob(button) {
                         return false;
                     } else {
                         $("#jobProcessingTitle").html("Completing...");
-                        animateProgressBar(100);
+                        setProgressBarValue(100);
                         await sleep(2000);
                     }
                     checkConditions();
@@ -951,6 +952,10 @@ function animateProgressBar(progress) {
     $(".progress-bar").css("width", next_progress + "%").attr("aria-valuenow", next_progress);
 }
 
+function setProgressBarValue(value) {
+    $(".progress-bar").css("width", parseInt(value) + "%").attr("aria-valuenow", parseInt(value));
+}
+
 function resetProgressBar() {
     $(".progress-bar").css("width", "0%").attr("aria-valuenow", "0");
 }
@@ -1097,6 +1102,11 @@ $("#deleteFileButton").click(function() {
         return false;
     }
 
+    if ($(".folder-item.active").attr("id") == "morphologyFolder") {
+        if (!$("#morphologyFileList").hasClass("empty-list")) {
+            $("#uploadFileButton").addClass("disabled");
+        }
+    }
 
     if ($(".file-item.active").length == 0) {
         return false;
