@@ -523,7 +523,7 @@ def copy_feature_files(request, exc='', ctx=''):
 
     # set hhf model key if features are fetched/uploaded after set files in HHF 
     if request.session[exc].get('hhf_model_key', None):
-        apply_model_key(request, exc, ctx, request.session[exc]['hhf_model_key'])
+        hhf_apply_model_key(request, exc, ctx, request.session[exc]['hhf_model_key'])
     
     return HttpResponse(json.dumps(response), content_type="application/json")
 
@@ -888,6 +888,8 @@ def status(request):
 
 
 def check_cond_exist(request, exc="", ctx=""):
+    print(json.dumps(request.session[exc]))
+
     """
     Check if conditions for performing steps are present.
     The function checks on current workflow folders whether files are present to go on with the workflow.
@@ -1095,7 +1097,7 @@ def upload_feat_files(request, exc='', ctx=''):
     response = upload_files(request, 'feat', exc, ctx)
     # set hhf model key if features are fetched/uploaded after set files in HHF 
     if request.session[exc].get('hhf_model_key', None):
-        apply_model_key(request, exc, ctx, request.session[exc]['hhf_model_key'])
+        hhf_apply_model_key(request, exc, ctx, request.session[exc]['hhf_model_key'])
     return response
 
 
@@ -2247,15 +2249,7 @@ def store_workflow_in_session(request, exc='', ctx=''):
 
 def hhf_comm(request, exc='', ctx=''):
     print('hhf-comm called()')
-
-    #if request.session.get('hhf_wfid', None):
-    #    print('hhf_wfid', request.session['hhf_wfid'], sep='\n')
-    #    for exc in request.session.keys():
-    #        if exc != 'hhf_wfid':
-    #            print(json.dumps(request.session[exc], indent=4))
-    #            if request.session['hhf_wfid'] == request.session[exc]['wf_id']: 
-    #                return render(request, 'hhnb/workflow.html', context={"exc": exc, "ctx": request.session[exc]['ctx']})
-           
+         
     hhf_dict = json.loads(request.GET.get('hhf_dict', None))
 
     if hhf_dict:
@@ -2284,46 +2278,48 @@ def hhf_comm(request, exc='', ctx=''):
         morp = hhf_dict['HHF-Comm'].get('morphology', None)
         mod = hhf_dict['HHF-Comm'].get('modFiles', None)
 
-        if morp:
-            morp_dir = os.path.join(hhf_dir, 'morphology')
-            if not os.path.exists(morp_dir):
-                os.mkdir(morp_dir)
+        # if morp:
+        #     morp_dir = os.path.join(hhf_dir, 'morphology')
+        #     if not os.path.exists(morp_dir):
+        #         os.mkdir(morp_dir)
             
-            # downloading morphology 
-            r = requests.get(morp['url'], verify=False)
-            with open(os.path.join(morp_dir, morp['name']), 'wb') as fd:
-                for chunk in r.iter_content():
-                    fd.write(chunk)
+        #     # downloading morphology 
+        #     r = requests.get(morp['url'], verify=False)
+        #     with open(os.path.join(morp_dir, morp['name']), 'wb') as fd:
+        #         for chunk in r.iter_content():
+        #             fd.write(chunk)
             
-            # writing morph.json
-            morp_dict = {hhf_model_key: morp['name']}
-            with open(os.path.join(hhf_dir, 'config', 'morph.json'), 'w') as fd:
-                json.dump(morp_dict, fd)
+        #     # writing morph.json
+        #     morp_dict = {hhf_model_key: morp['name']}
+        #     with open(os.path.join(hhf_dir, 'config', 'morph.json'), 'w') as fd:
+        #         json.dump(morp_dict, fd)
         
-        if mod:
-            mod_dir = os.path.join(hhf_dir, 'mechanisms')
-            if not os.path.exists(mod_dir):
-                os.mkdir(mod_dir)
+        # if mod:
+        #     mod_dir = os.path.join(hhf_dir, 'mechanisms')
+        #     if not os.path.exists(mod_dir):
+        #         os.mkdir(mod_dir)
 
-            # downloading mods files
-            for m in mod:
-                r = requests.get(m['url'], verify=False)
-                with open(os.path.join(mod_dir, m['name']), 'wb') as fd:
-                    for chunk in r.iter_content():
-                        fd.write(chunk)
+        #     # downloading mods files
+        #     for m in mod:
+        #         r = requests.get(m['url'], verify=False)
+        #         with open(os.path.join(mod_dir, m['name']), 'wb') as fd:
+        #             for chunk in r.iter_content():
+        #                 fd.write(chunk)
 
         request.session[exc]['from_hhf'] = True
         request.session[exc]['hhf_dir'] = hhf_dir
         request.session[exc]['hhf_model_key'] = hhf_model_key
-        request.session['hhf_wfid'] = request.session[exc]['wf_id']
         request.session.save()
+
+        # apply model key after 
+        hhf_apply_model_key(request, exc, ctx, hhf_model_key)
 
         return render(request, 'hhnb/workflow.html', context={"exc": exc, "ctx": str(ctx)})
 
     return home(request)
 
 
-def get_hhf_files(request, exc, ctx):
+def hhf_get_files(request, exc, ctx):
 
     hhf_dir = request.session[exc]['hhf_dir']
 
@@ -2360,7 +2356,7 @@ def get_hhf_files(request, exc, ctx):
     return HttpResponse(content=json.dumps(hhf_file_list), content_type='application/json', status=200)
 
 
-def download_hhf_files(request, folder, exc, ctx):
+def hhf_download_files(request, folder, exc, ctx):
     try:
         file_ids = json.loads(request.GET.get('file_list', None))
         hhf_dir = request.session[exc]['hhf_dir']
@@ -2392,17 +2388,31 @@ def download_hhf_files(request, folder, exc, ctx):
         return HttpResponseBadRequest(content='file_dict Not present')
 
 
-def download_hhf_parameters(request, exc, ctx):
+def hhf_download_parameters(request, exc, ctx):
     hhf_dir = request.session[exc]['hhf_dir']
     return FileResponse(open(os.path.join(hhf_dir, 'config', 'parameters.json'), 'rb'), as_attachment=True)
 
 
-def download_hhf_optneuron(request, exc, ctx):
+def hhf_download_optneuron(request, exc, ctx):
     hhf_dir = request.session[exc]['hhf_dir']
     return FileResponse(open(os.path.join(hhf_dir, 'opt_neuron.py'), 'rb'), as_attachment=True)
 
 
-def upload_hhf_files(request, folder, exc, ctx):
+def hhf_save_parameters_json(request, exc, ctx):
+    
+    try:
+        param_content = json.loads(request.POST.get('parameters.json', None))
+        hhf_dir = request.session[exc]['hhf_dir']
+        with open(os.path.join(hhf_dir, 'config', 'parameters.json'), 'w') as fd:
+            json.dump(param_content, fd, indent=4)
+
+        return HttpResponse(content=json.dumps({'resp': 'OK', 'message': 'parameters.json overwrited correctly'}))
+    
+    except json.JSONDecodeError:
+        return HttpResponseBadRequest(content=json.dumps({'resp': 'KO', 'message': 'Malformed parameters.json file!.<br>File not saved.'}))
+
+
+def hhf_upload_files(request, folder, exc, ctx):
 
     if request.method == 'POST':
         file_content = request.body
@@ -2412,11 +2422,15 @@ def upload_hhf_files(request, folder, exc, ctx):
 
         if folder == 'parametersFolder':
             # try:
-            with open(os.path.join(hhf_dir, 'config', 'parameters.json'), 'w') as fd:
-                fd.write(file_content.decode());
+            # with open(os.path.join(hhf_dir, 'config', 'parameters.json'), 'w') as fd:
+                # fd.write(file_content.decode());
             try:
-                with open(os.path.join(hhf_dir, 'config', 'parameters.json'), 'r') as fd:
-                    json.load(fd)
+                # with open(os.path.join(hhf_dir, 'config', 'parameters.json'), 'r') as fd:
+                jj = json.loads(file_content.decode())
+                k = list(jj.keys())[0]
+                parameters = {request.session[exc]['hhf_model_key']: jj[k]}
+                with open(os.path.join(hhf_dir, 'config', 'parameters.json'), 'w') as fd:
+                    json.dump(parameters, k, indent=4)
             except json.JSONDecodeError:
                 os.remove(os.path.join(hhf_dir, 'config', 'parameters.json'))
                 return HttpResponseBadRequest(content=json.dumps({'message': 'Wrong file type. Accept only ".json" format.<br><br>Uploaded file deleted !'}))
@@ -2445,14 +2459,14 @@ def upload_hhf_files(request, folder, exc, ctx):
     return HttpResponseBadRequest()
 
 
-def delete_hhf_files(request, folder, exc, ctx):
+def hhf_delete_files(request, folder, exc, ctx):
 
     try:
         file_ids = json.loads(request.GET.get('file_list', None))
         
-        user_dir = request.session[exc]['user_dir']
-        morp_dir = os.path.join(user_dir, 'hhf', 'morphology')
-        mods_dir = os.path.join(user_dir, 'hhf', 'mechanisms')
+        hhf_dir = request.session[exc]['hhf_dir']
+        morp_dir = os.path.join(hhf_dir, 'morphology')
+        mods_dir = os.path.join(hhf_dir, 'mechanisms')
         # parameters_dir = os.path.join(user_dir, 'hhf', 'parameters')
 
         if folder == 'morphologyFolder':
@@ -2462,8 +2476,6 @@ def delete_hhf_files(request, folder, exc, ctx):
         if folder == 'mechanismsFolder':
             for f in file_ids['id']:
                 os.remove(os.path.join(mods_dir, f))
-        # if folder == 'parametersFolder':
-        #     os.remove(os.path.join(parameters_dir, f))
 
         return HttpResponse(status=200)
 
@@ -2471,7 +2483,7 @@ def delete_hhf_files(request, folder, exc, ctx):
         return HttpResponseBadRequest(content='Bad json')
 
 
-def apply_model_key(request, exc, ctx, model_key):
+def hhf_apply_model_key(request, exc, ctx, model_key):
     print('apply_model_key() called.')
 
     if model_key == 'workflow_id':
@@ -2517,3 +2529,43 @@ def apply_model_key(request, exc, ctx, model_key):
 
     request.session.save()
     return HttpResponse(status=200)
+
+
+def hhf_get_model_key(request, exc, ctx):
+    model_key = request.session[exc].get('hhf_model_key', None) 
+    if model_key:
+        return HttpResponse(content=json.dumps({'model_key': model_key}), status=200)
+    return HttpResponse(status=204)
+
+
+def hhf_delete_all(request, exc, ctx):
+    
+    # delete all folders
+    hhf_dir = request.session[exc].get('hhf_dir', None)
+    if hhf_dir and os.path.exists(hhf_dir):
+        shutil.rmtree(hhf_dir)
+    kk = []
+
+    # find all hhf session keys
+    for k in request.session[exc].keys():
+        if 'hhf' in k:
+            kk.append(k)
+
+    # remove all hhf session keys
+    for k in kk:
+        request.session[exc].pop(k)
+    request.session.save()
+    return HttpResponse(status=204)
+
+
+def hhf_download_all(request, exc, ctx):
+    hhf_dir = request.session[exc].get('hhf_dir', None)
+    if hhf_dir:
+        tmp_dir = os.path.join(request.session[exc]['user_dir'], 'tmp')
+        if os.path.exists(tmp_dir):
+            shutil.rmtree(tmp_dir)
+        os.mkdir(tmp_dir)
+        hhf_zip = os.path.join(tmp_dir, 'hhf_folder')
+        shutil.make_archive(hhf_zip, 'zip', hhf_dir)
+        return FileResponse(open(hhf_zip + '.zip', 'rb'), as_attachment=True)
+    return HttpResponse(status=204)

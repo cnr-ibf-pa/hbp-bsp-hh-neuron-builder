@@ -1027,20 +1027,26 @@ td {
     padding: 0rem;
 }
 
-.file-textarea {
-    /* width: 100%; */
-    /* height: 100%; */
-    /* font-size: .9rem; */
+.file-code {
     width: max-content;
     border-radius: inherit;
     border: none;
-    /* overflow-x: auto; */
-    /* scrollbar-width: thin; */
-    /* padding: 4px; */
-    /* background-color: inherit; */
-    /* resize: none; */
     line-height: 1.5;
-    /* white-space: pre; */
+    text-align: left;
+}
+.file-textarea {
+    width: 100%;
+    height: 100%;
+    font-size: .9rem;
+    border-radius: inherit;
+    border: none;
+    overflow-x: auto;
+    scrollbar-width: thin;
+    padding: 4px;
+    background-color: inherit;
+    resize: none;
+    line-height: 1.5;
+    white-space: pre;
     text-align: left;
 }
 
@@ -1061,7 +1067,7 @@ td {
     color: rgb(180, 180, 180);
 }*/
 
-.spinner-border.file-item {
+.spinner-border.file-item-spinner {
     display: none;
     position: relative;
     top: calc( 50% - 18px );
@@ -1078,8 +1084,26 @@ td {
 }
 .model-key-group {
     align-self: end;
-    padding: 22px;
+    /* padding: 22px; */
+    display: flex;
+    height: 45px;
+    margin: 12px;
 }
+
+.model-key-group > label {
+    padding: .5rem;
+}
+
+.model-key-group > input {
+    height: 45px;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.model-key-group > .form-control:not(:placeholder-shown) ~ label {
+    transform: scale(.80) translateY(-.5rem) translateX(.5rem);
+}
+
 .model-key-input {
     border: solid 1px white;
 }
@@ -1093,6 +1117,8 @@ td {
     background-color: #daa520ff;
     color: white;
     border-color: white;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
 }
 
 .model-key-btn:active {

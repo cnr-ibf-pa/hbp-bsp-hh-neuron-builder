@@ -2,21 +2,32 @@ var exc = sessionStorage.getItem("exc", exc) ?  sessionStorage.getItem("exc") : 
 var ctx = sessionStorage.getItem("ctx", ctx) ? sessionStorage.getItem("ctx") : "";
 var req_pattern = exc + '/' + ctx;
 
+var is_user_authenticated = false;
+var modal_view = true;
+var from_hhf = false;
 
 $(window).bind("pageshow", function() {
     console.log("exc: " + exc.toString() + " cxt: " + ctx.toString());
-    showLoadingAnimation("Loading...");
-});
-
-var is_user_authenticated = false;
-
-$(document).ready(function(){
-    showLoadingAnimation("Loading...");
     checkConditions();
 
+
+    if (window.location.href.includes("/hh-neuron-builder/hhf-comm?hhf_dict=") && modal_view) {
+        $("#modalButton").trigger("click");
+        modal_view = false;
+    }
+    console.log(window.location.href);
+});
+
+
+$(document).ready(function(){
+    // checkConditions();
+    
+    
+    showLoadingAnimation("Loading...");
     fetch("/hh-neuron-builder/get-authentication")
             .then(response => {
                 console.log(response);
+                hideLoadingAnimation();
                 if (response.ok) {
                     is_user_authenticated = true;                    
                 }
@@ -114,7 +125,7 @@ $(document).ready(function(){
         e.preventDefault();
     });
 
-    hideLoadingAnimation();
+    // hideLoadingAnimation();
 });
 
 // serve embedded-efel-gui page
@@ -155,18 +166,6 @@ function reloadCurrentPage() {
 function openHpcParameterDiv() {
     console.log("openParameterDiv() called.");
     manageOptSetInput();
-    /* fetch("/hh-neuron-builder/get-authentication")
-        .then(response => {
-                console.log(response);
-                if (response.ok) {
-                    $("#overlaywrapper").css("display", "block");
-                    $("#overlayparam").css("display", "block");
-                } else {
-                    console.log("opening download workspace div");
-                    openDownloadWorkspaceDiv();
-                }
-            }
-        ) */
     $("#overlaywrapper").css("display", "block");
     $("#overlayparam").css("display", "block");
     if($(".accordion-button.hpc").hasClass("active")) {
@@ -194,13 +193,13 @@ function applyJobParam() {
     submitJobParamForm.submit();
 }
 
-function manageErrorDiv(open=false, close=false, message="", tag="") {
+function manageErrorDiv(isOpen=false, isClose=false, message="", tag="") {
     let overlayWrapper = $("#overlaywrapper");
     let overlayWrapperError = $("#overlaywrappererror");
     let errorDynamicText = $("#errordynamictext");
     let button = $("#ok-error-div-btn");
     button.removeClass("blue", "red", "green");
-    if (open) {
+    if (isOpen) {
         overlayWrapper.css("display", "block");
         overlayWrapperError.css("display", "block");
         errorDynamicText.html(message);
@@ -217,52 +216,52 @@ function manageErrorDiv(open=false, close=false, message="", tag="") {
             overlayWrapperError.css("border-color", "green");
             button.addClass("green");
         }
-    } else if (close) {
+    } else if (isClose) {
         overlayWrapper.css("display", "none");
         overlayWrapperError.css("display", "none");
     }
 }
 
 function openErrorDiv(message, tag) {
-    manageErrorDiv(open=true, close=false, message, tag);
+    manageErrorDiv(isOpen=true, isClose=false, message, tag);
 }
 
 function closeErrorDiv() {
-    manageErrorDiv(open=false, close=true);
+    manageErrorDiv(isOpen=false, isClose=true);
     checkConditions();
 }
 
-function manageExpirationDiv(open=false, close=false, message="") {
+function manageExpirationDiv(isOpen=false, isClose=false, message="") {
     let overlayWrapper = $("#overlaywrapper");
     let overlayWrapperExpiration = $("#overlaywrapperexpiration");
     let expirationDynamicText = $("#expirationdynamictext");
-    if (open) {
+    if (isOpen) {
         overlayWrapper.css("display", "block");
         overlayWrapperExpiration.css("display", "block");
         expirationDynamicText.html(message);
-    } else if (close) {
+    } else if (isClose) {
         overlayWrapper.css("display", "none");
         overlayWrapperExpiration.css("display", "none");
     }
 }
 
 function openExpirationDiv(message) {
-    manageExpirationDiv(open=true, close=false, message);
+    manageExpirationDiv(isOpen=true, isClose=false, message);
 }
 
 function closeExpirationDiv() {
-    manageExpirationDiv(open=false, close=true);
+    manageExpirationDiv(isOpen=false, isClose=true);
 }
 
-function manageReloadDiv(open=false, close=false, message="") {
+function manageReloadDiv(isOpen=false, isClose=false, message="") {
     let overlayWrapper = $("#overlaywrapper");
     let overlayWrapperReload = $("#overlaywrapperreload");
     let reloadDynamicText = $("#reloaddynamictext");
-    if (open) {
+    if (isOpen) {
         overlayWrapper.css("display", "block");
         overlayWrapperReload.css("display", "block");
         reloadDynamicText.html(message);
-    } else if (close) {
+    } else if (isClose) {
         overlayWrapper.css("display", "none");
         overlayWrapperReload.css("display", "none");
     }
@@ -270,12 +269,12 @@ function manageReloadDiv(open=false, close=false, message="") {
 
 // Open reload div
 function openReloadDiv(message="") {
-    manageReloadDiv(open=true, close=false, message);
+    manageReloadDiv(isOpen=true, isClose=false, message);
 }
 
 // Close reload div
 function closeReloadDiv() {
-    manageReloadDiv(open=false, close=true);
+    manageReloadDiv(isOpen=false, isClose=true);
     window.location="/hh-neuron-builder/"
 }
 
@@ -296,7 +295,6 @@ function checkConditions(){
     $.getJSON('/hh-neuron-builder/check-cond-exist/' + req_pattern, function(data){
         console.log(data);
         if (data["response"] == "KO"){
-            // closePleaseWaitDiv();
             openReloadDiv(data["message"]);
         } else {
             $("#wf-title").html("Workflow id: <bold>" + data["wf_id"] + "</bold>");
@@ -328,6 +326,7 @@ function checkConditions(){
                 $("#down-opt-set-btn").prop("disabled", false);
                 $("#del-opt").prop("disabled", false)
             } else {
+                console.log("restoring classes");
                 let optFilesBar = $("#opt-files-bar");
                 optFilesBar.removeClass("green");
                 optFilesBar.addClass("red");
@@ -432,10 +431,12 @@ function checkConditions(){
             if (data['from_hhf']['status']) {
                 $("#opt-db-hpc-btn").prop("disabled", true);
                 $("#opt-up-btn").prop("disabled", true);
+                $("#down-opt-set-btn").prop("disabled", false);
+                $("#del-opt").prop("disabled", false);
                 $(".hhf-integration-component").css("display", "block");
+                from_hhf = true;
             } else {
-                $("#opt-db-hpc-btn").prop("disabled", false);
-                $("#opt-up-btn").prop("disabled", false);
+                from_hhf = false;
                 $(".hhf-integration-component").css("display", "none");
             }
         };
@@ -455,11 +456,16 @@ function deleteFeatureFiles() {
 
 // Delete source optimization files from folder
 function deleteOptFiles() {
-    var resp = confirm("Are you sure you want to delete current optimization files?");
-    if (resp) {
-        $.getJSON("/hh-neuron-builder/delete-files/optset/" + exc + "/" + ctx + "/", function(data){
-            checkConditions();
-        });
+    if (from_hhf) {
+        fetch("/hh-neuron-builder/hhf-delete-all/" + req_pattern)
+            .then(results => { console.log(results); checkConditions(); });
+    } else {
+        var resp = confirm("Are you sure you want to delete current optimization files?");
+        if (resp) {
+            $.getJSON("/hh-neuron-builder/delete-files/optset/" + exc + "/" + ctx + "/", function(data){
+                checkConditions();
+            });
+        }
     }
 }
 
@@ -802,7 +808,20 @@ function downloadLocalOpt(){
 
 //
 function downloadLocalOptSet(){
-    downloadLocal("optset");
+    if (from_hhf) {
+        showLoadingAnimation("Downloading HHF folder...");
+        fetch("/hh-neuron-builder/hhf-download-all/" + req_pattern, {
+            method: "GET"
+        }).then(
+            data => downloadURI(data.url, 'hhf_folder')
+        ).then(
+            hideLoadingAnimation()
+        ).catch(
+            error => console.log(error)
+        );
+    } else {
+        downloadLocal("optset");
+    }
 }
 
 function downloadLocalFeat(){
@@ -832,11 +851,15 @@ function newWorkflow() {
 function cloneWorkflow() {
     $("#wf-btn-clone-wf").blur();
     showLoadingAnimation("Cloning workflow...");
-    $.getJSON("/hh-neuron-builder/clone-workflow/" + req_pattern + "/", function(data) {
-        console.log(data);
-        let win = window.open("/hh-neuron-builder/workflow/" + data.exc + "/" + data.ctx + "/", "_blank");
-        win.focus();
-        hideLoadingAnimation();
+    $.ajax({
+        url: "/hh-neuron-builder/clone-workflow/" + req_pattern + "/",
+        method: "GET",
+        async: false,
+        success: function(data) {
+            hideLoadingAnimation();
+            window.open("/hh-neuron-builder/workflow/" + data.exc + "/" + data.ctx + "/", "_blank");
+            win.focus();
+        }
     });
 }
 
@@ -997,11 +1020,19 @@ function openFileManager() {
     console.log("fetchHHFFileList() on openFileManager()");
     $("#overlaywrapper").css("display", "block");
     $("#overlayfilemanager").css("display", "block");
+    $.ajax({
+        url: "/hh-neuron-builder/hhf-get-model-key/" + req_pattern + "/",
+        method: "GET",
+        success: function(response) {
+            console.log(response);
+            $("#modelKeyInput").val(JSON.parse(response).model_key);
+        }
+    });
 }
 
 
 function fetchHHFFileList() {
-    $.getJSON("/hh-neuron-builder/get-hhf-files/" + req_pattern + "/", function(data) {
+    $.getJSON("/hh-neuron-builder/hhf-get-files/" + req_pattern + "/", function(data) {
         
         if (data.morphology && data.morphology.length > 0) {
             for (let i = 0; i < data.morphology.length; i++) {
@@ -1044,33 +1075,16 @@ function fetchHHFFileList() {
         }
 
         if (data["parameters.json"]) {
-            $("#parametersCode").html(data["parameters.json"]);
+            $("#parametersTextArea").val(data["parameters.json"]);
         }
 
         if (data["opt_neuron.py"]) {
             $("#optNeuronCode").html(data["opt_neuron.py"]);
         }
         hljs.highlightAll();
-        
-        let currFolder = $(".folder-item.active").attr("id");
-        console.log(currFolder);
+   
         $("#fileItemSpinner").css("display", "none");
-        if (currFolder == "morphologyFolder") {
-            $("#morphologyFileList").css("display", "block");
-            if (!$("#morphologyFileList").hasClass("empty-list")) {
-                $("#uploadFileButton").addClass("disabled");
-            }
-        } else if (currFolder == "mechanismsFolder") {
-            $("#mechanismsFileList").css("display", "block");
-        } else if (currFolder == "configFolder") {
-            $("#configFileList").css("display", "block");
-        } else if (currFolder == "modelFolder") {
-            $("#modelFileList").css("display", "block");
-        } else if (currFolder == "parametersFolder") {
-            $("#parametersTextArea").css("display", "block");
-        } else if (currFolder == "optNeuronFolder") {
-            $("#optNeuronTextArea").css("display", "block");
-        }
+        showFileList($(".folder-item.active"));
     });
 }
 
@@ -1079,6 +1093,7 @@ function refreshHHFFileList() {
     $(".file-group").css("display", "none");
     $(".file-group").empty();
     $(".file-textarea").css("display", "none");
+    $(".file-code").css("display", "none");
     $("code").html();
     $("#fileItemSpinner").css("display", "flex");
     fetchHHFFileList();
@@ -1092,9 +1107,24 @@ function closeFileManager() {
     $(".file-item").removeClass("active");
     $(".file-group").empty();
     $("code").html();
-    checkConditions();
+    saveParametersJson();
     setModelKey(onClose=true);
+    checkConditions();
 };
+
+
+function saveParametersJson() {
+    var jj = {"parameters.json": ($("#parametersTextArea").val())};
+    $.ajax({
+        url: "/hh-neuron-builder/hhf-save-parameters-json/" + req_pattern,
+        method: "POST",
+        data: jj,
+        error: function(response) {
+            console.log(JSON.parse(response.responseText));
+            openErrorDiv(JSON.parse(response.responseText).message, "error");
+        }
+    });
+}
 
 
 $("#deleteFileButton").click(function() {
@@ -1103,8 +1133,8 @@ $("#deleteFileButton").click(function() {
     }
 
     if ($(".folder-item.active").attr("id") == "morphologyFolder") {
-        if (!$("#morphologyFileList").hasClass("empty-list")) {
-            $("#uploadFileButton").addClass("disabled");
+        if ($("#morphologyFileList").hasClass("empty-list")) {
+            $("#uploadFileButton").removeClass("disabled");
         }
     }
 
@@ -1121,7 +1151,7 @@ $("#deleteFileButton").click(function() {
 
     console.log(JSON.stringify(jj_ids));
 
-    fetch("/hh-neuron-builder/delete-hhf-files/" + $(".folder-item.active").attr("id") + "/" + req_pattern + "?file_list=" + encodeURIComponent(JSON.stringify(jj_ids)), {
+    fetch("/hh-neuron-builder/hhf-delete-files/" + $(".folder-item.active").attr("id") + "/" + req_pattern + "?file_list=" + encodeURIComponent(JSON.stringify(jj_ids)), {
         method: "GET"
     }).then(function(data) {
         console.log(data);
@@ -1133,13 +1163,13 @@ $("#deleteFileButton").click(function() {
 
 $("#downloadFileButton").click(function() {
     if ($(".folder-item.active").attr("id") == "parametersFolder" ) {
-        fetch("/hh-neuron-builder/download-hhf-files/parameters/" + req_pattern)
+        fetch("/hh-neuron-builder/hhf-download-files/parameters/" + req_pattern)
             .then(data => downloadURI(data.url, 'parameters.json'));
         return false;
     } 
 
     if ($(".folder-item.active").attr("id") == "optNeuronFolder") {
-        fetch("/hh-neuron-builder/download-hhf-files/optneuron/" + req_pattern)
+        fetch("/hh-neuron-builder/hhf-download-files/optneuron/" + req_pattern)
             .then(data => downloadURI(data.url, 'opt_neuron.py'));
         return false;
     } 
@@ -1157,7 +1187,7 @@ $("#downloadFileButton").click(function() {
         jj_ids.id.push($(this).attr("id"));
     });
 
-    fetch("/hh-neuron-builder/download-hhf-files/" + $(".folder-item.active").attr("id") + "/" + req_pattern + "?file_list=" + encodeURIComponent(JSON.stringify(jj_ids)), {
+    fetch("/hh-neuron-builder/hhf-download-files/" + $(".folder-item.active").attr("id") + "/" + req_pattern + "?file_list=" + encodeURIComponent(JSON.stringify(jj_ids)), {
         method: "GET"
     }).then(function(data) {
         downloadURI(data.url, 'files');
@@ -1183,32 +1213,29 @@ $("#uploadFileButton").click(function() {
     var files = 0
 
     const upload = (file) => {
-        fetch("/hh-neuron-builder/upload-hhf-files/" + $(".folder-item.active").attr("id") + "/" + req_pattern + "/", {
+        $.ajax({
+            url: "/hh-neuron-builder/hhf-upload-files/" + $(".folder-item.active").attr("id") + "/" + req_pattern + "/",
             method: "POST",
             headers: {
                 "Content-Type": "application/octet-stream",
                 "Content-Disposition": "attachment; filename=\"" + file.name + "\""
             },
-            body: file
-        }).then( 
-            response => {
-                if (response.status == 200) {
-                    console.log("file " + file.name + " uploaded successfully");
-                    counter += 1;
-                    if (counter == files) {
-                        hideLoadingAnimation();
-                        refreshHHFFileList();
-                        console.log("refreshHHFFileList() on #uploadFileButton callback.")
-                    }
-                    return response.json();
+            body: file,
+            success: function(response) {
+                console.log("file " + file.name + " uploaded successfully");
+                counter += 1;
+                if (counter == files) {
+                    hideLoadingAnimation();
+                    refreshHHFFileList();
+                    console.log("refreshHHFFileList() on #uploadFileButton callback.")
                 }
-            }).then(
-            error => {
+            },
+            error: function(error) {
                 console.log(error);
                 closeFileManager();
-                openErrorDiv(error.message, "error");
+                openErrorDiv(JSON.parse(error.responseText).message, "error");
             }
-        )
+        });
     }
 
     const onSelectFile = async function(x) {
@@ -1228,10 +1255,6 @@ $("#uploadFileButton").click(function() {
 
 
 $("#selectAllButton").click(function() {
-    if ($(this).hasClass("disabled")) {
-        return false;
-    }
-
     if ($(this).hasClass("active")) {
         $(".file-item").removeClass("active");
     } else {
@@ -1247,52 +1270,65 @@ function uploadParameters() {
 
 
 $(".folder-item").click(function() {
-    if ($(this).hasClass("active")) {
-        return false;
-    }
+    showFileList($(this));
+})
+
+
+function showFileList(folder) {
+    // if ($(this).hasClass("active")) {
+        // return false;
+    // }
+    var currFolder = folder.attr("id");
+    var currList = null;
+
+    $("#selectAllButton").removeClass("active");
     $(".file-item").removeClass("active");
     $(".folder-item").removeClass("active").attr("aria-current", false);
     $(".file-group").css("display", "none");
     $(".file-textarea").css("display", "none");
+    $(".file-code").css("display", "none");
     $(".ui-button").removeClass("disabled");
 
-    $(this).addClass("active").attr("aria-current", true);
-    var currFolder = $(this).attr("id");
+    folder.addClass("active").attr("aria-current", true);
 
     if (currFolder == "morphologyFolder") {
-        $("#morphologyFileList").css("display", "block");
-        if (!$("#morphologyFileList").hasClass("empty-list")) {
+        currList = $("#morphologyFileList"); 
+        if (!currList.hasClass("empty-list")) {
             $("#uploadFileButton").addClass("disabled");
         }
     } else if (currFolder == "mechanismsFolder") {
-        $("#mechanismsFileList").css("display", "block");
+        currList = $("#mechanismsFileList");
     } else if (currFolder == "configFolder") {
-        $("#configFileList").css("display", "block");
+        currList = $("#configFileList"); 
         $("#uploadFileButton").addClass("disabled");
         $("#deleteFileButton").addClass("disabled");
+
     } else if (currFolder == "modelFolder") {
-        $("#modelFileList").css("display", "block");
+        currList = $("#modelFileList"); 
         $("#uploadFileButton").addClass("disabled");
         $("#deleteFileButton").addClass("disabled");
     } else if (currFolder == "parametersFolder") {
-        $("#parametersTextArea").css("display", "block");
+        currList = $("#parametersTextArea"); 
         $("#deleteFileButton").addClass("disabled");
         $("#selectAllButton").addClass("disabled");
+
     } else if (currFolder == "optNeuronFolder") {
-        $("#optNeuronTextArea").css("display", "block");
+        currList = $("#optNeuronTextArea"); 
         $("#deleteFileButton").addClass("disabled");
         $("#selectAllButton").addClass("disabled");
         $("#uploadFileButton").addClass("disabled");
     }
-})
+    currList.css("display", "block");
+    if (currList.hasClass("empty-list")) {
+        $("#downloadFileButton").addClass("disabled");
+        $("#selectAllButton").addClass("disabled");
+        $("#deleteFileButton").addClass("disabled");
+    }
+}
 
 
 function selectFileItem(item) {
-    if ($(item).hasClass("active")) {
-        $(item).removeClass("active");
-    } else {
-        $(item).addClass("active");
-    }
+    $(item).toggleClass("active");
 }
 
 
@@ -1304,10 +1340,6 @@ $("#refreshFileListButton").click(function() {
 
 
 function setModelKey(onClose=false) {
-    var k = $("#modelKeyInput").val();
-    if (k == "") {
-        k = "workflow_id"
-    }
     fetch("/hh-neuron-builder/hhf-apply-model-key/" + req_pattern + "/" + k.toString(), {
         method: "GET"
     }).then( data => { 

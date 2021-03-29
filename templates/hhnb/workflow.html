@@ -634,8 +634,13 @@
                             <li id="optNeuronFolder" class="list-group-item folder-item">opt_neuron.py</li>
                         </ul>
                         <div class="model-key-flex-col">
-                            <div id="modelKeydiv" class="input-group model-key-group">
+                            <!-- <div id="modelKeydiv" class="form-floating model-key-group">
                                 <input id="modelKeyInput" type="text" class="form-control model-key-input" placeholder="Set model key" aria-label="Model key">
+                                <button id="modelKeyButton" class="btn btn-outline-secondary model-key-btn" type="button" onclick="setModelKey()" style="box-shadow: unset">Apply</button>
+                            </div> -->
+                            <div class="form-floating model-key-group">
+                                <input type="text" class="form-control model-key-input" id="modelKeyInput" placeholder="modekey-wfid" style="height: 45px;">
+                                <label for="modelKeyInput">Set .json files main key</label>
                                 <button id="modelKeyButton" class="btn btn-outline-secondary model-key-btn" type="button" onclick="setModelKey()" style="box-shadow: unset">Apply</button>
                             </div>
                         </div>
@@ -650,14 +655,38 @@
                         <ul id="configFileList" class="list-group file-manager-group file-group" style="display: none"></ul>
                         <ul id="modelFileList" class="list-group file-manager-group file-group" style="display: none"></ul>
                         <textarea id="parametersTextArea" class="file-textarea" style="display: none"></textarea>
-                        <div id="optNeuronTextArea" class="file-textarea" style="display: none"><pre><code id="optNeuronCode" class="python"></code></pre></div>
+                        <div id="optNeuronTextArea" class="file-code" style="display: none"><pre><code id="optNeuronCode" class="python"></code></pre></div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-
 </div>
+
+    <!-- Button trigger modal -->
+    <button id="modalButton" type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
+        Launch static backdrop modal
+    </button>
+    
+    <!-- Modal -->
+    <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+            <h5 class="modal-title" id="staticBackdropLabel">Modal title</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+            ...
+            </div>
+            <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-primary">Understood</button>
+            </div>
+        </div>
+        </div>
+    </div>
+  
 
 
 <script>
