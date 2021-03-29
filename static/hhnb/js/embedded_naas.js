@@ -305,3 +305,59 @@ $("#modelPrivate").on("click", function() {
         $("#modelPrivateValue").html("Public");
     }
 })
+
+
+function newWorkflow() {
+    $("#wf-btn-new-wf").blur();
+    showLoadingAnimation("Starting new workflow...");
+    $.getJSON("/hh-neuron-builder/create-wf-folders/new/" + exc + "/" + ctx, function(data){
+        if (data["response"] == "KO"){
+            openReloadDiv();
+        } else {
+            window.location.href = "/hh-neuron-builder/workflow/";
+        }
+        hideLoadingAnimation();
+    });
+}
+
+
+function cloneWorkflow() {
+    $("#wf-btn-clone-wf").blur();
+    showLoadingAnimation("Cloning workflow...");
+    $.ajax({
+        url: "/hh-neuron-builder/clone-workflow/" + exc + "/" + ctx + "/",
+        method: "GET",
+        async: false,
+        success: function(data) {
+            hideLoadingAnimation();
+            window.open("/hh-neuron-builder/embedded-efel-gui/", "_blank");
+            win.focus();
+        }
+    });
+}
+
+
+function downloadURI(uri, name) {
+    var link = document.createElement("a");
+    link.download = name;
+    link.href = uri;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    delete link;
+  }
+  
+  function saveWorkflow() {
+      console.log("saveWorkflow() called.");
+      $("#wf-btn-save").blur();
+      showLoadingAnimation("Loading...")
+      fetch("/hh-neuron-builder/workflow-download/" + req_pattern, {
+          method: "GET"
+      }).then(
+          data => downloadURI(data.url, 'workflow')
+      ).then(
+          hideLoadingAnimation()
+      ).catch(
+          error => console.log(error)
+      );
+  }
