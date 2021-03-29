@@ -1338,7 +1338,6 @@ $("#refreshFileListButton").click(function() {
 })
 
 
-
 function setModelKey(onClose=false) {
     fetch("/hh-neuron-builder/hhf-apply-model-key/" + req_pattern + "/" + k.toString(), {
         method: "GET"
@@ -1350,3 +1349,8 @@ function setModelKey(onClose=false) {
         }    
     });
 }
+
+
+$("#infoFileManagerButton").click(function() {
+    $("#modalButton").trigger("click");
+});

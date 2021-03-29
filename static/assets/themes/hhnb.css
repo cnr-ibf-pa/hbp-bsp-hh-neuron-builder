@@ -1312,6 +1312,15 @@ i.black {
     color: #d20000;
 }
 
+.fa-check-circle {
+    cursor: pointer;
+    transition: all ease 0.3s;
+    /*margin-right: .5rem;*/
+}
+.fa-check-circle:hover {
+    color: #3db308;
+}
+
 .fa-file-upload {
     cursor: pointer;
     transition: all ease 0.3s;
@@ -1356,4 +1365,13 @@ i.disabled {
 }
 i.disabled:hover {
     color: rgb(190, 190, 190);
+}
+
+#infoFileManagerButton {
+    cursor: pointer;
+    transition: all ease 0.3s;
+}
+
+#infoFileManagerButton:hover {
+    color: #0aa0fb;
 }

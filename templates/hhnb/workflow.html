@@ -593,27 +593,13 @@
         </div>
     </div>
 
-    <!-- donwload workspace before authenticate -->
-    <!-- <div id="overlaydownloadworkspace" class="overlay-content">
-        <div id="downloadworkspacetext" class="downloadworkspace-content">
-            You need to authenticate with Ebrains to go on...<br>
-            Please download your current workspace and then upload it to continue this session !
-        </div>
-        <br>
-        <button id="cancel-div-btn" class="btn workflow-btn fill-background" onclick="closeDownloadWorkspaceDiv()">
-            Cancel
-        </button>
-        <button id="download-workspace-div-btn" class="btn workflow-btn fill-background" onclick="saveWorkflowOnDiv()">
-            Download workspace
-        </button>
-    </div> -->
-
     <div id="overlayfilemanager" class="overlay-content file-manager-content">
         <div id="filemanager" class="file-manager">
             <div class="container file-manager-container g-0">
                 <div class="row g-0 file-manager-ui-button">
                     <div class="col flex-start">
-                        <i id="closeFileManagerButton" class="far fa-times-circle fa-lg" title="Close window" onclick="closeFileManager()"></i>
+                        <i id="closeFileManagerButton" class="far fa-check-circle fa-lg" title="Close window" onclick="closeFileManager()"></i>
+                        <i id="infoFileManagerButton" class="far fa-question-circle fa-lg" title="Info"></i>
                     </div>
                     <div class="col flex-end">
                         <i id="refreshFileListButton" class="ui-button fas fa-sync-alt fa-lg" title="Refresh"></i>
