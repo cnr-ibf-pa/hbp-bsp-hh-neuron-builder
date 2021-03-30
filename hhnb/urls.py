@@ -105,7 +105,7 @@ urlpatterns = [
     path('hhf-download-files/parameters/' + required, views.hhf_download_parameters),
     path('hhf-download-files/optneuron/' + required, views.hhf_download_optneuron),
     path('hhf-upload-files/<folder:folder>/' + required + '/', views.hhf_upload_files),
-    path('hhf-delete-hhf-files/<folder:folder>/' + required, views.hhf_delete_files),
+    path('hhf-delete-files/<folder:folder>/' + required, views.hhf_delete_files),
     path('hhf-apply-model-key/' + required + '/<any:model_key>', views.hhf_apply_model_key),
     path('hhf-get-model-key/' + required + '/', views.hhf_get_model_key),
     path('hhf-save-parameters-json/' + required, views.hhf_save_parameters_json),

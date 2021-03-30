@@ -1145,6 +1145,7 @@ $("#deleteFileButton").click(function() {
     var jj_ids = {"id": []};
     var files = $(".file-item.active");
 
+    console.log(files);
     files.each(function(i) {
         jj_ids.id.push($(this).attr("id"));
     });
@@ -1259,7 +1260,8 @@ $("#selectAllButton").click(function() {
         $(".file-item").removeClass("active");
     } else {
         $(this).addClass("active");
-        $(".file-item").addClass("active");
+        $(".file-group.active").children().addClass("active");
+        //$(".file-item").addClass("active");
     }
 })
 
@@ -1275,16 +1277,13 @@ $(".folder-item").click(function() {
 
 
 function showFileList(folder) {
-    // if ($(this).hasClass("active")) {
-        // return false;
-    // }
     var currFolder = folder.attr("id");
     var currList = null;
 
     $("#selectAllButton").removeClass("active");
     $(".file-item").removeClass("active");
     $(".folder-item").removeClass("active").attr("aria-current", false);
-    $(".file-group").css("display", "none");
+    $(".file-group").css("display", "none").removeClass("active");
     $(".file-textarea").css("display", "none");
     $(".file-code").css("display", "none");
     $(".ui-button").removeClass("disabled");
@@ -1319,6 +1318,7 @@ function showFileList(folder) {
         $("#uploadFileButton").addClass("disabled");
     }
     currList.css("display", "block");
+    currList.addClass("active");
     if (currList.hasClass("empty-list")) {
         $("#downloadFileButton").addClass("disabled");
         $("#selectAllButton").addClass("disabled");
@@ -1339,6 +1339,7 @@ $("#refreshFileListButton").click(function() {
 
 
 function setModelKey(onClose=false) {
+    var k = $("#modelKeyInput").val();
     fetch("/hh-neuron-builder/hhf-apply-model-key/" + req_pattern + "/" + k.toString(), {
         method: "GET"
     }).then( data => { 
