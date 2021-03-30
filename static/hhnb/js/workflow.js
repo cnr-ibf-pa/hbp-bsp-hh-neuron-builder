@@ -199,6 +199,7 @@ function manageErrorDiv(isOpen=false, isClose=false, message="", tag="") {
     let errorDynamicText = $("#errordynamictext");
     let button = $("#ok-error-div-btn");
     button.removeClass("blue", "red", "green");
+    console.log(button);
     if (isOpen) {
         overlayWrapper.css("display", "block");
         overlayWrapperError.css("display", "block");
@@ -220,6 +221,7 @@ function manageErrorDiv(isOpen=false, isClose=false, message="", tag="") {
         overlayWrapper.css("display", "none");
         overlayWrapperError.css("display", "none");
     }
+    console.log(button);
 }
 
 function openErrorDiv(message, tag) {
