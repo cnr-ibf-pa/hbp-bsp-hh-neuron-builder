@@ -64,11 +64,21 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = 200000000
 FILE_UPLOAD_MAX_MEMORY_SIZE = 200000000
 
 
+
 AUTHENTICATION_BACKENDS = [
     'auth.backend.MyOIDCBackend',
     'mozilla_django_oidc.auth.OIDCAuthenticationBackend',
     'django.contrib.auth.backends.ModelBackend',
 ]
+
+
+SESSION_COOKIE_AGE = 86400
+SESSION_SAVE_EVERY_REQUEST = True
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+
+
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 
 ROOT_URLCONF = 'hh_neuron_builder.urls'
 
@@ -196,6 +206,7 @@ LOGOUT_REDIRECT_URL = "/hh-neuron-builder"
 
 LOGIN_URL = 'oidc_authentication_init'
 
+OIDC_RENEW_ID_TOKEN_EXPIRY_SECONDS = 1800
 
 # LOGGING SETTINGS
 

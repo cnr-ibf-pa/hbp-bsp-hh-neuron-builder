@@ -91,7 +91,7 @@
                         <!-- <strong>Log-out</strong> -->
                     </a>
                     <a class="user-img" href="/hh-neuron-builder/get-user-page">
-                        <img src="/hh-neuron-builder/get-user-avatar" alt="user" onerror=this.src="{% static 'assets/img/user-circle-solid.svg' %}">
+                        <img src="/hh-neuron-builder/get-user-avatar" alt="user" onerror=this.src="{% static '../img/user-circle-solid.svg' %}">
                     </a>
                     <form style="display: none" id="logout-form" action="{% url 'oidc_logout' %}" method="post">
                         {% csrf_token %}

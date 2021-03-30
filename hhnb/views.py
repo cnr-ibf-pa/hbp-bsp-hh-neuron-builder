@@ -1004,7 +1004,11 @@ def check_cond_exist(request, exc="", ctx=""):
         return HttpResponse(content=json.dumps({'response': 'KO', 'message': 'Content empty'}))
 
     # check if optimization has been submitted
-    if os.path.exists(os.path.join(dest_dir, request.session[exc]['opt_sub_flag_file'])):
+    if request.session[exc].get('from_hhf', None) and os.path.exists(os.path.join(request.session[exc]['user_dir'], 'hhf_opt')):
+        for f in os.listdir(os.path.join(request.session[exc]['user_dir'], 'hhf_opt')):
+            if f.endswith('.zip'):
+                response['opt_flag']['status'] = True
+    elif os.path.exists(os.path.join(dest_dir, request.session[exc]['opt_sub_flag_file'])):
         response['opt_flag']['status'] = True
 
     # check if simulation has been launched
@@ -2341,7 +2345,7 @@ def hhf_get_files(request, exc, ctx):
             if c == 'parameters.json':
                 with open(os.path.join(hhf_dir, 'config', 'parameters.json'), 'r') as fd:
                     jj = json.load(fd)
-                    hhf_file_list['parameters.json'] = json.dumps(jj, indent=4)
+                    hhf_file_list['parameters.json'] = json.dumps(jj, indent='\t')
 
     # list model files
     if os.path.exists(os.path.join(hhf_dir, 'model')):

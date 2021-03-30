@@ -842,11 +842,12 @@ function newWorkflow() {
     showLoadingAnimation("Starting new workflow...");
     $.getJSON("/hh-neuron-builder/create-wf-folders/new/" + exc + "/" + ctx, function(data){
         if (data["response"] == "KO"){
+            hideLoadingAnimation();
             openReloadDiv();
         } else {
+            hideLoadingAnimation();
             window.location.href = "/hh-neuron-builder/workflow/";
         }
-        hideLoadingAnimation();
     });
 }
 
@@ -1208,6 +1209,9 @@ $("#uploadFileButton").click(function() {
     }
     
     const input = document.createElement("input");
+    if ($(".folder-item.active").attr("id") == "mechanismsFolder") {
+        input.setAttribute("multiple", "true");
+    }
     input.setAttribute("multiple", "true");
     input.setAttribute("type", "file");
     input.click();
@@ -1242,17 +1246,41 @@ $("#uploadFileButton").click(function() {
     }
 
     const onSelectFile = async function(x) {
-        files = input.files.length;
-        console.log("files: " + files.toString());
-        $(".file-group").css("display", "none");
-        $("#fileItemSpinner").css("display", "flex");
-        showLoadingAnimation('Uploading files...');
-        for (let i = 0; i < input.files.length; i++) {
-            upload(input.files[i]);
-        }
-        input.files = null;
-    }
+        
+        if ($(".folder-item.active").attr("id") == "parametersFolder") {
+            $("#parametersTextArea").css("display", "none");
+            $("#fileItemSpinner").css("display", "flex");
 
+            let reader = new FileReader();
+            reader.onload = function(){
+                $("#fileItemSpinner").css("display", "none");
+                $("#parametersTextArea").css("display", "block");
+                r = reader.result;
+                jj = JSON.parse(r);
+                kk = Object.keys(jj);
+                console.log("first key = " + kk[0].toString());
+                rootKey = $("#modelKeyInput").val().toString();
+                jj2 = {};
+                jj2[rootKey] = jj[kk[0]];
+                $("#parametersTextArea").val(JSON.stringify(jj2, null, space='\t'));
+            };
+            reader.error = function() {
+                console.log(reader.error);
+            }
+            reader.readAsText(input.files[0]);
+        } else {
+            files = input.files.length;
+            console.log("files: " + files.toString());
+            $(".file-group").css("display", "none");
+            $("#fileItemSpinner").css("display", "flex");
+            showLoadingAnimation('Uploading files...');
+            for (let i = 0; i < input.files.length; i++) {
+                upload(input.files[i]);
+            }
+            input.files = null;
+        }
+
+    }
     input.addEventListener('change', onSelectFile, false);
 });
 
