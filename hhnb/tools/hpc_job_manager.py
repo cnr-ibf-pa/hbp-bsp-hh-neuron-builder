@@ -323,7 +323,10 @@ class Unicore:
             if hpc == "SA-CSCS":
                 SUBMIT_URL = 'https://bspsa.cineca.it/jobs/pizdaint/'
                 r = requests.post(url=SUBMIT_URL, headers=auth, files=job_file)
+                print(r.status_code, r.content, sep='\n')
                 job = r.json()
+                if r.status_code == 400:
+                    return {'response': 'KO', 'message': r.text}
                 jobname = job['job_id']
                 job_url = 'https://bspsa.cineca.it/jobs/pizdaint/bsp_pizdaint_01/' + jobname + '/'
             else:
@@ -396,7 +399,7 @@ class Unicore:
     def fetch_job_list2(cls, hpc, token):
 
         job_list_dict = collections.OrderedDict()
-        auth = unicore_client.get_oidc_auth(token="Bearer " + token)
+        auth = unicore_client.get_oidc_auth(token=token)
         base_url = unicore_client.get_sites()[hpc]['url']
 
         if hpc == 'DAINT-CSCS':
@@ -468,12 +471,6 @@ class Unicore:
             os.mkdir(dest_dir)
         auth = unicore_client.get_oidc_auth(token=token)
 
-        # print('Getting JOB info')
-        # job = new_unicore_client.Job(tr, job_url)
-        # print(job.properties)
-
-        # r = unicore_client.get_properties(job_url, auth, proxies=proxies)
-
         # job retrieving from SA-CSCS
         if hpc == "SA-CSCS":
             r = requests.get(url=job_url, headers=auth)
@@ -481,7 +478,7 @@ class Unicore:
                 job = r.json()
                 job_id = job_url.split("/")[-1]
                 job_files_url = cls.SA_CSCS_FILES_URL + job_id + "/"
-                r = requests.get(url=job_files_url, headers=auth)
+                r = requests.get(url=job_files_url, headers={'Authorization': token})
                 if r.status_code == 200:
                     files_list = r.json()
                     for f in files_list:
@@ -489,10 +486,11 @@ class Unicore:
                             filename = f[1:]
                             fname, extension = os.path.splitext(filename)
                             crr_file_url = job_files_url + filename + '/'
+                            print(crr_file_url)
                             r = requests.get(url=crr_file_url, headers=auth)
                             if r.status_code == 200:
-                                with open(os.path.join(dest_dir, filename), 'w') as local_file:
-                                    local_file.write(str(r.content))
+                                with open(os.path.join(dest_dir, filename), 'wb') as local_file:
+                                    local_file.write(r.content)
             
         elif hpc == "DAINT-CSCS":
             daint_client = UnicoreClient().get_instance(token).get_daint_client()

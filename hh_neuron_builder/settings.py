@@ -50,7 +50,7 @@ MIDDLEWARE = [
     'mozilla_django_oidc.middleware.SessionRefresh',
     'django.middleware.security.SecurityMiddleware',
     'django.middleware.common.CommonMiddleware',
-    # 'django.middleware.csrf.CsrfViewMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -110,7 +110,10 @@ DATABASES = {
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
-
+# sqlite dbtimeout option to handle thedb locking
+DATABASE_OPTIONS = {
+    'timeout': 30
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
@@ -206,7 +209,7 @@ LOGOUT_REDIRECT_URL = "/hh-neuron-builder"
 
 LOGIN_URL = 'oidc_authentication_init'
 
-OIDC_RENEW_ID_TOKEN_EXPIRY_SECONDS = 1800
+OIDC_RENEW_ID_TOKEN_EXPIRY_SECONDS = 3600 
 
 # LOGGING SETTINGS
 

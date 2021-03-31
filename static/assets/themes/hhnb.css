@@ -636,7 +636,6 @@ body {
     font-size: 1.3rem;
     line-height: 38px;
     text-decoration: underline;
-    background-image: url("{% static 'assets/img/user-circle-solid.svg' %}"); 
 }
 
 .login-section {

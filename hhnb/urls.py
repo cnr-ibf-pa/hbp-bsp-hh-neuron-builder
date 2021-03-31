@@ -37,11 +37,6 @@ required = '<exc:exc>/<uuid:ctx>'
 
 urlpatterns = [
     path('', views.home),
-    # path('?ctx=<uuid:ctx>', views.home),
-    # path('%3Fctx%3D<uuid:ctx>', views.home),
-    # path('<uuid:ctx>', views.home),
-    # path('login/hbp', auth_views.login),
-    # path('logout/hbp', auth_views.logout),
     path('check-cond-exist/' + required, views.check_cond_exist),
     path('choose-opt-model/', views.choose_opt_model),
     #path('copy-feature-files/<any:feature_folder>/' + required + '/', views.copy_feature_files),
@@ -53,8 +48,6 @@ urlpatterns = [
     path('embedded-efel-gui/', views.embedded_efel_gui),
     path('embedded-naas/' + required + '/', views.embedded_naas),
     path('fetch-opt-set-file/<source_opt_id:source_opt_name>/<source_opt_id:source_opt_id>/' + required + '/', views.fetch_opt_set_file),
-    #path('fetch-opt-set-file/<uuid:source_opt_id>/' + required + '/', views.fetch_opt_set_file),
-    # path('fetch-wf-from-storage/<workflow_id:workflow_id>/' + required + '/', views.fetch_wf_from_storage),
     path('get-data-model-catalog/' + required + '/', views.get_data_model_catalog),
     path('get_local_optimization_list', views.get_local_optimization_list),
     path('get_model_list/' + required, views.get_model_list),

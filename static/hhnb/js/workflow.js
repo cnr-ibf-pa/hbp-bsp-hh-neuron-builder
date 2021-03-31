@@ -10,24 +10,18 @@ $(window).bind("pageshow", function() {
     console.log("exc: " + exc.toString() + " cxt: " + ctx.toString());
     checkConditions();
 
-
     if (window.location.href.includes("/hh-neuron-builder/hhf-comm?hhf_dict=") && modal_view) {
         $("#modalButton").trigger("click");
         modal_view = false;
     }
-    console.log(window.location.href);
 });
 
 
 $(document).ready(function(){
     // checkConditions();
     
-    
-    showLoadingAnimation("Loading...");
     fetch("/hh-neuron-builder/get-authentication")
             .then(response => {
-                console.log(response);
-                hideLoadingAnimation();
                 if (response.ok) {
                     is_user_authenticated = true;                    
                 }
@@ -36,6 +30,7 @@ $(document).ready(function(){
     var $submitJobParamForm = $("#submitJobParamForm");
     console.log($submitJobParamForm);
     $submitJobParamForm.submit(function(e) {
+        showLoadingAnimation("Setting configurations...");
         e.preventDefault();
         let hpc_sys = $(".accordion-button.active").attr("name");
         var paramFormData = new FormData();
@@ -51,7 +46,7 @@ $(document).ready(function(){
             paramFormData.append("gen-max", $("#daint-gen-max").val());
             paramFormData.append("offspring", $("#daint-offspring").val());
             paramFormData.append("node-num", $("#daint-node-num").val());
-            paramFormData.append("core-num", $("#daint-gen-max").val());
+            paramFormData.append("core-num", $("#daint-core-num").val());
             paramFormData.append("runtime", $("#daint-runtime").val());
             paramFormData.append("project", $("#daint_project_id").val());
         }
@@ -59,14 +54,14 @@ $(document).ready(function(){
             paramFormData.append("gen-max", $("#sa-daint-gen-max").val());
             paramFormData.append("offspring", $("#sa-daint-offspring").val());
             paramFormData.append("node-num", $("#sa-daint-node-num").val());
-            paramFormData.append("core-num", $("#sa-daint-gen-max").val());
+            paramFormData.append("core-num", $("#sa-daint-core-num").val());
             paramFormData.append("runtime", $("#sa-daint-gen-max").val());
         }
         if (hpc_sys == "NSG") {
             paramFormData.append("gen-max", $("#nsg-gen-max").val());
             paramFormData.append("offspring", $("#nsg-offspring").val());
             paramFormData.append("node-num", $("#nsg-node-num").val());
-            paramFormData.append("core-num", $("#nsg-gen-max").val());
+            paramFormData.append("core-num", $("#nsg-core-num").val());
             paramFormData.append("runtime", $("#nsg-gen-max").val());
             paramFormData.append("username_submit", $("#username_submit").val());
             paramFormData.append("password_submit", $("#password_submit").val());    
@@ -82,13 +77,25 @@ $(document).ready(function(){
             processData: false,
             async: false,
             success: function(response) {
+                hideLoadingAnimation();
+                closeHpcParameterDiv();
                 if (response['response'] == "KO"){
-                    openErrorDiv("Username and/or password are wrong", 'error');
-                    checkConditions();
+                    openErrorDiv(response.message, 'error');
+                    $("#username_submit").addClass("is-invalid").attr("aria-describedby", "User not valid");
+                    $("#password_submit").addClass("is-invalid").attr("aria-describedby", "Password not valid");
+                    //checkConditions();
                 } else {
+                    $("#username_submit").removeClass("is-invalid");
+                    $("#password_submit").removeClass("is-invalid");
                     checkConditions();
-                    closeHpcParameterDiv();
                 } 
+            },
+            error: function(error) {
+                hideLoadingAnimation();
+                console.error(error);
+                if (error.status == 403) {
+                    openReloadDiv("Something goes wrong.<br>Try to reload the page");
+                }
             }
         })
     })
@@ -120,7 +127,14 @@ $(document).ready(function(){
                 }
                 $("#formFile").val("");
                 hideLoadingAnimation();
-            },  
+            },
+            error: function(error) {
+                hideLoadingAnimation();
+                console.error(error);
+                if (error.status == 403) {
+                    openReloadDiv("Something goes wrong.<br>Try to reload the page");
+                }
+            }
         });
         e.preventDefault();
     });
@@ -277,7 +291,8 @@ function openReloadDiv(message="") {
 // Close reload div
 function closeReloadDiv() {
     manageReloadDiv(isOpen=false, isClose=true);
-    window.location="/hh-neuron-builder/"
+    //window.location="/hh-neuron-builder/workflow"
+    window.location.reload();
 }
 
 function openDownloadWorkspaceDiv() {
@@ -293,11 +308,11 @@ function closeDownloadWorkspaceDiv() {
 //
 function checkConditions(){
     console.log("checkConditions() called.");
-    showLoadingAnimation("Loading...");
+    showLoadingAnimation("Loading workflow...");
     $.getJSON('/hh-neuron-builder/check-cond-exist/' + req_pattern, function(data){
         console.log(data);
         if (data["response"] == "KO"){
-            openReloadDiv(data["message"]);
+            openExpirationDiv(data["message"]);
         } else {
             $("#wf-title").html("Workflow id: <bold>" + data["wf_id"] + "</bold>");
             if (data['expiration']){
@@ -489,7 +504,7 @@ function runOptimization() {
         checkConditions();
         hideLoadingAnimation();
         if (data['response'] != "OK"){
-            openErrorDiv("Submission ended with error: " + data['message'], 'error');
+            openErrorDiv("Submission ended with error:<br>" + data['message'], 'error');
         } else {
             openErrorDiv("Submission ended without errors", 'success');
         }
@@ -603,15 +618,11 @@ function checkNsgLogin() {
 // Manage job list div
 function displayCSCSJobList(button) {
     resetJobFetchDiv();
-    fetch("/hh-neuron-builder/get-authentication")
-            .then(response => {
-                console.log(response);
-                if (response.ok) {
-                    displayJobList(button)                    
-                } else {
-                    $("#jobsAuthAlert").addClass("show");
-                }
-            })
+    if (is_user_authenticated) {
+        displayJobList(button);
+    }  else {
+        $("#jobsAuthAlert").addClass("show");
+    }
 }
 
 function displayNsgJobList() {
@@ -747,7 +758,7 @@ async function downloadJob(button) {
     closeJobFetchDiv();
     $("#overlaywrapper").css("display", "block");
     $("#overlayjobprocessing").css("display", "block");
-    $("#jobProcessingTitle").html("Downloading job: " + jobId);
+    $("#jobProcessingTitle").html("Downloading job:<br>" + jobId + "<br>");
     await sleep(2000);
     setProgressBarValue(20);
     $.getJSON("/hh-neuron-builder/download-job/" + jobId + "/" + req_pattern + "/", function(data) {
@@ -757,7 +768,7 @@ async function downloadJob(button) {
             return false;
         }
         setProgressBarValue(50);
-        $("#jobProcessingTitle").html("Running Analysis");
+        $("#jobProcessingTitle").html("Running Analysis<br>");
         var p = $.getJSON("/hh-neuron-builder/run-analysis/" + req_pattern, function(modifydata) {
             var resp_flag = false;
             if (modifydata["response"] == "KO") {
@@ -767,14 +778,14 @@ async function downloadJob(button) {
             } else {
                 var resp_flag = true;
                 setProgressBarValue(80);
-                $("#jobProcessingTitle").html("Creating ZIP file")
+                $("#jobProcessingTitle").html("Creating ZIP file<br>")
                 $.getJSON("/hh-neuron-builder/zip-sim/" + jobId + "/" + req_pattern, async function(zip_data) {
                     if (zip_data["response"] == "KO") {
                         closeDownloadJob();
                         openErrorDiv(zip_data["message"], "error");
                         return false;
                     } else {
-                        $("#jobProcessingTitle").html("Completing...");
+                        $("#jobProcessingTitle").html("Completing...<br>");
                         setProgressBarValue(100);
                         await sleep(2000);
                     }
@@ -860,7 +871,7 @@ function cloneWorkflow() {
         async: false,
         success: function(data) {
             hideLoadingAnimation();
-            window.open("/hh-neuron-builder/workflow/" + data.exc + "/" + data.ctx + "/", "_blank");
+            let win = window.open("/hh-neuron-builder/workflow/" + data.exc + "/" + data.ctx + "/", "_blank");
             win.focus();
         }
     });
@@ -1019,7 +1030,7 @@ $("#openFileManagerIcon").hover(
 
 
 function openFileManager() {
-    fetchHHFFileList();
+    refreshHHFFileList();
     console.log("fetchHHFFileList() on openFileManager()");
     $("#overlaywrapper").css("display", "block");
     $("#overlayfilemanager").css("display", "block");
@@ -1122,9 +1133,9 @@ function saveParametersJson() {
         url: "/hh-neuron-builder/hhf-save-parameters-json/" + req_pattern,
         method: "POST",
         data: jj,
-        error: function(response) {
-            console.log(JSON.parse(response.responseText));
-            openErrorDiv(JSON.parse(response.responseText).message, "error");
+        error: function(error) {
+            console.log(error);
+            openErrorDiv(JSON.parse(error.responseText).message, "error");
         }
     });
 }

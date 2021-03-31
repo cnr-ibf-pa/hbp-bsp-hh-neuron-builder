@@ -91,7 +91,7 @@
                         <!-- <strong>Log-out</strong> -->
                     </a>
                     <a class="user-img" href="/hh-neuron-builder/get-user-page">
-                        <img src="/hh-neuron-builder/get-user-avatar" alt="user" onerror=this.src="{% static '../img/user-circle-solid.svg' %}">
+                        <img src="/hh-neuron-builder/get-user-avatar" alt="user" onerror=this.src="{% static '/assets/img/user-circle-solid.svg' %}">
                     </a>
                     <form style="display: none" id="logout-form" action="{% url 'oidc_logout' %}" method="post">
                         {% csrf_token %}
@@ -128,11 +128,12 @@
             </div>
         </div>
 
-        <div class="loading-animation sublayer hide">
-            <div class="loading-animation container-glass hide">
-                <div id="loading-text-div" class="loading-animation text hide">
+        <div class="loading-animation sublayer show">
+            <div class="loading-animation container-glass show">
+                <div id="loading-text-div" class="loading-animation text show">
+                    Loading...
                 </div>
-                <div class="loading-animation frames hide"></div>
+                <div class="loading-animation frames show"></div>
             </div>
         </div>
 

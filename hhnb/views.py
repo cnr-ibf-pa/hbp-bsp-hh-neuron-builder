@@ -19,7 +19,9 @@ from itertools import takewhile
 from django.conf import settings
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, JsonResponse, FileResponse, HttpResponseBadRequest, HttpResponseForbidden
+
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
 
 from hbp_validation_framework import ModelCatalog
 import ebrains_drive
@@ -700,6 +702,8 @@ def run_optimization(request, exc="", ctx=""):
                                                        token=access_token, jobname=wf_id, core_num=core_num,
                                                        node_num=node_num, runtime=runtime, foldname=opt_name)
 
+
+        print(resp)
     if resp['response'] == "OK":
         crr_job_name = resp['jobname']
 
@@ -896,7 +900,7 @@ def check_cond_exist(request, exc="", ctx=""):
     """
 
     if exc not in request.session or "user_dir" not in request.session[exc]:
-        resp = {"response": "KO", "message": "An error occurred while loading the application.<br><br>Please reload."}
+        resp = {"response": "KO", "message": "An error occurred while loading the application.<br><br>Please go home and restart."}
         return HttpResponse(json.dumps(resp), content_type="application/json")
 
     # set responses dictionary
@@ -1350,8 +1354,7 @@ def download_job(request, job_id="", exc="", ctx=""):
         # access_token = get_access_token(request.user.social_auth.get())
         access_token = 'Bearer ' + request.session['oidc_access_token']  # get access token with new method
 
-        resp = hpc_job_manager.Unicore.fetch_job_results(hpc=hpc_sys_fetch, job_url=job_url, dest_dir=opt_res_dir,
-                                                         token="Bearer " + access_token)  # , proxies=PROXIES, wf_id=wf_id)
+        resp = hpc_job_manager.Unicore.fetch_job_results(hpc=hpc_sys_fetch, job_url=job_url, dest_dir=opt_res_dir, token=access_token)  # , proxies=PROXIES, wf_id=wf_id)
 
     elif hpc_sys_fetch == "SA-CSCS":
         #PROXIES = settings.PROXIES
@@ -1362,8 +1365,7 @@ def download_job(request, job_id="", exc="", ctx=""):
         # access_token = get_access_token(request.user.social_auth.get())
         access_token = 'Bearer ' + request.session['oidc_access_token']  # get access token with new method
 
-        resp = hpc_job_manager.Unicore.fetch_job_results(hpc=hpc_sys_fetch, job_url=str(job_url), dest_dir=opt_res_dir,
-                                                         token="Bearer " + access_token)  # , proxies=PROXIES, wf_id=wf_id)
+        resp = hpc_job_manager.Unicore.fetch_job_results(hpc=hpc_sys_fetch, job_url=str(job_url), dest_dir=opt_res_dir, token=access_token)  # , proxies=PROXIES, wf_id=wf_id)
 
     return HttpResponse(json.dumps(resp), content_type="application/json")
 
@@ -2401,6 +2403,7 @@ def hhf_download_optneuron(request, exc, ctx):
     return FileResponse(open(os.path.join(hhf_dir, 'opt_neuron.py'), 'rb'), as_attachment=True)
 
 
+@csrf_exempt
 def hhf_save_parameters_json(request, exc, ctx):
     
     try:
@@ -2415,6 +2418,7 @@ def hhf_save_parameters_json(request, exc, ctx):
         return HttpResponseBadRequest(content=json.dumps({'resp': 'KO', 'message': 'Malformed parameters.json file!.<br>File not saved.'}))
 
 
+@csrf_exempt
 def hhf_upload_files(request, folder, exc, ctx):
 
     if request.method == 'POST':
