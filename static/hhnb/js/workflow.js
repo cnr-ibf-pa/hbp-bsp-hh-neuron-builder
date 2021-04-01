@@ -30,7 +30,6 @@ $(document).ready(function(){
     var $submitJobParamForm = $("#submitJobParamForm");
     console.log($submitJobParamForm);
     $submitJobParamForm.submit(function(e) {
-        showLoadingAnimation("Setting configurations...");
         e.preventDefault();
         let hpc_sys = $(".accordion-button.active").attr("name");
         var paramFormData = new FormData();
@@ -42,6 +41,7 @@ $(document).ready(function(){
                 return false;
             }
         }
+        showLoadingAnimation("Setting configurations...");
         if (hpc_sys == "DAINT-CSCS") {
             paramFormData.append("gen-max", $("#daint-gen-max").val());
             paramFormData.append("offspring", $("#daint-offspring").val());
@@ -574,7 +574,7 @@ function resetJobFetchDiv() {
     $("#jobsAuthAlert").removeClass("show");
     $("#cancel-job-list-btn").prop("disabled", false);
     $("#refresh-job-list-btn").prop("disabled", true);
-    $(".list-group-item.fetch-jobs").removeClass("disabled active").attr("aria-disabled", "false");
+    $(".list-group-item.fetch-jobs").removeClass("disabled active clicked").attr("aria-disabled", "false");
     $("#checkNsgSpinnerButton").css("opacity", "0");
     $("#usernameNsg").removeClass("is-invalid");
     $("#passwordNsg").removeClass("is-invalid");
@@ -617,19 +617,27 @@ function checkNsgLogin() {
 
 // Manage job list div
 function displayCSCSJobList(button) {
+    if (button.hasClass("clicked")) {
+        return false;
+    }
     resetJobFetchDiv();
     if (is_user_authenticated) {
         displayJobList(button);
     }  else {
         $("#jobsAuthAlert").addClass("show");
     }
+    button.addClass("clicked");
 }
 
 function displayNsgJobList() {
+    if (button.hasClass("clicked")) {
+        return false;
+    }
     resetJobFetchDiv();
     $("#jobsNSG").addClass("active");
     $("#tableRow").css("display", "none");
     $("#nsgLoginRow").css("display", "flex");
+    button.addClass("clicked");
 }
 
 function refreshJobListDiv() {
@@ -641,6 +649,7 @@ function refreshJobListDiv() {
 }
 
 function displayJobList(button) {
+    
     $("#cancel-job-list-btn").prop("disabled", true);
     $("#spinnerRow").css("display", "flex");
     $(".list-group-item.fetch-jobs").addClass("disabled").attr("aria-disabled", "true");
@@ -669,9 +678,20 @@ function displayJobList(button) {
         animateProgressBar(step);
 
         $.each(jobList, function(id, job){
-            $.getJSON("/hh-neuron-builder/get-job-details2/" + id + "/" + req_pattern + "/", function(jobDetails){
+            $.getJSON("/hh-neuron-builder/get-job-details2/" + id + "/" + req_pattern + "/", function(jobDetails) {
+
                 jobDetails = JSON.parse(jobDetails);
                 console.log(jobDetails);
+
+                keys = Object.keys(jobDetails);
+                for (let k = 0; k < keys.length; k++) {
+                    if (k == "resp" && jobDetails[k] == "KO") {
+                        console.error(jobDetails.message);
+                        openReloadDiv("Something goes wrong while fetching jobs.<br>Please realod the page.");
+                        return false;
+                    }
+                }
+
                 let downloadButton = document.createElement("button");
                 downloadButton.id = jobDetails.job_id;
                 downloadButton.innerHTML = "Download";
@@ -707,6 +727,7 @@ function displayJobList(button) {
                         downloadButton.disabled = false;
                         if (jobDetails.job_stage == "FAILED"){
                             tdStatus.style.color = "#DD9900";
+                            downloadButton.disabled = true;
                         }
                     } else {
                         tdStatus.style.color = "#DD9900";
@@ -738,7 +759,7 @@ function displayJobList(button) {
                 $("#tableRow").css("display", "flex");
                 $("#refresh-job-list-btn").prop("disabled", false).blur();
                 $("#cancel-job-list-btn").prop("disabled", false);
-                $(".list-group-item.fetch-jobs").attr("aria-disabled", "false").removeClass("disabled");
+                $(".list-group-item.fetch-jobs").attr("aria-disabled", "false").removeClass("disabled clicked");
                 return true;
             }
         }

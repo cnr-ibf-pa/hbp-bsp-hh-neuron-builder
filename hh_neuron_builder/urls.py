@@ -24,6 +24,5 @@ urlpatterns = [
 
     path('efelg/', include('efelg.urls')),
     path('hh-neuron-builder/', include('hhnb.urls')),
-    path('', include('hhnb.urls')),
 
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

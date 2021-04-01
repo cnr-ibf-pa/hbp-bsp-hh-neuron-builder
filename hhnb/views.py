@@ -1267,19 +1267,22 @@ def get_job_details2(request, jobid='', exc='', ctx=''):
     jobid = str(jobid)
     hpc_sys_fetch = request.session[exc]['hpc_sys_fetch']
 
-    # if job has to be fetched from NSG
-    if hpc_sys_fetch == 'NSG':
-        username_fetch = request.session[exc]['username_fetch']
-        password_fetch = request.session[exc]['password_fetch']
+    try:
+        # if job has to be fetched from NSG
+        if hpc_sys_fetch == 'NSG':
+            username_fetch = request.session[exc]['username_fetch']
+            password_fetch = request.session[exc]['password_fetch']
 
-        resp = hpc_job_manager.Nsg.fetch_job_details(job_id=jobid, username_fetch=username_fetch, password_fetch=password_fetch)
+            resp = hpc_job_manager.Nsg.fetch_job_details(job_id=jobid, username_fetch=username_fetch, password_fetch=password_fetch)
 
-    elif hpc_sys_fetch == 'DAINT-CSCS' or hpc_sys_fetch == 'SA-CSCS':
-        fetch_job_list = request.session[exc]["hpc_fetch_job_list"]
-        job_url = fetch_job_list[jobid]["url"]
-        access_token = request.session.get('oidc_access_token')
-        resp = hpc_job_manager.Unicore.fetch_job_details(hpc=hpc_sys_fetch, job_url=job_url, job_id=jobid,
-                                                         token="Bearer " + access_token)
+        elif hpc_sys_fetch == 'DAINT-CSCS' or hpc_sys_fetch == 'SA-CSCS':
+            fetch_job_list = request.session[exc]["hpc_fetch_job_list"]
+            job_url = fetch_job_list[jobid]["url"]
+            access_token = request.session.get('oidc_access_token')
+            resp = hpc_job_manager.Unicore.fetch_job_details(hpc=hpc_sys_fetch, job_url=job_url, job_id=jobid, token="Bearer " + access_token)
+
+    except RuntimeError:
+        return JsonResponse(data=json.dumps({'resp': 'KO', 'message': 'RuntimeError on get_job_details2()'}), status=200, safe=False)
 
     return JsonResponse(data=json.dumps(resp), status=200, safe=False)
 
