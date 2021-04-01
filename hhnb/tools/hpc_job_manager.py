@@ -787,29 +787,30 @@ class OptFolderManager:
         print('create_hhf_zip() called.')
         print(fin_dir)
 
-        if not os.path.exists(fin_dir):
-            os.mkdir(fin_dir)
+        job_dir = os.path.join(fin_dir, zfName)
+        if not os.path.exists(job_dir):
+            os.mkdir(job_dir)
 
         if hpc == 'NSG':
-            OptFolderManager.add_exec_file(hpc=hpc, fin_dest_dir=fin_dir, execname=execname, gennum=gennum, offsize=offsize, mod_path="")
+            OptFolderManager.add_exec_file(hpc=hpc, fin_dest_dir=job_dir, execname=execname, gennum=gennum, offsize=offsize, mod_path="")
         elif hpc == 'DAINT-CSCS' or hpc == 'SA-CSCS':
-            OptFolderManager.add_exec_file(hpc, fin_dest_dir=fin_dir, execname=execname, gennum=gennum, offsize=offsize, mod_path="", joblaunchname=joblaunchname)
+            OptFolderManager.add_exec_file(hpc, fin_dest_dir=job_dir, execname=execname, gennum=gennum, offsize=offsize, mod_path="", joblaunchname=joblaunchname, foldernameOPTstring=fin_dir)
             
-        checkpoints_dir = os.path.join(fin_dir, 'checkpoints')
-        figures_dir = os.path.join(fin_dir, 'figures')
-        r_0_dir = os.path.join(fin_dir, 'r_0')
+        # checkpoints_dir = os.path.join(job_dir, 'checkpoints')
+        # figures_dir = os.path.join(job_dir, 'figures')
+        # r_0_dir = os.path.join(job_dir, 'r_0')
 
-        if os.path.exists(checkpoints_dir):
-            shutil.rmtree(checkpoints_dir)
-        os.makedirs(checkpoints_dir)
-        if os.path.exists(figures_dir):
-            shutil.rmtree(figures_dir)
-        os.makedirs(figures_dir)
-        if os.path.exists(r_0_dir):
-            shutil.rmtree(r_0_dir)
+        # if os.path.exists(checkpoints_dir):
+        #     shutil.rmtree(checkpoints_dir)
+        # os.makedirs(checkpoints_dir)
+        # if os.path.exists(figures_dir):
+        #     shutil.rmtree(figures_dir)
+        # os.makedirs(figures_dir)
+        # if os.path.exists(r_0_dir):
+        #     shutil.rmtree(r_0_dir)
 
-        shutil.make_archive(zfName, 'zip', fin_dir)
-        return zfName + '.zip'
+        shutil.make_archive(os.path.join(fin_dir, zfName), 'zip', fin_dir)
+        return os.path.join(fin_dir, zfName + '.zip')
 
 
 
@@ -920,107 +921,6 @@ class OptFolderManager:
 
         # CSCS Pizdaint
         elif hpc == "DAINT-CSCS" or hpc == "SA-CSCS":
-            # with open(os.path.join(fin_dest_dir, execname),'w') as f:
-            #     f.write('import os\n')
-            #     f.write('import zipfile\n')
-            #     f.write('retval = os.getcwd()\n')
-            #     f.write('print "Current working directory %s" % retval\n')
-            #     f.write('os.chdir(\'..\')\n')
-            #     f.write('retval = os.getcwd()\n')
-            #     f.write('print "Current working directory %s" % retval\n')
-            #     f.write('def zipdir(path, ziph):\n')
-            #     f.write('    for root, dirs, files in os.walk(path):\n')
-            #     f.write('        for file in files:\n')
-            #     f.write('            ziph.write(os.path.join(root, file))\n')
-            #     f.write('zipf = zipfile.ZipFile(\'output.zip\', \'w\')\n')
-            #     f.write('zipdir(\''+foldernameOPTstring+'/\', zipf)\n')
-            #
-            # # create file for launching job
-            # with open(os.path.join(fin_dest_dir, joblaunchname), 'w') as f:
-            #     f.write('#!/bin/bash -l\n')
-            #     f.write('\n')
-            #     f.write('mkdir logs\n')
-            #     f.write('#SBATCH --job-name=bluepyopt_ipyparallel\n')
-            #     f.write('#SBATCH --error=logs/ipyparallel_%j.log\n')
-            #     f.write('#SBATCH --output=logs/ipyparallel_%j.log\n')
-            #     f.write('#SBATCH --partition=normal\n')
-            #     f.write('#SBATCH --constraint=mc\n')
-            #     # f.write('#SBATCH --mem=10GB\n')
-            #     f.write('\n')
-            #     f.write('export PMI_NO_FORK=1\n')
-            #     f.write('export PMI_NO_PREINITIALIZE=1\n')
-            #     f.write('export PMI_MMAP_SYNC_WAIT_TIME=300\n')
-            #     f.write('\n')
-            #     f.write('set -e\n')
-            #     f.write('set -x\n')
-            #     f.write('\n')
-            #     f.write('export MODULEPATH=/users/bp000178/ich002/software/daint/' +
-            #             'local-20191129103029/share/modules:$MODULEPATH;module load bpopt\n')
-            #     f.write('\n')
-            #     f.write('export USEIPYP=1\n')
-            #     f.write('export IPYTHONDIR="`pwd`/.ipython"\n')
-            #     f.write('export IPYTHON_PROFILE=ipyparallel.${SLURM_JOBID}\n')
-            #     f.write('ipcontroller --init --sqlitedb --ip=\'*\' --profile=${IPYTHON_PROFILE} &\n')
-            #     f.write('sleep 30\n')
-            #     f.write('srun ipengine --profile=${IPYTHON_PROFILE} &\n')
-            #     f.write('CHECKPOINTS_DIR="checkpoints"\n')
-            #     f.write('nrnivmodl mechanisms\n')
-            #     f.write('python opt_neuron.py --offspring_size='+ offsize +
-            #             ' --max_ngen=' + gennum + ' --start --checkpoint "${CHECKPOINTS_DIR}/checkpoint.pkl"\n')
-            #     f.write('python zipfolder.py')
-            #     f.write('\n')
-            # f.close()
-
-            # with open(os.path.join(fin_dest_dir, execname),'w') as f:
-            #     f.write('import os\n')
-            #     f.write('import zipfile\n')
-            #     f.write('retval = os.getcwd()\n')
-            #     f.write('print("Current working directory %s" % retval)\n')
-            #     f.write('os.chdir(\'..\')\n')
-            #     f.write('retval = os.getcwd()\n')
-            #     f.write('print("Current working directory %s" % retval)\n')
-            #     f.write('def zipdir(path, ziph):\n')
-            #     f.write('    for root, dirs, files in os.walk(path):\n')
-            #     f.write('        for file in files:\n')
-            #     f.write('            ziph.write(os.path.join(root, file))\n')
-            #     f.write('zipf = zipfile.ZipFile(\'output.zip\', \'w\')\n')
-            #     f.write('zipdir(\'' + foldernameOPTstring + '/\', zipf)\n')
-            # f.close()
-            # with open(os.path.join(fin_dest_dir, joblaunchname), 'w') as f:
-            #     f.write('#!/bin/bash -l\n')
-            #     f.write('\n')
-            #     f.write('mkdir logs\n')
-            #     f.write('#SBATCH --job-name=bluepyopt_ipyparallel\n')
-            #     f.write('#SBATCH --error=logs/ipyparallel_%j.log\n')
-            #     f.write('#SBATCH --output=logs/ipyparallel_%j.log\n')
-            #     f.write('#SBATCH --partition=normal\n')
-            #     f.write('#SBATCH --constraint=mc\n')
-            #     f.write('\n')
-            #     f.write('export PMI_NO_FORK=1\n')
-            #     f.write('export PMI_NO_PREINITIALIZE=1\n')
-            #     f.write('export PMI_MMAP_SYNC_WAIT_TIME=300 \n')
-            #     f.write('set -e\n')
-            #     f.write('set -x\n')
-            #     f.write('\n')
-            #     f.write('module load daint-mc cray-python/3.8.2.1 PyExtensions/python3-CrayGNU-20.08\n')
-            #     f.write(
-            #         'module use /apps/hbp/ich002/hbp-spack-deployments/softwares/15-09-2020/install/modules/tcl/cray-cnl7-haswell\n')
-            #     f.write('module load neuron/7.8.0c\n')
-            #     f.write('module load py-bluepyopt\n')
-            #     f.write('nrnivmodl mechanisms\n')
-            #     f.write('\n')
-            #     f.write('export USEIPYP=1\n')
-            #     f.write('export IPYTHONDIR="`pwd`/.ipython"\n')
-            #     f.write('export IPYTHON_PROFILE=ipyparallel.${SLURM_JOBID}\n')
-            #     f.write('ipcontroller --init --sqlitedb --ip=\'*\' --profile=${IPYTHON_PROFILE} &\n')
-            #     f.write('sleep 30\n')
-            #     f.write('srun ipengine --profile=${IPYTHON_PROFILE} &\n')
-            #     f.write('CHECKPOINTS_DIR="checkpoints"\n')
-            #     f.write('python opt_neuron.py --offspring_size=' + offsize +
-            #             ' --max_ngen=' + gennum + ' --start --checkpoint "${CHECKPOINTS_DIR}/checkpoint.pkl"\n')
-            #     f.write('python zipfolder.py')
-            #     f.write('\n')
-            # f.close()
 
             with open(os.path.join(fin_dest_dir, execname), 'w') as f:
                 f.write('import os\n')

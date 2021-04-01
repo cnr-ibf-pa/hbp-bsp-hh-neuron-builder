@@ -1400,6 +1400,13 @@ $("#refreshFileListButton").click(function() {
 })
 
 
+let alpha = []
+$("#modelKeyInput").on("input", function(){
+    let k = $("#modelKeyInput").val()[0];
+    if (k in [""])
+})
+
+
 function setModelKey(onClose=false) {
     var k = $("#modelKeyInput").val();
     fetch("/hh-neuron-builder/hhf-apply-model-key/" + req_pattern + "/" + k.toString(), {
