@@ -727,7 +727,7 @@ function displayJobList(button) {
                         downloadButton.disabled = false;
                         if (jobDetails.job_stage == "FAILED"){
                             tdStatus.style.color = "#DD9900";
-                            downloadButton.disabled = true;
+                            //downloadButton.disabled = true;
                         }
                     } else {
                         tdStatus.style.color = "#DD9900";

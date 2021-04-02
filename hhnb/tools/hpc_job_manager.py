@@ -808,7 +808,21 @@ class OptFolderManager:
         if os.path.exists(r_0_dir):
             shutil.rmtree(r_0_dir)
 
-        shutil.make_archive(zfName, 'zip', fin_dir)
+        head_dir = os.path.dirname(fin_dir)
+        tail_dir = os.path.basename(fin_dir)
+        zip_head = os.path.dirname(zfName)
+        zip_tail = os.path.basename(zfName)
+        zip_dir = os.path.join(head_dir, zip_tail)
+        
+        if os.path.exists(zip_dir):
+            shutil.rmtree(zip_dir)
+
+        os.mkdir(zip_dir)
+        dest = shutil.move(fin_dir, zip_dir)
+
+        os.rename(os.path.join(zip_dir, tail_dir), os.path.join(zip_dir, zip_tail))
+
+        shutil.make_archive(zfName, 'zip', zip_dir)
         return zfName + '.zip'
 
 
