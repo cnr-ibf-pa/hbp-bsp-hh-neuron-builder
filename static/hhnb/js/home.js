@@ -136,5 +136,5 @@ function openReloadDiv(message="") {
 // Close reload div
 function closeReloadDiv() {
     manageReloadDiv(open=false, close=true);
-    window.location="/hh-neuron-builder/"
+    window.location.reload();
 }

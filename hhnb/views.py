@@ -47,12 +47,9 @@ def home(request, exc=None, ctx=None):
     """
     Serving home page for "hh neuron builder" application
     """
-    # if not ctx:
-    #     ctx = request.GET.get('ctx', None)
-    #     if not ctx:
-    #         return render(request, 'efelg/hbp_redirect.html')
-    if not exc:
+    if not exc and exc not in request.session:
         exc = 'tab_' + datetime.datetime.now().strftime('%Y%m%d%H%M%S')
+
     if not ctx:
         ctx = uuid.uuid4()
 
@@ -608,11 +605,11 @@ def run_optimization(request, exc="", ctx=""):
         source_opt_zip = None
         dest_dir = os.path.join(request.session[exc]['user_dir'], 'hhf_opt')
         if not os.path.exists(dest_dir):
-            os.mkdir(dest_dir)
+            os.makedirs(dest_dir)
         opt_name = source_opt_name
     
         fin_opt_folder = request.session[exc]['hhf_dir']
-        zfName = os.path.join(dest_dir, opt_name)
+        zfName = request.session[exc]['hhf_model_key']
 
     else:
         from_hhf = False
@@ -2271,7 +2268,7 @@ def hhf_comm(request, exc='', ctx=''):
         r2 = create_wf_folders(request, wf_type='new', exc=exc, ctx=ctx) 
 
         hhf_dir = os.path.join(request.session[exc]['user_dir'], 'hhf')
-        hhf_model_key = request.session[exc]['wf_id']
+        hhf_model_key = 'K_' + request.session[exc]['wf_id']
 
         if os.path.exists(hhf_dir):
             shutil.rmtree(hhf_dir)
