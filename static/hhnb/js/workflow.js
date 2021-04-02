@@ -1403,7 +1403,8 @@ $("#refreshFileListButton").click(function() {
 let alpha = []
 $("#modelKeyInput").on("input", function(){
     let k = $("#modelKeyInput").val()[0];
-    if (k in [""])
+    if (k in [""]){
+    }
 })
 
 
