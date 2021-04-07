@@ -2442,8 +2442,7 @@ def hhf_upload_files(request, folder, exc, ctx):
                 os.remove(os.path.join(hhf_dir, 'config', 'parameters.json'))
                 return HttpResponseBadRequest(content=json.dumps({'message': 'Wrong file type. Accept only ".json" format.<br><br>Uploaded file deleted !'}))
             
-            return HttpResponse(status=200)
-            # except D
+            return HttpResponse(content=json.dumps({'response': 'OK', 'message': 'file uploaded successfully'}), status=200)
 
         if folder != 'morphologyFolder' and folder != 'mechanismsFolder':
             return HttpResponseForbidden()
@@ -2461,9 +2460,9 @@ def hhf_upload_files(request, folder, exc, ctx):
             with open(os.path.join(hhf_dir, 'config', 'morph.json'), 'w') as fd:
                 json.dump(morp_dict, fd)
 
-        return HttpResponse(status=200)
+        return HttpResponse(content=json.dumps({'response': 'OK', 'message': 'file uploaded successfully'}), status=200)
 
-    return HttpResponseBadRequest()
+    return HttpResponseBadRequest(content=json.dumps({'response': 'KO', 'message': 'some errors occured while uploading files'}))
 
 
 def hhf_delete_files(request, folder, exc, ctx):
