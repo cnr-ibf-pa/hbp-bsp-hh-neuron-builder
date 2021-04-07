@@ -783,35 +783,25 @@ class OptFolderManager:
         
 
     @classmethod
-    def create_hhf_zip(cls, fin_dir, gennum, offsize, zfName, hpc, execname='', joblaunchname=''):
+    def create_hhf_zip(cls, src_dir, dst_dir, gennum, offsize, zfName, hpc, execname='', joblaunchname=''):
         print('create_hhf_zip() called.')
-        print(fin_dir)
-
-        job_dir = os.path.join(fin_dir, zfName)
-        if not os.path.exists(job_dir):
-            os.mkdir(job_dir)
 
         if hpc == 'NSG':
-            OptFolderManager.add_exec_file(hpc=hpc, fin_dest_dir=job_dir, execname=execname, gennum=gennum, offsize=offsize, mod_path="")
+            OptFolderManager.add_exec_file(hpc=hpc, fin_dest_dir=src_dir, execname=execname, gennum=gennum, offsize=offsize, mod_path="")
         elif hpc == 'DAINT-CSCS' or hpc == 'SA-CSCS':
-            OptFolderManager.add_exec_file(hpc, fin_dest_dir=job_dir, execname=execname, gennum=gennum, offsize=offsize, mod_path="", joblaunchname=joblaunchname, foldernameOPTstring=fin_dir)
-            
-        head_dir = os.path.dirname(fin_dir)
-        tail_dir = os.path.basename(fin_dir)
-        zip_head = os.path.dirname(zfName)
-        zip_tail = os.path.basename(zfName)
-        zip_dir = os.path.join(head_dir, zip_tail)
+            OptFolderManager.add_exec_file(hpc, fin_dest_dir=src_dir, execname=execname, gennum=gennum, offsize=offsize, mod_path="", joblaunchname=joblaunchname, foldernameOPTstring=zfName)
         
-        if os.path.exists(zip_dir):
-            shutil.rmtree(zip_dir)
+        os.mkdir(os.path.join(src_dir, 'checkpoints'))
+        os.mkdir(os.path.join(src_dir, 'figures'))
 
-        os.mkdir(zip_dir)
-        dest = shutil.move(fin_dir, zip_dir)
+        fin_dst_dir = os.path.join(dst_dir, zfName)
+        if os.path.exists(fin_dst_dir):
+            shutil.rmtree(fin_dst_dir)
+        os.mkdir(fin_dst_dir)
+        shutil.copytree(src_dir, os.path.join(fin_dst_dir, zfName))
+        shutil.make_archive(os.path.join(fin_dst_dir), 'zip', fin_dst_dir)
 
-        os.rename(os.path.join(zip_dir, tail_dir), os.path.join(zip_dir, zip_tail))
-
-        shutil.make_archive(zfName, 'zip', zip_dir)
-        return zfName + '.zip'
+        return fin_dst_dir + '.zip'
 
 
     @classmethod

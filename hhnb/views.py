@@ -603,12 +603,13 @@ def run_optimization(request, exc="", ctx=""):
         source_opt_id = request.session[exc]['hhf_model_key']
         source_opt_name =  request.session[exc]['hhf_model_key']
         source_opt_zip = None
+        
         dest_dir = os.path.join(request.session[exc]['user_dir'], 'hhf_opt')
         if not os.path.exists(dest_dir):
             os.makedirs(dest_dir)
         opt_name = source_opt_name
     
-        fin_opt_folder = request.session[exc]['hhf_dir']
+        src_opt_dir = request.session[exc]['hhf_dir']
         zfName = request.session[exc]['hhf_model_key']
 
     else:
@@ -639,7 +640,7 @@ def run_optimization(request, exc="", ctx=""):
         password_submit = request.session[exc]['password_submit']
 
         if from_hhf:
-            zfName = hpc_job_manager.OptFolderManager.create_hhf_zip(fin_dir=fin_opt_folder, gennum=gennum, offsize=offsize, zfName=zfName,
+            zfName = hpc_job_manager.OptFolderManager.create_hhf_zip(src_dir=src_opt_dir, dst_dir=dest_dir, gennum=gennum, offsize=offsize, zfName=zfName,
                                                             hpc=hpc_sys, execname='init.py')
 
         else:
@@ -663,8 +664,8 @@ def run_optimization(request, exc="", ctx=""):
         access_token = 'Bearer ' + request.session['oidc_access_token']  # get access token with new method
 
         if from_hhf:
-            zfName = hpc_job_manager.OptFolderManager.create_hhf_zip(fin_dir=fin_opt_folder, gennum=gennum, offsize=offsize, zfName=zfName,
-                                                            hpc=hpc_sys, execname='init.py', joblaunchname=joblaunchname)
+            zfName = hpc_job_manager.OptFolderManager.create_hhf_zip(src_dir=src_opt_dir, dst_dir=dest_dir, gennum=gennum, offsize=offsize, zfName=zfName,
+                                                            hpc=hpc_sys, execname=execname, joblaunchname=joblaunchname)
 
         else:
             hpc_job_manager.OptFolderManager.createzip(fin_opt_folder=fin_opt_folder, source_opt_zip=source_opt_zip,
@@ -686,8 +687,8 @@ def run_optimization(request, exc="", ctx=""):
         access_token = 'Bearer ' + request.session['oidc_access_token']  # get access token with new method
 
         if from_hhf:
-            zfName = hpc_job_manager.OptFolderManager.create_hhf_zip(fin_dir=fin_opt_folder, gennum=gennum, offsize=offsize, zfName=zfName,
-                                                            hpc=hpc_sys, execname='init.py', joblaunchname=joblaunchname)
+            zfName = hpc_job_manager.OptFolderManager.create_hhf_zip(src_dir=src_opt_dir, dst_dir=dest_dir, gennum=gennum, offsize=offsize, zfName=zfName,
+                                                            hpc=hpc_sys, execname=execname, joblaunchname=joblaunchname)
         else:
             hpc_job_manager.OptFolderManager.createzip(fin_opt_folder=fin_opt_folder, source_opt_zip=source_opt_zip,
                                                        opt_name=opt_name, source_feat=source_feat, gennum=gennum,
@@ -2283,33 +2284,33 @@ def hhf_comm(request, exc='', ctx=''):
         morp = hhf_dict['HHF-Comm'].get('morphology', None)
         mod = hhf_dict['HHF-Comm'].get('modFiles', None)
 
-        if morp:
-            morp_dir = os.path.join(hhf_dir, 'morphology')
-            if not os.path.exists(morp_dir):
-                os.mkdir(morp_dir)
+        # if morp:
+        #     morp_dir = os.path.join(hhf_dir, 'morphology')
+        #     if not os.path.exists(morp_dir):
+        #         os.mkdir(morp_dir)
             
-            # downloading morphology 
-            r = requests.get(morp['url'], verify=False)
-            with open(os.path.join(morp_dir, morp['name']), 'wb') as fd:
-                for chunk in r.iter_content():
-                    fd.write(chunk)
+        #     # downloading morphology 
+        #     r = requests.get(morp['url'], verify=False)
+        #     with open(os.path.join(morp_dir, morp['name']), 'wb') as fd:
+        #         for chunk in r.iter_content():
+        #             fd.write(chunk)
             
-            # writing morph.json
-            morp_dict = {hhf_model_key: morp['name']}
-            with open(os.path.join(hhf_dir, 'config', 'morph.json'), 'w') as fd:
-                json.dump(morp_dict, fd)
+        #     # writing morph.json
+        #     morp_dict = {hhf_model_key: morp['name']}
+        #     with open(os.path.join(hhf_dir, 'config', 'morph.json'), 'w') as fd:
+        #         json.dump(morp_dict, fd)
         
-        if mod:
-            mod_dir = os.path.join(hhf_dir, 'mechanisms')
-            if not os.path.exists(mod_dir):
-                os.mkdir(mod_dir)
+        # if mod:
+        #     mod_dir = os.path.join(hhf_dir, 'mechanisms')
+        #     if not os.path.exists(mod_dir):
+        #         os.mkdir(mod_dir)
 
-            # downloading mods files
-            for m in mod:
-                r = requests.get(m['url'], verify=False)
-                with open(os.path.join(mod_dir, m['name']), 'wb') as fd:
-                    for chunk in r.iter_content():
-                        fd.write(chunk)
+        #     # downloading mods files
+        #     for m in mod:
+        #         r = requests.get(m['url'], verify=False)
+        #         with open(os.path.join(mod_dir, m['name']), 'wb') as fd:
+        #             for chunk in r.iter_content():
+        #                 fd.write(chunk)
 
         request.session[exc]['from_hhf'] = True
         request.session[exc]['hhf_dir'] = hhf_dir

@@ -1252,29 +1252,6 @@ $("#uploadFileButton").click(function() {
     var files = 0
 
     const upload = (file) => {
-        /*$.ajax({
-            url: "/hh-neuron-builder/hhf-upload-files/" + $(".folder-item.active").attr("id") + "/" + req_pattern + "/",
-            method: "POST",
-            headers: {
-                "Content-Type": "application/octet-stream",
-                "Content-Disposition": "attachment; filename=\"" + file.name + "\""
-            },
-            body: file,
-            success: function(response) {
-                console.log("file " + file.name + " uploaded successfully");
-                counter += 1;
-                if (counter == files) {
-                    hideLoadingAnimation();
-                    refreshHHFFileList();
-                    console.log("refreshHHFFileList() on #uploadFileButton callback.")
-                }
-            },
-            error: function(error) {
-                console.log(error);
-                closeFileManager();
-                openErrorDiv(JSON.parse(error.responseText).message, "error");
-            }
-        });*/
         fetch("/hh-neuron-builder/hhf-upload-files/" + $(".folder-item.active").attr("id") + "/" + req_pattern + "/", {
             method: "POST",
             headers: {
