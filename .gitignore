@@ -10,3 +10,6 @@
 db.sqlite3
 efelg_access.log
 hhnb_access.log
+
+
+hh_neuron_builder/config/prod_conf.py
