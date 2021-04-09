@@ -10,6 +10,16 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.0/ref/settings/
 """
 
+# load configuration
+
+from socket import gethostname
+
+if gethostname() == 'hbp-bsp-hhnb':
+    import hh_neuron_builder.config.prod_conf as conf
+else:
+    import hh_neuron_builder.config.dev_conf as conf
+
+
 import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -20,10 +30,10 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '4s1h2vtrbr)-c@8q9&^j(pkf+k$wks+(u43-lsn&mzm1zolvb#'
+SECRET_KEY = conf.SECRET_KEY
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = conf.DEBUG
 
 ALLOWED_HOSTS = ['*']
 
@@ -104,16 +114,10 @@ WSGI_APPLICATION = 'hh_neuron_builder.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-    }
-}
-# sqlite dbtimeout option to handle thedb locking
-DATABASE_OPTIONS = {
-    'timeout': 30
-}
+
+DATABASES = conf.DATABASES
+
+
 
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
@@ -153,13 +157,12 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-# STATIC_ROOT = os.path.join(BASE_DIR, '../static/')
 
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static')
 ]
 
-MEDIA_ROOT = os.path.join("/apps", 'media')
+MEDIA_ROOT = conf.MEDIA_ROOT
 
 HHF_TEMPLATE_DIR = os.path.join(MEDIA_ROOT, 'hhnb', 'hhf_template')
 
@@ -211,5 +214,4 @@ LOGIN_URL = 'oidc_authentication_init'
 
 OIDC_RENEW_ID_TOKEN_EXPIRY_SECONDS = 3600 
 
-# LOGGING SETTINGS
 
