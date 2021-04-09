@@ -162,7 +162,7 @@ def initialize(request, exc="", ctx=""):
     request.session[exc]['optimization_model_path'] = opt_model_path
     request.session[exc]['workflows_dir'] = workflows_dir
     request.session[exc]['hhnb_storage_folder'] = "hhnb_workflows"
-    request.session[exc]['opt_sub_flag_file'] = 'opt_sub_flag.txt'
+    request.session[exc]['opt_sub_flag'] = False 
     request.session[exc]['opt_sub_param_file'] = 'opt_sub_param.json'
     request.session[exc]['sim_run_flag_file'] = 'sim_run_flag.txt'
     request.session[exc]['mod_clb_url'] = 'https://collab.humanbrainproject.eu/#/collab/79183/nav/535962?state=uuid%3D'
@@ -228,6 +228,7 @@ def create_wf_folders(request, wf_type="new", exc="", ctx=""):
         
     if wf_type == "new":
         # delete keys if present in request.session
+        request.session[exc].pop('from_hhf', None)
         request.session[exc].pop('gennum', None)
         request.session[exc].pop('offsize', None)
         request.session[exc].pop('nodenum', None)
@@ -705,11 +706,7 @@ def run_optimization(request, exc="", ctx=""):
     if resp['response'] == "OK":
         crr_job_name = resp['jobname']
 
-        opt_sub_flag_file = os.path.join(dest_dir, request.session[exc]['opt_sub_flag_file'])
-
-        with open(opt_sub_flag_file, 'w') as f:
-            f.write("")
-        f.close()
+        request.session[exc]['opt_sub_flag'] = True
 
         wf_job_ids = request.session[exc]['wf_job_ids']
         ids_file = os.path.join(workflows_dir, username, wf_job_ids)
@@ -1010,8 +1007,10 @@ def check_cond_exist(request, exc="", ctx=""):
         for f in os.listdir(os.path.join(request.session[exc]['user_dir'], 'hhf_opt')):
             if f.endswith('.zip'):
                 response['opt_flag']['status'] = True
-    elif os.path.exists(os.path.join(dest_dir, request.session[exc]['opt_sub_flag_file'])):
-        response['opt_flag']['status'] = True
+    #elif os.path.exists(os.path.join(dest_dir, request.session[exc]['opt_sub_flag_file'])):
+    #    response['opt_flag']['status'] = True
+    else:
+        response['opt_flag']['status'] = request.session[exc]['opt_sub_flag']
 
     # check if simulation has been launched
     if os.path.exists(os.path.join(sim_dir, request.session[exc]['sim_run_flag_file'])):
@@ -2189,6 +2188,8 @@ def clone_workflow(request, exc='', ctx=''):
     shutil.copytree(os.path.join(crr_user_dir, 'sim'), os.path.join(new_user_dir, 'sim'), symlinks=True)
 
     request.session[new_exc]['user_dir_sim_run'] = os.path.join(workflows_dir, username, new_wf_id, 'sim')
+
+    request.session[new_exc]['opt_sub_flag'] = False
 
     sim_flag_file = os.path.join(request.session[exc]['user_dir_sim_run'], request.session[exc]['sim_run_flag_file'])
     if os.path.exists(sim_flag_file):

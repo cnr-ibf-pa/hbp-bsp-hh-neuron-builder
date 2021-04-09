@@ -451,9 +451,11 @@ function checkConditions(){
                 $("#down-opt-set-btn").prop("disabled", false);
                 $("#del-opt").prop("disabled", false);
                 $(".hhf-integration-component").css("display", "block");
+                $("#opt-up-btn").css("display", "none");
                 from_hhf = true;
             } else {
                 from_hhf = false;
+                $("#opt-up-btn").css("display", "block");
                 $(".hhf-integration-component").css("display", "none");
             }
         };
@@ -1040,14 +1042,14 @@ $("#loginButton").click(function() {
 });
 
 
-$("#openFileManagerIcon").hover(
+/*$("#openFileManagerIcon").hover(
     function() {
         $(this).addClass("fa-folder-open").removeClass("fa-folder");
     },
     function() {
         $(this).removeClass("fa-folder-open").addClass("fa-folder");
     }
-);
+);*/
 
 
 function openFileManager() {
