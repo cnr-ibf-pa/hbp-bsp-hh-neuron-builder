@@ -1,5 +1,6 @@
 from django.core.management import utils
 
+asdijasdioj
 
 DEBUG = True
 
