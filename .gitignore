@@ -12,4 +12,5 @@ efelg_access.log
 hhnb_access.log
 
 
-hh_neuron_builder/config/
+hh_neuron_builder/config/dev_conf.py
+hh_neuron_builder/config/prod_conf.py
