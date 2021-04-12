@@ -77,13 +77,11 @@ def home(request, exc=None, ctx=None):
     #    ctx = uuid.uuid4()
 
     context = {"exc": exc, "ctx": str(ctx)}
-    
-
     return render(request, 'hhnb/home.html', context)
 
 
 def set_exc_tags(request, exc="", ctx=""):
-
+    print('set_exc_tags() called.')
     if exc in request.session:
         exc = ""
     else:
@@ -251,6 +249,7 @@ def create_wf_folders(request, wf_type="new", exc="", ctx=""):
         request.session[exc]['user_dir_results_opt'] = os.path.join(workflows_dir, username, wf_id, 'results', 'opt')
         request.session[exc]['user_dir_sim_run'] = os.path.join(workflows_dir, username, wf_id, 'sim')
         request.session[exc]["analysis_id"] = []
+        request.session[exc]['opt_sub_flag'] = False
 
         # create folders for global data and json files if not existing
         if not os.path.exists(request.session[exc]['user_dir_data_feat']):

@@ -13,34 +13,33 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 # load configuration
 
 from socket import gethostname
-
-if gethostname() == 'hbp-bsp-hhnb':
-    import hh_neuron_builder.config.prod_conf as conf
-else:
-    import hh_neuron_builder.config.dev_conf as conf
-
-
+from shutil import copy as shutilcopy
 import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
+if gethostname() == 'hbp-bsp-hhnb':
+    import hh_neuron_builder.config.prod_conf as conf
+else:
+    conf_dir = os.path.join(BASE_DIR, 'hh_neuron_builder', 'config')
+    if not os.path.exists(os.path.join(conf_dir, 'dev_conf.py')):
+        shutilcopy(os.path.join(conf_dir, 'dev_conf.py.example'), os.path.join(conf_dir, 'dev_conf.py'))
+    import hh_neuron_builder.config.dev_conf as conf
+
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = conf.SECRET_KEY
 
-# SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = conf.DEBUG
 
 ALLOWED_HOSTS = ['*']
 
 AUTH_USER_MODEL = 'hhnb.MyUser'
 
-# Application definition
 
+# Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
