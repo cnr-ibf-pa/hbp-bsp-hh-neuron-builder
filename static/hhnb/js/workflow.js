@@ -388,12 +388,12 @@ function checkConditions(){
                 $("#opt-db-hpc-btn").prop("disabled", true);
                 $("#opt-up-btn").prop("disabled", true);
                 $("#del-opt").prop("disabled", true);
+                $("#openFileManagerButton").prop("disabled", true);
 
                 // disable optimization settings buttons
                 $("#opt-set-btn").prop("disabled", true);
-                // if no optimization has been submitted
             } else {
-                // enable feature extraction buttons
+                // if no optimization has been submitted enable feature extraction buttons
                 $("#feat-efel-btn").prop("disabled", false);
                 $("#feat-up-btn").prop("disabled", false);
                 
@@ -402,6 +402,8 @@ function checkConditions(){
                 $("#opt-up-btn").prop("disabled", false);
                 // disable optimization settings buttons
                 $("#opt-set-btn").prop("disabled", false);
+
+                $("#openFileManagerButton").prop("disabled", false);
 
                 // if ready for submission, enable launch optimization button
                 if (data['feat']['status'] & data['opt_files']['status'] & data['opt_set']['status']){
@@ -449,8 +451,12 @@ function checkConditions(){
                 $("#opt-db-hpc-btn").prop("disabled", true);
                 $("#opt-up-btn").prop("disabled", true);
                 $("#down-opt-set-btn").prop("disabled", false);
-                $("#del-opt").prop("disabled", false);
-                $(".hhf-integration-component").css("display", "block");
+                if (data['opt_flag']['status']) {
+                    $("#del-opt").prop("disabled", true);
+                } else {
+                    $("#del-opt").prop("disabled", false);
+                }
+                $("#openFileManagerButton").css("display", "block");
                 $("#opt-up-btn").css("display", "none");
                 from_hhf = true;
             } else {
