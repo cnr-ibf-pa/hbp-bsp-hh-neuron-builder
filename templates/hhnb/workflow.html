@@ -600,6 +600,7 @@
                     <div class="col flex-end">
                         <i id="refreshFileListButton" class="ui-button fas fa-sync-alt fa-lg" title="Refresh"></i>
                         <i id="selectAllButton" class="ui-button fas fa-check-double fa-lg" title="Select/Deselect all"></i>
+                        <!-- <i id="openFileButton" class="fas fa-file-alt fa-lg" title="Open/Edit file"></i> -->
                         <i id="downloadFileButton" class="ui-button fas fa-file-download fa-lg" title="Download selection"></i>
                         <i id="uploadFileButton" class="ui-button fas fa-file-upload fa-lg" title="Upload to this folder"></i>
                         <i id="deleteFileButton" class="ui-button fas fa-trash fa-lg" title="Delete selection"></i>
@@ -612,7 +613,7 @@
                             <li id="mechanismsFolder" class="list-group-item folder-item">Mechanisms</li>
                             <li id="configFolder" class="list-group-item folder-item">Config</li>
                             <li id="modelFolder" class="list-group-item folder-item">Model</li>
-                            <li id="parametersFolder" class="list-group-item folder-item">parameters.json</li>
+                            <!-- <li id="parametersFolder" class="list-group-item folder-item">parameters.json</li> -->
                             <li id="optNeuronFolder" class="list-group-item folder-item">opt_neuron.py</li>
                         </ul>
                         <div class="model-key-flex-col">
@@ -636,13 +637,38 @@
                         <ul id="mechanismsFileList" class="list-group file-manager-group file-group" style="display: none"></ul>
                         <ul id="configFileList" class="list-group file-manager-group file-group" style="display: none"></ul>
                         <ul id="modelFileList" class="list-group file-manager-group file-group" style="display: none"></ul>
-                        <textarea id="parametersTextArea" class="file-textarea" style="display: none"></textarea>
+                        <!-- <textarea id="parametersTextArea" class="file-textarea" style="display: none"></textarea> -->
                         <div id="optNeuronTextArea" class="file-code" style="display: none"><pre><code id="optNeuronCode" class="python"></code></pre></div>
                     </div>
                 </div>
             </div>
+            <div id="editFileButton" class="edit-floating-btn" title="Open/Edit file">
+                <img src="{% static 'assets/img/open-file-white.svg' %}">
+            </div>
         </div>
     </div>
+
+    <div id="overlayfileeditor" class="overlay-content file-editor-content">
+        <div id="fileeditor" class="file-editor">
+            <div class="container file-editor-container g-0">
+                <div class="row g-0 file-editor-ui-button">
+                    <div class="col flex-start">
+                        <i id="closeEditorButton" class="far fa-times-circle fa-lg" title="Close window"></i>
+                        <i id="infoEditorButton" class="far fa-question-circle fa-lg" title="Info"></i>
+                    </div>
+                    <div class="col flex-end">
+                        <i id="saveFileButton" class="fas fa-save fa-lg"></i>
+                    </div>
+                </div>
+                <div class="row full g-0">
+                    <textarea id="editor-textarea" class="file-textarea">
+                        asddsuhasdauhsadsduha
+                    </textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
 
     <!-- Button trigger modal -->

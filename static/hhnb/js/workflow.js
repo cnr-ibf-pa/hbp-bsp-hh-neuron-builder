@@ -1063,6 +1063,7 @@ function openFileManager() {
     console.log("fetchHHFFileList() on openFileManager()");
     $("#overlaywrapper").css("display", "block");
     $("#overlayfilemanager").css("display", "block");
+    $("#overlayfilemanager").addClass("open");
     $.ajax({
         url: "/hh-neuron-builder/hhf-get-model-key/" + req_pattern + "/",
         method: "GET",
@@ -1097,6 +1098,7 @@ function fetchHHFFileList() {
         } else {
             console.log("append Empty on modFileList");
             $("#mechanismsFileList").append("<div class='file-item empty'>Empty</div>");
+            $("#mechanismsFileList").addClass("empty-list");
         }
         
         if (data.config && data.config.length > 0) {
@@ -1359,6 +1361,9 @@ function showFileList(folder) {
     $(".file-textarea").css("display", "none");
     $(".file-code").css("display", "none");
     $(".ui-button").removeClass("disabled");
+    
+    hideFloatingOpenFileButton();
+
 
     folder.addClass("active").attr("aria-current", true);
 
@@ -1373,16 +1378,10 @@ function showFileList(folder) {
         currList = $("#configFileList"); 
         $("#uploadFileButton").addClass("disabled");
         $("#deleteFileButton").addClass("disabled");
-
     } else if (currFolder == "modelFolder") {
         currList = $("#modelFileList"); 
         $("#uploadFileButton").addClass("disabled");
         $("#deleteFileButton").addClass("disabled");
-    } else if (currFolder == "parametersFolder") {
-        currList = $("#parametersTextArea"); 
-        $("#deleteFileButton").addClass("disabled");
-        $("#selectAllButton").addClass("disabled");
-
     } else if (currFolder == "optNeuronFolder") {
         currList = $("#optNeuronTextArea"); 
         $("#deleteFileButton").addClass("disabled");
@@ -1401,6 +1400,14 @@ function showFileList(folder) {
 
 function selectFileItem(item) {
     $(item).toggleClass("active");
+    var currFolder = $(".folder-item.active").attr("id");
+    console.log($(".file-item.active").length);
+    console.log(currFolder);
+    if ($(".file-item.active").length == 1 && (currFolder == "configFolder" || currFolder == "modelFolder")) {
+        showFloatingOpenFileButton();
+    } else {
+        hideFloatingOpenFileButton();
+    }
 }
 
 
@@ -1435,3 +1442,24 @@ function setModelKey(onClose=false) {
 $("#infoFileManagerButton").click(function() {
     $("#modalButton").trigger("click");
 });
+
+
+function showFloatingOpenFileButton() {
+    $("#editFileButton").addClass("show");
+}
+
+function hideFloatingOpenFileButton() {
+    $("#editFileButton").removeClass("show");
+}
+
+
+$("#editFileButton").mousedown(function() {
+    $(this).addClass("clicked")
+})
+$("#editFileButton").mouseup(function() {
+    $(this).removeClass("clicked")
+    console.log("open file editor");
+})
+$("#editFileButton").mouseout(function() {
+    $(this).removeClass("clicked")
+})
