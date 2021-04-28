@@ -1137,7 +1137,7 @@ function fetchHHFFileList() {
 function refreshHHFFileList() {
     $(".file-group").css("display", "none");
     $(".file-group").empty();
-    $(".file-textarea").css("display", "none");
+    // $(".file-textarea").css("display", "none");
     $(".file-code").css("display", "none");
     $("code").html();
     $("#fileItemSpinner").css("display", "flex");
@@ -1149,6 +1149,13 @@ function refreshHHFFileList() {
 function closeFileManager() {
     $("#overlaywrapper").css("display", "none");
     $("#overlayfilemanager").css("display", "none");
+
+    $("#folderselector").removeClass("fade-in fade-out").css("display", "block");
+    $("#editorselector").removeClass("fade-in fade-out").css("display", "none");
+    $("#fileselector").removeClass("fade-in fade-out").css("display", "block");
+    $("#editorfilelist").empty();
+    $("#fileeditor").removeClass("fade-in fade-out").css("display", "none");
+    
     $(".file-item").removeClass("active");
     $(".file-group").empty();
     $("code").html();
@@ -1358,7 +1365,7 @@ function showFileList(folder) {
     $(".file-item").removeClass("active");
     $(".folder-item").removeClass("active").attr("aria-current", false);
     $(".file-group").css("display", "none").removeClass("active");
-    $(".file-textarea").css("display", "none");
+    // $(".file-textarea").css("display", "none");
     $(".file-code").css("display", "none");
     $(".ui-button").removeClass("disabled");
     
@@ -1452,14 +1459,118 @@ function hideFloatingOpenFileButton() {
     $("#editFileButton").removeClass("show");
 }
 
+$("#editFileButton").hover(function(){
+    $(this).removeClass("rotatein").addClass("rotateout");
+    // $(this).addClass("rotateout");
+}, function() {
+    $(this).removeClass("rotateout").addClass("rotatein");
+    // $(this).removeClass("rotateout");
+})
+
 
 $("#editFileButton").mousedown(function() {
     $(this).addClass("clicked")
 })
-$("#editFileButton").mouseup(function() {
+
+$("#editFileButton").mouseup(async function() {
     $(this).removeClass("clicked")
-    console.log("open file editor");
+    let folderSelector = $("#folderselector");
+    let editorSelector = $("#editorselector");
+    let fileSelector = $("#fileselector");
+    let fileEditor = $("#fileeditor")
+    
+    folderSelector[0].addEventListener("animationend", function(){
+        console.log("folderSelector animation ends");
+        if (folderSelector.css("display") == "block" && folderSelector.hasClass("fade-out")) {
+            // show editor selector
+            folderSelector.css("display", "none");
+            editorSelector.css("display", "block");
+            editorSelector.removeClass("fade-out").addClass("fade-in");
+        }
+    })
+    editorSelector[0].addEventListener("animationend", function() {
+        console.log("editorSelector animation ends");
+        if (editorSelector.css("display") == "block" && editorSelector.hasClass("fade-out")) {
+            // show folder selector 
+            editorSelector.css("display", "none");
+            folderSelector.css("display", "block");
+            folderSelector.removeClass("fade-out").addClass("fade-in")
+        }
+    })
+
+    fileSelector[0].addEventListener("animationend", function() {
+        console.log("fileSelector animation ends");
+        if (fileSelector.css("display") == "block" && fileSelector.hasClass("fade-out")) {
+            // show file editor
+            fileSelector.css("display", "none");
+            fileEditor.css("display", "block");
+            fileEditor.removeClass("fade-out").addClass("fade-in");
+        }
+    })
+    fileEditor[0].addEventListener("animationend", function() {
+        if (fileEditor.css("display") == "block" && fileEditor.hasClass("fade-out")) {
+            // show file selector
+            fileEditor.css("display", "none");
+            fileSelector.css("display", "block");
+            fileSelector.removeClass("fade-out").addClass("fade-in");
+        }
+    })
+    
+    if (folderSelector.css("display") == "block") {
+        loadEditor();
+        folderSelector.removeClass("fade-in").addClass("fade-out");
+        fileSelector.removeClass("fade-in").addClass("fade-out");
+    } 
+    if (editorSelector.css("display") == "block") {
+        editorSelector.removeClass("fade-in").addClass("fade-out");
+        fileEditor.removeClass("fade-in").addClass("fade-out");
+        $("#editorfilelist").empty();
+    }
 })
+
+
 $("#editFileButton").mouseout(function() {
     $(this).removeClass("clicked")
 })
+
+
+function loadEditor() {
+    $(".file-group.active").children().each(function(n, el) {
+        $("#editorfilelist").append("<li name='" + el.id + "' class='list-group-item folder-item editor-item'  onclick='selectFileEditor($(this).attr(\"name\"))'>" + el.id + "</li>")
+        if ($(".file-item.active").attr("id") == el.id) {
+            $(".editor-item[name='" + el.id + "']").addClass("active");
+        }
+    });
+    
+    var currFolder = $(".folder-item.active").attr("id");
+    var currFile = $(".file-item.active").attr("id");
+
+    $.getJSON("/hh-neuron-builder/hhf-get-files-content/" + currFolder + "/" + req_pattern, function(data) {
+        
+        let jj = JSON.parse(data);
+        let files = Object.keys(jj);
+
+        console.log(files);
+
+        for (let i = 0; i < files.length; i++) {
+            if (currFolder == "modelFolder") {
+                $("#fileeditor").append("<div name='" + files[i] + "' class='file-code' style='display:none'><pre><code name='" + files[i] + "' class='editor python'></code></pre></div>");
+                $(".editor.python[name='" + files[i] + "']").html(jj[files[i]]);
+            } else {
+                $("#fileeditor").append("<textarea name='" + files[i] + "' class='file-textarea' style='display:none'></textarea>");
+                $(".file-textarea[name='" + files[i] + "']").val(jj[data[i]]);
+            }
+        } 
+        hljs.highlightAll();
+
+        $(".file-code[name='" + currFile + "']").css("display", "block");
+
+    })
+}
+
+function selectFileEditor(filename) {
+    $(".editor-item").removeClass("active");
+    $(".editor-item[name='" + filename + "']").addClass("active");
+    $(".file-code").css("display", "none");
+    $(".file-code[name='" + filename + "']").css("display", "block");    
+}

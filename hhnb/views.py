@@ -2345,10 +2345,10 @@ def hhf_get_files(request, exc, ctx):
     if os.path.exists(os.path.join(hhf_dir, 'config')):
         for c in os.listdir(os.path.join(hhf_dir, 'config')):
             hhf_file_list['config'].append(c)
-            if c == 'parameters.json':
-                with open(os.path.join(hhf_dir, 'config', 'parameters.json'), 'r') as fd:
-                    jj = json.load(fd)
-                    hhf_file_list['parameters.json'] = json.dumps(jj, indent='\t')
+            # if c == 'parameters.json':
+                # with open(os.path.join(hhf_dir, 'config', 'parameters.json'), 'r') as fd:
+                    # jj = json.load(fd)
+                    # hhf_file_list['parameters.json'] = json.dumps(jj, indent='\t')
 
     # list model files
     if os.path.exists(os.path.join(hhf_dir, 'model')):
@@ -2360,6 +2360,27 @@ def hhf_get_files(request, exc, ctx):
             hhf_file_list['opt_neuron.py'] = fd.read()
     
     return HttpResponse(content=json.dumps(hhf_file_list), content_type='application/json', status=200)
+
+
+def hhf_get_files_content(request, folder, exc, ctx):
+
+    hhf_dir = request.session[exc]['hhf_dir']
+    folder = folder.split('Folder')[0]
+    hhf_files_content = {}
+
+    if not os.path.exists(os.path.join(hhf_dir, folder)):
+        return HttpResponseBadRequest()
+
+    for f in os.listdir(os.path.join(hhf_dir, folder)):
+        with open(os.path.join(hhf_dir, folder, f), 'r') as fd:
+            if f.endswith('.json'):
+                jj = json.load(fd)
+                hhf_files_content[f] = json.dumps(jj)
+            else:
+                hhf_files_content[f] = fd.read()
+    print(hhf_files_content)
+    
+    return JsonResponse(json.dumps(hhf_files_content), safe=False)
 
 
 def hhf_download_files(request, folder, exc, ctx):

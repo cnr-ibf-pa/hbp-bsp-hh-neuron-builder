@@ -94,6 +94,7 @@ urlpatterns = [
     # path('hhf-comm/<any:hhf_dict>', views.hhf_comm),
     path('hhf-comm', views.hhf_comm),
     path('hhf-get-files/' + required + '/', views.hhf_get_files),
+    path('hhf-get-files-content/<folder:folder>/' + required, views.hhf_get_files_content),
     path('hhf-download-files/<folder:folder>/' + required, views.hhf_download_files),
     path('hhf-download-files/parameters/' + required, views.hhf_download_parameters),
     path('hhf-download-files/optneuron/' + required, views.hhf_download_optneuron),

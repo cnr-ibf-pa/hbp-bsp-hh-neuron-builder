@@ -967,7 +967,7 @@ td {
 
 /* file manager ui */
 
-.file-manager, .file-editor {
+.file-manager {
     width: 1100px;
     height: 700px;
     border: solid rgba(250, 250, 250, .8) 8px;
@@ -976,22 +976,19 @@ td {
 }
 
 
-.file-manager-container,
-.file-editor-container {
-    min-width: 884px;
+.file-manager-container {
+    min-width: 1084px;
     line-height: 1.5;
     height: 484px;
 }
-.file-manager-container > .row,
-.file-editor-container > .row {
+.file-manager-container > .row {
     margin: 0;
     padding: 0;
 }
-.file-manager-container > .row.full,
-.file-editor-container > .row.full {
+.file-manager-container > .row.full {
     height: 93%;
 }
-.file-manager-ui-button, .file-editor-ui-button {
+.file-manager-ui-button {
     height: 7%;
 }
 .file-manager-group {
@@ -1009,6 +1006,20 @@ td {
 .file-manager-group > .list-group-item {
     border-color: white;
 }
+
+
+#editorselector, #fileeditor {
+    display: none;
+    opacity: 0;
+}
+
+.folder-selector.fade-out, .file-selector.fade-out {
+    animation: fade-out .15s linear 0s 1 forwards ;
+}
+.folder-selector.fade-in, .file-selector.fade-in {
+    animation: fade-in .15s linear 0s 1 forwards;
+}
+
 .folder-group > .list-group-item:hover {
     background-color: white;
     color: #793802ff;
@@ -1017,6 +1028,7 @@ td {
     background-color: #daa520ff;
     color: white;
 }
+
 
 .file-selector {
     background-color: rgba(255, 255, 255, .2);
@@ -1046,8 +1058,7 @@ td {
     width: inherit;
 }
 
-.overlay-content.file-manager-content,
-.overlay-content.file-editor-content {
+.overlay-content.file-manager-content {
     top: calc( (100vh - 700px) / 2 - 50px);
     padding: 0rem;
 }
@@ -1162,6 +1173,63 @@ td {
     color: white;
     background-color: #daa5204d;
 }
+
+.edit-floating-btn {
+    border-radius: 64px;
+    width: 48px;
+    height: 48px;
+    background-color: #0a4ac1;
+    position: absolute;
+    right: 5%;
+    bottom: 0%;
+    opacity: 0;
+    transition: all ease-out .15s;
+    box-shadow: 0px 6px 4px -2px rgb(120, 120 , 120);
+    cursor: pointer;
+}
+.edit-floating-btn > img {
+    width: 24px;
+    height: 24px;
+    top: 8px;
+    left: 2px;
+    position: relative;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -o-user-select: none;
+    user-select: none;
+}
+
+.edit-floating-btn.show {
+    bottom: 5%;
+    opacity: 1;
+}
+
+.edit-floating-btn.clicked {
+    box-shadow: 0 0 0 0 rgb(120, 120 , 120);
+    bottom: 4.5%;
+}
+
+/* file manager animations */
+
+@keyframes fade-out {
+    0% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+    }
+}
+
+@keyframes fade-in {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
 
 /* icons */
 
@@ -1422,38 +1490,31 @@ i.disabled:hover {
     color: #0aa0fb;
 }
 
-.edit-floating-btn {
-    border-radius: 64px;
-    width: 48px;
-    height: 48px;
-    background-color: #0a4ac1;
-    position: absolute;
-    right: 5%;
-    bottom: 0%;
-    opacity: 0;
-    transition: all ease-out .15s;
-    box-shadow: 0px 6px 4px -2px rgb(120, 120 , 120);
-    cursor: pointer;
+#editFileButton.rotateout > img{
+    margin:auto;
+    animation: rotate360-fadeout 1s linear 0s 1 forwards;
 }
-.edit-floating-btn > img {
-    width: 24px;
-    height: 24px;
-    top: 8px;
-    left: 2px;
-    position: relative;
-    -webkit-user-select: none;
-    -khtml-user-select: none;
-    -moz-user-select: none;
-    -o-user-select: none;
-    user-select: none;
+#editFileButton.rotatein > img{
+    animation: rotate360-fadein 1s linear 0s 1 forwards;
 }
 
-.edit-floating-btn.show {
-    bottom: 5%;
-    opacity: 1;
+@keyframes rotate360-fadeout {
+    0% {
+        transform: rotate(0deg);
+        opacity: 1;
+    }
+    100% {
+        transform: rotate(360deg);
+        opacity: 0;
+    }
 }
-
-.edit-floating-btn.clicked {
-    box-shadow: 0 0 0 0 rgb(120, 120 , 120);
-    bottom: 4.5%;
+@keyframes rotate0-fadein {
+    0% {
+        transform: rotate(360deg);
+        opacity: 0;
+    }
+    100% {
+        transform: rotate(0deg);
+        opacity: 1;
+    }
 }
