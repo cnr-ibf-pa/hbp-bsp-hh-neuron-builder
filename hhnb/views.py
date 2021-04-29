@@ -2375,7 +2375,7 @@ def hhf_get_files_content(request, folder, exc, ctx):
         with open(os.path.join(hhf_dir, folder, f), 'r') as fd:
             if f.endswith('.json'):
                 jj = json.load(fd)
-                hhf_files_content[f] = json.dumps(jj)
+                hhf_files_content[f] = json.dumps(jj, indent=8)
             else:
                 hhf_files_content[f] = fd.read()
     print(hhf_files_content)
@@ -2443,36 +2443,41 @@ def hhf_save_parameters_json(request, exc, ctx):
 @csrf_exempt
 def hhf_upload_files(request, folder, exc, ctx):
 
+    if folder != 'morphologyFolder' and folder != 'mechanismsFolder' and folder != 'configFolder':
+        return HttpResponseForbidden()
+
     if request.method == 'POST':
         file_content = request.body
         filename = request.META['HTTP_CONTENT_DISPOSITION'].split('filename="')[1].split('"')[0]
 
         hhf_dir = request.session[exc]['hhf_dir']
 
-        if folder == 'parametersFolder':
-            # try:
-            # with open(os.path.join(hhf_dir, 'config', 'parameters.json'), 'w') as fd:
-                # fd.write(file_content.decode());
+        if folder == 'configFolder':
+            if filename == 'morph.json':
+                return HttpResponse(json.dumps({'response': 'KO', 'message': 'Upload rejected.<br><br>The "morph.json" file will be generated automatically<br>once the morphology file will be uploaded.'}))
             try:
-                # with open(os.path.join(hhf_dir, 'config', 'parameters.json'), 'r') as fd:
                 jj = json.loads(file_content.decode())
                 k = list(jj.keys())[0]
                 parameters = {request.session[exc]['hhf_model_key']: jj[k]}
-                with open(os.path.join(hhf_dir, 'config', 'parameters.json'), 'w') as fd:
+                with open(os.path.join(hhf_dir, 'config', filename), 'w') as fd:
                     json.dump(parameters, k, indent=4)
             except json.JSONDecodeError:
-                os.remove(os.path.join(hhf_dir, 'config', 'parameters.json'))
+                os.remove(os.path.join(hhf_dir, 'config', filename))
                 return HttpResponseBadRequest(content=json.dumps({'message': 'Wrong file type. Accept only ".json" format.<br><br>Uploaded file deleted !'}))
             
-            return HttpResponse(content=json.dumps({'response': 'OK', 'message': 'file uploaded successfully'}), status=200)
-
-        if folder != 'morphologyFolder' and folder != 'mechanismsFolder':
-            return HttpResponseForbidden()
+            return HttpResponse(content=json.dumps({'response': 'OK', 'message': 'File uploaded successfully'}), status=200)
 
         dst_dir = os.path.join(hhf_dir, folder.split('Folder')[0])
 
         if not os.path.exists(dst_dir):
             os.mkdir(dst_dir)
+
+        if folder == 'morphologyFolder':
+            if not filename.endswith('.asc'):
+                return HttpResponse(content=json.dumps({'response': 'KO', 'message': 'File "%s" rejected.<br>Moprholy file must be in ".asc" format.' % filename}))
+        elif folder == 'mechanismsFolder':
+            if not filename.endswith('.mod'):
+                return HttpResponse(content=json.dumps({'response': 'KO', 'message': 'File "%s" rejected.<br>Mechanisms file must be in ".mod" format.' % filename}))
 
         with open(os.path.join(dst_dir, filename), 'wb') as fd:
             fd.write(file_content)
@@ -2482,9 +2487,9 @@ def hhf_upload_files(request, folder, exc, ctx):
             with open(os.path.join(hhf_dir, 'config', 'morph.json'), 'w') as fd:
                 json.dump(morp_dict, fd)
 
-        return HttpResponse(content=json.dumps({'response': 'OK', 'message': 'file uploaded successfully'}), status=200)
+        return HttpResponse(content=json.dumps({'response': 'OK', 'message': 'File uploaded successfully'}), status=200)
 
-    return HttpResponseBadRequest(content=json.dumps({'response': 'KO', 'message': 'some errors occured while uploading files'}))
+    return HttpResponseBadRequest(content=json.dumps({'response': 'KO', 'message': 'Some errors occured while uploading files'}))
 
 
 def hhf_delete_files(request, folder, exc, ctx):

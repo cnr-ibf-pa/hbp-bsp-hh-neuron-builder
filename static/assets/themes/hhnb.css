@@ -1075,7 +1075,6 @@ td {
     height: 100%;
     font-size: .9rem;
     border-radius: inherit;
-    border: 1px red solid;
     overflow-x: auto;
     padding: 4px;
     background-color: inherit;
@@ -1084,13 +1083,10 @@ td {
     white-space: pre;
     text-align: left;
     scrollbar-width: thin;
-
-    background-color: rgba(255, 255, 255, .2);
-    line-height: 1;
-    height: calc( 684px - 7% );
-    overflow: auto;
-    scrollbar-width: thin;
+    border-bottom-right-radius: 12px;
+    border: solid 4px rgba(0,0,0,0);
 }
+
 .file-textarea:focus, .file-code:focus, pre:focus, code:focus {
     outline-width: 0;
 }
