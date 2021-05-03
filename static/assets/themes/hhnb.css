@@ -1014,10 +1014,10 @@ td {
 }
 
 .folder-selector.fade-out, .file-selector.fade-out {
-    animation: fade-out .15s linear 0s 1 forwards ;
+    animation: fade-out .2s linear 0s 1 forwards ;
 }
 .folder-selector.fade-in, .file-selector.fade-in {
-    animation: fade-in .15s linear 0s 1 forwards;
+    animation: fade-in .2s linear 0s 1 forwards;
 }
 
 .folder-group > .list-group-item:hover {
@@ -1170,20 +1170,28 @@ td {
     background-color: #daa5204d;
 }
 
-.edit-floating-btn {
+.edit-floating-btn, .save-floating-btn {
     border-radius: 64px;
     width: 48px;
     height: 48px;
     background-color: #0a4ac1;
     position: absolute;
-    right: 5%;
+    right: 3%;
     bottom: 0%;
     opacity: 0;
     transition: all ease-out .15s;
     box-shadow: 0px 6px 4px -2px rgb(120, 120 , 120);
     cursor: pointer;
+    /* z-index: 2; */
 }
-.edit-floating-btn > img {
+.save-floating-btn {
+    /* transition-duration: .3s; */
+    /* transition-delay: .3s; */
+    bottom: 5%;
+    /* z-index: 1; */
+}
+
+.edit-floating-btn > img, .save-floating-btn > img {
     width: 24px;
     height: 24px;
     top: 8px;
@@ -1195,9 +1203,16 @@ td {
     -o-user-select: none;
     user-select: none;
 }
+.save-floating-btn > img {
+    left: 0;
+}
 
 .edit-floating-btn.show {
     bottom: 5%;
+    opacity: 1;
+}
+.save-floating-btn.show {
+    bottom: 15%;
     opacity: 1;
 }
 
@@ -1486,31 +1501,10 @@ i.disabled:hover {
     color: #0aa0fb;
 }
 
-#editFileButton.rotateout > img{
-    margin:auto;
-    animation: rotate360-fadeout 1s linear 0s 1 forwards;
+#editFileButtonImage {
+    transition: all ease-in .2s;
 }
-#editFileButton.rotatein > img{
-    animation: rotate360-fadein 1s linear 0s 1 forwards;
-}
-
-@keyframes rotate360-fadeout {
-    0% {
-        transform: rotate(0deg);
-        opacity: 1;
-    }
-    100% {
-        transform: rotate(360deg);
-        opacity: 0;
-    }
-}
-@keyframes rotate0-fadein {
-    0% {
-        transform: rotate(360deg);
-        opacity: 0;
-    }
-    100% {
-        transform: rotate(0deg);
-        opacity: 1;
-    }
+#editFileButtonImage.zoomout {
+    opacity: 0;
+    transform: scale(0%);
 }

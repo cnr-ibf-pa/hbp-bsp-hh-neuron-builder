@@ -2458,9 +2458,9 @@ def hhf_upload_files(request, folder, exc, ctx):
             try:
                 jj = json.loads(file_content.decode())
                 k = list(jj.keys())[0]
-                parameters = {request.session[exc]['hhf_model_key']: jj[k]}
+                filename_json = {request.session[exc]['hhf_model_key']: jj[k]}
                 with open(os.path.join(hhf_dir, 'config', filename), 'w') as fd:
-                    json.dump(parameters, k, indent=4)
+                    json.dump(filename_json, fd, indent=4)
             except json.JSONDecodeError:
                 os.remove(os.path.join(hhf_dir, 'config', filename))
                 return HttpResponseBadRequest(content=json.dumps({'message': 'Wrong file type. Accept only ".json" format.<br><br>Uploaded file deleted !'}))

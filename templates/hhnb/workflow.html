@@ -631,7 +631,6 @@
                         <div id="fileItemSpinner" class="spinner-border file-item-spinner" role="status">
                             <span class="visually-hidden">Loading...</span>
                         </div>
-                        
                         <ul id="morphologyFileList" class="list-group file-manager-group file-group" style="display: none;"></ul>
                         <ul id="mechanismsFileList" class="list-group file-manager-group file-group" style="display: none"></ul>
                         <ul id="configFileList" class="list-group file-manager-group file-group" style="display: none"></ul>
@@ -641,8 +640,11 @@
                     <div id="fileeditor" class="col-8 file-selector"></div>
                 </div>
             </div>
+            <div id="saveFileButton" class="save-floating-btn" title="Save file">
+                <img src="{% static 'assets/img/save-file-white.svg' %}">
+            </div>
             <div id="editFileButton" class="edit-floating-btn" title="Open/Edit file">
-                <img src="{% static 'assets/img/open-file-white.svg' %}">
+                <img id="editFileButtonImage" src="{% static 'assets/img/open-file-white.svg' %}">
             </div>
         </div>
     </div>

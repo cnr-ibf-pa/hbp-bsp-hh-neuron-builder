@@ -1119,9 +1119,9 @@ function fetchHHFFileList() {
             $("#modelFileList").append("<div class='file-item empty'>Empty</div>");
         }
 
-        if (data["parameters.json"]) {
-            $("#parametersTextArea").val(data["parameters.json"]);
-        }
+        // if (data["parameters.json"]) {
+            // $("#parametersTextArea").val(data["parameters.json"]);
+        // }
 
         if (data["opt_neuron.py"]) {
             $("#optNeuronCode").html(data["opt_neuron.py"]);
@@ -1159,12 +1159,12 @@ function closeFileManager() {
     $(".file-item").removeClass("active");
     $(".file-group").empty();
     $("code").html();
-    saveParametersJson();
+    // saveParametersJson();
     setModelKey(onClose=true);
     checkConditions();
 };
 
-
+/*
 function saveParametersJson() {
     var jj = {"parameters.json": ($("#parametersTextArea").val())};
     $.ajax({
@@ -1177,7 +1177,7 @@ function saveParametersJson() {
         }
     });
 }
-
+*/
 
 $("#deleteFileButton").click(function() {
     if ($(this).hasClass("disabled")) {
@@ -1285,7 +1285,9 @@ $("#uploadFileButton").click(function() {
                 counter += 1;
                 if (counter == files) {
                     hideLoadingAnimation();
+                    // if ($("#folderselector").css("display") == "block") {
                     refreshHHFFileList();
+                    updateEditor();
                     console.log("refreshHHFFileList() on #uploadFileButton callback.")
                 }
             } else {
@@ -1299,13 +1301,13 @@ $("#uploadFileButton").click(function() {
     const onSelectFile = async function(x) {
         
         if ($(".folder-item.active").attr("id") == "parametersFolder") {
-            $("#parametersTextArea").css("display", "none");
+            // $("#parametersTextArea").css("display", "none");
             $("#fileItemSpinner").css("display", "flex");
 
             let reader = new FileReader();
             reader.onload = function(){
                 $("#fileItemSpinner").css("display", "none");
-                $("#parametersTextArea").css("display", "block");
+                // $("#parametersTextArea").css("display", "block");
                 r = reader.result;
                 jj = JSON.parse(r);
                 kk = Object.keys(jj);
@@ -1313,7 +1315,7 @@ $("#uploadFileButton").click(function() {
                 rootKey = $("#modelKeyInput").val().toString();
                 jj2 = {};
                 jj2[rootKey] = jj[kk[0]];
-                $("#parametersTextArea").val(JSON.stringify(jj2, null, space='\t'));
+                // $("#parametersTextArea").val(JSON.stringify(jj2, null, space='\t'));
             };
             reader.error = function() {
                 console.log(reader.error);
@@ -1457,20 +1459,16 @@ function showFloatingOpenFileButton() {
 
 function hideFloatingOpenFileButton() {
     $("#editFileButton").removeClass("show");
+    $("#saveFileButton").removeClass("show");
 }
-
-$("#editFileButton").hover(function(){
-    $(this).removeClass("rotatein").addClass("rotateout");
-    // $(this).addClass("rotateout");
-}, function() {
-    $(this).removeClass("rotateout").addClass("rotatein");
-    // $(this).removeClass("rotateout");
-})
 
 
 $("#editFileButton").mousedown(function() {
     $(this).addClass("clicked")
 })
+
+
+var editorMode = false;
 
 $("#editFileButton").mouseup(async function() {
     $(this).removeClass("clicked")
@@ -1478,20 +1476,19 @@ $("#editFileButton").mouseup(async function() {
     let editorSelector = $("#editorselector");
     let fileSelector = $("#fileselector");
     let fileEditor = $("#fileeditor")
+    let editFileButtonImage = $("#editFileButtonImage");
+
+    editorMode = !editorMode;
     
     folderSelector[0].addEventListener("animationend", function(){
-        console.log("folderSelector animation ends");
-        if (folderSelector.css("display") == "block" && folderSelector.hasClass("fade-out")) {
-            // show editor selector
+        if (editorMode) {
             folderSelector.css("display", "none");
             editorSelector.css("display", "block");
             editorSelector.removeClass("fade-out").addClass("fade-in");
         }
     })
     editorSelector[0].addEventListener("animationend", function() {
-        console.log("editorSelector animation ends");
-        if (editorSelector.css("display") == "block" && editorSelector.hasClass("fade-out")) {
-            // show folder selector 
+        if (!editorMode) {
             editorSelector.css("display", "none");
             folderSelector.css("display", "block");
             folderSelector.removeClass("fade-out").addClass("fade-in")
@@ -1500,33 +1497,44 @@ $("#editFileButton").mouseup(async function() {
 
     fileSelector[0].addEventListener("animationend", function() {
         console.log("fileSelector animation ends");
-        if (fileSelector.css("display") == "block" && fileSelector.hasClass("fade-out")) {
-            // show file editor
+        if (editorMode) {
             fileSelector.css("display", "none");
             fileEditor.css("display", "block");
             fileEditor.removeClass("fade-out").addClass("fade-in");
         }
     })
     fileEditor[0].addEventListener("animationend", function() {
-        if (fileEditor.css("display") == "block" && fileEditor.hasClass("fade-out")) {
-            // show file selector
+        if (!editorMode) {
             fileEditor.css("display", "none");
             fileSelector.css("display", "block");
             fileSelector.removeClass("fade-out").addClass("fade-in");
         }
     })
+    editFileButtonImage[0].addEventListener("transitionend", function() {
+        if (editorMode) {
+            editFileButtonImage.attr("src", "/static/assets/img/back-arrow-white.svg").css("top", "9px").css("left", "0px");
+        } else {
+            editFileButtonImage.attr("src", "/static/assets/img/open-file-white.svg").css("top", "8px").css("left", "2px");
+        }
+        editFileButtonImage.removeClass("zoomout");
+    })
     
-    if (folderSelector.css("display") == "block") {
+    if (editorMode) {
         loadEditor();
         folderSelector.removeClass("fade-in").addClass("fade-out");
         fileSelector.removeClass("fade-in").addClass("fade-out");
-    } 
-    if (editorSelector.css("display") == "block") {
+        if ($(".folder-item.active").attr("id") == "configFolder") {
+            $("#saveFileButton").addClass("show");
+        } else {
+            $("#saveFileButton").removeClass("show");
+        }
+    } else {
         editorSelector.removeClass("fade-in").addClass("fade-out");
         fileEditor.removeClass("fade-in").addClass("fade-out");
-        $("#editorfilelist").empty();
-        $("#fileeditor").empty();
+        $("#saveFileButton").removeClass("show");
     }
+
+    editFileButtonImage.addClass("zoomout");
 })
 
 
@@ -1536,14 +1544,9 @@ $("#editFileButton").mouseout(function() {
 
 
 function loadEditor() {
+    $("#editorfilelist").empty();
+    $("#fileeditor").empty();
     $("#fileeditor").append("<div id='openafilediv' class='file-item empty' style='display:none'>Open a file</div>");
-
-    $(".file-group.active").children().each(function(n, el) {
-        $("#editorfilelist").append("<li name='" + el.id + "' class='list-group-item folder-item editor-item'  onclick='selectFileEditor($(this).attr(\"name\"))'>" + el.id + "</li>")
-        if ($(".file-item.active").attr("id") == el.id) {
-            $(".editor-item[name='" + el.id + "']").addClass("active");
-        }
-    });
     
     var currFolder = $(".folder-item.active").attr("id");
     var currFile = $(".file-item.active").attr("id");
@@ -1554,6 +1557,9 @@ function loadEditor() {
         let files = Object.keys(jj);
 
         for (let i = 0; i < files.length; i++) {
+            $("#editorfilelist").append("<li name='" + files[i] + "' class='list-group-item folder-item editor-item'  onclick='selectFileEditor($(this).attr(\"name\"))'>" + files[i] + "</li>")
+            $(".editor-item[name='" + $(".file-item.active").attr("id")).addClass("active");
+
             if (currFolder == "modelFolder") {
                 $("#fileeditor").append("<div name='" + files[i] + "' class='file-code' style='display:none'><pre><code name='" + files[i] + "' class='editor python'></code></pre></div>");
                 $(".editor.python[name='" + files[i] + "']").html(jj[files[i]]);
@@ -1565,6 +1571,7 @@ function loadEditor() {
                 $("#fileeditor").append("<textarea name='" + files[i] + "' class='file-textarea' style='display:none'></textarea>");
                 $(".file-textarea[name='" + files[i] + "']").val(jj[files[i]]);
                 if (currFile) {
+                    // enable current file
                     $(".file-textarea[name='" + currFile + "']").css("display", "block");
                 }
             }
@@ -1574,6 +1581,12 @@ function loadEditor() {
 
     if (!currFile) {
         $("#openafilediv").css("display", "block");
+    }
+}
+
+function updateEditor() {
+    if (editorMode) {
+        loadEditor();
     }
 }
 
@@ -1589,3 +1602,8 @@ function selectFileEditor(filename) {
     $(".file-textarea[name='" + filename + "']").css("display", "block");
 }
 
+$("textarea").clic( function() {
+    // $("#saveFileButton").addClass("show");
+    // let name = $(this).attr("name");
+    console.log("keyup on file-textarea");
+})
