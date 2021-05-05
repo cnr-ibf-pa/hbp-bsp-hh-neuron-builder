@@ -1570,6 +1570,10 @@ var originalTextAreaVal = null;
 
 
 function selectFileEditor(filename) {
+    if ($("#editor-spinner").css("display") == "block") {
+        return false;
+    }
+
     console.log("selectFileEditor() called for file: " + filename.toString());
     $("#openafilediv").css("display", "none");
     $(".editor-item").removeClass("active");
