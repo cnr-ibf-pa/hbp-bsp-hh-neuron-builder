@@ -1049,18 +1049,13 @@ $("#loginButton").click(function() {
 });
 
 
-/*$("#openFileManagerIcon").hover(
-    function() {
-        $(this).addClass("fa-folder-open").removeClass("fa-folder");
-    },
-    function() {
-        $(this).removeClass("fa-folder-open").addClass("fa-folder");
-    }
-);*/
-
-
-function openFileManager() {
+function openFileManager(showConfig=false) {
     refreshHHFFileList();
+    console.log("openFileManager() called with showConfi=" + showConfig.toString())
+    if (showConfig) {
+        showFileList($("#configFolder"));
+    }
+
     console.log("fetchHHFFileList() on openFileManager()");
     $("#overlaywrapper").css("display", "block");
     $("#overlayfilemanager").css("display", "block");

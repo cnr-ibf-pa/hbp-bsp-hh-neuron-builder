@@ -7,6 +7,7 @@ import zipfile
 
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
 from django.http.response import HttpResponse
 
 from hh_neuron_builder import settings
@@ -989,6 +990,7 @@ def features_pdf_path(request):
 
 #####
 # @login_required(login_url='/login/hbp/')
+@csrf_exempt
 def upload_files(request):
     """
     Upload file to local folder

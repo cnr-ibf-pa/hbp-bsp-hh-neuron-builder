@@ -2244,10 +2244,6 @@ def store_workflow_in_session(request, exc='', ctx=''):
     request.session['old_exc'] = exc
     request.session['old_ctx'] = str(ctx)
     
-    print(request.session['old_wf'])
-    print(request.session['old_exc'])
-    print(request.session['old_ctx'])
-    
     request.session.save()
 
     return HttpResponse(status=200)
@@ -2310,7 +2306,7 @@ def hhf_comm(request, exc='', ctx=''):
                 r = requests.get(m['url'], verify=False)
                 with open(os.path.join(mod_dir, m['name']), 'wb') as fd:
                     for chunk in r.iter_content():
-                        fd.write(chunk)
+        #                 fd.write(chunk)
 
         request.session[exc]['from_hhf'] = True
         request.session[exc]['hhf_dir'] = hhf_dir
@@ -2378,7 +2374,6 @@ def hhf_get_files_content(request, folder, exc, ctx):
                 hhf_files_content[f] = json.dumps(jj, indent=8)
             else:
                 hhf_files_content[f] = fd.read()
-    print(hhf_files_content)
     
     return JsonResponse(json.dumps(hhf_files_content), safe=False)
 
@@ -2427,9 +2422,6 @@ def hhf_download_optneuron(request, exc, ctx):
 
 @csrf_exempt
 def hhf_save_config_file(request, config_file, exc, ctx):
-    # print(request.POST)
-    print(config_file)
-    print(request.POST.keys)
     try:
         file_content = json.loads(request.POST.get(config_file, None))
         hhf_dir = request.session[exc]['hhf_dir']
