@@ -628,9 +628,7 @@
                         <ul id="editorfilelist" class="list-group file-manager-group folder-group"></ul>
                     </div>
                     <div id="fileselector" class="col-8 file-selector">
-                        <div id="fileItemSpinner" class="spinner-border file-item-spinner" role="status">
-                            <span class="visually-hidden">Loading...</span>
-                        </div>
+                        <div id="fileItemSpinner" class="spinner-border file-item-spinner" role="status"></div>
                         <ul id="morphologyFileList" class="list-group file-manager-group file-group" style="display: none;"></ul>
                         <ul id="mechanismsFileList" class="list-group file-manager-group file-group" style="display: none"></ul>
                         <ul id="configFileList" class="list-group file-manager-group file-group" style="display: none"></ul>
@@ -641,7 +639,8 @@
                 </div>
             </div>
             <div id="saveFileButton" class="save-floating-btn" title="Save file" draggable="false" ondragstart="return false;">
-                <img src="{% static 'assets/img/save-file-white.svg' %}" draggable="false" ondragstart="return false;">
+                <img id="saveFileButtonImage" src="{% static 'assets/img/save-file-white.svg' %}" draggable="false" ondragstart="return false;">
+                <div id="saveFileButtonSpinner" class="spinner-border" role="status"></div>
             </div>
             <div id="editFileButton" class="edit-floating-btn" title="Open/Edit file" draggable="false" ondragstart="return false;">
                 <img id="editFileButtonImage" src="{% static 'assets/img/open-file-white.svg' %}" draggable="false" ondragstart="return false;">
