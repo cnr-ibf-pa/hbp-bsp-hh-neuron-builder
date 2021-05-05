@@ -1180,15 +1180,23 @@ td {
     bottom: 0%;
     opacity: 0;
     transition: all ease-out .15s;
+    -webkit-transition: all ease-out .15s;
     box-shadow: 0px 6px 4px -2px rgb(120, 120 , 120);
     cursor: pointer;
     z-index: 2;
 }
 .save-floating-btn {
-    /* transition-duration: .3s; */
-    /* transition-delay: .3s; */
+    transition-duration: .3s;
     bottom: 5%;
     z-index: 1;
+}
+#saveFileButtonSpinner {
+    display: none;
+    width: 1.5rem;
+    height: 1.5rem;
+    color: white;
+    margin-top: 12px;
+    margin-left: 12px;
 }
 
 .edit-floating-btn > img, .save-floating-btn > img {
@@ -1204,7 +1212,7 @@ td {
     user-select: none;
 }
 .save-floating-btn > img {
-    left: 0;
+    left: 0px;
 }
 
 .edit-floating-btn.show {
@@ -1220,6 +1228,13 @@ td {
     box-shadow: 0 0 0 0 rgb(120, 120 , 120);
     bottom: 4.5%;
 }
+
+.edit-floating-btn > img.back-arrow {
+    content: url('../img/back-arrow-white.svg');
+    left: 0px;
+    top: 9px;
+}
+
 .save-floating-btn.clicked {
     box-shadow: 0 0 0 0 rgb(120, 120 , 120);
     bottom: 14.5%;
@@ -1540,4 +1555,5 @@ i.disabled:hover {
 #editFileButtonImage.zoomout {
     opacity: 0;
     transform: scale(0%);
+    -webkit-transform: scale(0);
 }

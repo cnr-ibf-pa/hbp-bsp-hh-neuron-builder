@@ -29,7 +29,6 @@ $(document).ready(function(){
             })
 
     var $submitJobParamForm = $("#submitJobParamForm");
-    console.log($submitJobParamForm);
     $submitJobParamForm.submit(function(e) {
         e.preventDefault();
         let hpc_sys = $(".accordion-button.active").attr("name");
@@ -66,9 +65,6 @@ $(document).ready(function(){
             paramFormData.append("runtime", $("#nsg-gen-max").val());
             paramFormData.append("username_submit", $("#username_submit").val());
             paramFormData.append("password_submit", $("#password_submit").val());    
-        }
-        for (let key of paramFormData.entries()) {
-            console.log(key);
         }
         $.ajax({
             url: "/hh-neuron-builder/submit-run-param/" + req_pattern + "/",
@@ -109,9 +105,6 @@ $(document).ready(function(){
         console.log("uploadingFileForm() called.");
         showLoadingAnimation("Loading...");
         var uploadFormData = new FormData($("#uploadForm")[0]);
-        for (let key of uploadFormData.entries()) {
-            console.log(key);
-        }
         $.ajax({
             url: $(this).attr("action"),
             data: uploadFormData,
@@ -149,9 +142,8 @@ function efelPage() {
 }
 
 function inSilicoPage() {
-    console.log("inSilicoPage() called.");
-    showLoadingAnimation("Uploading to blue-naas...")
     console.log("inSilicoPage() called");
+    showLoadingAnimation("Uploading to blue-naas...")
     $("#run-sim-btn").prop("disabled", true);
     $.getJSON("/hh-neuron-builder/upload-to-naas/" + req_pattern, function(uploaddata){
         console.log(uploaddata);
@@ -214,7 +206,6 @@ function manageErrorDiv(isOpen=false, isClose=false, message="", tag="") {
     let errorDynamicText = $("#errordynamictext");
     let button = $("#ok-error-div-btn");
     button.removeClass("blue", "red", "green");
-    console.log(button);
     if (isOpen) {
         overlayWrapper.css("display", "block");
         overlayWrapperError.css("display", "block");
@@ -236,7 +227,6 @@ function manageErrorDiv(isOpen=false, isClose=false, message="", tag="") {
         overlayWrapper.css("display", "none");
         overlayWrapperError.css("display", "none");
     }
-    console.log(button);
 }
 
 function openErrorDiv(message, tag) {
@@ -344,7 +334,6 @@ function checkConditions(){
                 $("#down-opt-set-btn").prop("disabled", false);
                 $("#del-opt").prop("disabled", false)
             } else {
-                console.log("restoring classes");
                 let optFilesBar = $("#opt-files-bar");
                 optFilesBar.removeClass("green");
                 optFilesBar.addClass("red");
@@ -546,11 +535,8 @@ function openUploadDiv(type, msg) {
     $("#uploadFornButton").prop("disabled", true);
     if (type == "feat") {
         $("#formFile").prop("multiple", true).attr("accept", ".json");
-        console.log("feat formFile");
-        console.log(document.getElementById("formFile"));
     } else {
         $("#formFile").prop("multiple", false).attr("accept", ".zip");
-        console.log(document.getElementById("formFile"));
     }
     if (type == "modsim") {
         $("#uploadImg").css("display", "block");
@@ -982,35 +968,25 @@ function manageOptSetInput() {
 }
 
 $("#daintCollapse")[0].addEventListener('show.bs.collapse', function () {
-    console.log("upper daint");
     $("#overlayparam").addClass("upper-daint");
-    // $("#overlayparam").css("top", "calc(10%)");
 })
 
 $("#serviceAccountCollapse")[0].addEventListener('show.bs.collapse', function () {
     $("#overlayparam").addClass("upper-sa-daint");
-    // $("#overlayparam").css("top", "calc(20%)");
-    console.log("upper SA");
 })
 $("#nsgCollapse")[0].addEventListener('show.bs.collapse', function () {
     $("#overlayparam").addClass("upper-nsg");
-    // $("#overlayparam").css("top", "calc(40%)");
-    console.log("upper nsg");
 })
 
 $("#daintCollapse")[0].addEventListener('hide.bs.collapse', function () {
     $("#overlayparam").removeClass("upper-daint");
-    console.log("lower daint");
 })
 
 $("#serviceAccountCollapse")[0].addEventListener('hide.bs.collapse', function () {
     $("#overlayparam").removeClass("upper-sa-daint");
-    console.log("lower SA");
 })
 $("#nsgCollapse")[0].addEventListener('hide.bs.collapse', function () {
     $("#overlayparam").removeClass("upper-nsg");
-    console.log("lower nsg")
-
 })
 
 function animateProgressBar(progress) {
@@ -1201,8 +1177,6 @@ function deleteHHFFiles() {
         });
     }
 
-    console.log(JSON.stringify(jj_ids));
-    
     fetch("/hh-neuron-builder/hhf-delete-files/" + $(".folder-item.active").attr("id") + "/" + req_pattern + "?file_list=" + encodeURIComponent(JSON.stringify(jj_ids)), {
         method: "GET"
     }).then(function(data) {
@@ -1282,58 +1256,28 @@ $("#uploadFileButton").click(function() {
         .then(data => {
             console.log(data);
             if (data.response == "OK") {
-                console.log("file " + file.name + " uploaded successfully");
                 counter += 1;
                 if (counter == files) {
                     hideLoadingAnimation();
-                    // if ($("#folderselector").css("display") == "block") {
                     refreshHHFFileList();
                     updateEditor();
-                    console.log("refreshHHFFileList() on #uploadFileButton callback.")
                 }
             } else {
-                console.log(data);
                 closeFileManager();
                 openErrorDiv(data.message, "error");
             }
         });
     }
 
-    const onSelectFile = async function(x) {
-        
-        if ($(".folder-item.active").attr("id") == "parametersFolder") {
-            // $("#parametersTextArea").css("display", "none");
-            $("#fileItemSpinner").css("display", "flex");
-
-            let reader = new FileReader();
-            reader.onload = function(){
-                $("#fileItemSpinner").css("display", "none");
-                // $("#parametersTextArea").css("display", "block");
-                r = reader.result;
-                jj = JSON.parse(r);
-                kk = Object.keys(jj);
-                console.log("first key = " + kk[0].toString());
-                rootKey = $("#modelKeyInput").val().toString();
-                jj2 = {};
-                jj2[rootKey] = jj[kk[0]];
-                // $("#parametersTextArea").val(JSON.stringify(jj2, null, space='\t'));
-            };
-            reader.error = function() {
-                console.log(reader.error);
-            }
-            reader.readAsText(input.files[0]);
-        } else {
-            files = input.files.length;
-            console.log("files: " + files.toString());
-            $(".file-group").css("display", "none");
-            $("#fileItemSpinner").css("display", "flex");
-            showLoadingAnimation('Uploading files...');
-            for (let i = 0; i < input.files.length; i++) {
-                upload(input.files[i]);
-            }
-            input.files = null;
+    const onSelectFile = async function(x) {        
+        files = input.files.length;
+        $(".file-group").css("display", "none");
+        $("#fileItemSpinner").css("display", "flex");
+        showLoadingAnimation('Uploading files...');
+        for (let i = 0; i < input.files.length; i++) {
+            upload(input.files[i]);
         }
-
+        input.files = null;
     }
     input.addEventListener('change', onSelectFile, false);
 });
@@ -1350,11 +1294,6 @@ $("#selectAllButton").click(function() {
 })
 
 
-function uploadParameters() {
-    console.log("upload parameters.json");
-}
-
-
 $(".folder-item").click(function() {
     showFileList($(this));
 })
@@ -1368,7 +1307,6 @@ function showFileList(folder) {
     $(".file-item").removeClass("active");
     $(".folder-item").removeClass("active").attr("aria-current", false);
     $(".file-group").css("display", "none").removeClass("active");
-    // $(".file-textarea").css("display", "none");
     $(".file-code").css("display", "none");
     $(".ui-button").removeClass("disabled");
     
@@ -1386,8 +1324,6 @@ function showFileList(folder) {
         currList = $("#mechanismsFileList");
     } else if (currFolder == "configFolder") {
         currList = $("#configFileList"); 
-        // $("#uploadFileButton").addClass("disabled");
-        // $("#deleteFileButton").addClass("disabled");
         showFloatingOpenFileButton();
     } else if (currFolder == "modelFolder") {
         currList = $("#modelFileList"); 
@@ -1405,7 +1341,6 @@ function showFileList(folder) {
     if (currList.hasClass("empty-list")) {
         $("#downloadFileButton").addClass("disabled");
         $("#selectAllButton").addClass("disabled");
-        console.log("set selectAllButton disabled");
         $("#deleteFileButton").addClass("disabled");
     }
 }
@@ -1438,7 +1373,6 @@ function setModelKey(onClose=false) {
         console.log(data)
         if (data.status == 200 && !onClose) {
             refreshHHFFileList();
-            console.log("refreshHHFFileList() on #uploadFileButton callback.")
         }    
     });
 }
@@ -1492,6 +1426,9 @@ function resetEditorMode() {
     $("#editFileButtonImage").removeClass("show zoomout").css("top", "8px").css("left", "2px").attr("src", "/static/assets/img/open-file-white.svg");
     $("#editFileButton").attr("title", "Open/Edit files");
     $("#editorfilelist").empty();
+    $("#saveFileButton").removeClass("show disabled");
+    $("#saveFileButtonSpinner").css("display", "none");
+    $("#saveFileButtonImage").css("display", "inline");        
 }
 
 
@@ -1521,7 +1458,6 @@ function switchMode() {
     })
 
     fileSelector[0].addEventListener("animationend", function() {
-        console.log("fileSelector animation ends");
         if (editorMode) {
             fileSelector.css("display", "none");
             fileEditor.css("display", "block");
@@ -1536,11 +1472,18 @@ function switchMode() {
         }
     })
     editFileButtonImage[0].addEventListener("transitionend", function() {
+        console.log(navigator.userAgent.toString().match("Chrome"));
         if (editorMode) {
-            editFileButtonImage.css("top", "9px").css("left", "0px").attr("src", "/static/assets/img/back-arrow-white.svg");
+            editFileButtonImage.addClass("back-arrow")
+            if (!navigator.userAgent.toString().match("Chrome")) {
+                editFileButtonImage.attr("src", "/static/assets/img/back-arrow-white.svg");
+            } 
             $("#editFileButton").attr("title", "Go back");
         } else {
-            editFileButtonImage.css("top", "8px").css("left", "2px").attr("src", "/static/assets/img/open-file-white.svg");
+            editFileButtonImage.removeClass("back-arrow");
+            if (!navigator.userAgent.toString().match("Chrome")) {
+                editFileButtonImage.attr("src", "/static/assets/img/open-file-white.svg");
+            }
             $("#editFileButton").attr("title", "Open/Edit files");
         }
         editFileButtonImage.removeClass("zoomout");
@@ -1564,9 +1507,17 @@ function switchMode() {
 
 function loadEditor() {
     $("#editorfilelist").empty();
+    $(".file-group.active").children().each(function(i, el){
+        $("#editorfilelist").append("<li name='" + el.id + "' class='list-group-item folder-item editor-item'  onclick='selectFileEditor($(this).attr(\"name\"))'>" + el.id + "</li>")
+        $(".editor-item[name='" + $(".file-item.active").attr("id")).addClass("active");
+    });
+
+
     $("#fileeditor").empty();
+
     $("#fileeditor").append("<div id='openafilediv' class='file-item empty' style='display:none'>Open a file</div>");
-    
+    $("#fileeditor").append("<div id='editor-spinner' class='spinner-border file-item-spinner' style='display:block' role='status'></div>")
+
     var currFolder = $(".folder-item.active").attr("id");
     var currFile = $(".file-item.active").attr("id");
 
@@ -1576,14 +1527,13 @@ function loadEditor() {
         let files = Object.keys(jj);
 
         for (let i = 0; i < files.length; i++) {
-            $("#editorfilelist").append("<li name='" + files[i] + "' class='list-group-item folder-item editor-item'  onclick='selectFileEditor($(this).attr(\"name\"))'>" + files[i] + "</li>")
-            $(".editor-item[name='" + $(".file-item.active").attr("id")).addClass("active");
 
             if (currFolder == "modelFolder") {
                 $("#fileeditor").append("<div name='" + files[i] + "' class='file-code' style='display:none'><pre><code name='" + files[i] + "' class='editor python'></code></pre></div>");
                 $(".editor.python[name='" + files[i] + "']").html(jj[files[i]]);
                 if (currFile) {
                     // enable current file
+                    $("#editor-spinner").css("display", "none");
                     $(".file-code[name='" + currFile + "']").css("display", "block").addClass("active");
                 }
             } else if(currFolder == "configFolder") {
@@ -1591,6 +1541,7 @@ function loadEditor() {
                 $(".file-textarea[name='" + files[i] + "']").val(jj[files[i]]);
                 if (currFile) {
                     // enable current file
+                    $("#editor-spinner").css("display", "none");
                     $(".file-textarea[name='" + currFile + "']").css("display", "block").addClass("active");
                     originalTextAreaVal = $(".file-textarea.active").val();
                     runCheckDiffWorker();
@@ -1598,11 +1549,13 @@ function loadEditor() {
             }
         } 
         hljs.highlightAll();
+ 
+        if (!currFile) {
+            $("#editor-spinner").css("display", "none");
+            $("#openafilediv").css("display", "block");
+        }
     });
 
-    if (!currFile) {
-        $("#openafilediv").css("display", "block");
-    }
 }
 
 function updateEditor() {
@@ -1617,6 +1570,7 @@ var originalTextAreaVal = null;
 
 
 function selectFileEditor(filename) {
+    console.log("selectFileEditor() called for file: " + filename.toString());
     $("#openafilediv").css("display", "none");
     $(".editor-item").removeClass("active");
     $(".editor-item[name='" + filename + "']").addClass("active");
@@ -1626,6 +1580,7 @@ function selectFileEditor(filename) {
 
     if ($(".folder-item.active").attr("id") == "configFolder") {
         $(".file-textarea[name='" + filename + "']").css("display", "block").addClass("active");
+        console.log("set display:block on textarea of " + filename.toString());
         originalTextAreaVal = $(".file-textarea.active").val();
         runCheckDiffWorker();
     } else {
@@ -1660,11 +1615,19 @@ async function runCheckDiffWorker() {
 
 
 $("#saveFileButton").mousedown(function() {
+    if ($(this).hasClass("disabled")) {
+        return false;
+    }
     $(this).addClass("clicked");
 });
 
 $("#saveFileButton").mouseup(function() {
-    $(this).removeClass("clicked");
+    if ($(this).hasClass("disabled")) {
+        return false;
+    }
+    $(this).removeClass("clicked").addClass("disabled");
+    $("#saveFileButtonImage").css("display", "none");
+    $("#saveFileButtonSpinner").css("display", "block");
     saveCurrentTextAreaVal();
 });
 
@@ -1682,7 +1645,6 @@ function discardTextAreaChanges(switchmode=false) {
 
 function saveCurrentTextAreaVal() {
     var currFile = $(".file-textarea.active").attr("name");
-    console.log(currFile)
     var currValue = $(".file-textarea.active").val();
     var jj = {};
     jj[currFile] = currValue;
@@ -1693,12 +1655,17 @@ function saveCurrentTextAreaVal() {
         success: function(data) {
             console.log(data);
             originalTextAreaVal = currValue;
-            $("#saveFileButton").removeClass("show");
+            $("#saveFileButton").removeClass("show disabled");
+            $("#saveFileButtonSpinner").css("display", "none");
+            $("#saveFileButtonImage").css("display", "inline");
             $("#editorAlertText").removeClass("error").addClass("info").html("File saved successfully");
             $("#editorAlert").addClass("show");
         },
         error: function(error) {
             console.error(error);
+            $("#saveFileButton").removeClass("disabled");
+            $("#saveFileButtonSpinner").css("display", "none");
+            $("#saveFileButtonImage").css("display", "inline");
             $("#editorAlertText").removeClass("info").addClass("error").html(JSON.parse(error.responseText).message);
             $("#editorAlert").addClass("show");
         }
