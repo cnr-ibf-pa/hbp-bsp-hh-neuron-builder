@@ -58,10 +58,8 @@ pep517==0.8.2
 pexpect==4.8.0
 pickleshare==0.7.5
 Pillow==8.0.1
-pkg-resources==0.0.0
 progress==1.5
 prompt-toolkit==3.0.10
-psycopg2==2.7.7
 ptyprocess==0.7.0
 pycparser==2.20
 Pygments==2.7.4

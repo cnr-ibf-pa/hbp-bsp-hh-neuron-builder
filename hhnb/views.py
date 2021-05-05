@@ -2345,10 +2345,10 @@ def hhf_get_files(request, exc, ctx):
     if os.path.exists(os.path.join(hhf_dir, 'config')):
         for c in os.listdir(os.path.join(hhf_dir, 'config')):
             hhf_file_list['config'].append(c)
-            if c == 'parameters.json':
-                with open(os.path.join(hhf_dir, 'config', 'parameters.json'), 'r') as fd:
-                    jj = json.load(fd)
-                    hhf_file_list['parameters.json'] = json.dumps(jj, indent='\t')
+            # if c == 'parameters.json':
+                # with open(os.path.join(hhf_dir, 'config', 'parameters.json'), 'r') as fd:
+                    # jj = json.load(fd)
+                    # hhf_file_list['parameters.json'] = json.dumps(jj, indent='\t')
 
     # list model files
     if os.path.exists(os.path.join(hhf_dir, 'model')):
@@ -2360,6 +2360,27 @@ def hhf_get_files(request, exc, ctx):
             hhf_file_list['opt_neuron.py'] = fd.read()
     
     return HttpResponse(content=json.dumps(hhf_file_list), content_type='application/json', status=200)
+
+
+def hhf_get_files_content(request, folder, exc, ctx):
+
+    hhf_dir = request.session[exc]['hhf_dir']
+    folder = folder.split('Folder')[0]
+    hhf_files_content = {}
+
+    if not os.path.exists(os.path.join(hhf_dir, folder)):
+        return HttpResponseBadRequest()
+
+    for f in os.listdir(os.path.join(hhf_dir, folder)):
+        with open(os.path.join(hhf_dir, folder, f), 'r') as fd:
+            if f.endswith('.json'):
+                jj = json.load(fd)
+                hhf_files_content[f] = json.dumps(jj, indent=8)
+            else:
+                hhf_files_content[f] = fd.read()
+    print(hhf_files_content)
+    
+    return JsonResponse(json.dumps(hhf_files_content), safe=False)
 
 
 def hhf_download_files(request, folder, exc, ctx):
@@ -2405,22 +2426,27 @@ def hhf_download_optneuron(request, exc, ctx):
 
 
 @csrf_exempt
-def hhf_save_parameters_json(request, exc, ctx):
-    
+def hhf_save_config_file(request, config_file, exc, ctx):
+    # print(request.POST)
+    print(config_file)
+    print(request.POST.keys)
     try:
-        param_content = json.loads(request.POST.get('parameters.json', None))
+        file_content = json.loads(request.POST.get(config_file, None))
         hhf_dir = request.session[exc]['hhf_dir']
-        with open(os.path.join(hhf_dir, 'config', 'parameters.json'), 'w') as fd:
-            json.dump(param_content, fd, indent=4)
+        with open(os.path.join(hhf_dir, 'config', config_file), 'w') as fd:
+            json.dump(file_content, fd, indent=4)
 
-        return HttpResponse(content=json.dumps({'resp': 'OK', 'message': 'parameters.json overwrited correctly'}))
+        return HttpResponse(content=json.dumps({'resp': 'OK', 'message': config_file + ' saved correctly'}))
     
     except json.JSONDecodeError:
-        return HttpResponseBadRequest(content=json.dumps({'resp': 'KO', 'message': 'Malformed parameters.json file!.<br>File not saved.'}))
+        return HttpResponseBadRequest(content=json.dumps({'resp': 'KO', 'message': 'Malformed "' + config_file + '" file!<br>File not saved.'}))
 
 
 @csrf_exempt
 def hhf_upload_files(request, folder, exc, ctx):
+
+    if folder != 'morphologyFolder' and folder != 'mechanismsFolder' and folder != 'configFolder':
+        return HttpResponseForbidden()
 
     if request.method == 'POST':
         file_content = request.body
@@ -2428,30 +2454,33 @@ def hhf_upload_files(request, folder, exc, ctx):
 
         hhf_dir = request.session[exc]['hhf_dir']
 
-        if folder == 'parametersFolder':
-            # try:
-            # with open(os.path.join(hhf_dir, 'config', 'parameters.json'), 'w') as fd:
-                # fd.write(file_content.decode());
+        if folder == 'configFolder':
+            if filename == 'morph.json':
+                return HttpResponse(json.dumps({'response': 'KO', 'message': 'Upload rejected.<br><br>The "morph.json" file will be generated automatically<br>once the morphology file will be uploaded.'}))
             try:
-                # with open(os.path.join(hhf_dir, 'config', 'parameters.json'), 'r') as fd:
                 jj = json.loads(file_content.decode())
                 k = list(jj.keys())[0]
-                parameters = {request.session[exc]['hhf_model_key']: jj[k]}
-                with open(os.path.join(hhf_dir, 'config', 'parameters.json'), 'w') as fd:
-                    json.dump(parameters, k, indent=4)
+                filename_json = {request.session[exc]['hhf_model_key']: jj[k]}
+                with open(os.path.join(hhf_dir, 'config', filename), 'w') as fd:
+                    json.dump(filename_json, fd, indent=4)
             except json.JSONDecodeError:
-                os.remove(os.path.join(hhf_dir, 'config', 'parameters.json'))
+                if os.path.exists(os.path.join(hhf_dir, 'config', filename)):
+                    os.remove(os.path.join(hhf_dir, 'config', filename))
                 return HttpResponseBadRequest(content=json.dumps({'message': 'Wrong file type. Accept only ".json" format.<br><br>Uploaded file deleted !'}))
             
-            return HttpResponse(content=json.dumps({'response': 'OK', 'message': 'file uploaded successfully'}), status=200)
-
-        if folder != 'morphologyFolder' and folder != 'mechanismsFolder':
-            return HttpResponseForbidden()
+            return HttpResponse(content=json.dumps({'response': 'OK', 'message': 'File uploaded successfully'}), status=200)
 
         dst_dir = os.path.join(hhf_dir, folder.split('Folder')[0])
 
         if not os.path.exists(dst_dir):
             os.mkdir(dst_dir)
+
+        if folder == 'morphologyFolder':
+            if not filename.endswith('.asc'):
+                return HttpResponse(content=json.dumps({'response': 'KO', 'message': 'File "%s" rejected.<br>Moprholy file must be in ".asc" format.' % filename}))
+        elif folder == 'mechanismsFolder':
+            if not filename.endswith('.mod'):
+                return HttpResponse(content=json.dumps({'response': 'KO', 'message': 'File "%s" rejected.<br>Mechanisms file must be in ".mod" format.' % filename}))
 
         with open(os.path.join(dst_dir, filename), 'wb') as fd:
             fd.write(file_content)
@@ -2461,9 +2490,9 @@ def hhf_upload_files(request, folder, exc, ctx):
             with open(os.path.join(hhf_dir, 'config', 'morph.json'), 'w') as fd:
                 json.dump(morp_dict, fd)
 
-        return HttpResponse(content=json.dumps({'response': 'OK', 'message': 'file uploaded successfully'}), status=200)
+        return HttpResponse(content=json.dumps({'response': 'OK', 'message': 'File uploaded successfully'}), status=200)
 
-    return HttpResponseBadRequest(content=json.dumps({'response': 'KO', 'message': 'some errors occured while uploading files'}))
+    return HttpResponseBadRequest(content=json.dumps({'response': 'KO', 'message': 'Some errors occured while uploading files'}))
 
 
 def hhf_delete_files(request, folder, exc, ctx):
@@ -2472,17 +2501,14 @@ def hhf_delete_files(request, folder, exc, ctx):
         file_ids = json.loads(request.GET.get('file_list', None))
         
         hhf_dir = request.session[exc]['hhf_dir']
-        morp_dir = os.path.join(hhf_dir, 'morphology')
-        mods_dir = os.path.join(hhf_dir, 'mechanisms')
-        # parameters_dir = os.path.join(user_dir, 'hhf', 'parameters')
+        folder = folder.split('Folder')[0]
 
-        if folder == 'morphologyFolder':
-            for f in file_ids['id']:
-                os.remove(os.path.join(morp_dir, f))
+        if folder == 'morphology':
+            os.remove(os.path.join(hhf_dir, folder, f))
             os.remove(os.path.join(hhf_dir, 'config', 'morph.json'))
-        if folder == 'mechanismsFolder':
+        else:
             for f in file_ids['id']:
-                os.remove(os.path.join(mods_dir, f))
+                os.remove(os.path.join(hhf_dir, folder, f))
 
         return HttpResponse(status=200)
 

@@ -952,7 +952,7 @@ td {
 
 .morp-item, .mod-item {
     cursor: pointer;
-   // background-color: rgba(255, 255, 255, .7);
+   /* background-color: rgba(255, 255, 255, .7); */
 }
 .morp-item:hover, .mod-item:hover {
     background-color: white;
@@ -968,15 +968,16 @@ td {
 /* file manager ui */
 
 .file-manager {
-    width: 900px;
-    height: 500px;
+    width: 1100px;
+    height: 700px;
     border: solid rgba(250, 250, 250, .8) 8px;
     background-color: rgba(250, 250, 250, .5);
     border-radius: inherit;
 }
 
+
 .file-manager-container {
-    min-width: 884px;
+    min-width: 1084px;
     line-height: 1.5;
     height: 484px;
 }
@@ -1005,6 +1006,20 @@ td {
 .file-manager-group > .list-group-item {
     border-color: white;
 }
+
+
+#editorselector, #fileeditor {
+    display: none;
+    opacity: 0;
+}
+
+.folder-selector.fade-out, .file-selector.fade-out {
+    animation: fade-out .15s linear 0s 1 forwards ;
+}
+.folder-selector.fade-in, .file-selector.fade-in {
+    animation: fade-in .15s linear 0s 1 forwards;
+}
+
 .folder-group > .list-group-item:hover {
     background-color: white;
     color: #793802ff;
@@ -1014,10 +1029,11 @@ td {
     color: white;
 }
 
+
 .file-selector {
     background-color: rgba(255, 255, 255, .2);
     line-height: 1;
-    height: calc( 484px - 7% );
+    height: calc( 684px - 7% );
     overflow: auto;
     scrollbar-width: thin;
 }
@@ -1032,7 +1048,8 @@ td {
 .file-selector > .list-group > .list-group-item:hover {
     background-color: white;
 }
-.file-group > .list-group-item.active, .file-group > .list-group-item.active:hover  {
+.file-group > .list-group-item.active,
+.file-group > .list-group-item.active:hover  {
     background-color: #daa5204d;
     color: #793802ff;
 }
@@ -1042,7 +1059,7 @@ td {
 }
 
 .overlay-content.file-manager-content {
-    top: calc( ( 50vh - 350px ) / 2 );
+    top: calc( (100vh - 700px) / 2 - 50px);
     padding: 0rem;
 }
 
@@ -1058,7 +1075,6 @@ td {
     height: 100%;
     font-size: .9rem;
     border-radius: inherit;
-    border: none;
     overflow-x: auto;
     padding: 4px;
     background-color: inherit;
@@ -1067,7 +1083,10 @@ td {
     white-space: pre;
     text-align: left;
     scrollbar-width: thin;
+    border-bottom-right-radius: 12px;
+    border: solid 4px rgba(0,0,0,0);
 }
+
 .file-textarea:focus, .file-code:focus, pre:focus, code:focus {
     outline-width: 0;
 }
@@ -1077,7 +1096,7 @@ td {
     border: unset;
     font-size: 1.5rem;
     color: rgb(180, 180, 180);
-    margin-top: calc(25% + 60px);
+    margin-top: calc(25% + 160px);
     position: relative;
     display: flex;
     justify-content: center;
@@ -1110,7 +1129,9 @@ td {
     /* padding: 22px; */
     display: flex;
     height: 45px;
-    margin: 12px;
+    margin-bottom: -8px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .model-key-group > label {
@@ -1148,6 +1169,111 @@ td {
     color: white;
     background-color: #daa5204d;
 }
+
+.edit-floating-btn, .save-floating-btn {
+    border-radius: 64px;
+    width: 48px;
+    height: 48px;
+    background-color: #0a4ac1;
+    position: absolute;
+    right: 3%;
+    bottom: 0%;
+    opacity: 0;
+    transition: all ease-out .15s;
+    box-shadow: 0px 6px 4px -2px rgb(120, 120 , 120);
+    cursor: pointer;
+    z-index: 2;
+}
+.save-floating-btn {
+    /* transition-duration: .3s; */
+    /* transition-delay: .3s; */
+    bottom: 5%;
+    z-index: 1;
+}
+
+.edit-floating-btn > img, .save-floating-btn > img {
+    width: 24px;
+    height: 24px;
+    top: 8px;
+    left: 2px;
+    position: relative;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -o-user-select: none;
+    user-select: none;
+}
+.save-floating-btn > img {
+    left: 0;
+}
+
+.edit-floating-btn.show {
+    bottom: 5%;
+    opacity: 1;
+}
+.save-floating-btn.show {
+    bottom: 15%;
+    opacity: 1;
+}
+
+.edit-floating-btn.clicked {
+    box-shadow: 0 0 0 0 rgb(120, 120 , 120);
+    bottom: 4.5%;
+}
+.save-floating-btn.clicked {
+    box-shadow: 0 0 0 0 rgb(120, 120 , 120);
+    bottom: 14.5%;
+}
+
+.editor-alert {
+    /* display: block; */
+    opacity: 0;
+    position: absolute;
+    width: calc( (1100px / 3) * 2 );
+    left: calc( 1100px / 3 );
+    bottom: 0%;
+    transition: all ease-out .3s;
+}
+.editor-alert > div {
+    width: max-content;
+    padding: 8px 36px;
+    border-radius: 64px;
+    line-height: 1.5;
+    margin: auto;
+    color: white;
+    font-weight: bold;
+}
+.editor-alert > div.info {
+    background-color: rgba(0, 76, 121, 0.52);
+}
+.editor-alert > div.error {
+    background-color: rgba(191, 14, 14, 0.61);
+}
+.editor-alert.show {
+    opacity: 1;
+    bottom: 5%;
+}
+
+/* file manager animations */
+
+@keyframes fade-out {
+    0% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+    }
+}
+
+@keyframes fade-in {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
 
 /* icons */
 
@@ -1383,6 +1509,14 @@ i.black {
     color: rgb(255, 115, 0);
 }
 
+.fa-file-alt {
+    cursor: pointer;
+    transition: all ease .3s;
+}
+.fa-file-alt:hover {
+    color: #c700ff;
+}
+
 i.disabled {
     color: rgb(190, 190, 190);
     cursor: unset;
@@ -1398,4 +1532,12 @@ i.disabled:hover {
 
 #infoFileManagerButton:hover {
     color: #0aa0fb;
+}
+
+#editFileButtonImage {
+    transition: all ease-in .15s;
+}
+#editFileButtonImage.zoomout {
+    opacity: 0;
+    transform: scale(0%);
 }
