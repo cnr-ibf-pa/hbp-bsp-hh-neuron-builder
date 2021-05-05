@@ -2306,7 +2306,7 @@ def hhf_comm(request, exc='', ctx=''):
                 r = requests.get(m['url'], verify=False)
                 with open(os.path.join(mod_dir, m['name']), 'wb') as fd:
                     for chunk in r.iter_content():
-        #                 fd.write(chunk)
+                        fd.write(chunk)
 
         request.session[exc]['from_hhf'] = True
         request.session[exc]['hhf_dir'] = hhf_dir
