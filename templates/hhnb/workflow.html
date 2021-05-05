@@ -603,7 +603,7 @@
                         <!-- <i id="openFileButton" class="fas fa-file-alt fa-lg" title="Open/Edit file"></i> -->
                         <i id="downloadFileButton" class="ui-button fas fa-file-download fa-lg" title="Download selection"></i>
                         <i id="uploadFileButton" class="ui-button fas fa-file-upload fa-lg" title="Upload to this folder"></i>
-                        <i id="deleteFileButton" class="ui-button fas fa-trash fa-lg" title="Delete selection"></i>
+                        <i id="deleteFileButton" class="ui-button fas fa-trash fa-lg" data-bs-toggle="modalInfo" href="#modalInfo" title="Delete selection"></i>
                     </div>
                 </div>
                 <div class="row full g-0 ">
@@ -640,40 +640,49 @@
                     <div id="fileeditor" class="col-8 file-selector"></div>
                 </div>
             </div>
-            <div id="saveFileButton" class="save-floating-btn" title="Save file">
-                <img src="{% static 'assets/img/save-file-white.svg' %}">
+            <div id="saveFileButton" class="save-floating-btn" title="Save file" draggable="false" ondragstart="return false;">
+                <img src="{% static 'assets/img/save-file-white.svg' %}" draggable="false" ondragstart="return false;">
             </div>
-            <div id="editFileButton" class="edit-floating-btn" title="Open/Edit file">
-                <img id="editFileButtonImage" src="{% static 'assets/img/open-file-white.svg' %}">
+            <div id="editFileButton" class="edit-floating-btn" title="Open/Edit file" draggable="false" ondragstart="return false;">
+                <img id="editFileButtonImage" src="{% static 'assets/img/open-file-white.svg' %}" draggable="false" ondragstart="return false;">
             </div>
+            <div id="editorAlert" class="editor-alert"><div id="editorAlertText">Some text blablablabla</div></div>
         </div>
     </div>
 </div>
-
-    <!-- Button trigger modal -->
-    <button id="modalButton" type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
-        Launch static backdrop modal
-    </button>
     
-    <!-- Modal -->
-    <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="false">
-        <div class="modal-dialog" style="max-width: 650px">
+<!-- Modal -->
+<div id="modalHHF" class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="false">
+    <div class="modal-dialog" style="max-width: 650px">
         <div class="modal-content">
             <div class="modal-header">
-            <h5 class="modal-title" id="staticBackdropLabel">HippocampusHub - Optimization file manager</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <h5 class="modal-title" id="staticBackdropLabel">HippocampusHub - Optimization file manager</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 The single cell model optimization process, set in the HH-Neuron Builder workflows, relies on the Python-based <a href="https://pypi.org/project/bluepyopt/" target="_blank">BluePyOpt</a> optimization suite.<br><br>The model to be optimized, against electrophysiological data provided by the user, is made up of several files and folders relative to both the NEURON model itself and the BluePyOpt optimization process. <br>More specifically, the NEURON model must comprise the 'mechanisms' (i.e., NEURON <i>.mod</i> files) and a morphology file (in <i>.asc</i> format).<br>These files combines with the BluePyOpt specific routines to finalize the model optimization. More specifically the 'opt_neuron.py' script is launched and makes use of the 'template.py' and 'evaluator.py' modules, which in turn read the 'parameters.json', 'features.json' and 'protocols.json' files provided by the user.<br><br><b>In order to customize the model to be optimized you can click on 'View/Upload model files' in the 'Optimization files' panel and upload your own <i>.mod</i> and 'parameters.json' files</b> (you will be able to upload or generate the 'features.json' and 'protocols.json' files via the 'Feature extraction' panel). You will also be able to download all the other above mentioned files to get a gist of how the optimization workflow is implemented.<br><br>Please bear in mind that these are advanced funcionalities for power users. If you have any doubt on how to use these features, do not hesitate to contact us at <i>support [ at ] ebrains.eu</i>.
 
             </div>
             <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="openFileManager()">Close</button>
             </div>
         </div>
+    </div>
+</div>
+
+<div id="confirmationDialogModal" class="modal fade" aria-hidden="true" aria-labelledby="modalInfoTitle" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 id="confirmationDialogModalTitle" class="modal-title"></h5>
+            </div>
+            <div id="confirmationDialogModalFooter" class="modal-footer">
+                <button id="confirmationDialogModalCancelButton" type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button id="confirmationDialogModalOkButton" type="button" class="btn btn-primary" data-bs-dismiss="modal">Ok</button>
+            </div>
         </div>
     </div>
-  
+</div>
 
 
 <script>

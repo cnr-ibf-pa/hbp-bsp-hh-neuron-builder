@@ -31,6 +31,7 @@ register_converter(converters.CurrentOrStorageCollabConverter, 'current_or_stora
 register_converter(converters.HpcConverter, 'hpc')
 register_converter(converters.JobIdConverter, 'jobid')
 register_converter(converters.FolderConverter, 'folder')
+register_converter(converters.ConfigFileConverter, 'config_file')
 
 required = '<exc:exc>/<uuid:ctx>'
 # required = ''
@@ -102,7 +103,7 @@ urlpatterns = [
     path('hhf-delete-files/<folder:folder>/' + required, views.hhf_delete_files),
     path('hhf-apply-model-key/' + required + '/<any:model_key>', views.hhf_apply_model_key),
     path('hhf-get-model-key/' + required + '/', views.hhf_get_model_key),
-    path('hhf-save-parameters-json/' + required, views.hhf_save_parameters_json),
+    path('hhf-save-config-file/<config_file:config_file>/' + required, views.hhf_save_config_file),
     path('hhf-delete-all/' + required, views.hhf_delete_all),
     path('hhf-download-all/' + required, views.hhf_download_all),
 ]

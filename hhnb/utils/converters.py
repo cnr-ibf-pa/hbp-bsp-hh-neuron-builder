@@ -124,3 +124,13 @@ class FolderConverter:
 
     def to_url(self, value):
         return value
+
+
+class ConfigFileConverter:
+    regex = 'parameters.json|features.json|protocols.json|morph.json'
+
+    def to_python(self, value):
+        return value
+
+    def to_url(self, value):
+        return value
