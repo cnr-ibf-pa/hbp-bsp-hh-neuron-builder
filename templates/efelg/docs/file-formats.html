@@ -27,7 +27,7 @@
             <div class="col-xl-3 col-6 text-end align-self-center order-xl-last">
                 <a href="/efelg/overview/"><i class="fas fa-home text-white ms-4"></i></a>
                 <a href="/efelg/docs/" target="_blank"><i class="fas fa-info-circle text-white ms-4"></i></a>
-                <a href="https://object.cscs.ch/v1/AUTH_c0a333ecf7c045809321ce9d9ecdfdea/web-resources-bsp/bsp-video-tutorials/FeatureExtraction/index.html"
+                <a href="https://object.cscs.ch:443/v1/AUTH_c0a333ecf7c045809321ce9d9ecdfdea/web-resources-bsp/cls-video-tutorial/NFE/NFE_video_tutorial_v01.mp4"
                         target="_blank"><i class="fas fa-play text-white ms-4"></i>
                 </a>
             </div>
@@ -43,15 +43,87 @@
     <main class="my-4 mx-15">
         <div class="text-justify py-3">
             <h4>
-                Lorem ipsum       
+                The NeuroFeatureExtract (NFE) gives the users the possibility to upload their own 
+                experimental files from which to extract the electrophysiological features of interest. 
+                Currently, two different formats are accepted for the upload: <em>.abf</em> and <em>.json</em>.
+                The upload functionality will be further extended in order to accept as many formats as possible
+                (e.g., all the formats readable by the
+                <a href="https://neuralensemble.org/neo/" target="_blank">neo</a>
+                software package).      
             </h4>
         </div>
         <div class="mx-auto mt-5 px-0">
-            <div class="row py-5 border-top">
-                ABF
+            <div class="py-5 border-top">
+                <h4>ABF</h4>
+                The
+                <a href="http://mdc.custhelp.com/app/answers/detail/a_id/16506/~/pclamp%3A-versions-of-the-abf-file-format-are-associated-with-which-software" target="_blank">.abf</a>
+                format (i.e., Axon Binary Format), produced with 
+                <a href="http://mdc.custhelp.com/app/home" target="_blank">Molecular Devices</a>
+                instruments, is supported. This file format is read though the 
+                <a href="https://pypi.python.org/pypi/neo/" target="_blank">neo</a>
+                package which is leveraged by the BluePyEfe package used in the NFE
+                during the feature extraction process.
+                <br>
+                In order to perform the feature extraction on this type of files, 
+                the user must upload both an <em>.abf</em> and a <em>.json</em> file containing the metadata concerning the <em>.abf</em>. 
+                The name of the metadata file must be the same as the <em>.abf</em> file with the metadata suffix 
+                (e.g. <em>my_file.abf</em> and <em>my_file_metadata.json</em>).
+                <br>
+                Here is an example of a <em>.abf</em> file and the corresponding <em>.json</em> metadata file:
+                <ul>
+                    <li>
+                        <a href="https://object.cscs.ch/v1/AUTH_c0a333ecf7c045809321ce9d9ecdfdea/web-resources-bsp/utils/NFE/abf_example.abf"
+                            target="_blank">
+                            abf_example.abf
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://object.cscs.ch/v1/AUTH_c0a333ecf7c045809321ce9d9ecdfdea/web-resources-bsp/utils/NFE/abf_example_metadata.json"
+                            target="_blank">
+                            abf_example_metadata.json
+                        </a>
+                    </li>
+                </ul>
+                The metadata must contain the following fields, which give information on the step protocol 
+                used during the recordings (example values are given):
+                <br>
+                <code class="row ms-4">
+                    "stimulus_start": [639],
+                    <br>
+                    "stimulus_end": [1639],
+                    <br>
+                    "stimulus_unit": "nA",
+                    <br>
+                    "stimulus_first_amplitude": [-0.3],
+                    <br>
+                    "stimulus_increment": [0.05],
+                    <br>
+                    "sampling_rate_unit": "Hz",
+                    <br>
+                    "sampling_rate": [50000]
+                </code>
+                <br>
+                In particular, the "stimulus_first_amplitude" and the "stimulus_increment" indicate the 
+                amplitude of the stimulus release during the first sweep and the stimulus increment at every sweep 
+                (in case only one stimulus has been delivered the “stimulus_increment” must be set to 0).
+                The web app expects the <em>.abf</em> file to contain the membrane voltage potential stored in the first AnalogSignal
+                (following the 
+                <a href="https://pypi.python.org/pypi/neo/" target="_blank">neo</a>
+                software package nomenclature) and the stimulus trace in the second.
+                <br>
+                If you encounter any problem while uploading your files, contact us at: support [ AT ] ebrains.eu
             </div>
-            <div class="row py-5 border-top">
-                JSON
+            <div class="py-5 border-top">
+                <h4>JSON</h4>
+                The <em>.json</em> files are text files containing dictionaries base on key-value pairs.
+                The accepted files are organized in such a way that, for each stimulus amplitude, the start and end time
+                (indicated with the “tonoff” keys) and the voltage traces are reported in structured dictionaries.
+                Here you can find a self-explanatory example file:
+                <a href="https://object.cscs.ch/v1/AUTH_c0a333ecf7c045809321ce9d9ecdfdea/web-resources-bsp/utils/NFE/json_example.json"
+                    target="_blank">
+                    json_example.json</a>.
+                <br>
+                If you encounter any problem while uploading your files, contact us at: support [ AT ] ebrains.eu
             </div>
         </div>
     </main>
