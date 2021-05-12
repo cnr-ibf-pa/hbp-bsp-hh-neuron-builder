@@ -36,7 +36,7 @@ ipyparallel==6.3.0
 ipython==7.16.1
 ipython-genutils==0.2.0
 jedi==0.18.0
-Jinja2==2.11.2
+Jinja2==2.11.3
 josepy==1.4.0
 jupyter-client==6.1.11
 jupyter-core==4.7.0
