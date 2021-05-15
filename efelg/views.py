@@ -26,14 +26,14 @@ import bluepyefe as bpefe
 
 
 # set logging up
-logging.basicConfig(stream=sys.stdout)
-logger = logging.getLogger()
-logger.setLevel(logging.DEBUG)
+#logging.basicConfig(stream=sys.stdout)
+#logger = logging.getLogger()
+#logger.setLevel(logging.DEBUG)
 
 # create logger if not in DEBUG mode
-accesslogger = logging.getLogger('efelg_access.log')
-accesslogger.addHandler(logging.FileHandler('efelg_access.log'))
-accesslogger.setLevel(logging.DEBUG)
+#accesslogger = logging.getLogger('efelg_access.log')
+#accesslogger.addHandler(logging.FileHandler('efelg_access.log'))
+#accesslogger.setLevel(logging.DEBUG)
 
 
 # Create your views here.
@@ -137,7 +137,7 @@ def overview(request):
     request.session['u_crr_res_d_dir'] = u_crr_res_d_dir
     request.session['u_up_dir'] = u_up_dir
 
-    accesslogger.info(resources.string_for_log('overview', request))
+    #accesslogger.info(resources.string_for_log('overview', request))
 
     # render to html
     return render(request, 'efelg/overview.html')
@@ -167,7 +167,7 @@ def select_features(request):
     global_parameters_json = json.loads(global_parameters)
     request.session['selected_traces_rest_json'] = selected_traces_rest_json
     request.session['global_parameters_json'] = global_parameters_json
-    accesslogger.info(resources.string_for_log('select_features', request, page_spec_string=selected_traces_rest))
+    #accesslogger.info(resources.string_for_log('select_features', request, page_spec_string=selected_traces_rest))
 
     return render(request, 'efelg/select_features.html')
 
@@ -190,7 +190,7 @@ def select_features(request):
     selected_traces_rest_json = json.loads(selected_traces_rest)
     request.session['selected_traces_rest_json'] = selected_traces_rest_json
 
-    accesslogger.info(resources.string_for_log('select_features', request, page_spec_string=selected_traces_rest))
+    #accesslogger.info(resources.string_for_log('select_features', request, page_spec_string=selected_traces_rest))
 
     return render(request, 'efelg/select_features.html')
 """
@@ -252,12 +252,12 @@ def show_traces(request):
     if "ctx" not in request.session:
         return render(request, 'efelg/hbp_redirect.html')
 
-    accesslogger.info(resources.string_for_log('show_traces', request))
+    #accesslogger.info(resources.string_for_log('show_traces', request))
     time_info = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
     username = request.session['username']
     userid = request.session['userid']
-    accesslogger.info("user " + username + " has accepted terms and conditions at this time " + time_info)
-    accesslogger.info("user " + userid + " has accepted terms and conditions at this time " + time_info)
+    #accesslogger.info("user " + username + " has accepted terms and conditions at this time " + time_info)
+    #accesslogger.info("user " + userid + " has accepted terms and conditions at this time " + time_info)
     return render(request, 'efelg/show_traces.html')
 
 

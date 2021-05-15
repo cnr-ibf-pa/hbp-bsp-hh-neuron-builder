@@ -33,14 +33,14 @@ from mozilla_django_oidc.contrib.drf import get_oidc_backend
 from deprecated import deprecated
 
 # set logging up
-logging.basicConfig(stream=sys.stdout)
-logger = logging.getLogger()
-logger.setLevel(logging.DEBUG)
+#logging.basicConfig(stream=sys.stdout)
+#àlogger = logging.getLogger()
+#logger.setLevel(logging.DEBUG)
 
 # create logger if not in DEBUG mode
-accesslogger = logging.getLogger('hhnb_access.log')
-accesslogger.addHandler(logging.FileHandler('hhnb_access.log'))
-accesslogger.setLevel(logging.DEBUG)
+#accesslogger = logging.getLogger('hhnb_access.log')
+#accesslogger.addHandler(logging.FileHandler('hhnb_access.log'))
+#accesslogger.setLevel(logging.DEBUG)
 
 
 def home(request, exc=None, ctx=None):
@@ -168,7 +168,7 @@ def initialize(request, exc="", ctx=""):
     request.session[exc]['mod_clb_id'] = '79183'
     request.session[exc]['mod_clb_user'] = 'test116'
 
-    accesslogger.info(resources.string_for_log('home', request))
+    #accesslogger.info(resources.string_for_log('home', request))
 
     request.session.save()
 
@@ -414,7 +414,8 @@ def embedded_efel_gui(request):
     Serving page for rendering embedded efel gui page
     """
 
-    accesslogger.info(resources.string_for_log('embedded_efel_gui', request))
+    #accesslogger.info(resources.string_for_log('embedded_efel_gui', request))
+
     return render(request, 'hhnb/embedded_efel_gui.html')
 
 
@@ -436,7 +437,7 @@ def choose_opt_model(request):
     Serving page for rendering choose optimization model page
     """
 
-    accesslogger.info(resources.string_for_log('choose_opt_model', request))
+    #accesslogger.info(resources.string_for_log('choose_opt_model', request))
     # return render(request, 'hh_neuron_builder/choose_opt_model.html')
     return render(request, 'hhnb/choose_opt_model.html')
 
@@ -740,7 +741,7 @@ def embedded_naas(request, exc="", ctx=""):
     Render page with embedded "neuron as a service" app
     """
 
-    accesslogger.info(resources.string_for_log('embedded_naas', request))
+    #accesslogger.info(resources.string_for_log('embedded_naas', request))
     dest_dir = request.session[exc]['user_dir_sim_run']
     sim_run_flag_file = os.path.join(dest_dir, request.session[exc]['sim_run_flag_file'])
     with open(sim_run_flag_file, 'w') as f:

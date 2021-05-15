@@ -702,6 +702,9 @@ function displayJobList(button) {
                 let tdButton = document.createElement("td");
 
                 tdWf.innerHTML = jobDetails.job_name;
+                if (tdWf.innerHTML == "") {
+                    tdWf.innerHTML = "Unknown";
+                }
                 tdId.innerHTML = jobDetails.job_id;
                 tdStatus.innerHTML = jobDetails.job_stage;
                 tdDate.innerHTML = moment.utc(jobDetails.job_date_submitted).format();
