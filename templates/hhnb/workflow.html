@@ -1,0 +1,707 @@
+{% extends 'hhnb/home_layout.html' %}
+{% load static %}
+
+{% block content %}
+
+
+<div id="home-main-div">
+    <div class="hhnb-secondary-nav">
+        <div class="page-title">Workflow</div>
+    </div>
+    <div class="hhnb-navbar navbar">
+        <div id="wf-title" class="workflow-id-text">Workflow id:</div>
+        <button id="wf-btn-new-wf" class="btn hhnb-navbar-btn" title="Create a new workflow" onclick="newWorkflow()">New</button>
+        <button id="wf-btn-clone-wf" class="btn hhnb-navbar-btn" title="Clone current workflow" onclick="cloneWorkflow()">Clone</button>
+        <button id="wf-btn-save" class="btn hhnb-navbar-btn" title="Download current workflow" onclick="saveWorkflow()">Save</button>
+    </div>
+</div>
+
+<div class="page">
+    <div class="container main-content workflow-content">
+        <nav class="navbar main-content-title">
+            <!-- <div class="col"></div> -->
+            <div class="title col">Cell Optimization</div>
+            <!-- <div class="col flex-end"><i class="fas fa-info-circle fa-lg white margin-right-1"></i></div> -->
+        </nav>
+        <div class="row">
+            <div class="col">
+                <div class="container secondary-content">
+                    <div class="row">
+                        <div class="col"></div>
+                        <div class="col flex-grow-4 flex-center">
+                            <div class="box-title">Feature extraction</div>
+                        </div>
+                        <div class="col flex-grow-1 flex-end">
+                            <i class="far fa-question-circle fa-lg black" 
+                                title="Click the 'Extract features' button to compute electrophysiological features (from the HBP dataset or your own experimental files) to be used in your optimization process. You can also upload your own features.json and protocols.json files by clicking on 'Upload file'">
+                            </i>
+                        </div>
+                    </div>
+                    <br>
+                    <div class="row">
+                        <button type="button" id="feat-efel-btn" class="btn workflow-btn" onclick="efelPage()">Extract features</button>
+                    </div>
+                    <div class="row">
+                        <button type="button" id="feat-up-btn" class="btn workflow-btn" onclick="displayFeatUploadDiv()">Upload files</button>
+                    </div>
+                    <div class="row">
+                        <div class="col flex-center">
+                            <button id="down-feat-btn" title="Download feature files" type="button" class="btn btn-link" onclick="downloadLocalFeat()">
+                                Download
+                            </button>
+                        </div>
+                        <div class="col flex-center">
+                            <button id="del-feat-btn" title="Delete feature files" type="button" class="btn btn-link" onclick="deleteFeatureFiles()" disabled>
+                                Delete
+                            </button>
+                        </div>                        
+                    </div>
+                </div>
+                <div id="feat-bar" class="row status-bar status-bar-text red">
+                    "features.json" and "protocols.json" NOT present
+                </div>
+            </div>
+            <div class="col">
+                <div class="container secondary-content">
+                    <div class="row">
+                        <div class="col flex-grow-1 flex-start">
+                            <!--<i id="openFileManagerIcon" class="far fa-folder fa-lg black hhf-integration-component" style="display: none" onclick="openFileManager()" title="Show morphology and mod files"></i>-->
+                        </div>
+                        <div class="col flex-grow-4 flex-center">
+                            <div class="box-title">Optimization files</div>
+                        </div>
+                        <div class="col flex-grow-1 flex-end">
+                            <i class="far fa-question-circle fa-lg black"
+                                title="Choose a model from the HBP dataset by clicking the 'Choose from database' button. Alternative, you can upload a properly formatted .zip file containing the model folders/files. For further details, please refer to the HBP Brain Simulation Platform Guidebook">
+                            </i>
+                        </div>
+                    </div>         
+                    <br>       
+                    <div class="row">
+                        <button type="button" id="opt-db-hpc-btn" class="btn workflow-btn" onclick="chooseOptModel()" title="Use optimization files from database">Choose from Model Catalog</button>
+                    </div>
+                    <div class="row">
+                        <button type="button" id="opt-up-btn" class="btn workflow-btn" onclick="displayOptSetUploadDiv()">Upload model (.zip)</button>
+                        <button type="button" id="openFileManagerButton" class="btn workflow-btn hhf-integration-component" style="display: none" onclick="openFileManager()" title="This button is only enabled when the HHNB workflow is started in the Hippocampus Hub portal. Please visit www.hippocampushub.eu portal to enable this functionality.">View/Upload model files</button>
+                    </div>
+                    <div class="row">
+                        <div class="col flex-center">
+                            <button id="down-opt-set-btn" title="Download optimization files" type="button" class="btn btn-link" onclick="downloadLocalOptSet()">
+                                Download
+                            </button>
+                        </div>
+                        <div class="col flex-center">
+                            <button id="del-opt" title="Delete optimization files" type="button" class="btn btn-link" onclick="deleteOptFiles()" disabled>
+                                Delete
+                            </button>                        
+                        </div>
+                    </div>
+                </div>
+                <div id="opt-files-bar" class="row status-bar status-bar-text red">
+                    Oprimization files NOT present
+                </div>
+            </div>
+            <div class="col">
+                <div class="container secondary-content">
+                    <div class="row">
+                        <div class="col"></div>
+                        <div class="col flex-grow-4 flex-center">
+                            <div class="box-title">Optimization settings</div>
+                        </div>
+                        <div class="col flex-grow-1 flex-end">
+                            <i class="far fa-question-circle fa-lg black"
+                                title="Click the 'Set parameters/Choose HPC button' to set the optimization (i.e. BluePyOpt) and execution (e.g. number of cores, runtime, etc.) parameters">
+                            </i>
+                        </div>
+                    </div>
+                    <br>                    
+                    <div class="row">
+                        <button type="button" id="opt-set-btn" class="btn workflow-btn x2" onclick="openHpcParameterDiv()">Set parameters/Choose HPC</button>
+                    </div>
+                    <div class="row">
+                        <div class="col flex-center">
+                            <button type="button" class="btn btn-link hidden">
+                                Download
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div id="opt-param-bar" class="row status-bar status-bar-text red">
+                    Optimization parameters NOT set
+                </div>
+            </div> 
+        </div>
+        <div class="row">
+            <button id="launch-opt-btn" type="button" class="btn main-panel-btn extends" onclick="runOptimization()" disabled>Run Optimization</button>
+        </div>
+    </div>
+    <div class="container main-content workflow-content">
+        <nav class="navbar main-content-title">
+            <!-- <div class="col"></div> -->
+            <div class="title col">Single Cell Simulation Run</div>
+            <!-- <div class="col flex-end"><i class="fas fa-info-circle fa-lg white"></i></div> -->
+        </nav>
+        <div class="row">
+            <div class="col">
+                <div class="container secondary-content large">
+                    <div class="row">
+                        <div class="col"></div>
+                        <div class="col flex-center">
+                            <div class="box-title">Optimization files</div>
+                        </div>
+                        <div class="col flex-end">
+                            <i class="far fa-question-circle fa-lg black"
+                                title="Fetch optimization results from HPC systems by clicking the 'Fetch results' button. Alternative, you can upload a properly formatted .zip file containing the optimized  model folders/files ready for simulation. For further details, please refer to the HBP Brain Simulation Platform Guidebook">
+                            </i>
+                        </div>
+                    </div>
+                    <br>
+                    <div class="row" style="padding: 0 7rem">
+                        <div class="col flex-center">
+                            <button type="button" id="opt-fetch-btn" class="btn workflow-btn lg" onclick="displayJobFetchDiv()">Fetch results</button>
+                        </div>
+                        <div class="col flex-center">
+                            <button type="button" id="opt-res-up-btn" class="btn workflow-btn lg" onclick="displayOptResUploadDiv()">Upload file</button>
+                        </div>
+                    </div>
+                    <div class="row" style="padding: 0 7rem">
+                        <div class="col flex-center">
+                            <button id="down-opt-btn" title="Download optimization files" type="button" onclick="downloadLocalOpt()"
+                                class="btn btn-link">Download results
+                            </button>
+                        </div>
+                        <div class="col flex-center">
+                            <button id="down-sim-btn" title="Download model files" type="button" class="btn btn-link" onclick="downloadLocalSim()"
+                                disabled>Download model
+                            </button>                        
+                        </div>
+                        <div class="col flex-center">
+                            <button id="del-sim-btn" title="Delete optimization files" type="button" class="btn btn-link" onclick="deleteSimFiles()"
+                                disabled>Delete
+                            </button>                        
+                        </div>
+                    </div>
+                </div>
+                <div id="opt-res-bar" class="row status-bar status-bar-text extends red">
+                   NO simulation .zip file of NO correct output drom optimization
+                </div>
+            </div>
+        </div>
+        <div class="row ">
+            <button type="button" id="run-sim-btn" class="btn main-panel-btn extends" onclick="inSilicoPage()" disabled>Run Simulation</button>
+        </div>
+    </div>
+</div>
+
+<div id="overlaywrapper" class="overlay-wrapper">
+    
+    <div id="overlayupload" class="container overlay-content">
+        <form id="uploadForm" action="" method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="row">
+                <div class="mb-3">
+                    <label id="uploadFormLabel" for="formFile" class="form-label"></label>
+                    <div id="uploadImg">
+                        <img src="{% static 'hhnb/img/expected_sim_zip.jpg' %}" alt="Expected sim zip file">
+                    </div>
+                    <input id="formFile" name="formFile" type="file" class="form-control">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <button type="button" id="cancelUploadFormButton" class="btn workflow-btn fill-background extends" onclick="closeUploadDiv(true)">Cancel</button>
+                </div>
+                <div class="col">
+                    <input type="submit" id="uploadFormButton" disabled class="btn workflow-btn fill-background extends" value="Upload"/>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div id="overlayparam" class="overlay-content">
+        <form id="submitJobParamForm" method="POST">
+            {% csrf_token %}
+            <div class="container">
+                <div class="row">
+                    <div id="hpcChooserParams" class="accordion">
+                        <div class="accordion-item">
+                            <h2 id="DAINT-CSCS" class="accordion-header">
+                                <button type="button" id="accordionDaint" name="DAINT-CSCS" class="accordion-button hpc collapsed" data-bs-toggle="collapse" data-bs-target="#daintCollapse" aria-expanded="false" aria-controls="daintCollapse">
+                                    CSCS-DAINT
+                                </button>
+                            </h2> 
+                            <div id="daintCollapse" class="accordion-collapse collapse" aria-labelledby="DAINT-CSCS" data-bs-parent="#hpcChooserParams">
+                                <div class="hpc-param-chooser container">
+                                    <div class="row">
+                                        <div class="input-group">
+                                            <!-- <div class="input-group-prepend"> -->
+                                                <span class="input-group-text">Project ID</span>
+                                            <!-- </div> -->
+                                            <input type="text" class="form-control" id="daint_project_id" placeholder="Set project" required>
+                                        </div>
+                                    </div>
+                                    <div class="row row-separator"></div> 
+                                    <div class="row">
+                                        <div class="col">
+                                            <div class="card input-card">
+                                                <div class="card-header input-card-header">Algorithm Parameters</div>
+                                                <div class="card-body ">
+                                                    <div class="input-group">
+                                                        <!-- <div class="input-group-prepend"> -->
+                                                            <span class="input-group-text" title="Number of generation (max 60)"># Gen</span>
+                                                        <!-- </div> -->
+                                                        <input type="number" class="form-control small-placeholder" name="gen-max" id="daint-gen-max" title="Number of generation (max 60)" placeholder="Number of generation (max 60)" step="1" min="1" max="60">
+                                                    </div>
+                                                    <br>
+                                                    <div class="input-group">
+                                                        <!-- <div class="input-group-prepend"> -->
+                                                            <span class="input-group-text" title="Offspring size">Offspring</span>
+                                                        <!-- </div> -->
+                                                        <input type="number" class="form-control" name="offspring" id="daint-offspring" title="Offspring size" placeholder="Offspring size" step="1" min="1" max="60">
+                                                    </div>
+                                                    <br>
+                                                    <div class="input-group" style="visibility: hidden;">
+                                                        <div class="input-group-prepend">
+                                                            <span class="input-group-text"></span>
+                                                        </div>
+                                                        <input class="form-control">
+                                                    </div>
+                                                        
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col">
+                                            <div class="card input-card">
+                                                <div class="card-header input-card-header">Optimization Run Parameters</div>
+                                                <div class="card-body">
+                                                    <div class="input-group">
+                                                        <!-- <div class="input-group-prepend"> -->
+                                                            <span class="input-group-text" title="Number of nodes"># Nodes</span>
+                                                        <!-- </div> -->
+                                                        <input type="number" class="form-control small-placeholder" name="node-num" id="daint-node-num" title="Number of nodes" placeholder="Number of nodes" default="6" step="1" min="1" required>
+                                                    </div>    
+                                                    <br>
+                                                    <div class="input-group">
+                                                        <!-- <div class="input-group-prepend"> -->
+                                                            <span class="input-group-text" title="Number of cores"># Cores</span>
+                                                        <!-- </div> -->
+                                                        <input type="number" class="form-control small-placeholder" name="core-num" id="daint-core-num" title="Number of cores" placeholder="Number of cores" value="24" step="1" min="1" required>
+                                                    </div>   
+                                                    <br>
+                                                    <div class="input-group">
+                                                        <!-- <div class="input-group-prepend"> -->
+                                                            <span class="input-group-text" title="Runtime">Runtime</span>
+                                                        <!-- </div> -->
+                                                        <input type="text" class="form-control small-placeholder" name="runtime" id="daint-runtime" title="Runtime" placeholder="Runtime" value="120m" required>
+                                                    </div>  
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>        
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 id="SA-CSCS" class="accordion-header">
+                                <button type="button" id="accordionSADaint" name="SA-CSCS" class="accordion-button hpc collapsed" data-bs-toggle="collapse" data-bs-target="#serviceAccountCollapse" aria-expanded="false" aria-controls="serviceAccountCollapse">
+                                    CSCS-DAINT Service Account
+                                </button>
+                            </h2>
+                            <div id="serviceAccountCollapse" class="accordion-collapse collapse" aria-labelledby="SA-CSCS" data-bs-parent="#hpcChooserParams">
+                                <div class="hpc-param-chooser container">
+                                    <div class="row">
+                                        <div class="col">
+                                            <div class="card input-card">
+                                                <div class="card-header input-card-header">Algorithm Parameters</div>
+                                                <div class="card-body ">
+                                                    <div class="input-group">
+                                                        <!-- <div class="input-group-prepend"> -->
+                                                            <span class="input-group-text" title="Number of generation (max 60)"># Gen</span>
+                                                        <!-- </div> -->
+                                                        <input type="number" class="form-control small-placeholder" name="gen-max" id="sa-daint-gen-max" title="Number of generation (max 60)" placeholder="Number of generation (max 60)" step="1" min="1" max="60">
+                                                    </div>
+                                                    <br>
+                                                    <div class="input-group">
+                                                        <!-- <div class="input-group-prepend"> -->
+                                                            <span class="input-group-text" title="Offspring size">Offspring</span>
+                                                        <!-- </div> -->
+                                                        <input type="number" class="form-control" name="offspring" id="sa-daint-offspring" title="Offspring size" placeholder="Offspring size" step="1" min="1" max="60">
+                                                    </div>
+                                                    <br>
+                                                    <div class="input-group" style="visibility: hidden;">
+                                                        <!-- <div class="input-group-prepend"> -->
+                                                            <span class="input-group-text"></span>
+                                                        <!-- </div> -->
+                                                        <input class="form-control">
+                                                    </div>
+                                                        
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col">
+                                            <div class="card input-card">
+                                                <div class="card-header input-card-header">Optimization Run Parameters</div>
+                                                <div class="card-body">
+                                                    <div class="input-group">
+                                                        <!-- <div class="input-group-prepend"> -->
+                                                            <span class="input-group-text" title="Number of nodes"># Nodes</span>
+                                                        <!-- </div> -->
+                                                        <input type="number" class="form-control small-placeholder" name="node-num" id="sa-daint-node-num" title="Number of nodes" placeholder="Number of nodes" value="6" step="1" min="1" required>
+                                                    </div>    
+                                                    <br>
+                                                    <div class="input-group">
+                                                        <!-- <div class="input-group-prepend"> -->
+                                                            <span class="input-group-text" title="Number of cores"># Cores</span>
+                                                        <!-- </div> -->
+                                                        <input type="number" class="form-control small-placeholder" name="core-num" id="sa-daint-core-num" title="Number of cores" placeholder="Number of cores" value="24" step="1" min="1" required>
+                                                    </div>   
+                                                    <br>
+                                                    <div class="input-group">
+                                                        <!-- <div class="input-group-prepend"> -->
+                                                            <span class="input-group-text" title="Runtime">Runtime</span>
+                                                        <!-- </div> -->
+                                                        <input type="" class="form-control small-placeholder" name="runtime" id="sa-daint-runtime" title="Runtime" placeholder="Runtime" value="2" required>
+                                                    </div>  
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>        
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 id="NSG" class="accordion-header">
+                                <button type="button" id="accordionNSG" name="NSG" class="accordion-button hpc collapsed" data-bs-toggle="collapse" data-bs-target="#nsgCollapse" aria-expanded="false" aria-controls="nsgCollapse">
+                                    NSG - NeuronScience Gateway
+                                </button>
+                            </h2>
+                            <div id="nsgCollapse" class="accordion-collapse collapse" aria-labelledby="NSG" data-bs-parent="#hpcChooserParams">
+                                <div class="hpc-param-chooser container">
+                                    <div class="row">
+                                        <div class="input-group">
+                                            <!-- <div class="input-group-prepend"> -->
+                                                <span class="input-group-text" title="NSG Username">Username</span>
+                                            <!-- </div> -->
+                                            <input type="text" class="form-control username" id="username_submit" name="username_submit" placeholder="NSG Username" style="border-top-right-radius: .25rem; border-bottom-right-radius: .25rem;" required>
+                                            <!-- <div class="input-group-prepend"> -->
+                                                <span class="input-group-text password" title="NSG Password">Password</span>
+                                            <!-- </div> -->
+                                            <input type="password" class="form-control" id="password_submit" name="password_submit" placeholder="NSG Password" required>
+                                        </div>
+                                    </div>
+                                    <div class="row row-separator"></div> 
+                                    <div class="row">
+                                        <div class="col">
+                                            <div class="card input-card">
+                                                <div class="card-header input-card-header">Algorithm Parameters</div>
+                                                <div class="card-body ">
+                                                    <div class="input-group">
+                                                        <!-- <div class="input-group-prepend"> -->
+                                                            <span class="input-group-text" title="Number of generation (max 60)"># Gen</span>
+                                                        <!-- </div> -->
+                                                        <input type="number" class="form-control small-placeholder" name="gen-max" id="nsg-gen-max" title="Number of generation (max 60)" placeholder="Number of generation (max 60)" step="1" min="1" max="60">
+                                                    </div>
+                                                    <br>
+                                                    <div class="input-group">
+                                                        <!-- <div class="input-group-prepend"> -->
+                                                            <span class="input-group-text" title="Offspring size">Offspring</span>
+                                                        <!-- </div> -->
+                                                        <input type="number" class="form-control" name="offspring" id="nsg-offspring" title="Offspring size" placeholder="Offspring size" step="1" min="1" max="60">
+                                                    </div>
+                                                    <br>
+                                                    <div class="input-group" style="visibility: hidden;">
+                                                        <!-- <div class="input-group-prepend"> -->
+                                                            <span class="input-group-text"></span>
+                                                        <!-- </div> -->
+                                                        <input class="form-control">
+                                                    </div>
+                                                        
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col">
+                                            <div class="card input-card">
+                                                <div class="card-header input-card-header">Optimization Run Parameters</div>
+                                                <div class="card-body">
+                                                    <div class="input-group">
+                                                        <!-- <div class="input-group-prepend"> -->
+                                                            <span class="input-group-text" title="Number of nodes"># Nodes</span>
+                                                        <!-- </div> -->
+                                                        <input type="number" class="form-control small-placeholder" name="node-num" id="nsg-node-num" title="Number of nodes" placeholder="Number of nodes" value="1" step="1" min="1" required>
+                                                    </div>    
+                                                    <br>
+                                                    <div class="input-group">
+                                                        <!-- <div class="input-group-prepend"> -->
+                                                            <span class="input-group-text" title="Number of cores"># Cores</span>
+                                                        <!-- </div> -->
+                                                        <input type="number" class="form-control small-placeholder" name="core-num" id="nsg-core-num" title="Number of cores" placeholder="Number of cores" value="2" step="1" min="1" required>
+                                                    </div>   
+                                                    <br>
+                                                    <div class="input-group">
+                                                        <!-- <div class="input-group-prepend"> -->
+                                                            <span class="input-group-text" title="Runtime">Runtime</span>
+                                                        <!-- </div> -->
+                                                        <input type="number" class="form-control small-placeholder" name="runtime" id="nsg-runtime" title="Runtime" placeholder="Runtime" value="2" required>
+                                                    </div>  
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>        
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <br>
+                <div class="row">
+                    <div class="col">
+                        <button type="button" id="cancel-param-btn" class="btn workflow-btn fill-background extends" onclick="closeHpcParameterDiv()">Cancel</button>
+                    </div>
+                    <div class="col">
+                        <button type="button" id="apply-param" class="btn workflow-btn fill-background extends" onclick="applyJobParam()" disabled>Apply</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- fetch jobs div -->
+    <div id="overlayjobs" class="overlay-content"> 
+        <div class="container">
+            <div class="row">
+                <div id="hpcSource" class="list-group list-group-horizontal">
+                    <button type="button" id="jobsDaint" name="DAINT-CSCS" class="list-group-item fetch-jobs list-group-item-action" onclick="displayCSCSJobList($(this));">CSCS-DAINT</button>
+                    <button type="button" id="jobsSADaint" name="SA-CSCS" class="list-group-item fetch-jobs list-group-item-action" onclick="displayCSCSJobList($(this));">CSCS-DAINT<br>Service Account</button>
+                    <button type="button" id="jobsNSG" name="NSG" class="list-group-item fetch-jobs list-group-item-action" onclick="displayNsgJobList($(this));">NSG<br>NeuronScience Gateway</button>
+                </div>
+            </div>
+            <div class="row-separator"></div>
+            <div id="nsgLoginRow" class="row">
+                <div id="checkNsgLoginCard" class="card">
+                    <div class="card-header input-card-header">
+                        <div class="text-center">Check NSG Login</div>
+                    </div>
+                    <div class="card-body ">
+                        <div class="input-group">
+                            <!-- <div class="input-group-prepend"> -->
+                                <span class="input-group-text" title="NSG Username">Username</span>
+                            <!-- </div> -->
+                            <input type="text" class="form-control username" id="usernameNsg" name="username_submit" placeholder="NSG Username" style="border-top-right-radius: .25rem; border-bottom-right-radius: .25rem;" required>
+                            <!-- <div class="input-group-prepend"> -->
+                                <span class="input-group-text password" title="NSG Password">Password</span>
+                            <!-- </div> -->
+                            <input type="password" class="form-control" id="passwordNsg" name="password_submit" placeholder="NSG Password" required>
+                            <!-- <input type="button" class="btn" onclick="checkNsgLogin()" value="Check"> -->
+                        </div>
+                        <br>
+                        <button id="checkNsgLoginButton" class="btn workflow-btn" type="button" onclick="checkNsgLogin()">
+                            <span id="checkNsgSpinnerButton" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                            Check
+                          </button>
+                    </div>
+                </div>
+            </div>
+            <div id="spinnerRow" class="row">
+                <div id="jobSpinner" class="text-center">
+                    <div class="spinner-border" role="status"></div>
+                </div>
+            </div>
+            <div id="progressRow" class="row">
+                <div id="progressDiv" class="progress">
+                    <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%"></div>
+                </div>
+            </div>
+            <div class="row-separator"></div>
+            <div id="tableRow" class="row">
+                <table id="job-list-table" class="table table-hover job-list-table">
+                    <thead>
+                        <tr class="table-title">
+                            <th id="wf-th" scope="col">Workflow ID</th>
+                            <th id="job-th" scope="col">Job ID</th>
+                            <th scope="col">Status</th>
+                            <th id="dt-th" scope="col">Date/Time (UTC)</th>
+                            <th scope="col"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="job-list-body" class="job-list-body"></tbody>
+                </table>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <button type="button" id="cancel-job-list-btn" class="btn workflow-btn fill-background extends" onclick="closeJobFetchDiv()">Cancel</button>
+                </div>
+                <div class="col">
+                    <button type="button" id="refresh-job-list-btn" class="btn workflow-btn fill-background extends" onclick="refreshJobListDiv()" disabled>Refresh</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- alert if user is trying to set parameters for DAINT-CSCS or SA-CSCS system without being authenticated -->
+    <div id="hpcAuthAlert" class="alert alert-danger alert-dismissible fade" role="alert">
+        <strong>You need to be logged in to use this HPC system !<br>Please, click Cancel and login via the top-right button before doing this operation.</strong>
+        <button type="button" class="btn-close" style="padding: 2rem" onclick="dismissAlert(this)" aria-label="Close"></button>
+    </div>
+    <!-- alert if user is trying to fetch jobs without being authenticated -->
+    <div id="jobsAuthAlert" class="alert alert-danger alert-dismissible fade" role="alert">
+        <strong>You need to authenticate with Ebrains to fetch jobs on this HPC system !<br>Please, click Cancel and login via the top-right button before doing this operation.</strong>
+        <button type="button" class="btn-close" style="padding: 2rem" onclick="dismissAlert(this)" aria-label="Close"></button>
+    </div>
+
+    <div id="overlayjobprocessing" class="overlay-content">
+        <div class="container">
+            <div class="row">
+                <div id="jobProcessingTitle" class="text-center" style="margin: auto"></div>
+            </div>
+            <div class="row-separator"></div>
+            <div id="jobProcessingProgress" class="row">
+                <div class="progress">
+                    <div id="progressBarFetchJob" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- error div -->
+    <div id="overlaywrappererror" class="overlay-content">
+        <div id="overlayerror" class="error-content">
+            <div id="errordynamictext"></div>
+            <br>
+            <button id="ok-error-div-btn" class="btn workflow-btn" onclick="closeErrorDiv()">Ok</button>
+        </div>
+    </div>
+
+    <!-- reload div -->
+    <div id="overlaywrapperreload" class="overlay-content">
+        <div id="overlayreload" class="reload-content">
+            <div id="reloaddynamictext"></div>
+            <br>
+            <button id="reload-div-btn" class="btn workflow-btn fill-background" onclick="closeReloadDiv()">Reload</button>
+        </div>
+    </div>
+
+    <!-- expired workflow div -->
+    <div id="overlaywrapperexpiration" class="overlay-content">
+        <div id="overlayexpiration" class="expiration-content">
+            <div id="expirationdynamictext"></div>
+            <br>
+            <button id="home-expiration-div-btn" class="btn workflow-btn fill-background" onclick="window.location.href='/hh-neuron-builder/'">Home</button>
+        </div>
+    </div>
+
+    <div id="overlayfilemanager" class="overlay-content file-manager-content">
+        <div id="filemanager" class="file-manager">
+            <div class="container file-manager-container g-0">
+                <div class="row g-0 file-manager-ui-button">
+                    <div class="col flex-start">
+                        <i id="closeFileManagerButton" class="far fa-check-circle fa-lg" title="Close window" onclick="closeFileManager()"></i>
+                        <i id="infoFileManagerButton" class="far fa-question-circle fa-lg" title="Info"></i>
+                    </div>
+                    <div class="col flex-end">
+                        <i id="refreshFileListButton" class="ui-button fas fa-sync-alt fa-lg" title="Refresh"></i>
+                        <i id="selectAllButton" class="ui-button fas fa-check-double fa-lg" title="Select/Deselect all"></i>
+                        <!-- <i id="openFileButton" class="fas fa-file-alt fa-lg" title="Open/Edit file"></i> -->
+                        <i id="downloadFileButton" class="ui-button fas fa-file-download fa-lg" title="Download selection"></i>
+                        <i id="uploadFileButton" class="ui-button fas fa-file-upload fa-lg" title="Upload to this folder"></i>
+                        <i id="deleteFileButton" class="ui-button fas fa-trash fa-lg" data-bs-toggle="modalInfo" href="#modalInfo" title="Delete selection"></i>
+                    </div>
+                </div>
+                <div class="row full g-0 ">
+                    <div id="folderselector" class="col-4 folder-selector">
+                        <ul class="list-group file-manager-group folder-group">
+                            <li id="morphologyFolder" class="list-group-item folder-item active" aria-current="true">Morphology</li>
+                            <li id="mechanismsFolder" class="list-group-item folder-item">Mechanisms</li>
+                            <li id="configFolder" class="list-group-item folder-item">Config</li>
+                            <li id="modelFolder" class="list-group-item folder-item">Model</li>
+                            <!-- <li id="parametersFolder" class="list-group-item folder-item">parameters.json</li> -->
+                            <li id="optNeuronFolder" class="list-group-item folder-item">opt_neuron.py</li>
+                        </ul>
+                        <div class="model-key-flex-col">
+                            <div class="form-floating model-key-group">
+                                <input type="text" class="form-control model-key-input" id="modelKeyInput" placeholder="modekey-wfid" style="height: 45px;">
+                                <label for="modelKeyInput">Set .json files main key</label>
+                                <button id="modelKeyButton" class="btn btn-outline-secondary model-key-btn" type="button" onclick="setModelKey()" style="box-shadow: unset">Apply</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="editorselector" class="col-4 folder-selector">
+                        <ul id="editorfilelist" class="list-group file-manager-group folder-group"></ul>
+                    </div>
+                    <div id="fileselector" class="col-8 file-selector">
+                        <div id="fileItemSpinner" class="spinner-border file-item-spinner" role="status"></div>
+                        <ul id="morphologyFileList" class="list-group file-manager-group file-group" style="display: none;"></ul>
+                        <ul id="mechanismsFileList" class="list-group file-manager-group file-group" style="display: none"></ul>
+                        <ul id="configFileList" class="list-group file-manager-group file-group" style="display: none"></ul>
+                        <ul id="modelFileList" class="list-group file-manager-group file-group" style="display: none"></ul>
+                        <div id="optNeuronTextArea" class="file-code" style="display: none"><pre><code id="optNeuronCode" class="python"></code></pre></div>
+                    </div>
+                    <div id="fileeditor" class="col-8 file-selector"></div>
+                </div>
+            </div>
+            <div id="saveFileButton" class="save-floating-btn" title="Save file" draggable="false" ondragstart="return false;">
+                <img id="saveFileButtonImage" src="{% static 'assets/img/save-file-white.svg' %}" draggable="false" ondragstart="return false;">
+                <div id="saveFileButtonSpinner" class="spinner-border" role="status"></div>
+            </div>
+            <div id="editFileButton" class="edit-floating-btn" title="Open/Edit file" draggable="false" ondragstart="return false;">
+                <img id="editFileButtonImage" src="{% static 'assets/img/open-file-white.svg' %}" draggable="false" ondragstart="return false;">
+            </div>
+            <div id="editorAlert" class="editor-alert"><div id="editorAlertText">Some text blablablabla</div></div>
+        </div>
+    </div>
+</div>
+    
+<!-- Modal -->
+<div id="modalHHF" class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="false">
+    <div class="modal-dialog" style="max-width: 650px">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="staticBackdropLabel">HippocampusHub - Optimization file manager</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                The single cell model optimization process, set in the HH-Neuron Builder workflows, relies on the Python-based <a href="https://pypi.org/project/bluepyopt/" target="_blank">BluePyOpt</a> optimization suite.<br><br>The model to be optimized, against electrophysiological data provided by the user, is made up of several files and folders relative to both the NEURON model itself and the BluePyOpt optimization process. <br>More specifically, the NEURON model must comprise the 'mechanisms' (i.e., NEURON <i>.mod</i> files) and a morphology file (in <i>.asc</i> format).<br>These files combines with the BluePyOpt specific routines to finalize the model optimization. More specifically the 'opt_neuron.py' script is launched and makes use of the 'template.py' and 'evaluator.py' modules, which in turn read the 'parameters.json', 'features.json' and 'protocols.json' files provided by the user.<br><br><b>In order to customize the model to be optimized you can click on 'View/Upload model files' in the 'Optimization files' panel and upload your own <i>.mod</i> and 'parameters.json' files</b> (you will be able to upload or generate the 'features.json' and 'protocols.json' files via the 'Feature extraction' panel). You will also be able to download all the other above mentioned files to get a gist of how the optimization workflow is implemented.<br><br>Please bear in mind that these are advanced funcionalities for power users. If you have any doubt on how to use these features, do not hesitate to contact us at <i>support [ at ] ebrains.eu</i>.
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="openFileManager(showConfig=true)">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="confirmationDialogModal" class="modal fade" aria-hidden="true" aria-labelledby="modalInfoTitle" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 id="confirmationDialogModalTitle" class="modal-title"></h5>
+            </div>
+            <div id="confirmationDialogModalFooter" class="modal-footer">
+                <button id="confirmationDialogModalCancelButton" type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button id="confirmationDialogModalOkButton" type="button" class="btn btn-primary" data-bs-dismiss="modal">Ok</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    var exc = "{{ exc }}";
+    var ctx = "{{ ctx }}";
+    if (exc != "" && ctx != "") {
+        sessionStorage.setItem("exc", exc);
+        sessionStorage.setItem("ctx", ctx);
+        console.log(sessionStorage.getItem("exc"));
+        console.log(sessionStorage.getItem("ctx"));
+    } else {
+        console.log(exc);
+        console.log(ctx);
+    }
+</script>
+
+<script type="text/javascript" src="{% static 'hhnb/js/workflow.js' %}"></script>
+ 
+<!-- Highlighter library -->
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.1/styles/default.min.css">
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.1/highlight.min.js"></script>
+
+{% endblock %}

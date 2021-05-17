@@ -1,0 +1,40 @@
+{% extends 'hhnb/home_layout.html' %}
+{% load static %}
+
+{% block content %}
+
+<div id="home-main-div">
+    <div class="hhnb-secondary-nav">
+        <div class="page-title">Model Catalog > Choose an optimization from the database</div>
+    </div>
+    <div class="hhnb-navbar navbar">
+        <div id="wf-title" class="workflow-id-text">Workflow id:</div>
+        <button id="wf-btn-new-wf" class="btn hhnb-navbar-btn"title="Create a new workflow" onclick="newWorkflow()">New</button>
+        <button id="wf-btn-clone-wf" class="btn hhnb-navbar-btn" title="Clone current workflow" onclick="cloneWorkflow()">Clone</button>
+        <button id="wf-btn-save" class="btn hhnb-navbar-btn" title="Download current workflow" onclick="saveWorkflow()">Save</button>
+    </div>
+</div>
+
+<div id="page" class="page" style="display: none">
+    <button id="back-to-wf-btn" type="button" class="btn main-panel-btn floating-btn" onclick="window.location.href='/hh-neuron-builder/workflow/'">Cancel</button>
+    <div id="sub-title-div"></div>
+</div>
+
+<!-- "Please wait" message div -->
+<div id="overlaywrapperwaitmod" class="overlay-wrapper">
+    <div id="overlaywaitmod" style="top:35%;" class="overlay-content standard-border">
+        <div class="center-container">
+            <div class="row-center-container">
+                <div style="margin:auto;" class="spinning lg"></div>
+                <div id="waitdynamictextmod" class="please-wait-text"></div>
+                <div class="please-wait-text">Please wait ...</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript" src="{% static 'hhnb/js/choose_opt_model.js' %}"></script>
+<!--<script type="text/javascript" src="{% static 'hhnb/js/common.js' %}"></script>-->
+
+
+{% endblock %}

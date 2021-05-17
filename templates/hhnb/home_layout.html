@@ -1,0 +1,131 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Hodgkin-Huxley Neuron Builder</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width">
+
+        
+        <link rel="preload" href="{% static 'assets/animation/loading_animation/frame_0.png' %}" as="image">
+        <link rel="preload" href="{% static 'assets/animation/loading_animation/frame_1.png' %}" as="image">
+        <link rel="preload" href="{% static 'assets/animation/loading_animation/frame_2.png' %}" as="image">
+        <link rel="preload" href="{% static 'assets/animation/loading_animation/frame_3.png' %}" as="image">
+        <link rel="preload" href="{% static 'assets/animation/loading_animation/frame_4.png' %}" as="image">
+        <link rel="preload" href="{% static 'assets/animation/loading_animation/frame_5.png' %}" as="image">
+        <link rel="preload" href="{% static 'assets/animation/loading_animation/frame_6.png' %}" as="image">
+        <link rel="preload" href="{% static 'assets/animation/loading_animation/frame_7.png' %}" as="image">
+        <link rel="preload" href="{% static 'assets/animation/loading_animation/frame_8.png' %}" as="image">
+        <link rel="preload" href="{% static 'assets/animation/loading_animation/frame_9.png' %}" as="image">
+        
+        <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6" crossorigin="anonymous"> -->
+        <link type="text/css" href="{% static 'common/bootstrap-5.0.0-beta3-dist/css/bootstrap.css' %}" rel="stylesheet">
+
+        <link rel="stylesheet" type="text/css" href="{% static 'assets/themes/hhnb.css' %}">
+        <link rel="stylesheet" type="text/css" href="{% static 'assets/fontawesome/css/all.css' %}">
+        
+        <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script> -->
+        <!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js" integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf" crossorigin="anonymous"></script> -->
+        <script type="text/javascript" src="{% static 'common/bootstrap-5.0.0-beta3-dist/js/bootstrap.bundle.js' %}"></script>
+        <script type="text/javascript" src="{% static 'common/js/jquery-3.6.0.js' %}"></script>
+        
+        <link rel="stylesheet" type="text/css" href="{% static 'assets/animation/loading_animation/loading_animation.css' %}">
+        <script type="text/javascript" src="{% static 'assets/animation/loading_animation/loading_animation.js' %}"></script>
+        <script type="text/javascript" src="{% static 'bspganalytics.js' %}"></script>
+        <script type="text/javascript" src="{% static 'hhnb-motomo.js' %}"></script>
+    
+    </head>
+    <body>
+        <div id="title-div-container">
+            <nav class="navbar navbar-expand-lg hhnb-main-nav">
+                <div class="col flex-grow-2">
+                    <a target="_blank" href="https://ebrains.eu">
+                        <img src="{% static 'assets/img/ebrains_logo.svg' %}" height="48px" width="auto" alt="">
+                    </a>
+                </div>
+                <div class="col flex-grow-4 flex-center">
+                    <div class="hhnb-main-nav-center-content">
+                        <a href="/hh-neuron-builder" class="no-text-decorator">
+                            <div class="main-title">
+                                <h5>Hodgkin-Huxley</h5>
+                                <h1>Neuron Builder</h1>
+                            </div>
+                        </a>   
+                    </div>
+                </div>
+                <div class="col flex-grow-2 hhnb-main-nav-icon">
+                    <a href="/hh-neuron-builder">
+                        <i class="fas fa-home fa-lg white" title="Home"></i>
+                    </a>
+                    <a href="https://humanbrainproject.github.io/hbp-sp6-guidebook/online_usecases/single_cell_building/hippocampus/p1_hh_neuron_builder/p1_hh_neuron_builder.html"
+                        target="_blank">
+                        <i class="fas fa-info-circle fa-lg white" title="Read the Guidebook"></i>
+                    </a>
+                    <a href="https://object.cscs.ch/v1/AUTH_c0a333ecf7c045809321ce9d9ecdfdea/web-resources-bsp/bsp-video-tutorials/HodgkinHuxleyNeuronBuilder/index.html"
+                        target="_blank">
+                        <i class="fas fa-play-circle fa-lg white" title="Watch the video tutorial"></i>
+                    </a>
+                    <div style="width: 16px"></div>
+                    {% if user.is_authenticated %}                   
+                    <a class="logout" onclick="logout(this);">
+                        <i class="fas fa-sign-out-alt fa-lg white" title="Log-out"></i>
+                        <!-- <strong>Log-out</strong> -->
+                    </a>
+                    <a class="user-img" href="/hh-neuron-builder/get-user-page">
+                        <img src="/hh-neuron-builder/get-user-avatar" alt="user" onerror=this.src="{% static '/assets/img/user-circle-solid.svg' %}">
+                    </a>
+                    <form style="display: none" id="logout-form" action="{% url 'oidc_logout' %}" method="post">
+                        {% csrf_token %}
+                        <input id="logout-submit-input-button" type="submit" value="logout">
+                    </form>
+                    {% else %}
+                    <a id="loginButton" class="login" href="{% url 'oidc_authentication_init' %}">
+                        <i class="fas fa-sign-in-alt fa-lg white" title="Log-in"></i>
+                        <!-- <strong>Log-in</strong> -->
+                    </a>
+                    {% endif %}
+                </div>
+            </nav>
+        </div>
+
+        {% block content %}{% endblock %}
+        
+        <!-- error div -->
+        <div id="overlaywrapperhome" class="overlay-wrapper">
+            <div id="overlaywrappererrorhome" class="overlay-content">
+                <div id="overlayerrorhome" class="error-content">
+                    <div id="errordynamictexthome"></div>
+                    <br>
+                    <button id="ok-error-div-btn-home" class="btn workflow-btn small" onclick="closeErrorDiv()">Ok</button>
+                </div>
+            </div>
+            <!-- reload div -->
+            <div id="overlaywrapperreloadhome" class="overlay-content">
+                <div id="overlayreloadhome" class="reload-content">
+                    <div id="reloaddynamictexthome"></div>
+                    <br>
+                    <button id="reload-div-btn-home" class="btn workflow-btn small" onclick="closeReloadDiv()">Reload</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="loading-animation sublayer show">
+            <div class="loading-animation container-glass show">
+                <div id="loading-text-div" class="loading-animation text show">
+                    Loading...
+                </div>
+                <div class="loading-animation frames show"></div>
+            </div>
+        </div>
+
+    
+        <script type="text/javascript" src="{% static 'common/js/moment-with-locales.js' %}"></script>
+
+        <script> 
+            function logout(button) {
+                $("#logout-submit-input-button").trigger('click');
+            }
+        </script>
+    </body>
+</html>

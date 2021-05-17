@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   inkscape:version="1.0.2 (e86c870879, 2021-01-15, custom)"
+   sodipodi:docname="open-file-black.svg"
+   id="SVGRoot"
+   version="1.1"
+   viewBox="0 0 32.0 32.0"
+   height="32.0px"
+   width="32.0px">
+  <defs
+     id="defs38">
+    <filter
+       inkscape:label="Channel Transparency"
+       style="color-interpolation-filters:sRGB;"
+       id="filter1095">
+      <feColorMatrix
+         values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 10 10 10 1 0 "
+         in="SourceGraphic"
+         result="colormatrix"
+         id="feColorMatrix1091" />
+      <feComposite
+         in="colormatrix"
+         in2="SourceGraphic"
+         operator="in"
+         result="fbSourceGraphic"
+         id="feComposite1093" />
+      <feColorMatrix
+         result="fbSourceGraphicAlpha"
+         in="fbSourceGraphic"
+         values="0 0 0 -1 0 0 0 0 -1 0 0 0 0 -1 0 0 0 0 1 0"
+         id="feColorMatrix1097" />
+      <feColorMatrix
+         id="feColorMatrix1099"
+         values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 10 10 10 1 0 "
+         in="fbSourceGraphic"
+         result="colormatrix" />
+      <feComposite
+         in2="fbSourceGraphic"
+         id="feComposite1101"
+         in="colormatrix"
+         operator="in"
+         result="composite1" />
+    </filter>
+    <filter
+       inkscape:label="Channel Transparency"
+       style="color-interpolation-filters:sRGB"
+       id="filter1095-3">
+      <feColorMatrix
+         values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 10 10 10 1 0 "
+         in="SourceGraphic"
+         result="colormatrix"
+         id="feColorMatrix1091-6" />
+      <feComposite
+         in="colormatrix"
+         in2="SourceGraphic"
+         operator="in"
+         result="fbSourceGraphic"
+         id="feComposite1093-7" />
+      <feColorMatrix
+         result="fbSourceGraphicAlpha"
+         in="fbSourceGraphic"
+         values="0 0 0 -1 0 0 0 0 -1 0 0 0 0 -1 0 0 0 0 1 0"
+         id="feColorMatrix1097-5" />
+      <feColorMatrix
+         id="feColorMatrix1099-3"
+         values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 10 10 10 1 0 "
+         in="fbSourceGraphic"
+         result="colormatrix" />
+      <feComposite
+         in2="fbSourceGraphic"
+         id="feComposite1101-5"
+         in="colormatrix"
+         operator="in"
+         result="composite1" />
+    </filter>
+    <filter
+       inkscape:label="Channel Transparency"
+       style="color-interpolation-filters:sRGB"
+       id="filter1311">
+      <feColorMatrix
+         values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 10 10 10 1 0 "
+         in="SourceGraphic"
+         result="colormatrix"
+         id="feColorMatrix1301" />
+      <feComposite
+         in="colormatrix"
+         in2="SourceGraphic"
+         operator="in"
+         result="fbSourceGraphic"
+         id="feComposite1303" />
+      <feColorMatrix
+         result="fbSourceGraphicAlpha"
+         in="fbSourceGraphic"
+         values="0 0 0 -1 0 0 0 0 -1 0 0 0 0 -1 0 0 0 0 1 0"
+         id="feColorMatrix1305" />
+      <feColorMatrix
+         id="feColorMatrix1307"
+         values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 10 10 10 1 0 "
+         in="fbSourceGraphic"
+         result="colormatrix" />
+      <feComposite
+         in2="fbSourceGraphic"
+         id="feComposite1309"
+         in="colormatrix"
+         operator="in"
+         result="composite1" />
+    </filter>
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="11.2"
+     inkscape:cx="7.9343474"
+     inkscape:cy="20.643922"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     inkscape:document-rotation="0"
+     showgrid="true"
+     inkscape:window-width="1920"
+     inkscape:window-height="1012"
+     inkscape:window-x="0"
+     inkscape:window-y="32"
+     inkscape:window-maximized="1">
+    <inkscape:grid
+       type="xygrid"
+       id="grid47" />
+  </sodipodi:namedview>
+  <metadata
+     id="metadata41">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <g
+       id="g1453">
+      <path
+         id="path2"
+         style="fill:#000000;stroke-width:0.0613458;filter:url(#filter1095)"
+         d="M 2.0585938 0.29492188 C 1.2426947 0.29492188 0.5859375 0.95167907 0.5859375 1.7675781 L 0.5859375 30.232422 C 0.5859375 31.048321 1.2426947 31.705078 2.0585938 31.705078 L 22.669922 31.705078 C 23.48582 31.705078 24.142578 31.048321 24.142578 30.232422 L 24.142578 29.080078 A 9.6226511 9.6226511 0 0 1 23.046875 29.142578 A 9.6226511 9.6226511 0 0 1 14.455078 23.851562 L 7.2109375 23.851562 C 6.8060629 23.851562 6.4746094 23.520122 6.4746094 23.115234 L 6.4746094 22.625 C 6.4746094 22.220125 6.8060629 21.888672 7.2109375 21.888672 L 13.722656 21.888672 A 9.6226511 9.6226511 0 0 1 13.435547 19.925781 L 7.2109375 19.925781 C 6.8060629 19.925781 6.4746094 19.594339 6.4746094 19.189453 L 6.4746094 18.699219 C 6.4746094 18.294345 6.8060629 17.962891 7.2109375 17.962891 L 13.552734 17.962891 A 9.6226511 9.6226511 0 0 1 14.091797 16 L 7.2109375 16 C 6.8060629 16 6.4746094 15.66856 6.4746094 15.263672 L 6.4746094 14.773438 C 6.4746094 14.368562 6.8060629 14.037109 7.2109375 14.037109 L 15.140625 14.037109 A 9.6226511 9.6226511 0 0 1 21.027344 10.111328 L 15.798828 10.111328 C 14.989066 10.111328 14.326172 9.448434 14.326172 8.6386719 L 14.326172 0.29492188 L 2.0585938 0.29492188 z M 16.291016 0.29492188 L 16.291016 8.1484375 L 24.142578 8.1484375 L 24.142578 7.7734375 C 24.142578 7.3869612 23.988954 7.0123897 23.712891 6.7363281 L 17.707031 0.72460938 C 17.430968 0.44854774 17.056677 0.29492188 16.664062 0.29492188 L 16.291016 0.29492188 z " />
+      <g
+         id="g1375"
+         transform="translate(44.55404,-12.967542)">
+        <circle
+           style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:3;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+           id="path1367"
+           cx="-21.5"
+           cy="32.5"
+           r="5.5" />
+        <rect
+           style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:2.77755;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+           id="rect1371"
+           width="1.0000682"
+           height="5.9999886"
+           x="-38.317039"
+           y="17.821087"
+           ry="0.4285706"
+           transform="rotate(-39.013159)" />
+      </g>
+    </g>
+  </g>
+</svg>
