@@ -565,7 +565,6 @@ def extract_features(request):
     final_exclude = []
     for key in cell_dict:
         crr_el = cell_dict[key]
-        v_corr = crr_el['v_corr']
         for c_stim_el in crr_el['stim']:
             [target.append(float(i)) for i in c_stim_el if float(i) not in target]
         exc_stim_lists = [list(set(crr_el['all_stim']) - set(sublist)) for sublist in crr_el['stim']]
@@ -575,7 +574,7 @@ def extract_features(request):
             crr_exc.append(crr_stim_val)
         final_cell_dict[cell_dict[key]['cell_name']] = \
             {
-                'v_corr': 0,
+                'v_corr': crr_el['v_corr'],
                 'ljp': 0,
                 'experiments': {
                     'step': {
