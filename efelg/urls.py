@@ -30,5 +30,6 @@ urlpatterns = [
     path('hbp-redirect/', views.hbp_redirect),
     path('docs/', views.index_docs),
     path('docs/index/', views.index_docs),
-    path('docs/file-formats/', views.file_formats_docs)
+    path('docs/file-formats/', views.file_formats_docs),
+    path('get_metadata', views.get_metadata),
 ]
