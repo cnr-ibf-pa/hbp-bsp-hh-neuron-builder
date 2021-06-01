@@ -37,15 +37,19 @@
         </div>
         <nav>
             <a class="text-white fs-6 text-decoration-none" href="/efelg/docs/index">Introduction</a>
-            <a class="text-white fs-6 ms-2" href="/efelg/docs/file-formats">File Formats</a>
+            <a class="text-white fs-6 ms-2" href="/efelg/docs/file_formats">File Formats</a>
         </nav>
     </header>
     <main class="my-4 mx-15">
         <div class="text-justify py-3">
             <h4>
                 The NeuroFeatureExtract (NFE) gives the users the possibility to upload their own 
-                experimental files from which to extract the electrophysiological features of interest. 
+                experimental files from which to extract the electrophysiological features of interest.
+                <br>
                 Currently, two different formats are accepted for the upload: <em>.abf</em> and <em>.json</em>.
+                All uploaded files are remove from the server after the execution ended.
+                At runtime, they are only accessible to the user who uploaded them.
+                <br>
                 The upload functionality will be further extended in order to accept as many formats as possible
                 (e.g., all the formats readable by the
                 <a href="https://neuralensemble.org/neo/" target="_blank">neo</a>

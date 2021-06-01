@@ -156,8 +156,8 @@ async function plotCells(cells, isUploaded, id) {
         cellHeader.addClass("mt-4");
         cellHeader.append('<div id="charts-' + cell + '"></div>');
         $(divId).append(cellHeader);
-        files.forEach(el => {
-            var fileName = el.split('.')[0];
+        files.forEach(file => {
+            var fileName = file.split('.')[0];
             $('#charts-' + cell).append('<div id="' + fileName + '" class="border border-primary rounded-3 my-4 mx-1 p-2"></div>');
             var container = $("#" + fileName);
             promises.push(new Promise((resolve, reject) => {
@@ -334,7 +334,7 @@ var settingsMenu = ' \
                     <i class="fas fa-plus ms-3" onclick="updateVoltageCorrection(this, 5)"></i> \
                 </div> \
                 <div class="col-xl-1 col-lg-1 col-md-2 col-sm-2 text-end"> \
-                    <i class="far fa-question-circle fa-lg" onclick="openInfo(vcorr_title, vcorrText)"></i> \
+                    <i class="far fa-question-circle fa-lg" onclick="openInfoPanel(vcorrTitle, vcorrText)"></i> \
                 </div> \
             </div> \
         </div> \
@@ -342,5 +342,5 @@ var settingsMenu = ' \
 ';
 
 
-vcorrTitle = "VCORR_TITLE";
-vcorrText = "vcorrText";
+vcorrTitle = "Voltage Correction";
+vcorrText = "The voltage correction value inserted by the user is added to all the  voltage values (i.e., all the sweeps) of the related file.";

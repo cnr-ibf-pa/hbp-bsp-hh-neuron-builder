@@ -398,15 +398,16 @@ function onChangeEventsValue() {
 
 
 //
+function openInfoPanel(title, text) {
+    closeMessageDiv('warning-div', 'main-e-st-div');
+    $("#info-title").html(title);
+    $("#info-text").html(text);
+    openMessageDiv("info-div", "main-e-st-div");
+}
+
+
+//
 function checkUploadedFiles(id) {
-
-
-    function openInfoPanel() {
-        closeMessageDiv('warning-div', 'main-e-st-div');
-        $("#info-title").html(uploadTitle);
-        $("#info-text").html(uploadText);
-        openMessageDiv("info-div", "main-e-st-div");
-    }
 
     var files = $("input#user_files_" + id)[0].files;
     var extension = $('input[type=radio][name=extension_' + id + ']:checked').val();
@@ -451,7 +452,7 @@ function checkUploadedFiles(id) {
     if (refused_filenames.length > 0) {
         openWarning('Rejected files:<br>' + refused_filenames.join(', ') + 
             '<br><br>Please read the information note at this \
-            <span class="text-decoration-underline clickable" onclick="openInfoPanel()">link</span>');
+            <span class="text-decoration-underline clickable" onclick="openInfoPanel(uploadTitle, uploadText)">link</span>');
         return false;
     } else if (missing_files.length > 0) {
         openWarning('Missing file:<br>You should submit ' + missing_files.join(', ') + " as well!");
@@ -537,7 +538,7 @@ function createUploadBox() {
                     </div> \
                     <div class="col-lg-2 col-md-3 col-4 text-center"> \
                         <i class="far fa-question-circle fa-lg" \
-                            onclick="openInfo(uploadTitle, uploadText)"> \
+                            onclick="openInfoPanel(uploadTitle, uploadText)"> \
                         </i> \
                         <i id="delete_button_' + i_box + '" class="far fa-times-circle fa-lg ms-2" \
                             onclick="removeUploadBox(this)"> \

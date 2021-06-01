@@ -39,7 +39,7 @@
     <main id="main-e-st-div" class="text-dark">
         <div class="mx-10 my-4">
             <div class="bg-light-yellow text-center p-4 mt-4 mb-5" id="filter-groups-title">
-                <h4 class="mb-0">Select data from the EBRAINS Knowledge Graph</h4>
+                <h4 class="mb-0">Select data from the EBRAINS Knowledge Graph and other public resources</h4>
             </div>
             <div class="border border-primary rounded-3 px-1">
                 <div class="clickable mx-auto px-4 py-2" onclick="toggleParametersMenu(this)">
@@ -252,7 +252,7 @@
                 <div id='charts' class="text-center mx-auto mt-5 px-4"></div>
             </div>
             <div class="bg-light-yellow text-center p-4 my-5" id="filter-groups-title">
-                <h4 class="mb-0">Upload your own files</h4>
+                <h4 class="mb-0">Upload your own files *</h4>
             </div>
             <div id="upload_boxes">
                 <div class="text-end">
@@ -261,12 +261,20 @@
                     </button>
                 </div>
             </div>
-
             <form id='gonextform' method='POST' action='/efelg/select_features/'> {% csrf_token %}
                 <input name='data' type='hidden'>
                 <input name='global_parameters' type='hidden'>
                 <button onclick='submitAll()' class="btn btn-lg btn-outline-primary my-5 w-100">Next</button>
             </form>
+            <div>
+                <span>
+                    *
+                    <em>
+                        All uploaded files are removed from the server after the execution ended.
+                        At runtime, they are only accessible to the user who uploaded them
+                    </em>
+                </span>
+            </div>
         </div>
     </main>
 
