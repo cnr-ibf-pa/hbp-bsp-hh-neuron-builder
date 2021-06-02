@@ -59,7 +59,7 @@ def overview(request):
     # save parameters in request.session
     request.session["username"] = username
     #request.session["user_id"] = user_id
-    request.session["current_authorized_files"] = []
+    #request.session["current_authorized_files"] = []
 
     # request.session["headers"] = headers
     # request.session["authorized_data_list"] = []
@@ -69,19 +69,22 @@ def overview(request):
 
     # parameters for folder creation
     time_info = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
-
-    # create global variables in request.session
     request.session["time_info"] = time_info
-
-    # build local folder paths
-    result_dir = os.path.join(settings.MEDIA_ROOT, "efel_data", "efel_gui", "results")
-    upload_dir = os.path.join(settings.MEDIA_ROOT, "efel_data", "efel_gui", "uploaded")
+     
+    user_base_dir =  os.path.join(
+        settings.MEDIA_ROOT,
+        "efel_data",
+        "efel_gui",
+        "results",
+        username,
+        "data_" + str(time_info)
+    )
 
     # build local folder complete paths
     #u_time_f = os.path.join(userid, time_info)
     #user_crr_res_dir = os.path.join(result_dir, u_time_f)
-    u_crr_res_r_dir = os.path.join(result_dir, username, time_info, "u_res")
-    u_crr_res_d_dir = os.path.join(result_dir, username, time_info, 'u_data')
+    #u_crr_res_r_dir = os.path.join(result_dir, username, time_info, "u_res")
+    #u_crr_res_d_dir = os.path.join(result_dir, username, time_info, 'u_data')
 
     # build media relative result path
     #media_rel_crr_user_res = os.path.join(res_dir,  userid, time_info, 'u_res')
@@ -92,13 +95,17 @@ def overview(request):
     #st_rel_user_results_folder = os.path.join(res_dir, u_time_f)
     #st_rel_user_uploaded_folder = os.path.join(up_dir, userid)
 
-    user_upload_dir = os.path.join(upload_dir, username)
-    if not os.path.exists(user_upload_dir):
-        os.makedirs(user_upload_dir)
+    user_files_dir = os.path.join(user_base_dir, "u_data")
+    if not os.path.exists(user_files_dir):
+        os.makedirs(user_files_dir)
     
-    user_result_dir = os.path.join(result_dir, username)
-    if not os.path.exists(user_result_dir):
-        os.makedirs(user_result_dir)
+    uploaded_files_dir = os.path.join(user_base_dir, "uploaded")
+    if not os.path.exists(uploaded_files_dir):
+        os.makedirs(uploaded_files_dir)
+
+    user_results_dir = os.path.join(user_base_dir, "u_res")
+    if not os.path.exists(user_results_dir):
+        os.makedirs(user_results_dir)
 
     # store paths in request.session
     #request.session['media_rel_crr_user_res'] = media_rel_crr_user_res
@@ -108,9 +115,10 @@ def overview(request):
     #request.session['user_crr_res_dir'] = user_crr_res_dir
     #request.session['user_res_dir'] = user_res_dir
     #request.session['user_crr_res_dir'] = user_crr_res_dir
-    request.session['u_crr_res_r_dir'] = u_crr_res_r_dir
-    request.session['u_crr_res_d_dir'] = u_crr_res_d_dir
-    request.session['user_upload_dir'] = user_upload_dir
+    request.session['user_files_dir'] = user_files_dir
+    request.session['uploaded_files_dir'] = uploaded_files_dir
+    request.session['user_results_dir'] = user_results_dir
+    #request.session['user_upload_dir'] = user_upload_dir
 
     accesslogger.info(resources.string_for_log('overview', request))
 
@@ -172,8 +180,9 @@ def get_list(request):
 
     # metadata file path
     output_file_path = os.path.join(request.session['main_json_dir'], 'all_traces_metadata.json')
-    file_auth_fullpath = os.path.join(request.session['main_json_dir'], "files_authorization.json")
+    #file_auth_fullpath = os.path.join(request.session['main_json_dir'], "files_authorization.json")
 
+    """
     # final list of authorized files
     allfiles = []
     
@@ -184,7 +193,7 @@ def get_list(request):
     for f in files_auth:
         if files_auth[f] == "all":
             allfiles.append(f[:-5])
-    
+    """
     """
     for i in os.listdir(request.session['main_json_dir']):
         crr_file_path = os.path.join(request.session['main_json_dir'], i)
@@ -194,7 +203,7 @@ def get_list(request):
                 allfiles.append(i[:-5])
     """
 
-    request.session["current_authorized_files"] = allfiles
+    #request.session["current_authorized_files"] = allfiles
 
     """
     # if metadata all already computed, avoid extraction
@@ -223,8 +232,7 @@ def get_data(request, cellname=""):
     if "ctx" not in request.session:
         return render(request, 'efelg/overview.html')
 
-    user_upload_dir = request.session['user_upload_dir']
-    current_authorized_files = request.session["current_authorized_files"]
+    #current_authorized_files = request.session["current_authorized_files"]
 
     """
     if cellname not in current_authorized_files and not os.path.isfile(os.path.join(u_up_dir, cellname)):
@@ -241,9 +249,11 @@ def get_data(request, cellname=""):
     content = json.loads(content_json)
     """
 
+    user_files_dir = request.session['user_files_dir']
+
     file_name = cellname + ".json"
-    path_to_file = os.path.join(user_upload_dir, file_name)
-    if not file_name in os.listdir(user_upload_dir):
+    path_to_file = os.path.join(user_files_dir, file_name)
+    if not file_name in os.listdir(user_files_dir):
         r = requests.get(request.session['traces_base_url'] + file_name)
         with open(path_to_file, "w") as f:
             json.dump(r.json(), f)
@@ -314,28 +324,35 @@ def extract_features(request):
     global_parameters_json = request.session['global_parameters_json']
     allfeaturesnames = efel.getFeatureNames()
 
+    """
     crr_user_folder = request.session['time_info']
     full_crr_result_folder = request.session['u_crr_res_r_dir']
     full_crr_uploaded_folder = request.session['user_upload_dir']
     full_crr_data_folder = request.session['u_crr_res_d_dir']
     full_crr_user_folder = request.session['user_crr_res_dir']
-    check_features = request.session["check_features"]
-    request.session['selected_features'] = check_features
+    """
+
+    conf_dir = request.session['main_json_dir']
+    uploaded_files_dir = request.session['uploaded_files_dir']
+    user_files_dir = request.session['user_files_dir']
+    user_results_dir = request.session['user_results_dir']
+    time_info = request.session['time_info']
+    selected_features = request.session["selected_features"]
+
     cell_dict = {}
 
     print('STEP 1')
 
-    crr_cell_data_folder = full_crr_data_folder
-
     for k in selected_traces_rest_json:
-
-        with open(os.path.join(request.session['user_upload_dir'], k + ".json")) as f:
+        print("FILE: " + str(k))
+        path_to_file = os.path.join(user_files_dir, k + '.json')
+        with open(path_to_file) as f:
             crr_file_dict = json.loads(f.read()) 
         crr_file_all_stim = list(crr_file_dict['traces'].keys())
         crr_file_sel_stim = selected_traces_rest_json[k]['stim']
         crr_vcorr = selected_traces_rest_json[k]['v_corr']
 
-        crr_file_rest_name = k + '.json' 
+        """
         if os.path.isfile(os.path.join(json_dir, crr_file_rest_name)):
             crr_json_file = os.path.join(json_dir, crr_file_rest_name)
         elif os.path.isfile(os.path.join(full_crr_uploaded_folder, crr_file_rest_name)):
@@ -345,6 +362,7 @@ def extract_features(request):
 
         with open(crr_json_file) as f:
             crr_file_dict_read = f.read()
+        """
 
         if "stimulus_unit" in crr_file_dict:
             crr_file_amp_unit = crr_file_dict["stimulus_unit"]
@@ -360,19 +378,21 @@ def extract_features(request):
         else:
             raise Exception("cell_id not found!")
 
-        crr_cell_data_folder = os.path.join(full_crr_data_folder, crr_cell_name)
-        if not os.path.exists(crr_cell_data_folder):
-            os.makedirs(crr_cell_data_folder)
-        shutil.copy2(crr_json_file, crr_cell_data_folder)
+        cell_results_folder = os.path.join(user_results_dir, crr_cell_name)
+        if not os.path.exists(cell_results_folder):
+            os.makedirs(cell_results_folder)
+        shutil.copy2(path_to_file, cell_results_folder)
 
         print('STEP 1.5')
 
-        new_keys = [("animal_species", "species") , 
-                    ("brain_structure", "area"),
-                    ("cell_soma_location", "region"),
-                    ("cell_type", "type"),
-                    ("etype", "etype"),
-                    ("cell_id", "name")]
+        new_keys = [
+            ("animal_species", "species") , 
+            ("brain_structure", "area"),
+            ("cell_soma_location", "region"),
+            ("cell_type", "type"),
+            ("etype", "etype"),
+            ("cell_id", "name")
+        ]
 
         keys = [crr_file_dict[t[0]] if t[0] in crr_file_dict else crr_file_dict[t[1]] for t in new_keys]
         crr_key = '____'.join(keys)
@@ -426,12 +446,11 @@ def extract_features(request):
     print('STEP 3')
     # build configuration dictionary
 
-    full_crr_result_folder = full_crr_result_folder.replace("u_res", request.session['time_info'] + "_nfe_results")
-    crr_cell_data_folder = crr_cell_data_folder.replace("u_res", request.session['time_info'] + "_nfe_results")
+    main_results_folder = os.path.join(user_results_dir, time_info + "_nfe_results")
 
     config = {}
-    config['features'] = {'step': [str(i) for i in check_features]}
-    config['path'] = crr_cell_data_folder
+    config['features'] = {'step': [str(i) for i in selected_features]}
+    config['path'] = user_results_dir
     config['format'] = 'ibf_json'
     config['comment'] = []
     config['cells'] = final_cell_dict
@@ -465,7 +484,7 @@ def extract_features(request):
     }
 
     try:
-        extractor = bpefe.Extractor(full_crr_result_folder, config)
+        extractor = bpefe.Extractor(main_results_folder, config)
         extractor.create_dataset()
         extractor.plt_traces()
         if global_parameters_json['threshold'] != '':
@@ -484,28 +503,26 @@ def extract_features(request):
         #         Either you selected too many data or the traces were corrupted."})
 
     print('STEP 4')
-    conf_dir = request.session['main_json_dir']
+
     conf_cit = os.path.join(conf_dir, 'citation_list.json')
-    final_cit_file = os.path.join(full_crr_result_folder, 'HOWTOCITE.txt')
+    final_cit_file = os.path.join(main_results_folder, 'HOWTOCITE.txt')
     resources.print_citations(selected_traces_rest_json, conf_cit, final_cit_file)
 
-    crr_result_folder = request.session['time_info']
-    output_path = os.path.join(full_crr_user_folder, crr_user_folder + '_nfe_results.zip')
+    zip_path = os.path.join(main_results_folder, time_info + '_nfe_results.zip')
+    request.session['nfe_result_file_zip'] = zip_path
 
-    request.session['nfe_result_file_zip'] = output_path
-    request.session['nfe_result_file_zip_name'] = crr_user_folder + '_nfe_results.zip'
-    parent_folder = os.path.dirname(full_crr_result_folder)
-    contents = os.walk(full_crr_result_folder)
+    #parent_folder = os.path.dirname(full_crr_result_folder)
+    contents = os.walk(main_results_folder)
     try:
-        zip_file = zipfile.ZipFile(output_path, 'w', zipfile.ZIP_DEFLATED)
+        zip_file = zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED)
         for root, folders, files in contents:
             for folder_name in folders:
                 absolute_path = os.path.join(root, folder_name)
-                relative_path = absolute_path.replace(parent_folder + os.sep, '')
+                relative_path = absolute_path.replace(main_results_folder + os.sep, '')
                 zip_file.write(absolute_path, relative_path)
             for file_name in files:
                 absolute_path = os.path.join(root, file_name)
-                relative_path = absolute_path.replace(parent_folder + os.sep, '')
+                relative_path = absolute_path.replace(main_results_folder + os.sep, '')
                 zip_file.write(absolute_path, relative_path)
                 print('STEP 5')
     except IOError as message:
@@ -536,7 +553,7 @@ def results(request):
     
     # Render final page containing the link to the result zip file if any
 
-    request.session["check_features"] = request.POST.getlist('crr_feature_check_features')
+    request.session["selected_features"] = request.POST.getlist('crr_feature_check_features')
     return render(request, 'efelg/results.html')
 
 
@@ -583,8 +600,9 @@ def upload_files(request):
     if "ctx" not in request.session:
         return render(request, 'efelg/overview.html')
 
-    user_upload_dir = request.session['user_upload_dir']
-    all_authorized_files = request.session["current_authorized_files"]
+    uploaded_files_dir = request.session['uploaded_files_dir']
+    user_files_dir = request.session['user_files_dir']
+    #all_authorized_files = request.session["current_authorized_files"]
 
     # list of modified names of uploaded files
     # name_abf_list = []
@@ -611,7 +629,7 @@ def upload_files(request):
     for k in user_files:
         if k.name.endswith('.abf') or k.name.endswith('.json'):
             file_name = re.sub('-', '_', k.name)
-            path_to_file = os.path.join(user_upload_dir, file_name)
+            path_to_file = os.path.join(uploaded_files_dir, file_name)
 
             # if file exists delete and recreate it
             if os.path.isfile(path_to_file):
@@ -632,22 +650,21 @@ def upload_files(request):
     for f in names_full_path:
         try:
             data = manage_json.extract_data(f, request.POST)
-
             #outfilename = '____'.join(manage_json.get_cell_info(metadata, upload_flag=True, cell_name=cell_name)) + '.json'
             output_filename = manage_json.create_file_name(data)
-            output_filepath = os.path.join(user_upload_dir, output_filename)
+            output_filepath = os.path.join(user_files_dir, output_filename)
             if os.path.isfile(output_filepath):
                 os.remove(output_filepath)
             with open(output_filepath, 'w') as f:
                 json.dump(data, f)
             if output_filename[:-5] not in data_name_dict['all_json_names']:
                 data_name_dict['all_json_names'].append(output_filename[:-5])
-                all_authorized_files.append(output_filename[:-5])
+                #all_authorized_files.append(output_filename[:-5])
         except:
             pass   
 
 
-    request.session["current_authorized_files"] = all_authorized_files
+    #request.session["current_authorized_files"] = all_authorized_files
 
     # accesslogger.info(resources.string_for_log('upload_files', request, page_spec_string=str(len(names_full_path))))
     return HttpResponse(json.dumps(data_name_dict), content_type="application/json")
