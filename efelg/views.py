@@ -118,7 +118,6 @@ def overview(request):
     request.session['user_files_dir'] = user_files_dir
     request.session['uploaded_files_dir'] = uploaded_files_dir
     request.session['user_results_dir'] = user_results_dir
-    #request.session['user_upload_dir'] = user_upload_dir
 
     accesslogger.info(resources.string_for_log('overview', request))
 
@@ -350,7 +349,6 @@ def extract_features(request):
             crr_file_dict = json.loads(f.read()) 
         crr_file_all_stim = list(crr_file_dict['traces'].keys())
         crr_file_sel_stim = selected_traces_rest_json[k]['stim']
-        crr_vcorr = selected_traces_rest_json[k]['v_corr']
 
         """
         if os.path.isfile(os.path.join(json_dir, crr_file_rest_name)):
@@ -378,10 +376,12 @@ def extract_features(request):
         else:
             raise Exception("cell_id not found!")
 
+        """
         cell_results_folder = os.path.join(user_results_dir, crr_cell_name)
         if not os.path.exists(cell_results_folder):
             os.makedirs(cell_results_folder)
         shutil.copy2(path_to_file, cell_results_folder)
+        """
 
         print('STEP 1.5')
 
@@ -397,21 +397,18 @@ def extract_features(request):
         keys = [crr_file_dict[t[0]] if t[0] in crr_file_dict else crr_file_dict[t[1]] for t in new_keys]
         crr_key = '____'.join(keys)
 
-        #
+        crr_vcorr = float(selected_traces_rest_json[k]['v_corr'])
         if crr_key in cell_dict:
             cell_dict[crr_key]['stim'].append(crr_file_sel_stim)
             cell_dict[crr_key]['files'].append(k)
-            cell_dict[crr_key]['v_corr'].append(float(crr_vcorr))
+            cell_dict[crr_key]['v_corr'] = float(crr_vcorr)
         else:
             cell_dict[crr_key] = {}
             cell_dict[crr_key]['stim'] = [crr_file_sel_stim]
             cell_dict[crr_key]['files'] = [k]
             cell_dict[crr_key]['cell_name'] = crr_cell_name
             cell_dict[crr_key]['all_stim'] = crr_file_all_stim
-            if crr_vcorr != '':
-                cell_dict[crr_key]['v_corr'] = [float(crr_vcorr)]
-            else:
-                cell_dict[crr_key]['v_corr'] = 0
+            cell_dict[crr_key]['v_corr'] = 0
 
     print('STEP 2')
 
@@ -446,11 +443,9 @@ def extract_features(request):
     print('STEP 3')
     # build configuration dictionary
 
-    main_results_folder = os.path.join(user_results_dir, time_info + "_nfe_results")
-
     config = {}
     config['features'] = {'step': [str(i) for i in selected_features]}
-    config['path'] = user_results_dir
+    config['path'] = user_files_dir
     config['format'] = 'ibf_json'
     config['comment'] = []
     config['cells'] = final_cell_dict
@@ -484,6 +479,7 @@ def extract_features(request):
     }
 
     try:
+        main_results_folder = os.path.join(user_results_dir, time_info + "_nfe_results")
         extractor = bpefe.Extractor(main_results_folder, config)
         extractor.create_dataset()
         extractor.plt_traces()
@@ -508,8 +504,10 @@ def extract_features(request):
     final_cit_file = os.path.join(main_results_folder, 'HOWTOCITE.txt')
     resources.print_citations(selected_traces_rest_json, conf_cit, final_cit_file)
 
-    zip_path = os.path.join(main_results_folder, time_info + '_nfe_results.zip')
+    zip_name = time_info + '_nfe_results.zip'
+    zip_path = os.path.join(user_results_dir, zip_name)
     request.session['nfe_result_file_zip'] = zip_path
+    request.session['nfe_result_file_zip_name'] = zip_name
 
     #parent_folder = os.path.dirname(full_crr_result_folder)
     contents = os.walk(main_results_folder)
@@ -567,8 +565,7 @@ def download_zip(request):
         return render(request, 'efelg/overview.html')
 
     # accesslogger.info(resources.string_for_log('download_zip', request))
-    result_file_zip = request.session['nfe_result_file_zip']
-    zip_file = open(result_file_zip, 'rb')
+    zip_file = open(request.session['nfe_result_file_zip'], 'rb')
     response = HttpResponse(zip_file, content_type='application/force-download')
     response['Content-Disposition'] = 'attachment; filename="%s"' % request.session['nfe_result_file_zip_name']
     return response
