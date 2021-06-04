@@ -50,7 +50,7 @@ function submitAll() {
             if (traces.length != 0) {
                 var sampleObj = {};
                 sampleObj['stim'] = traces;
-                sampleObj['v_corr'] = inputBox.find('.vcorr_value').val();
+                sampleObj['v_corr'] = inputBox.find('.vcorr-value').val();
                 obj[cell_name] = sampleObj;
             }
         });

@@ -3,7 +3,7 @@ const SHOW_CHECK = 0.8;
 const SHOW_HOVER = 1.0;
 
 var plotData = {}
-
+var num = 0;
 
 // refresh the plot with new opacities
 function refreshPlot(plot_id) {
@@ -104,7 +104,12 @@ async function plotCells(cells, isUploaded, id) {
                 <a class="invsel clickable mx-2">Invert selection</a> \
             </div> \
         ');
-        inputbox.append(settingsMenu);
+        var settingsMenu = inputbox.append(createSettingsMenu());
+
+        //add listener to the voltage correction input
+        $('#vcorr_' + num).on("change", function() {
+            plotVoltageCorrection(plot_id, parseFloat($(this).val()))
+        });
 
         // menus is defined in show_traces.js
         menus.push($(settingsMenu));
@@ -310,36 +315,38 @@ function plot(plot_id, input_id, data) {
 
 }
 
-
-var settingsMenu = ' \
-    <div class="border border-primary rounded-3 text-start my-2 mx-5 py-1"> \
-        <div class="clickable px-3" onclick="toggleMenu(this, id)"> \
-            <div class="row"> \
-                <div class="col-11"> \
-                    <strong>Settings</strong> \
+function createSettingsMenu() {
+    num += 1;
+    return ' \
+        <div class="border border-primary rounded-3 text-start my-2 mx-5 py-1"> \
+            <div class="clickable px-3" onclick="toggleMenu(this, id)"> \
+                <div class="row"> \
+                    <div class="col-11"> \
+                        <strong>Settings</strong> \
+                    </div> \
+                    <div class="col-1 text-end"> \
+                        <i class="fas fa-lg fa-angle-down"></i> \
+                    </div> \
                 </div> \
-                <div class="col-1 text-end"> \
-                    <i class="fas fa-lg fa-angle-down"></i> \
+            </div> \
+            <div id="contents_menu" class="openable px-3"> \
+                <div class="row"> \
+                    <div class="col-xl-3 col-lg-5 col-md-12 col-sm-12"> \
+                        <label class="form-label mb-0">Voltage correction (mV): </label> \
+                    </div> \
+                    <div class="col-xl-8 col-lg-6 col-md-10 col-sm-10"> \
+                        <input id="vcorr_' + num + '" class="vcorr-value form-control d-inline" type="number" value=0> \
+                        <i class="fas fa-minus ms-5" onclick="updateVoltageCorrection(this, -5)"></i> \
+                        <i class="fas fa-plus ms-3" onclick="updateVoltageCorrection(this, 5)"></i> \
+                    </div> \
+                    <div class="col-xl-1 col-lg-1 col-md-2 col-sm-2 text-end"> \
+                        <i class="far fa-question-circle fa-lg" onclick="openInfoPanel(vcorrTitle, vcorrText)"></i> \
+                    </div> \
                 </div> \
             </div> \
         </div> \
-        <div id="contents_menu" class="openable px-3"> \
-            <div class="row"> \
-                <div class="col-xl-3 col-lg-5 col-md-12 col-sm-12"> \
-                    <label class="form-label mb-0">Voltage correction (mV): </label> \
-                </div> \
-                <div class="col-xl-8 col-lg-6 col-md-10 col-sm-10"> \
-                    <input class="vcorr_value form-control d-inline" type="number" value=0> \
-                    <i class="fas fa-minus ms-5" onclick="updateVoltageCorrection(this, -5)"></i> \
-                    <i class="fas fa-plus ms-3" onclick="updateVoltageCorrection(this, 5)"></i> \
-                </div> \
-                <div class="col-xl-1 col-lg-1 col-md-2 col-sm-2 text-end"> \
-                    <i class="far fa-question-circle fa-lg" onclick="openInfoPanel(vcorrTitle, vcorrText)"></i> \
-                </div> \
-            </div> \
-        </div> \
-    </div> \
-';
+    ';
+}
 
 
 vcorrTitle = "Voltage Correction";
