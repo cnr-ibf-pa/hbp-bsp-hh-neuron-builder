@@ -26,14 +26,14 @@ import bluepyefe as bpefe
 
 
 # set logging up
-logging.basicConfig(stream=sys.stdout)
-logger = logging.getLogger()
-logger.setLevel(logging.DEBUG)
+#logging.basicConfig(stream=sys.stdout)
+#logger = logging.getLogger()
+#logger.setLevel(logging.DEBUG)
 
 # create logger if not in DEBUG mode
-accesslogger = logging.getLogger('efelg_access.log')
-accesslogger.addHandler(logging.FileHandler('efelg_access.log'))
-accesslogger.setLevel(logging.DEBUG)
+#accesslogger = logging.getLogger('efelg_access.log')
+#accesslogger.addHandler(logging.FileHandler('efelg_access.log'))
+#accesslogger.setLevel(logging.DEBUG)
 
 
 # Create your views here.
@@ -119,7 +119,7 @@ def overview(request):
     request.session['uploaded_files_dir'] = uploaded_files_dir
     request.session['user_results_dir'] = user_results_dir
 
-    accesslogger.info(resources.string_for_log('overview', request))
+    #accesslogger.info(resources.string_for_log('overview', request))
 
     # render to html
     return render(request, 'efelg/overview.html')
