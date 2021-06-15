@@ -8,7 +8,7 @@ import zipfile
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
-from django.http.response import HttpResponse
+from django.http.response import HttpResponse, JsonResponse
 
 from hh_neuron_builder import settings
 from efelg.tools import resources, manage_json
@@ -146,7 +146,7 @@ def select_features(request):
     selected_traces_rest = request.POST.get('data')
     request.session['selected_traces_rest_json'] = json.loads(selected_traces_rest)
     request.session['global_parameters_json'] = json.loads(request.POST.get('global_parameters'))
-    accesslogger.info(resources.string_for_log('select_features', request, page_spec_string=selected_traces_rest))
+    #accesslogger.info(resources.string_for_log('select_features', request, page_spec_string=selected_traces_rest))
     return render(request, 'efelg/select_features.html')
 
 
@@ -161,9 +161,9 @@ def show_traces(request):
         return render(request, 'efelg/overview.html')
 
 
-    accesslogger.info(resources.string_for_log('show_traces', request))
-    time_info = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
-    accesslogger.info("user " + request.session['username'] + " has accepted terms and conditions at this time " + time_info)
+    #accesslogger.info(resources.string_for_log('show_traces', request))
+    #time_info = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
+    #accesslogger.info("user " + request.session['username'] + " has accepted terms and conditions at this time " + time_info)
     return render(request, 'efelg/show_traces.html')
 
 
@@ -675,6 +675,22 @@ def file_formats_docs(request):
     return render(request, 'efelg/docs/file_formats.html')
 
 
+
+def get_result_dir(request):
+    username = request.session['username']
+    time_info = request.session['time_info']
+    user_base_dir =  os.path.join(
+        settings.MEDIA_ROOT,
+        "efel_data",
+        "efel_gui",
+        "results",
+        username,
+        "data_" + str(time_info)
+    )
+    
+    user_results_dir = os.path.join(user_base_dir, "u_res")
+    data = {'result_dir': user_results_dir}
+    return JsonResponse(data=json.dumps(data), status=200, safe=False)
 
 """
 def status(request):

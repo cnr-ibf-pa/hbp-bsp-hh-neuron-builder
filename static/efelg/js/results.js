@@ -8,6 +8,9 @@ $(document).ready(function(){
                 document.getElementById("hiddendiv").className = data_path['path'];
             });
             */
+            $.getJSON('/efelg/get_result_dir/', function(data) {
+                document.getElementById("hiddendiv").className = JSON.parse(data).result_dir
+            });
             closeMessageDiv("wait-div", "main-e-res-div");
         };
     });

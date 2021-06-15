@@ -19,6 +19,8 @@ urlpatterns = [
     path('docs/index/', views.index_docs),
     path('docs/file_formats/', views.file_formats_docs),
 
+    path('get_result_dir/', views.get_result_dir),
+
     # url(r'^login/hbp', auth_views.login),
     # url(r'^logout/hbp', auth_views.logout),
     # path('generate_json_data', views.generate_json_data),

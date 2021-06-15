@@ -488,26 +488,27 @@ def get_model_list2(request, exc="", ctx=""):
     return HttpResponse(status=404)
 
 
+@csrf_exempt
 def copy_feature_files(request, exc='', ctx=''):
 
+    
     feature_folder = request.POST.get('folder', None)
-    feature_folder = feature_folder.replace('u_res', '')
     
     response = {"expiration": False}
    
-    if not os.path.exists(feature_folder):
-        feature_folder = '/' + feature_folder
-    
     if not os.path.exists(request.session[exc]["user_dir"]) or not os.path.exists(feature_folder):
         print("efelg results folders not existing")
         response = {"expiration": True}
         return HttpResponse(json.dumps(response), content_type="application/json")
 
+    print(os.listdir(feature_folder))
     for d in os.listdir(feature_folder):
-        if d.endswith('fe_results'):
-            feature_folder = feature_folder + d
+        print(d)
+        if os.path.isdir(os.path.join(feature_folder, d)):
+            feature_folder = os.path.join(feature_folder, d)
             break
 
+    print(os.listdir(feature_folder))
     if os.path.isfile(os.path.join(feature_folder, 'features.json')) and os.path.isfile(os.path.join(feature_folder, 'protocols.json')):
         if request.session[exc].get('from_hhf', None):
             dst_dir = os.path.join(request.session[exc]['hhf_dir'], 'config')
