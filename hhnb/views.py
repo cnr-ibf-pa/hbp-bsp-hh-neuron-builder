@@ -2213,6 +2213,7 @@ def get_authentication(request):
     return HttpResponse(status=401)
 
 
+@csrf_exempt
 def check_nsg_login(request, exc='', ctx=''):
     data = request.POST
     print(json.dumps(data, indent=4))
