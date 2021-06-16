@@ -624,7 +624,7 @@ function displayCSCSJobList(button) {
     button.addClass("clicked");
 }
 
-function displayNsgJobList() {
+function displayNsgJobList(button) {
     if (button.hasClass("clicked")) {
         return false;
     }

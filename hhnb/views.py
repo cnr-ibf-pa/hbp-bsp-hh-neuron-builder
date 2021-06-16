@@ -488,6 +488,7 @@ def get_model_list2(request, exc="", ctx=""):
     return HttpResponse(status=404)
 
 
+@csrf_exempt
 def copy_feature_files(request, exc='', ctx=''):
 
     feature_folder = request.POST.get('folder', None)
@@ -2212,6 +2213,7 @@ def get_authentication(request):
     return HttpResponse(status=401)
 
 
+@csrf_exempt
 def check_nsg_login(request, exc='', ctx=''):
     data = request.POST
     print(json.dumps(data, indent=4))
