@@ -3,10 +3,16 @@ document.getElementById("save-feature-files").onclick = saveFeatures;
 
 var exc = sessionStorage.getItem("exc", exc) ?  sessionStorage.getItem("exc") : "";
 var ctx = sessionStorage.getItem("ctx", ctx) ? sessionStorage.getItem("ctx") : "";
+var hhf_etraces_dir = sessionStorage.getItem("hhf_etraces_dir", hhf_etraces_dir) ? sessionStorage.getItem("hhf_etraces_dir") : "";
 
 $(document).ready(function(){
     showLoadingAnimation("Loading...");
-    document.getElementById("efelgui-frame").setAttribute("src", "/efelg/?ctx=" + ctx);
+    console.log(sessionStorage);
+    if (hhf_etraces_dir) {
+        document.getElementById("efelgui-frame").setAttribute("src", "/efelg/hhf_etraces/");
+    } else {
+      document.getElementById("efelgui-frame").setAttribute("src", "/efelg/?ctx=" + ctx);
+    }
     $.getJSON("/hh-neuron-builder/check-cond-exist/" + exc + "/" + ctx, function(data){
         $("#wf-title").html("Workflow id: <bold>" + data["wf_id"] + "</bold>");
         hideLoadingAnimation();

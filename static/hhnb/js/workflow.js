@@ -138,7 +138,7 @@ $(document).ready(function(){
 
 // serve embedded-efel-gui page
 function efelPage() {
-    window.location.href = "/hh-neuron-builder/embedded-efel-gui/";
+    window.location.href = "/hh-neuron-builder/embedded-efel-gui/" + req_pattern + "/";
 }
 
 function inSilicoPage() {
@@ -310,22 +310,30 @@ function checkConditions(){
                 openExpirationDiv("The workflow directory tree is expired on the server.<br>Please go to the Home page and start a new workflow.<br>");
                 return false
             }
-            if (data['feat']['status']){
-                let featBar = $("#feat-bar");
-                featBar.removeClass("red");
-                featBar.addClass("green");
-                featBar.html("");
+            if (data['feat']['status'] == 'hhf_etraces') {
+                let featBae = $("#feat-bar");
+                featBar.removeClass("red green");
+                featBar.addClass("orange");
+                featBar.html(data['feat']['message'])
                 $("#del-feat-btn").prop("disabled", false);
                 $("#down-feat-btn").prop("disabled", false);
             } else {
-                let featBar = $("#feat-bar");
-                featBar.removeClass("green");
-                featBar.addClass("red");
-                featBar.html(data['feat']['message']);
-                $("#del-feat-btn").prop("disabled", true);
-                $("#down-feat-btn").prop("disabled", true);
-            };
-
+                if (data['feat']['status']){
+                    let featBar = $("#feat-bar");
+                    featBar.removeClass("red orange");
+                    featBar.addClass("green");
+                    featBar.html("");
+                    $("#del-feat-btn").prop("disabled", false);
+                    $("#down-feat-btn").prop("disabled", false);
+                } else {
+                    let featBar = $("#feat-bar");
+                    featBar.removeClass("green orange");
+                    featBar.addClass("red");
+                    featBar.html(data['feat']['message']);
+                    $("#del-feat-btn").prop("disabled", true);
+                    $("#down-feat-btn").prop("disabled", true);
+                };
+            }
             if (data['opt_files']['status']){
                 let optFilesBar = $("#opt-files-bar");
                 optFilesBar.removeClass("red");

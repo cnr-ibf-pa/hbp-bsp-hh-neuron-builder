@@ -8,7 +8,7 @@ import zipfile
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
-from django.http.response import HttpResponse, JsonResponse
+from django.http.response import HttpResponse, JsonResponse, HttpResponseBadRequest
 
 from hh_neuron_builder import settings
 from efelg.tools import resources, manage_json
@@ -216,8 +216,11 @@ def get_list(request):
             json.dump(output_json, f)
     """
 
-    with open(output_file_path, 'r') as f:
+    try:
+        with open(output_file_path, 'r') as f:
             output_json = json.load(f)
+    except FileNotFoundError:
+        return HttpResponse()
 
     # return HttpResponse(json.dumps(allfiles), content_type="application/json")
     return HttpResponse(json.dumps(output_json), content_type="application/json")
@@ -227,6 +230,8 @@ def get_list(request):
 # @login_required(login_url='/login/hbp/')
 def get_data(request, cellname=""):
     
+    print('get_data() called.')
+
     # if not ctx exit the application
     if "ctx" not in request.session:
         return render(request, 'efelg/overview.html')
@@ -249,6 +254,8 @@ def get_data(request, cellname=""):
     """
 
     user_files_dir = request.session['user_files_dir']
+    print(user_files_dir)
+    print(os.listdir(user_files_dir))
 
     file_name = cellname + ".json"
     path_to_file = os.path.join(user_files_dir, file_name)
@@ -262,7 +269,7 @@ def get_data(request, cellname=""):
 
     # extract data to be sent to frontend
     disp_sampling_rate = 5000
-    crr_sampling_rate = int(content['sampling_rate'])
+    crr_sampling_rate = int(content['sampling_rate'][0])
     coefficient = int(math.floor(crr_sampling_rate / disp_sampling_rate))
     if coefficient < 1:
         coefficient = 1
@@ -691,6 +698,58 @@ def get_result_dir(request):
     user_results_dir = os.path.join(user_base_dir, "u_res")
     data = {'result_dir': user_results_dir}
     return JsonResponse(data=json.dumps(data), status=200, safe=False)
+
+
+def hhf_etraces(request):
+    r = overview(request)
+    return render(request, 'efelg/show_traces.html')
+
+
+@csrf_exempt
+def load_hhf_etraces(request):
+    hhf_etraces_dir = request.POST.get('hhf_etraces_dir', None)
+    if not hhf_etraces_dir:
+        return HttpResponseBadRequest()
+
+    data_name_dict = {
+        "all_json_names": [],
+        "refused_files": []
+    }
+
+    for f in os.listdir(hhf_etraces_dir):
+        if not f.endswith('.abf'):
+            continue
+        try:
+            # data = manage_json.extract_data(f, request.POST)
+            #outfilename = '____'.join(manage_json.get_cell_info(metadata, upload_flag=True, cell_name=cell_name)) + '.json'
+
+            # in this case data should be metadaa.json file
+            with open(os.path.join(hhf_etraces_dir, f[:-4] + '_metadata.json'), 'r') as fd:
+                metadata_dict = json.load(fd)
+            data = manage_json.extract_data(os.path.join(hhf_etraces_dir, f), metadata_dict=metadata_dict)
+            output_filename = manage_json.create_file_name(data)
+            output_filename = output_filename.replace(' ', '_')
+            print(output_filename)
+            with open(os.path.join(request.session['user_files_dir'], output_filename), 'w') as fd:
+                json.dump(data, fd, indent=4)
+            # output_filepath = os.path.join(user_files_dir, output_filename)
+            # if os.path.isfile(output_filepath):
+            #     os.remove(output_filepath)
+            # with open(output_filepath, 'w') as f:
+            #     json.dump(data, f)
+            if output_filename[:-5] not in data_name_dict['all_json_names']:
+                data_name_dict['all_json_names'].append(output_filename[:-5])
+                #all_authorized_files.append(output_filename[:-5])
+        except Exception as e:
+            print(e)
+            
+
+
+    #request.session["current_authorized_files"] = all_authorized_files
+
+    # accesslogger.info(resources.string_for_log('upload_files', request, page_spec_string=str(len(names_full_path))))
+    return HttpResponse(json.dumps(data_name_dict), content_type="application/json")
+
 
 """
 def status(request):

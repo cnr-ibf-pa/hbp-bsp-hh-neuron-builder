@@ -409,12 +409,16 @@ def fetch_wf_from_storage(request, wfid="", exc="", ctx=""):
     return HttpResponse(json.dumps({"response": "OK"}), content_type="application/json")
 
 
-def embedded_efel_gui(request):
+def embedded_efel_gui(request, exc='', ctx=''):
     """
     Serving page for rendering embedded efel gui page
     """
 
     #accesslogger.info(resources.string_for_log('embedded_efel_gui', request))
+    # if request.session[exc].get('hhf_etraces', None):
+    #     etraces_dir = request.session[exc]['hhf_etraces_dir']
+    #     context = {'hhf_etraces', }
+
 
     return render(request, 'hhnb/embedded_efel_gui.html')
 
@@ -929,22 +933,28 @@ def check_cond_exist(request, exc="", ctx=""):
     wf_id = request.session[exc]['wf_id']
     dest_dir = request.session[exc]['user_dir_data_opt_launch']
 
+    etraces_files = request.session[exc].get('hhf_etraces', None)
     # check if feature files exist
-    features_file = False
-    protocols_file = False
-    if os.path.isfile(os.path.join(data_feat, 'features.json')):
-        features_file = True 
-    if os.path.isfile(os.path.join(data_feat, "protocols.json")):
-        protocols_file = True
-    if features_file and protocols_file:
-        response['feat']['status'] = True
-        response['feat']['message'] = ""
-    elif features_file and not protocols_file:
-        response['feat']['status'] = False
-        response['feat']['message'] = '"protocols.json" NOT present'
-    elif protocols_file and not features_file:
-        response['feat']['status'] = False
-        response['feat']['message'] = '"features.json" NOT present'
+    if etraces_files:
+        response['feat']['status'] = 'hhf_etraces'
+        response['feat']['message'] = 'Extract features from fetched files'
+
+    else:
+        features_file = False
+        protocols_file = False
+        if os.path.isfile(os.path.join(data_feat, 'features.json')):
+            features_file = True
+        if os.path.isfile(os.path.join(data_feat, "protocols.json")):
+            protocols_file = True
+        if features_file and protocols_file:
+            response['feat']['status'] = True
+            response['feat']['message'] = ""
+        elif features_file and not protocols_file:
+            response['feat']['status'] = False
+            response['feat']['message'] = '"protocols.json" NOT present'
+        elif protocols_file and not features_file:
+            response['feat']['status'] = False
+            response['feat']['message'] = '"features.json" NOT present'
 
     # check if optimization file exist
     if request.session[exc].get('from_hhf', None):
@@ -2282,6 +2292,8 @@ def hhf_comm(request, exc='', ctx=''):
 
         morp = hhf_dict['HHF-Comm'].get('morphology', None)
         mod = hhf_dict['HHF-Comm'].get('modFiles', None)
+        etraces = hhf_dict['HHF-Comm'].get('elettrophisiology', None)
+
 
         if morp:
             morp_dir = os.path.join(hhf_dir, 'morphology')
@@ -2311,8 +2323,26 @@ def hhf_comm(request, exc='', ctx=''):
                     for chunk in r.iter_content():
                         fd.write(chunk)
 
+        hhf_etraces = False
+        if etraces:
+            # add etraces on user_tmp dir
+            etraces_dir = os.path.join(request.session[exc]['user_dir'], 'tmp', 'etraces')
+            if not os.path.exists[etraces_dir]:
+                os.mkdir(etraces_dir)
+
+            # downloading etraces files
+            for e in etraces:
+                r = requests.get(e['url'], verify=False)
+                with open(os.path.join(etraces_dir, e['name']), 'wb') as fd:
+                    for chunk in r.iter_content():
+                        fd.write(chunk)
+
+            hhf_etraces = True
+            request.session[exc]['hhf_etraces_dir'] = etraces_dir
+
         request.session[exc]['from_hhf'] = True
         request.session[exc]['hhf_dir'] = hhf_dir
+        request.session[exc]['hhf_etraces'] = hhf_etraces
         request.session[exc]['hhf_model_key'] = hhf_model_key
         request.session.save()
 
@@ -2597,3 +2627,14 @@ def hhf_download_all(request, exc, ctx):
         shutil.make_archive(hhf_zip, 'zip', hhf_dir)
         return FileResponse(open(hhf_zip + '.zip', 'rb'), as_attachment=True)
     return HttpResponse(status=204)
+
+
+def hhf_etraces_test(request):
+    abf_example_path = '/home/rcsm17/Workspace/cnr/hh-neuron-builder/data/etraces/abf_example.abf'
+    metadata_example_path = '/home/rcsm17/Workspace/cnr/hh-neuron-builder/data/etraces/abf_example_metadata.json'
+
+    hhf_etraces_dir = '/home/rcsm17/Workspace/cnr/hh-neuron-builder/data/etraces/'
+
+    context = {'hhf_etraces_dir': hhf_etraces_dir}
+
+    return render(request, 'hhnb/embedded_efel_gui.html', context);
