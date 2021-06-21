@@ -5,6 +5,7 @@ const SHOW_HOVER = 1.0;
 var plotData = {}
 var num = 0;
 var n_plots = 0;
+var minibatch_size = 5
 
 // refresh the plot with new opacities
 function refreshPlot(plot_id) {
@@ -38,109 +39,148 @@ function plotVoltageCorrection(plot_id, correction) {
 // plot all cells contained in cells
 async function plotCells(cells, isUploaded, id) {
 
-    function createCellHeader(cell_name, cell_id) {
-        var cell_container = $('<div id="cell-' + cell_id + '"class="text-center"/>');
-        cell_container.append(' \
-                <div class="row bg-light-grey mx-auto py-2"> \
-                    <div class="col-12 my-2"> \
-                        <a> \
-                            Cell: ' + cell_name + ' <br>Cell id: ' + cell_id + ' \
-                        </a> \
-                    </div> \
-                    <div class="col-12" my-2> \
-                        <a class="cell_selall clickable mx-2">Select all traces</a> \
-                        <a class="cell_dselall clickable mx-2">Deselect all traces</a> \
-                        <a class="cell_invsel clickable mx-2">Invert selection</a> \
-                    </div> \
-                </div>'
-        );
-        cell_container.find('.cell_selall').click(() => {
-            $('#cell-' + cell_id).find('.selall').click();
-        });
-        cell_container.find('.cell_dselall').click(() => {
-            $('#cell-' + cell_id).find('.dselall').click();
-        });
-        cell_container.find('.cell_invsel').click(() => {
-            $('#cell-' + cell_id).find('.invsel').click();
-        });
-        return cell_container;
+    if (cells.length > 5) {
+        await Promise.all(loadMore(cells, isUploaded, id));
+    } else {
+        await Promise.all(plotMinibatch(cells, isUploaded, id));
+        $("#load-more-button").remove()
     }
+    
+}
 
-    function createCellPlotBox(id, container, currentPlotData, xLabel, yLabel, cellInfo, contributors) {
-    
-        var infobox = $('<div/>', {
-            'id': 'info_' + id,
-            'class': 'row px-4',
-        }).appendTo(container);
-    
-        var inputbox = $('<div/>', {
-            'id': 'input_' + id,
-            'class': 'input_box',
-        }).appendTo(container);
-    
-        var plot_id = 'plot_' + id;
-        $('<div/>', {
-            'id': plot_id,
-            'class': 'table-responsive',
-        }).appendTo(container);
-    
-        plot(plot_id, 'input_' + id, {
-            data: currentPlotData,
-            x_label: xLabel,
-            y_label: yLabel,
-            plot_width: container.width()
-        });
-    
-        // create the infobox
-        infobox.append(' \
-            <div class="col-12 mb-2"> \
-                <a> \
-                    Cell properties: ' + cellInfo.join(' > ') + '   [' + contributors + '] \
-                </a> \
-            </div> \
-            <div class="col-12 mb-2"> \
-                <a class="selall clickable mx-2">Select all</a> \
-                <a class="dselall clickable mx-2">Deselect all</a> \
-                <a class="invsel clickable mx-2">Invert selection</a> \
-            </div> \
-        ');
-        var settingsMenu = inputbox.append(createSettingsMenu());
 
-        //add listener to the voltage correction input
-        $('#vcorr_' + num).on("change", function() {
-            plotVoltageCorrection(plot_id, parseFloat($(this).val()))
-        });
+function loadMore(cells, isUploaded, id) {
+    n_plots++;
+    var promises =  plotMinibatch(cells.slice((n_plots - 1) * minibatch_size,  n_plots * minibatch_size), isUploaded, id);
+    $("#charts").append("<button id='load-more-button' class='btn btn-outline-primary w-25 mt-3'>Load more</button>")
+    return promises;
+}
 
-        // menus is defined in show_traces.js
-        menus.push($(settingsMenu));
 
-        // Select every trace
-        infobox.find('.selall').click(() => { 
-            plotData[plot_id]["opacities"].fill(SHOW_CHECK);
-            inputbox.find('input').prop('checked', true);
-            refreshPlot(plot_id);
-        });
-    
-        // Deselect all traces
-        infobox.find('.dselall').click(() => {
-            plotData[plot_id]["opacities"].fill(SHOW_FADED);
-            inputbox.find('input').prop('checked', false);
-            refreshPlot(plot_id);
-        });
-    
-        // Invert the selection
-        infobox.find('.invsel').click(() => {
-            var opacities = plotData[plot_id]["opacities"];
-            for (var i = 0; i < opacities.length; i++) {
-                opacities[i] = opacities[i] == SHOW_FADED ? SHOW_CHECK : SHOW_FADED;
-                var checkbox = inputbox.find('input')[i];
-                checkbox.checked = !checkbox.checked;
-            }
-            refreshPlot(plot_id);
-        });
-    }
+function createCellHeader(cell_name, cell_id) {
+    var cell_container = $('<div id="cell-' + cell_id + '"class="text-center"/>');
+    cell_container.append(' \
+            <div class="row bg-light-grey mx-auto py-2"> \
+                <div class="col-12 my-2"> \
+                    <a> \
+                        Cell: ' + cell_name + ' <br>Cell id: ' + cell_id + ' \
+                    </a> \
+                </div> \
+                <div class="col-12" my-2> \
+                    <a class="cell_selall clickable mx-2">Select all traces</a> \
+                    <a class="cell_dselall clickable mx-2">Deselect all traces</a> \
+                    <a class="cell_invsel clickable mx-2">Invert selection</a> \
+                </div> \
+            </div>'
+    );
+    cell_container.find('.cell_selall').click(() => {
+        $('#cell-' + cell_id).find('.selall').click();
+    });
+    cell_container.find('.cell_dselall').click(() => {
+        $('#cell-' + cell_id).find('.dselall').click();
+    });
+    cell_container.find('.cell_invsel').click(() => {
+        $('#cell-' + cell_id).find('.invsel').click();
+    });
+    return cell_container;
+}
 
-    function plotMinibatch(files) {
+function createCellPlotBox(id, container, currentPlotData, xLabel, yLabel, cellInfo, contributors) {
+
+    var infobox = $('<div/>', {
+        'id': 'info_' + id,
+        'class': 'row px-4',
+    }).appendTo(container);
+
+    var inputbox = $('<div/>', {
+        'id': 'input_' + id,
+        'class': 'input_box',
+    }).appendTo(container);
+
+    var plot_id = 'plot_' + id;
+    $('<div/>', {
+        'id': plot_id,
+        'class': 'table-responsive',
+    }).appendTo(container);
+
+    plot(plot_id, 'input_' + id, {
+        data: currentPlotData,
+        x_label: xLabel,
+        y_label: yLabel,
+        plot_width: container.width()
+    });
+
+    // create the infobox
+    infobox.append(' \
+        <div class="col-12 mb-2"> \
+            <a> \
+                Cell properties: ' + cellInfo.join(' > ') + '   [' + contributors + '] \
+            </a> \
+        </div> \
+        <div class="col-12 mb-2"> \
+            <a class="selall clickable mx-2">Select all</a> \
+            <a class="dselall clickable mx-2">Deselect all</a> \
+            <a class="invsel clickable mx-2">Invert selection</a> \
+        </div> \
+    ');
+    var settingsMenu = inputbox.append(createSettingsMenu());
+
+    //add listener to the voltage correction input
+    $('#vcorr_' + num).on("change", function() {
+        plotVoltageCorrection(plot_id, parseFloat($(this).val()))
+    });
+
+    // menus is defined in show_traces.js
+    menus.push($(settingsMenu));
+
+    // Select every trace
+    infobox.find('.selall').click(() => { 
+        plotData[plot_id]["opacities"].fill(SHOW_CHECK);
+        inputbox.find('input').prop('checked', true);
+        refreshPlot(plot_id);
+    });
+
+    // Deselect all traces
+    infobox.find('.dselall').click(() => {
+        plotData[plot_id]["opacities"].fill(SHOW_FADED);
+        inputbox.find('input').prop('checked', false);
+        refreshPlot(plot_id);
+    });
+
+    // Invert the selection
+    infobox.find('.invsel').click(() => {
+        var opacities = plotData[plot_id]["opacities"];
+        for (var i = 0; i < opacities.length; i++) {
+            opacities[i] = opacities[i] == SHOW_FADED ? SHOW_CHECK : SHOW_FADED;
+            var checkbox = inputbox.find('input')[i];
+            checkbox.checked = !checkbox.checked;
+        }
+        refreshPlot(plot_id);
+    });
+}
+
+function plotMinibatch(cells, isUploaded, id) {
+    var promises = [];
+    for (var i = 0; i < cells.length; i++) {
+        var cell = null;
+        var cell_name = null;
+        var files = [];
+        var divId = "#charts";
+        if (isUploaded) {
+            var cell_info = cells[i].split("____");
+            cell = cell_info[5]
+            cell_name = cell_info.slice(0, 6).join(" > ");
+            divId += "_upload_" + id;
+            files = files.concat(cells[i]);
+        } else {
+            cell = cells[i];
+            cell_name = contributor + ' > ' + specie + ' > ' + structure + ' > ' + region + ' > ' + type + ' > ' + etype + ' > ' + cell;
+            files = files.concat(Object.values(json['Contributors'][contributor][specie][structure][region][type][etype][cell]));
+        }
+        var cellHeader = createCellHeader(cell_name, cell)
+        cellHeader.addClass("mt-4");
+        cellHeader.append('<div id="charts-' + cell + '"></div>');
+        $(divId).append(cellHeader);
         files.forEach(file => {
             var fileName = file.split('.')[0];
             $('#charts-' + cell).append('<div id="' + fileName + '" class="border border-primary rounded-3 my-4 mx-1 p-2"></div>');
@@ -186,39 +226,7 @@ async function plotCells(cells, isUploaded, id) {
             }));
         });
     }
-
-    var promises = [];
-    for (var i = 0; i < cells.length; i++) {
-        var cell = null;
-        var cell_name = null;
-        var files = [];
-        var divId = "#charts";
-        if (isUploaded) {
-            var cell_info = cells[i].split("____");
-            cell = cell_info[5]
-            cell_name = cell_info.slice(0, 6).join(" > ");
-            divId += "_upload_" + id;
-            files = files.concat(cells[i]);
-        } else {
-            cell = cells[i];
-            cell_name = contributor + ' > ' + specie + ' > ' + structure + ' > ' + region + ' > ' + type + ' > ' + etype + ' > ' + cell;
-            files = files.concat(Object.values(json['Contributors'][contributor][specie][structure][region][type][etype][cell]));
-        }
-        var cellHeader = createCellHeader(cell_name, cell)
-        cellHeader.addClass("mt-4");
-        cellHeader.append('<div id="charts-' + cell + '"></div>');
-        $(divId).append(cellHeader);
-        var i = 1;
-        var minibatch_size = 5
-        if (files.length > 5) {
-            $("#charts-" + cell).append("<button>Load more</button>")
-            plotMinibatch(files.slice((i - 1) * minibatch_size), i * minibatch_size)
-        } else {
-            plotMinibatch(files)
-        }
-        
-    }
-    await Promise.all(promises);
+    return promises
 }
 
 
@@ -324,10 +332,8 @@ function plot(plot_id, input_id, data) {
         scrollZoom: false,
         displayModeBar: false
     }).then(manageLegend);
-
-    n_plots += 1
-
 }
+
 
 function createSettingsMenu() {
     num += 1;
