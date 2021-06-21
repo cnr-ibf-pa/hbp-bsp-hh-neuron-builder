@@ -4,6 +4,7 @@ const SHOW_HOVER = 1.0;
 
 var plotData = {}
 var num = 0;
+var n_plots = 0;
 
 // refresh the plot with new opacities
 function refreshPlot(plot_id) {
@@ -83,7 +84,6 @@ async function plotCells(cells, isUploaded, id) {
             'class': 'table-responsive',
         }).appendTo(container);
     
-    
         plot(plot_id, 'input_' + id, {
             data: currentPlotData,
             x_label: xLabel,
@@ -140,27 +140,7 @@ async function plotCells(cells, isUploaded, id) {
         });
     }
 
-    var promises = [];
-    for (var i = 0; i < cells.length; i++) {
-        var cell = null;
-        var cell_name = null;
-        var files = [];
-        var divId = "#charts";
-        if (isUploaded) {
-            var cell_info = cells[i].split("____");
-            cell = cell_info[5]
-            cell_name = cell_info.slice(0, 6).join(" > ");
-            divId += "_upload_" + id;
-            files = files.concat(cells[i]);
-        } else {
-            cell = cells[i];
-            cell_name = contributor + ' > ' + specie + ' > ' + structure + ' > ' + region + ' > ' + type + ' > ' + etype + ' > ' + cell;
-            files = files.concat(Object.values(json['Contributors'][contributor][specie][structure][region][type][etype][cell]));
-        }
-        var cellHeader = createCellHeader(cell_name, cell)
-        cellHeader.addClass("mt-4");
-        cellHeader.append('<div id="charts-' + cell + '"></div>');
-        $(divId).append(cellHeader);
+    function plotMinibatch(files) {
         files.forEach(file => {
             var fileName = file.split('.')[0];
             $('#charts-' + cell).append('<div id="' + fileName + '" class="border border-primary rounded-3 my-4 mx-1 p-2"></div>');
@@ -205,6 +185,38 @@ async function plotCells(cells, isUploaded, id) {
                 });
             }));
         });
+    }
+
+    var promises = [];
+    for (var i = 0; i < cells.length; i++) {
+        var cell = null;
+        var cell_name = null;
+        var files = [];
+        var divId = "#charts";
+        if (isUploaded) {
+            var cell_info = cells[i].split("____");
+            cell = cell_info[5]
+            cell_name = cell_info.slice(0, 6).join(" > ");
+            divId += "_upload_" + id;
+            files = files.concat(cells[i]);
+        } else {
+            cell = cells[i];
+            cell_name = contributor + ' > ' + specie + ' > ' + structure + ' > ' + region + ' > ' + type + ' > ' + etype + ' > ' + cell;
+            files = files.concat(Object.values(json['Contributors'][contributor][specie][structure][region][type][etype][cell]));
+        }
+        var cellHeader = createCellHeader(cell_name, cell)
+        cellHeader.addClass("mt-4");
+        cellHeader.append('<div id="charts-' + cell + '"></div>');
+        $(divId).append(cellHeader);
+        var i = 1;
+        var minibatch_size = 5
+        if (files.length > 5) {
+            $("#charts-" + cell).append("<button>Load more</button>")
+            plotMinibatch(files.slice((i - 1) * minibatch_size), i * minibatch_size)
+        } else {
+            plotMinibatch(files)
+        }
+        
     }
     await Promise.all(promises);
 }
@@ -312,6 +324,8 @@ function plot(plot_id, input_id, data) {
         scrollZoom: false,
         displayModeBar: false
     }).then(manageLegend);
+
+    n_plots += 1
 
 }
 
