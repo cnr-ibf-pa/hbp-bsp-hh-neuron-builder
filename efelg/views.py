@@ -70,15 +70,6 @@ def overview(request):
     # parameters for folder creation
     time_info = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
     request.session["time_info"] = time_info
-     
-    user_base_dir =  os.path.join(
-        settings.MEDIA_ROOT,
-        "efel_data",
-        "efel_gui",
-        "results",
-        username,
-        "data_" + str(time_info)
-    )
 
     # build local folder complete paths
     #u_time_f = os.path.join(userid, time_info)
@@ -95,10 +86,26 @@ def overview(request):
     #st_rel_user_results_folder = os.path.join(res_dir, u_time_f)
     #st_rel_user_uploaded_folder = os.path.join(up_dir, userid)
 
-    user_files_dir = os.path.join(user_base_dir, "u_data")
-    if not os.path.exists(user_files_dir):
-        os.makedirs(user_files_dir)
+    traces_dir = os.path.join(
+         settings.MEDIA_ROOT,
+        "efel_data",
+        "efel_gui",
+        "traces"
+    )
+
+    #user_files_dir = os.path.join(user_base_dir, "u_data")
+    if not os.path.exists(traces_dir):
+        os.makedirs(traces_dir)
     
+    user_base_dir =  os.path.join(
+        settings.MEDIA_ROOT,
+        "efel_data",
+        "efel_gui",
+        "results",
+        username,
+        "data_" + str(time_info)
+    )
+
     uploaded_files_dir = os.path.join(user_base_dir, "uploaded")
     if not os.path.exists(uploaded_files_dir):
         os.makedirs(uploaded_files_dir)
@@ -115,7 +122,7 @@ def overview(request):
     #request.session['user_crr_res_dir'] = user_crr_res_dir
     #request.session['user_res_dir'] = user_res_dir
     #request.session['user_crr_res_dir'] = user_crr_res_dir
-    request.session['user_files_dir'] = user_files_dir
+    request.session['traces_dir'] = traces_dir
     request.session['uploaded_files_dir'] = uploaded_files_dir
     request.session['user_results_dir'] = user_results_dir
 
@@ -248,14 +255,19 @@ def get_data(request, cellname=""):
     content = json.loads(content_json)
     """
 
-    user_files_dir = request.session['user_files_dir']
+    traces_dir = request.session['traces_dir']
+    uploaded_files_dir = request.session['uploaded_files_dir']
 
     file_name = cellname + ".json"
-    path_to_file = os.path.join(user_files_dir, file_name)
-    if not file_name in os.listdir(user_files_dir):
-        r = requests.get(request.session['traces_base_url'] + file_name)
-        with open(path_to_file, "w") as f:
-            json.dump(r.json(), f)
+    if file_name in os.listdir(uploaded_files_dir):
+        path_to_file = os.path.join(uploaded_files_dir, file_name)
+    else:
+        path_to_file = os.path.join(traces_dir, file_name)
+        if not file_name in os.listdir(traces_dir):
+            r = requests.get(request.session['traces_base_url'] + file_name)
+            with open(path_to_file, "w") as f:
+                json.dump(r.json(), f)
+        
 
     with open(path_to_file, "r") as f:
         content = json.loads(f.read())
@@ -333,7 +345,7 @@ def extract_features(request):
 
     conf_dir = request.session['main_json_dir']
     uploaded_files_dir = request.session['uploaded_files_dir']
-    user_files_dir = request.session['user_files_dir']
+    traces_dir = request.session['traces_dir']
     user_results_dir = request.session['user_results_dir']
     time_info = request.session['time_info']
     selected_features = request.session["selected_features"]
@@ -344,8 +356,13 @@ def extract_features(request):
 
     for k in selected_traces_rest_json:
         print("FILE: " + str(k))
-        path_to_file = os.path.join(user_files_dir, k + '.json')
-        with open(path_to_file) as f:
+        if k + '.json' in os.listdir(uploaded_files_dir):
+            path_to_file = os.path.join(uploaded_files_dir, k + '.json')
+        else:
+            path_to_file = os.path.join(traces_dir, k + '.json')
+        new_path_to_file = os.path.join(user_results_dir, k + '.json')
+        shutil.copy2(path_to_file, new_path_to_file)
+        with open(new_path_to_file) as f:
             crr_file_dict = json.loads(f.read()) 
         crr_file_all_stim = list(crr_file_dict['traces'].keys())
         crr_file_sel_stim = selected_traces_rest_json[k]['stim']
@@ -445,7 +462,7 @@ def extract_features(request):
 
     config = {}
     config['features'] = {'step': [str(i) for i in selected_features]}
-    config['path'] = user_files_dir
+    config['path'] = user_results_dir
     config['format'] = 'ibf_json'
     config['comment'] = []
     config['cells'] = final_cell_dict
@@ -508,6 +525,9 @@ def extract_features(request):
     zip_path = os.path.join(user_results_dir, zip_name)
     request.session['nfe_result_file_zip'] = zip_path
     request.session['nfe_result_file_zip_name'] = zip_name
+
+    for k in selected_traces_rest_json:
+        os.remove(os.path.join(user_results_dir, k + ".json"))
 
     #parent_folder = os.path.dirname(full_crr_result_folder)
     contents = os.walk(main_results_folder)
@@ -598,7 +618,6 @@ def upload_files(request):
         return render(request, 'efelg/overview.html')
 
     uploaded_files_dir = request.session['uploaded_files_dir']
-    user_files_dir = request.session['user_files_dir']
     #all_authorized_files = request.session["current_authorized_files"]
 
     # list of modified names of uploaded files
@@ -649,7 +668,7 @@ def upload_files(request):
             data = manage_json.extract_data(f, request.POST)
             #outfilename = '____'.join(manage_json.get_cell_info(metadata, upload_flag=True, cell_name=cell_name)) + '.json'
             output_filename = manage_json.create_file_name(data)
-            output_filepath = os.path.join(user_files_dir, output_filename)
+            output_filepath = os.path.join(uploaded_files_dir, output_filename)
             if os.path.isfile(output_filepath):
                 os.remove(output_filepath)
             with open(output_filepath, 'w') as f:
