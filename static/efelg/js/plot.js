@@ -4,8 +4,9 @@ const SHOW_HOVER = 1.0;
 
 var plotData = {}
 var num = 0;
+
+var minibatch_size = 5;
 var n_plots = 0;
-var minibatch_size = 5
 
 // refresh the plot with new opacities
 function refreshPlot(plot_id) {
@@ -37,23 +38,41 @@ function plotVoltageCorrection(plot_id, correction) {
 
 
 // plot all cells contained in cells
-async function plotCells(cells, isUploaded, id) {
-
+function plotCells(cells, isUploaded, id) {
     if (cells.length > 5) {
-        await Promise.all(loadMore(cells, isUploaded, id));
+        loadMore(cells, isUploaded, id);
     } else {
-        await Promise.all(plotMinibatch(cells, isUploaded, id));
         $("#load-more-button").remove()
+        sendParallelRequests(plotMinibatch(cells, isUploaded, id));
     }
-    
 }
 
 
+async function sendParallelRequests(promises) {
+    writeMessage("wmd-first", "Loading traces");
+    writeMessage("wmd-second", "Please wait...");
+    openMessageDiv("wait-message-div", "main-e-st-div");
+    await Promise.all(promises);
+    closeMessageDiv("wait-message-div", "main-e-st-div");
+    writeMessage("wmd-first", "");
+    writeMessage("wmd-second", "");
+}
+
 function loadMore(cells, isUploaded, id) {
-    n_plots++;
-    var promises =  plotMinibatch(cells.slice((n_plots - 1) * minibatch_size,  n_plots * minibatch_size), isUploaded, id);
-    $("#charts").append("<button id='load-more-button' class='btn btn-outline-primary w-25 mt-3'>Load more</button>")
-    return promises;
+    n_plots = 1;
+    var promises = plotMinibatch(cells.slice((n_plots - 1) * minibatch_size,  n_plots * minibatch_size), isUploaded, id);
+    $("#charts").append("<button id='load-more-button' class='btn btn-outline-primary w-25 mt-3'>Load more</button>");
+    $("#load-more-button").click(() => {
+        n_plots++;
+        sendParallelRequests(plotMinibatch(cells.slice((n_plots - 1) * minibatch_size,  n_plots * minibatch_size), isUploaded, id));
+        if (cells.length > n_plots * minibatch_size) {
+            $("#charts").append($("#load-more-button"));
+        } else {
+            $("#load-more-button").remove();
+        }
+        
+    });
+    sendParallelRequests(promises)
 }
 
 
