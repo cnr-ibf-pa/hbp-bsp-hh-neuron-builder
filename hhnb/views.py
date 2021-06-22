@@ -415,12 +415,14 @@ def embedded_efel_gui(request, exc='', ctx=''):
     """
 
     #accesslogger.info(resources.string_for_log('embedded_efel_gui', request))
-    # if request.session[exc].get('hhf_etraces', None):
-    #     etraces_dir = request.session[exc]['hhf_etraces_dir']
-    #     context = {'hhf_etraces', }
+    context = {}
+    
+    if request.session[exc].get('hhf_etraces', None):
+        context = {'hhf_etraces_dir': request.session[exc].get('hhf_etraces_dir', None)}
+    
+    print(context)
 
-
-    return render(request, 'hhnb/embedded_efel_gui.html')
+    return render(request, 'hhnb/embedded_efel_gui.html', context)
 
 
 def workflow(request, exc='', ctx=''):
@@ -2266,6 +2268,7 @@ def hhf_comm(request, exc='', ctx=''):
     print('hhf-comm called()')
          
     hhf_dict = json.loads(request.GET.get('hhf_dict', None))
+    print(json.dumps(hhf_dict, indent=4))
 
     if hhf_dict:
 
@@ -2292,7 +2295,7 @@ def hhf_comm(request, exc='', ctx=''):
 
         morp = hhf_dict['HHF-Comm'].get('morphology', None)
         mod = hhf_dict['HHF-Comm'].get('modFiles', None)
-        etraces = hhf_dict['HHF-Comm'].get('elettrophisiology', None)
+        etraces = hhf_dict['HHF-Comm'].get('electrophysiologies', None)
 
 
         if morp:
@@ -2327,8 +2330,8 @@ def hhf_comm(request, exc='', ctx=''):
         if etraces:
             # add etraces on user_tmp dir
             etraces_dir = os.path.join(request.session[exc]['user_dir'], 'tmp', 'etraces')
-            if not os.path.exists[etraces_dir]:
-                os.mkdir(etraces_dir)
+            if not os.path.exists(etraces_dir):
+                os.makedirs(etraces_dir)
 
             # downloading etraces files
             for e in etraces:
@@ -2336,6 +2339,11 @@ def hhf_comm(request, exc='', ctx=''):
                 with open(os.path.join(etraces_dir, e['name']), 'wb') as fd:
                     for chunk in r.iter_content():
                         fd.write(chunk)
+                if e.get('metadata', None):
+                    r = requests.get(e['metadata'], verify=False)
+                    with open(os.path.join(etraces_dir, e['name'][:-4] + '_metadata.json'), 'wb') as fd:
+                        for chunk in r.iter_content():
+                            fd.write(chunk)
 
             hhf_etraces = True
             request.session[exc]['hhf_etraces_dir'] = etraces_dir
@@ -2627,14 +2635,3 @@ def hhf_download_all(request, exc, ctx):
         shutil.make_archive(hhf_zip, 'zip', hhf_dir)
         return FileResponse(open(hhf_zip + '.zip', 'rb'), as_attachment=True)
     return HttpResponse(status=204)
-
-
-def hhf_etraces_test(request):
-    abf_example_path = '/home/rcsm17/Workspace/cnr/hh-neuron-builder/data/etraces/abf_example.abf'
-    metadata_example_path = '/home/rcsm17/Workspace/cnr/hh-neuron-builder/data/etraces/abf_example_metadata.json'
-
-    hhf_etraces_dir = '/home/rcsm17/Workspace/cnr/hh-neuron-builder/data/etraces/'
-
-    context = {'hhf_etraces_dir': hhf_etraces_dir}
-
-    return render(request, 'hhnb/embedded_efel_gui.html', context);

@@ -37,8 +37,6 @@ function plotVoltageCorrection(plot_id, correction) {
 // plot all cells contained in cells
 async function plotCells(cells, isUploaded, id) {
 
-    console.log('plotCells() called.');
-
     function createCellHeader(cell_name, cell_id) {
         var cell_container = $('<div id="cell-' + cell_id + '"class="text-center"/>');
         cell_container.append(' \
@@ -68,7 +66,7 @@ async function plotCells(cells, isUploaded, id) {
     }
 
     function createCellPlotBox(id, container, currentPlotData, xLabel, yLabel, cellInfo, contributors) {
-    
+
         var infobox = $('<div/>', {
             'id': 'info_' + id,
             'class': 'row px-4',

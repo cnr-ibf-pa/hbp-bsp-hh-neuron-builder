@@ -311,7 +311,7 @@ function checkConditions(){
                 return false
             }
             if (data['feat']['status'] == 'hhf_etraces') {
-                let featBae = $("#feat-bar");
+                let featBar = $("#feat-bar");
                 featBar.removeClass("red green");
                 featBar.addClass("orange");
                 featBar.html(data['feat']['message'])

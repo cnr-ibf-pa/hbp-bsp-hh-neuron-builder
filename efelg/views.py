@@ -717,37 +717,23 @@ def load_hhf_etraces(request):
     }
 
     for f in os.listdir(hhf_etraces_dir):
+        print(f)
         if not f.endswith('.abf'):
             continue
         try:
-            # data = manage_json.extract_data(f, request.POST)
-            #outfilename = '____'.join(manage_json.get_cell_info(metadata, upload_flag=True, cell_name=cell_name)) + '.json'
-
-            # in this case data should be metadaa.json file
             with open(os.path.join(hhf_etraces_dir, f[:-4] + '_metadata.json'), 'r') as fd:
                 metadata_dict = json.load(fd)
             data = manage_json.extract_data(os.path.join(hhf_etraces_dir, f), metadata_dict=metadata_dict)
             output_filename = manage_json.create_file_name(data)
             output_filename = output_filename.replace(' ', '_')
-            print(output_filename)
             with open(os.path.join(request.session['user_files_dir'], output_filename), 'w') as fd:
                 json.dump(data, fd, indent=4)
-            # output_filepath = os.path.join(user_files_dir, output_filename)
-            # if os.path.isfile(output_filepath):
-            #     os.remove(output_filepath)
-            # with open(output_filepath, 'w') as f:
-            #     json.dump(data, f)
             if output_filename[:-5] not in data_name_dict['all_json_names']:
                 data_name_dict['all_json_names'].append(output_filename[:-5])
                 #all_authorized_files.append(output_filename[:-5])
         except Exception as e:
             print(e)
-            
 
-
-    #request.session["current_authorized_files"] = all_authorized_files
-
-    # accesslogger.info(resources.string_for_log('upload_files', request, page_spec_string=str(len(names_full_path))))
     return HttpResponse(json.dumps(data_name_dict), content_type="application/json")
 
 

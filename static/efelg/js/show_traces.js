@@ -185,13 +185,12 @@ $(document).ready(function () {
     $('#charts').empty();
 
     if (hhf_etraces_dir) {
-        console.log(hhf_etraces_dir);
         $.ajax({
             url: "/efelg/load_hhf_etraces/",
             method: "POST",
             data: {"hhf_etraces_dir": hhf_etraces_dir},
             success: function(name_dict) {
-                // $('#fieldset_' + id).prop("disabled", true);
+                
                 var loaded_filenames = name_dict.all_json_names;
                 var refused_filenames = [];
                 loaded_filenames = loaded_filenames.map(function (item) {
@@ -207,7 +206,7 @@ $(document).ready(function () {
                 if (all_json_names.length == 0) {
                     closeMessageDiv("wait-message-div", "main-e-st-div");
                 }
-                
+
                 plotCells(all_json_names, true, 1).then(() => {
                     closeMessageDiv("wait-message-div", "main-e-st-div");
                     writeMessage("wmd-first", "");
@@ -215,7 +214,7 @@ $(document).ready(function () {
                 });
             },
             error: function(error) {
-                console.log(error);
+                closeMessageDiv("wait-message-div", "main-e-st-div");
             }
         })
     } else {
@@ -327,7 +326,6 @@ $(document).ready(function () {
         closeMessageDiv("wait-message-div", "main-e-st-div");
     });
     }
-    closeMessageDiv("wait-message-div", "main-e-st-div");
 });
 
 
