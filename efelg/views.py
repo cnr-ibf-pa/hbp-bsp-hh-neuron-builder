@@ -717,7 +717,6 @@ def load_hhf_etraces(request):
     }
 
     for f in os.listdir(hhf_etraces_dir):
-        print(f)
         if not f.endswith('.abf'):
             continue
         try:
