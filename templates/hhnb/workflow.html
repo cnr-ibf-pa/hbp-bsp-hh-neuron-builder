@@ -660,7 +660,6 @@
             </div>
             <div class="modal-body">
                 The single cell model optimization process, set in the HH-Neuron Builder workflows, relies on the Python-based <a href="https://pypi.org/project/bluepyopt/" target="_blank">BluePyOpt</a> optimization suite.<br><br>The model to be optimized, against electrophysiological data provided by the user, is made up of several files and folders relative to both the NEURON model itself and the BluePyOpt optimization process. <br>More specifically, the NEURON model must comprise the 'mechanisms' (i.e., NEURON <i>.mod</i> files) and a morphology file (in <i>.asc</i> format).<br>These files combines with the BluePyOpt specific routines to finalize the model optimization. More specifically the 'opt_neuron.py' script is launched and makes use of the 'template.py' and 'evaluator.py' modules, which in turn read the 'parameters.json', 'features.json' and 'protocols.json' files provided by the user.<br><br><b>In order to customize the model to be optimized you can click on 'View/Upload model files' in the 'Optimization files' panel and upload your own <i>.mod</i> and 'parameters.json' files</b> (you will be able to upload or generate the 'features.json' and 'protocols.json' files via the 'Feature extraction' panel). You will also be able to download all the other above mentioned files to get a gist of how the optimization workflow is implemented.<br><br>Please bear in mind that these are advanced funcionalities for power users. If you have any doubt on how to use these features, do not hesitate to contact us at <i>support [ at ] ebrains.eu</i>.
-
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="openFileManager(showConfig=true)">Close</button>
@@ -683,6 +682,48 @@
     </div>
 </div>
 
+<!--<div id="modalNFE" class="modal fade modal-dialog modal-dialog-centered" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="modalNFELabel" aria-hidden="false">
+    <div class="nfe-modal-dialog">
+        <div class="nfe-modal-content">
+            <div class="modal-header">
+                <a5 class="modal-title">
+                    Ciaone
+                </a5>
+            </div> -->
+            <!-- <iframe onload="checkLastPage(this)" id="efelgui-frame" class="object-iframe" type="text/html" onload="this.style.height=this.contentDocument.body.scrollHeight +'px';"></iframe> -->
+        <!--</div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary">Save to workflow</button>
+    </div>
+</div> -->
+
+<div id="modalNFE" class="modal nfe fade" tabindex="-1">
+    <div class="modal-dialog nfe modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content nfe" style="padding: 4%; border-radius: 12px;">
+        <!-- <div class="modal-header"> -->
+          <!-- <h5 class="modal-title">Modal title</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div> -->
+        <div class="modal-body nfe">
+            <iframe  id="efelgui-frame" class="object-iframe" type="text/html" src="/efelg/overview/"></iframe>
+        </div>
+        <div class="modal-footer nfe">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary">Save changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+
+<!-- <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
+  Launch static backdrop modal
+</button> 
+ -->
+
+
 
 <script>
     var exc = "{{ exc }}";
@@ -703,5 +744,7 @@
 <!-- Highlighter library -->
 <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.1/styles/default.min.css">
 <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.1/highlight.min.js"></script>
+<script type="text/javascript" src="{% static 'hhnb/js/embedded_efel_gui.js' %}"></script>
+
 
 {% endblock %}
