@@ -189,28 +189,28 @@ MODEL_CATALOG_FILTER = {
 }
 
 # OIDC PARAMETERS
-# OIDC_RP_CLIENT_ID = os.environ['OIDC_RP_CLIENT_ID']
-# OIDC_RP_CLIENT_SECRET = os.environ['OIDC_RP_CLIENT_SECRET']
+OIDC_RP_CLIENT_ID = os.environ['OIDC_RP_CLIENT_ID']
+OIDC_RP_CLIENT_SECRET = os.environ['OIDC_RP_CLIENT_SECRET']
 
-# OIDC_RP_SCOPES = 'openid profile email team clb.wiki.read clb.drive:read clb.drive:write'
+OIDC_RP_SCOPES = 'openid profile email team clb.wiki.read clb.drive:read clb.drive:write'
 
-# OIDC_CREATE_USER = False
-# OIDC_STORE_ACCESS_TOKEN = True
+OIDC_CREATE_USER = False
+OIDC_STORE_ACCESS_TOKEN = True
 
 
-# OIDC_RP_SIGN_ALGO = 'RS256'
+OIDC_RP_SIGN_ALGO = 'RS256'
 
-# OIDC_OP_JWKS_ENDPOINT = "https://iam.ebrains.eu/auth/realms/hbp/protocol/openid-connect/certs"
+OIDC_OP_JWKS_ENDPOINT = "https://iam.ebrains.eu/auth/realms/hbp/protocol/openid-connect/certs"
 
-# OIDC_OP_AUTHORIZATION_ENDPOINT = "https://iam.ebrains.eu/auth/realms/hbp/protocol/openid-connect/auth"
-# OIDC_OP_TOKEN_ENDPOINT = "https://iam.ebrains.eu/auth/realms/hbp/protocol/openid-connect/token"
-# OIDC_OP_USER_ENDPOINT = "https://iam.ebrains.eu/auth/realms/hbp/protocol/openid-connect/userinfo"
+OIDC_OP_AUTHORIZATION_ENDPOINT = "https://iam.ebrains.eu/auth/realms/hbp/protocol/openid-connect/auth"
+OIDC_OP_TOKEN_ENDPOINT = "https://iam.ebrains.eu/auth/realms/hbp/protocol/openid-connect/token"
+OIDC_OP_USER_ENDPOINT = "https://iam.ebrains.eu/auth/realms/hbp/protocol/openid-connect/userinfo"
 
-# LOGIN_REDIRECT_URL = "/hh-neuron-builder"
-# LOGOUT_REDIRECT_URL = "/hh-neuron-builder"
+LOGIN_REDIRECT_URL = "/hh-neuron-builder"
+LOGOUT_REDIRECT_URL = "/hh-neuron-builder"
 
-# LOGIN_URL = 'oidc_authentication_init'
+LOGIN_URL = 'oidc_authentication_init'
 
-# OIDC_RENEW_ID_TOKEN_EXPIRY_SECONDS = 3600
+OIDC_RENEW_ID_TOKEN_EXPIRY_SECONDS = 3600
 
 

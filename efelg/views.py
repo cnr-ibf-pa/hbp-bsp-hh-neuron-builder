@@ -254,8 +254,6 @@ def get_data(request, cellname=""):
     """
 
     user_files_dir = request.session['user_files_dir']
-    print(user_files_dir)
-    print(os.listdir(user_files_dir))
 
     file_name = cellname + ".json"
     path_to_file = os.path.join(user_files_dir, file_name)
@@ -269,6 +267,11 @@ def get_data(request, cellname=""):
 
     # extract data to be sent to frontend
     disp_sampling_rate = 5000
+    if type(content['sampling_rate']) == list:
+        crr_sampling_rate = int(content['sampling_rate'][0])
+    else:
+        crr_sampling_rate = int(content['sampling_rate'])
+
     crr_sampling_rate = int(content['sampling_rate'][0])
     coefficient = int(math.floor(crr_sampling_rate / disp_sampling_rate))
     if coefficient < 1:

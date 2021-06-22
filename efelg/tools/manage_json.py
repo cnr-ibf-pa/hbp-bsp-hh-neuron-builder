@@ -285,16 +285,12 @@ def get_traces_info(filename, upload_flag = False):
         else:
             sampling_rate = str(metadata["sampling_rate"][0])
 
-    print('sampling_rate')
-    print(sampling_rate)
-            
     #
     volt_unit = segments[0].analogsignals[0].units
     volt_unit = str(volt_unit.dimensionality)
 
     # extract stimulus
     if not upload_flag:
-        print('upload flag: False')
         crr_dict = get_metadata(filename)
         stim_res = stimulus_extraction.stim_feats_from_meta(crr_dict, len(segments))
         if not stim_res[0]:
