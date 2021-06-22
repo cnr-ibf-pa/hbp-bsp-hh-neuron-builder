@@ -1560,3 +1560,27 @@ i.disabled:hover {
     transform: scale(0%);
     -webkit-transform: scale(0);
 }
+
+.modal-dialog.nfe {
+    max-width: unset;
+    max-height: unset;
+    width: 99%;
+    height: 99%;
+    padding: 2%;
+}
+
+.modal-content.nfe {
+    background-color: #e6e6e6c7;
+}
+
+.modal-body.nfe {
+    height: 1000px;
+    width: 100%;
+    margin: auto;
+    overflow: hidden;
+    padding: 0;
+}
+
+.modal-footer.nfe {
+    padding: unset;
+}
