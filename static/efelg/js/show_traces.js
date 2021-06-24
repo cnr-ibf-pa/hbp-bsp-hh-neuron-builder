@@ -649,50 +649,36 @@ function createUploadBox() {
                     var contributors = $("#contributors_" + id)
                     var type = $("#type_" + id);
                     var etype = $("#etype_" + id);
-                    if (cell_name.val().includes("unknown")) {
-                        if ("name" in data) {
-                            cell_name.val(data["name"].toLowerCase());
-                        } else if ("cell_id" in data) {
-                            cell_name.val(data["cell_id"].toLowerCase());
-                        }
+                    if ("name" in data) {
+                        cell_name.val(data["name"].toLowerCase());
+                    } else if ("cell_id" in data) {
+                        cell_name.val(data["cell_id"].toLowerCase());
                     }
-                    if (structure.val().includes("unknown")) {
-                        if ("area" in data) {
-                            structure.val(data["area"].toLowerCase());
-                        } else if ("brain_structure" in data) {
-                            structure.val(data["brain_structure"].toLowerCase());
-                        }
+                    if ("area" in data) {
+                        structure.val(data["area"].toLowerCase());
+                    } else if ("brain_structure" in data) {
+                        structure.val(data["brain_structure"].toLowerCase());
                     }
-                    if (species.val().includes("unknown")) {
-                        if ("species" in data) {
-                            species.val(data["species"].toLowerCase());
-                        } else if ("animal_species" in data) {
-                            species.val(data["animal_species"].toLowerCase());
-                        }
+                    if ("species" in data) {
+                        species.val(data["species"].toLowerCase());
+                    } else if ("animal_species" in data) {
+                        species.val(data["animal_species"].toLowerCase());
                     }
-                    if (region.val().includes("unknown")) {
-                        if ("region" in data) {
-                            region.val(data["region"].toLowerCase());
-                        } else if ("cell_soma_location" in data) {
-                            region.val(data["cell_soma_location"].toLowerCase());
-                        }
+                    if ("region" in data) {
+                        region.val(data["region"].toLowerCase());
+                    } else if ("cell_soma_location" in data) {
+                        region.val(data["cell_soma_location"].toLowerCase());
                     }
-                    if (contributors.val().includes("unknown")) {
-                        if ("contributors_affiliations" in data) {
-                            contributors.val(data["contributors_affiliations"].toLowerCase());
-                        } else if ("contributors" in data) {
-                            contributors.val(data["contributors"]["name"].toLowerCase());
-                        }
+                    if ("contributors_affiliations" in data) {
+                        contributors.val(data["contributors_affiliations"].toLowerCase());
+                    } else if ("contributors" in data) {
+                        contributors.val(data["contributors"]["name"].toLowerCase());
                     }
-                    if (type.val().includes("unknown")) {
-                        if ("type" in data) {
-                            type.val(data["type"].toLowerCase());
-                        }
+                    if ("type" in data) {
+                        type.val(data["type"].toLowerCase());
                     }
-                    if (etype.val().includes("unknown")) {
-                        if ("etype" in data) {
-                            etype.val(data["etype"].toLowerCase());
-                        }
+                    if ("etype" in data) {
+                        etype.val(data["etype"].toLowerCase());
                     }
                 }
             }
