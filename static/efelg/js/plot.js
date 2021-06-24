@@ -42,7 +42,7 @@ function plotCells(cells, isUploaded, id) {
     if (cells.length > 5) {
         loadMore(cells, isUploaded, id);
     } else {
-        $("#load-more-button").remove()
+        $("#load-more-button").remove();
         sendParallelRequests(plotMinibatch(cells, isUploaded, id));
     }
 }
