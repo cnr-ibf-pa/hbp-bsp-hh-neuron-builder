@@ -1380,6 +1380,7 @@ def download_job(request, job_id="", exc="", ctx=""):
 
         resp = hpc_job_manager.Unicore.fetch_job_results(hpc=hpc_sys_fetch, job_url=str(job_url), dest_dir=opt_res_dir, token=access_token)  # , proxies=PROXIES, wf_id=wf_id)
 
+    print(resp)
     return HttpResponse(json.dumps(resp), content_type="application/json")
 
 

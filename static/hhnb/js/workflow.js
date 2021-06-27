@@ -205,7 +205,6 @@ function manageErrorDiv(isOpen=false, isClose=false, message="", tag="") {
     let overlayWrapperError = $("#overlaywrappererror");
     let errorDynamicText = $("#errordynamictext");
     let button = $("#ok-error-div-btn");
-    button.removeClass("blue", "red", "green");
     if (isOpen) {
         overlayWrapper.css("display", "block");
         overlayWrapperError.css("display", "block");
@@ -213,15 +212,15 @@ function manageErrorDiv(isOpen=false, isClose=false, message="", tag="") {
         if (tag == "error") {
             overlayWrapperError.css("box-shadow", "0 0 1rem 0 rgba(255, 0, 0, .8)");
             overlayWrapperError.css("border-color", "red");
-            button.addClass("red");
+            button.addClass("red").removeClass("blue green");
         } else if (tag == "info") {
             overlayWrapperError.css("box-shadow", "0 0 1rem 0 rgba(0, 0, 255, .8)");
             overlayWrapperError.css("border-color", "blue");
-            button.addClass("blue");
+            button.addClass("blue").removeClass("red green");
         } else if (tag == "success") {
             overlayWrapperError.css("box-shadow", "0 0 1rem 0 rgba(0, 255, 0, .8)");
             overlayWrapperError.css("border-color", "green");
-            button.addClass("green");
+            button.addClass("green").removeClass("red blue");
         }
     } else if (isClose) {
         overlayWrapper.css("display", "none");
@@ -315,8 +314,8 @@ function checkConditions(){
                 featBar.removeClass("red green");
                 featBar.addClass("orange");
                 featBar.html(data['feat']['message'])
-                $("#del-feat-btn").prop("disabled", false);
-                $("#down-feat-btn").prop("disabled", false);
+                $("#del-feat-btn").prop("disabled", true);
+                $("#down-feat-btn").prop("disabled", true);
             } else {
                 if (data['feat']['status']){
                     let featBar = $("#feat-bar");
@@ -915,15 +914,18 @@ function downloadURI(uri, name) {
 }
 
 function saveWorkflow() {
+    showLoadingAnimation("Loading...");
     console.log("saveWorkflow() called.");
     $("#wf-btn-save").blur();
-    showLoadingAnimation("Loading...")
     fetch("/hh-neuron-builder/workflow-download/" + req_pattern, {
         method: "GET"
     }).then(
-        data => downloadURI(data.url, 'workflow')
+        data => {
+            downloadURI(data.url, 'workflow'); 
+            hideLoadingAnimation();
+        }
     ).then(
-        hideLoadingAnimation()
+       // hideLoadingAnimation()
     ).catch(
         error => console.log(error)
     );

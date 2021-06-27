@@ -122,6 +122,7 @@ def overview(request):
     #accesslogger.info(resources.string_for_log('overview', request))
 
     # render to html
+    request.session.save()
     return render(request, 'efelg/overview.html')
 
 
