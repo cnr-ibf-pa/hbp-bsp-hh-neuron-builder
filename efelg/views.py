@@ -254,9 +254,12 @@ def get_data(request, cellname=""):
     """
 
     user_files_dir = request.session['user_files_dir']
-
+    print(user_files_dir)
     file_name = cellname + ".json"
+    print(file_name)
     path_to_file = os.path.join(user_files_dir, file_name)
+    print(os.listdir(user_files_dir))
+    print('looking for ' + file_name)
     if not file_name in os.listdir(user_files_dir):
         r = requests.get(request.session['traces_base_url'] + file_name)
         with open(path_to_file, "w") as f:
@@ -272,7 +275,7 @@ def get_data(request, cellname=""):
     else:
         crr_sampling_rate = int(content['sampling_rate'])
 
-    crr_sampling_rate = int(content['sampling_rate'][0])
+    #crr_sampling_rate = int(content['sampling_rate'][0])
     coefficient = int(math.floor(crr_sampling_rate / disp_sampling_rate))
     if coefficient < 1:
         coefficient = 1
@@ -307,14 +310,16 @@ def get_data(request, cellname=""):
         elif key in content:
             trace_info[new_keys[key]] = content[key]
         else:
-            raise Exception(new_keys[key] + " not found!")
+            #raise Exception(new_keys[key] + " not found!")
+            trace_info[new_keys[key]] = 'unknown'
 
     if 'contributors_affiliations' in content:
         trace_info['contributors_affiliations'] = content['contributors_affiliations']
     elif 'name' in content['contributors']:
         trace_info['contributors_affiliations'] = content['contributors']['name']
     else:
-        raise Exception("contributors_affiliations not found!")
+        #raise Exception("contributors_affiliations not found!")
+        trace_info['contributors_affiliations'] = 'unknown'
 
     return HttpResponse(json.dumps(json.dumps(trace_info)), content_type="application/json")
 
@@ -405,8 +410,18 @@ def extract_features(request):
         ]
 
         keys = [crr_file_dict[t[0]] if t[0] in crr_file_dict else crr_file_dict[t[1]] for t in new_keys]
-        crr_key = '____'.join(keys)
+        print(keys)
+        keys2 = []
+        for kk2 in keys:
+            if not type(kk2) == list:
+                keys2.append(kk2)
+            else:
+                for kkk in kk2:
+                    keys2.append(kkk)
 
+        crr_key = '____'.join(keys2)
+        
+        print(json.dumps(selected_traces_rest_json[k], indent=4))
         crr_vcorr = float(selected_traces_rest_json[k]['v_corr'])
         if crr_key in cell_dict:
             cell_dict[crr_key]['stim'].append(crr_file_sel_stim)
@@ -728,6 +743,8 @@ def load_hhf_etraces(request):
             data = manage_json.extract_data(os.path.join(hhf_etraces_dir, f), metadata_dict=metadata_dict)
             output_filename = manage_json.create_file_name(data)
             output_filename = output_filename.replace(' ', '_')
+            #output_filename = output_filename.replace('.abf', '')
+            print(output_filename)
             with open(os.path.join(request.session['user_files_dir'], output_filename), 'w') as fd:
                 json.dump(data, fd, indent=4)
             if output_filename[:-5] not in data_name_dict['all_json_names']:

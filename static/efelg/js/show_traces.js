@@ -167,10 +167,11 @@ function closeUserChoiceList() {
     }
 }
 
-
 //
 $(document).ready(function () {
 
+    var isLoadingHHFEtraces = false;
+    
     function checkIfElementExists(elementId, tableId) {
         childList = document.getElementById(tableId).childNodes;
         for (var i = 0; i < childList.length; i++) {
@@ -185,12 +186,14 @@ $(document).ready(function () {
     $('#charts').empty();
 
     if (hhf_etraces_dir) {
+        isLoadingHHFEtraces = true;
+        console.log(isLoadingHHFEtraces);
         $.ajax({
             url: "/efelg/load_hhf_etraces/",
             method: "POST",
             data: {"hhf_etraces_dir": hhf_etraces_dir},
-            success: function(name_dict) {
-                
+            success: async function(name_dict) {
+
                 var loaded_filenames = name_dict.all_json_names;
                 var refused_filenames = [];
                 loaded_filenames = loaded_filenames.map(function (item) {
@@ -203,21 +206,21 @@ $(document).ready(function () {
                 })
                 
                 all_json_names = name_dict['all_json_names'];
-                if (all_json_names.length == 0) {
-                    closeMessageDiv("wait-message-div", "main-e-st-div");
-                }
 
-                plotCells(all_json_names, true, 1).then(() => {
+                plotCells(all_json_names, true, 1, false).then(() => {
                     closeMessageDiv("wait-message-div", "main-e-st-div");
                     writeMessage("wmd-first", "");
                     writeMessage("wmd-second", "");
+                    isLoadingHHFEtraces = false;
                 });
             },
             error: function(error) {
+                isLoadingHHFEtraces = false;
+                console.log(isLoadingHHFEtraces);
                 closeMessageDiv("wait-message-div", "main-e-st-div");
             }
         })
-    } else {
+    }
 
     $.getJSON('/efelg/get_list', function (data) {
         json = data;
@@ -323,9 +326,10 @@ $(document).ready(function () {
             }
         }
     }).done(function () {
-        closeMessageDiv("wait-message-div", "main-e-st-div");
+        if (!isLoadingHHFEtraces) { 
+            closeMessageDiv("wait-message-div", "main-e-st-div");
+        }
     });
-    }
 });
 
 

@@ -43,8 +43,6 @@ function saveFeatures(){
         getElementById("efelgui-frame").contentWindow.document;
     var folderName = innerDiv.getElementById("hiddendiv").classList[0];
     
-    console.log(folderNameOrig)
-    
     showLoadingAnimation("Saving features...");
     $.ajax({
         url: "/hh-neuron-builder/copy-feature-files/" + exc + "/" + ctx + "/",

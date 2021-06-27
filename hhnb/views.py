@@ -936,27 +936,27 @@ def check_cond_exist(request, exc="", ctx=""):
     dest_dir = request.session[exc]['user_dir_data_opt_launch']
 
     etraces_files = request.session[exc].get('hhf_etraces', None)
+    
+    features_file = False
+    protocols_file = False
+    if os.path.isfile(os.path.join(data_feat, 'features.json')):
+        features_file = True
+    if os.path.isfile(os.path.join(data_feat, "protocols.json")):
+        protocols_file = True
+    if features_file and protocols_file:
+        response['feat']['status'] = True
+        response['feat']['message'] = ""
+    elif features_file and not protocols_file:
+        response['feat']['status'] = False
+        response['feat']['message'] = '"protocols.json" NOT present'
+    elif protocols_file and not features_file:
+        response['feat']['status'] = False
+        response['feat']['message'] = '"features.json" NOT present'
+
     # check if feature files exist
-    if etraces_files:
+    elif etraces_files:
         response['feat']['status'] = 'hhf_etraces'
         response['feat']['message'] = 'Extract features from fetched files'
-
-    else:
-        features_file = False
-        protocols_file = False
-        if os.path.isfile(os.path.join(data_feat, 'features.json')):
-            features_file = True
-        if os.path.isfile(os.path.join(data_feat, "protocols.json")):
-            protocols_file = True
-        if features_file and protocols_file:
-            response['feat']['status'] = True
-            response['feat']['message'] = ""
-        elif features_file and not protocols_file:
-            response['feat']['status'] = False
-            response['feat']['message'] = '"protocols.json" NOT present'
-        elif protocols_file and not features_file:
-            response['feat']['status'] = False
-            response['feat']['message'] = '"features.json" NOT present'
 
     # check if optimization file exist
     if request.session[exc].get('from_hhf', None):
@@ -2336,12 +2336,12 @@ def hhf_comm(request, exc='', ctx=''):
             # downloading etraces files
             for e in etraces:
                 r = requests.get(e['url'], verify=False)
-                with open(os.path.join(etraces_dir, e['name']), 'wb') as fd:
+                with open(os.path.join(etraces_dir, e['name'] + '.abf'), 'wb') as fd:
                     for chunk in r.iter_content():
                         fd.write(chunk)
                 if e.get('metadata', None):
                     r = requests.get(e['metadata'], verify=False)
-                    with open(os.path.join(etraces_dir, e['name'][:-4] + '_metadata.json'), 'wb') as fd:
+                    with open(os.path.join(etraces_dir, e['name'] + '_metadata.json'), 'wb') as fd:
                         for chunk in r.iter_content():
                             fd.write(chunk)
 

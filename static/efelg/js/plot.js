@@ -35,10 +35,21 @@ function plotVoltageCorrection(plot_id, correction) {
 
 
 // plot all cells contained in cells
-async function plotCells(cells, isUploaded, id) {
+async function plotCells(cells, isUploaded, id, hideCellHeaderFlag=false) {
+    console.log("plotCells() called.");
+    console.log("cells: " + cells.toString());
 
-    function createCellHeader(cell_name, cell_id) {
-        var cell_container = $('<div id="cell-' + cell_id + '"class="text-center"/>');
+
+    function createCellHeader(cell_name, cell_id, cellHeaderIds) {
+        
+
+        var cell_container;
+        if (cellHeaderIds.includes(cell_id)) {
+            cell_container = $('<div id="cell-' + cell_id + '"class=text-center" style="display: none"/>');
+        } else {
+            cell_container = $('<div id="cell-' + cell_id + '"class="text-center"/>');
+        }
+        cellHeaderIds.push(cell_id);
         cell_container.append(' \
                 <div class="row bg-light-grey mx-auto py-2"> \
                     <div class="col-12 my-2"> \
@@ -141,6 +152,7 @@ async function plotCells(cells, isUploaded, id) {
     }
 
     var promises = [];
+    var cellHeaderIds = [];
     for (var i = 0; i < cells.length; i++) {
         var cell = null;
         var cell_name = null;
@@ -157,7 +169,9 @@ async function plotCells(cells, isUploaded, id) {
             cell_name = contributor + ' > ' + specie + ' > ' + structure + ' > ' + region + ' > ' + type + ' > ' + etype + ' > ' + cell;
             files = files.concat(Object.values(json['Contributors'][contributor][specie][structure][region][type][etype][cell]));
         }
-        var cellHeader = createCellHeader(cell_name, cell)
+
+
+        var cellHeader = createCellHeader(cell_name, cell, cellHeaderIds)
         cellHeader.addClass("mt-4");
         cellHeader.append('<div id="charts-' + cell + '"></div>');
         $(divId).append(cellHeader);

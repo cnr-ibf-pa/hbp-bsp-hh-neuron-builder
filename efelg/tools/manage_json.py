@@ -500,13 +500,29 @@ def extract_data(name, dict=None, metadata_dict=None, upload_flag=True):
     return data
 
 
-def create_file_name(data):
+def create_file_name(data, cell_id=None):
     print('create_file_name() called.')
     filename_keys = ["animal_species", "brain_structure", "cell_soma_location", "type", "etype", "cell_id"]
     if "filename" in data.keys():
         filename_keys.append("filename")
+        print('filename key found')
+        print('data[\'filename\'] = %s' % data['filename']) 
     elif "sample" in data.keys():
         filename_keys.append("sample")
+        print('sample key found')
+        print("data['sample'] = %s" % data['sample'])
     else:
         raise Exception("filename not found!")
+    #try:
     return '____'.join([data[key] for key in filename_keys]) + ".json"
+    #fn_values = []
+    #for k in filename_keys:
+    #    try:
+    #        if k == 'filename':
+    #            fn_values.append(''.join(data[k].split('.')[:-1]))
+    #        else:
+    #            fn_values.append(data[k])
+    #    except KeyError:
+    #        fn_values.append('unknown')
+    #return '___'.join(fn_values) + '.json'
+
