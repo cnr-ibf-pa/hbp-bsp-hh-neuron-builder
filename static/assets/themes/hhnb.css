@@ -283,7 +283,8 @@ body {
 }
 .object-iframe {
     width: calc(100% * (1/0.75));
-    height: calc(98% * (1/0.75));
+    /* height: calc(98% * (1/0.75)); */
+    height: calc(100vh * (1/0.9));
     position: relative;
     overflow: visible;
     border: solid 1px lightgray;

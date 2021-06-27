@@ -1,0 +1,44 @@
+.modal-content.sublayer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, .7);
+    z-index: 91;
+    overflow-y: auto;
+    padding: 1.5rem;
+    transition: all ease .3s;
+}
+
+.modal-content.container-glass:before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    box-shadow: inset 0 0 200px rgba(255, 255, 255, .822);
+    filter: blur(100px);
+    padding: 1.5rem;
+}
+
+.modal-content.container-glass {
+    position: relative;
+    margin: auto;
+    /* top: calc(30%); */
+    /* width: max-content; */
+    height: 100vh;
+    border: solid 1px black;
+    padding: 1.5rem;
+    text-align: center;
+    border-radius: 20px;
+    background-color: rgb(255, 255, 255, 0.8);
+    box-shadow: 0 0 1rem 0 rgb(0, 0, 0, .8); 
+    z-index: 100;
+}
+
+.modal-content {
+    display: block;
+}
