@@ -214,7 +214,16 @@ async function plotCells(cells, isUploaded, id, hideCellHeaderFlag=false) {
                             cellinfo.push(dict[key]);
                         }
                     }
-                    createCellPlotBox(fileName, container, currentPlotData, "ms", dict["voltage_unit"], cellinfo, dict['contributors']['message']);
+                    ccc = ""
+                    if (dict.contributors_affiliations) {
+                        ccc = "Data contributors: " + dict.contributors_affiliations;
+                    } else if (dict.contributors.message) {
+                        ccc = dict.contributors.message;
+                    } else {
+                        ccc = "N/A";
+                    }
+                   // createCellPlotBox(fileName, container, currentPlotData, "ms", dict["voltage_unit"], cellinfo, dict['contributors']['message']);
+                    createCellPlotBox(fileName, container, currentPlotData, "ms", dict["voltage_unit"], cellinfo, ccc);
                     resolve();
                 });
             }));

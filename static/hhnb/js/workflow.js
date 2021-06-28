@@ -445,7 +445,7 @@ function checkConditions(){
 
             // HHF Integration
             if (data['from_hhf']['status']) {
-                $("#opt-db-hpc-btn").prop("disabled", true);
+                //$("#opt-db-hpc-btn").prop("disabled", true);
                 $("#opt-up-btn").prop("disabled", true);
                 $("#down-opt-set-btn").prop("disabled", false);
                 if (data['opt_flag']['status']) {

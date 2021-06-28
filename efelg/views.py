@@ -734,7 +734,7 @@ def load_hhf_etraces(request):
         "all_json_names": [],
         "refused_files": []
     }
-
+    print(hhf_etraces_dir)
     for f in os.listdir(hhf_etraces_dir):
         if not f.endswith('.abf'):
             continue

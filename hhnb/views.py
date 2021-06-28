@@ -541,6 +541,14 @@ def fetch_opt_set_file(request, source_opt_name="", source_opt_id="", exc="", ct
     """
     Set optimization setting file
     """
+    
+    if request.session[exc].get('from_hhf', None):
+        for f in os.listdir(os.path.join(request.session[exc]['hhf_dir'], 'config')):
+            if f == 'features.json' or f == 'protocols.json':
+                shutil.copy(os.path.join(request.session[exc]['hhf_dir'], 'config', f), request.session[exc]['user_dir_data_feat']) 
+        r = hhf_delete_all(request, exc, ctx)
+    
+    
     #source_opt_id = str(source_opt_id)
     response = {"response": "OK", "message": ""}
 
@@ -2357,6 +2365,10 @@ def hhf_comm(request, exc='', ctx=''):
 
         # apply model key after 
         hhf_apply_model_key(request, exc, ctx, hhf_model_key)
+        
+        if etraces and not mod and not morp:
+            r = hhf_delete_all(request, exc, ctx)
+
 
         return render(request, 'hhnb/workflow.html', context={"exc": exc, "ctx": str(ctx)})
 
@@ -2615,7 +2627,7 @@ def hhf_delete_all(request, exc, ctx):
 
     # find all hhf session keys
     for k in request.session[exc].keys():
-        if 'hhf' in k:
+        if 'hhf' in k and (k != 'hhf_etraces' and k != 'hhf_etraces_dir'):
             kk.append(k)
 
     # remove all hhf session keys

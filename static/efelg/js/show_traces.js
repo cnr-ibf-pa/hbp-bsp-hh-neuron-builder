@@ -212,6 +212,7 @@ $(document).ready(function () {
                     writeMessage("wmd-first", "");
                     writeMessage("wmd-second", "");
                     isLoadingHHFEtraces = false;
+                    $("#upload_files_1").css("display", "none"); 
                 });
             },
             error: function(error) {
