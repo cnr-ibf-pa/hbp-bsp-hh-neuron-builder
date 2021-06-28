@@ -337,14 +337,7 @@ $(document).ready(function () {
 //
 function applySelection() {
     $('#charts').empty();
-    writeMessage("wmd-first", "Loading traces");
-    writeMessage("wmd-second", "Please wait...");
-    openMessageDiv("wait-message-div", "main-e-st-div");
-    plotCells(Object.keys(json['Contributors'][contributor][specie][structure][region][type][etype]), false, null).then(() => {
-        closeMessageDiv("wait-message-div", "main-e-st-div");
-        writeMessage("wmd-first", "");
-        writeMessage("wmd-second", "");
-    });
+    plotCells(Object.keys(json['Contributors'][contributor][specie][structure][region][type][etype]), false, null);
 }
 
 
