@@ -138,7 +138,8 @@ $(document).ready(function(){
 
 // serve embedded-efel-gui page
 function efelPage() {
-    window.location.href = "/hh-neuron-builder/embedded-efel-gui/" + req_pattern + "/";
+    // window.location.href = "/hh-neuron-builder/embedded-efel-gui/" + req_pattern + "/";
+    $("#modalNFE").addClass("show").removeClass("hide");
 }
 
 function inSilicoPage() {
