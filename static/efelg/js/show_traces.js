@@ -4,6 +4,8 @@ writeMessage("wmd-first", "Loading");
 writeMessage("wmd-second", "Please wait...");
 openMessageDiv("wait-message-div", "main-e-st-div");
 
+var hhf_etraces_dir = sessionStorage.getItem("hhf_etraces_dir", hhf_etraces_dir);
+
 var contributor = null;
 var specie = null;
 var structure = null;
@@ -165,10 +167,11 @@ function closeUserChoiceList() {
     }
 }
 
-
 //
 $(document).ready(function () {
 
+    var isLoadingHHFEtraces = false;
+    
     function checkIfElementExists(elementId, tableId) {
         childList = document.getElementById(tableId).childNodes;
         for (var i = 0; i < childList.length; i++) {
@@ -180,8 +183,46 @@ $(document).ready(function () {
     }
 
     window.scrollTo(0, 0);
-
     $('#charts').empty();
+
+    if (hhf_etraces_dir) {
+        isLoadingHHFEtraces = true;
+        console.log(isLoadingHHFEtraces);
+        $.ajax({
+            url: "/efelg/load_hhf_etraces/",
+            method: "POST",
+            data: {"hhf_etraces_dir": hhf_etraces_dir},
+            success: async function(name_dict) {
+
+                var loaded_filenames = name_dict.all_json_names;
+                var refused_filenames = [];
+                loaded_filenames = loaded_filenames.map(function (item) {
+                    var splitted = item.split('____');
+                    return splitted[splitted.length - 1] + '.abf'
+                })
+                selected_files.forEach(function (elem) {
+                    if (loaded_filenames.indexOf(elem) == -1)
+                        refused_filenames.push(elem);
+                })
+                
+                all_json_names = name_dict['all_json_names'];
+
+                plotCells(all_json_names, true, 1, false).then(() => {
+                    closeMessageDiv("wait-message-div", "main-e-st-div");
+                    writeMessage("wmd-first", "");
+                    writeMessage("wmd-second", "");
+                    isLoadingHHFEtraces = false;
+                    $("#upload_files_1").css("display", "none"); 
+                });
+            },
+            error: function(error) {
+                isLoadingHHFEtraces = false;
+                console.log(isLoadingHHFEtraces);
+                closeMessageDiv("wait-message-div", "main-e-st-div");
+            }
+        })
+    }
+
     $.getJSON('/efelg/get_list', function (data) {
         json = data;
         contrib_keys = Object.keys(json['Contributors']);
@@ -286,7 +327,9 @@ $(document).ready(function () {
             }
         }
     }).done(function () {
-        closeMessageDiv("wait-message-div", "main-e-st-div");
+        if (!isLoadingHHFEtraces) { 
+            closeMessageDiv("wait-message-div", "main-e-st-div");
+        }
     });
 });
 
@@ -672,7 +715,8 @@ function createUploadBox() {
                     if (all_json_names.length == 0) {
                         closeMessageDiv("wait-message-div", "main-e-st-div");
                     }
-                    
+                    console.log('plotCells ID');
+                    console.log(id);
                     plotCells(all_json_names, true, id).then(() => {
                         closeMessageDiv("wait-message-div", "main-e-st-div");
                         writeMessage("wmd-first", "");

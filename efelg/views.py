@@ -8,7 +8,7 @@ import zipfile
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
-from django.http.response import HttpResponse, JsonResponse
+from django.http.response import HttpResponse, JsonResponse, HttpResponseBadRequest
 
 from hh_neuron_builder import settings
 from efelg.tools import resources, manage_json
@@ -129,6 +129,7 @@ def overview(request):
     #accesslogger.info(resources.string_for_log('overview', request))
 
     # render to html
+    request.session.save()
     return render(request, 'efelg/overview.html')
 
 
@@ -223,8 +224,11 @@ def get_list(request):
             json.dump(output_json, f)
     """
 
-    with open(output_file_path, 'r') as f:
+    try:
+        with open(output_file_path, 'r') as f:
             output_json = json.load(f)
+    except FileNotFoundError:
+        return HttpResponse()
 
     # return HttpResponse(json.dumps(allfiles), content_type="application/json")
     return HttpResponse(json.dumps(output_json), content_type="application/json")
@@ -234,6 +238,8 @@ def get_list(request):
 # @login_required(login_url='/login/hbp/')
 def get_data(request, cellname=""):
     
+    print('get_data() called.')
+
     # if not ctx exit the application
     if "ctx" not in request.session:
         return render(request, 'efelg/overview.html')
@@ -267,14 +273,18 @@ def get_data(request, cellname=""):
             r = requests.get(request.session['traces_base_url'] + file_name)
             with open(path_to_file, "w") as f:
                 json.dump(r.json(), f)
-        
 
     with open(path_to_file, "r") as f:
         content = json.loads(f.read())
 
     # extract data to be sent to frontend
     disp_sampling_rate = 5000
-    crr_sampling_rate = int(content['sampling_rate'])
+    if type(content['sampling_rate']) == list:
+        crr_sampling_rate = int(content['sampling_rate'][0])
+    else:
+        crr_sampling_rate = int(content['sampling_rate'])
+
+    #crr_sampling_rate = int(content['sampling_rate'][0])
     coefficient = int(math.floor(crr_sampling_rate / disp_sampling_rate))
     if coefficient < 1:
         coefficient = 1
@@ -309,14 +319,16 @@ def get_data(request, cellname=""):
         elif key in content:
             trace_info[new_keys[key]] = content[key]
         else:
-            raise Exception(new_keys[key] + " not found!")
+            #raise Exception(new_keys[key] + " not found!")
+            trace_info[new_keys[key]] = 'unknown'
 
     if 'contributors_affiliations' in content:
         trace_info['contributors_affiliations'] = content['contributors_affiliations']
     elif 'name' in content['contributors']:
         trace_info['contributors_affiliations'] = content['contributors']['name']
     else:
-        raise Exception("contributors_affiliations not found!")
+        #raise Exception("contributors_affiliations not found!")
+        trace_info['contributors_affiliations'] = 'unknown'
 
     return HttpResponse(json.dumps(json.dumps(trace_info)), content_type="application/json")
 
@@ -412,8 +424,18 @@ def extract_features(request):
         ]
 
         keys = [crr_file_dict[t[0]] if t[0] in crr_file_dict else crr_file_dict[t[1]] for t in new_keys]
-        crr_key = '____'.join(keys)
+        print(keys)
+        keys2 = []
+        for kk2 in keys:
+            if not type(kk2) == list:
+                keys2.append(kk2)
+            else:
+                for kkk in kk2:
+                    keys2.append(kkk)
 
+        crr_key = '____'.join(keys2)
+        
+        print(json.dumps(selected_traces_rest_json[k], indent=4))
         crr_vcorr = float(selected_traces_rest_json[k]['v_corr'])
         if crr_key in cell_dict:
             cell_dict[crr_key]['stim'].append(crr_file_sel_stim)
@@ -710,6 +732,45 @@ def get_result_dir(request):
     user_results_dir = os.path.join(user_base_dir, "u_res")
     data = {'result_dir': user_results_dir}
     return JsonResponse(data=json.dumps(data), status=200, safe=False)
+
+
+def hhf_etraces(request):
+    r = overview(request)
+    return render(request, 'efelg/show_traces.html')
+
+
+@csrf_exempt
+def load_hhf_etraces(request):
+    hhf_etraces_dir = request.POST.get('hhf_etraces_dir', None)
+    if not hhf_etraces_dir:
+        return HttpResponseBadRequest()
+
+    data_name_dict = {
+        "all_json_names": [],
+        "refused_files": []
+    }
+    print(hhf_etraces_dir)
+    for f in os.listdir(hhf_etraces_dir):
+        if not f.endswith('.abf'):
+            continue
+        try:
+            with open(os.path.join(hhf_etraces_dir, f[:-4] + '_metadata.json'), 'r') as fd:
+                metadata_dict = json.load(fd)
+            data = manage_json.extract_data(os.path.join(hhf_etraces_dir, f), metadata_dict=metadata_dict)
+            output_filename = manage_json.create_file_name(data)
+            output_filename = output_filename.replace(' ', '_')
+            #output_filename = output_filename.replace('.abf', '')
+            print(output_filename)
+            with open(os.path.join(request.session['uploaded_files_dir'], output_filename), 'w') as fd:
+                json.dump(data, fd, indent=4)
+            if output_filename[:-5] not in data_name_dict['all_json_names']:
+                data_name_dict['all_json_names'].append(output_filename[:-5])
+                #all_authorized_files.append(output_filename[:-5])
+        except Exception as e:
+            print(e)
+
+    return HttpResponse(json.dumps(data_name_dict), content_type="application/json")
+
 
 """
 def status(request):

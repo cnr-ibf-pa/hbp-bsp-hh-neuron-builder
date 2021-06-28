@@ -466,6 +466,11 @@ class Unicore:
 
     @classmethod
     def fetch_job_results(cls, hpc="", job_url="", token="", dest_dir="", proxies={}, wf_id=""):
+        print('Downloading JOB files')
+        
+        files_found = False
+        resp = ""
+
         # create destination dir if not existing
         if not os.path.exists(dest_dir):
             os.mkdir(dest_dir)
@@ -483,6 +488,7 @@ class Unicore:
                     files_list = r.json()
                     for f in files_list:
                         if f == '/stderr' or f == '/stdout' or f == '/output.zip':
+                            files_found = True
                             filename = f[1:]
                             fname, extension = os.path.splitext(filename)
                             crr_file_url = job_files_url + filename + '/'
@@ -498,16 +504,21 @@ class Unicore:
                 if storage.storage_url.endswith(job_url.split('/')[-1] + '-uspace'):
                     job_storage = storage
                     results_list = job_storage.listdir('.')
+                    print('storage found!')
                     break
-            
+           
             for f in results_list:
                 if f == 'stderr' or f == 'stdout' or f == 'output.zip':
+                    files_found = True
                     remote_file = job_storage.stat(f)
                     remote_file.download(os.path.join(dest_dir, f))
 
+        if not files_found:
+            resp = {'response': 'KO', 'message': 'No output files found !'}
+
         OptFolderManager.create_opt_res_zip(fin_folder=dest_dir, filetype="optres", wf_id=wf_id)
 
-        return ""
+        return resp
 
     
 # TODO: to be check by Luca

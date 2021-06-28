@@ -534,6 +534,9 @@ body {
 .status-bar.green {
     background-color: #0c6f0cb3; /*#0c6f0c; /*#32cd32ff;*/
 }
+.status-bar.orange {
+    background-color: #fd7700b3;
+}
 
 .status-bar.extends {
     width: 100%;

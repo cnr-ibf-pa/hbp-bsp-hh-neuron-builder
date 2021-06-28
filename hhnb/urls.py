@@ -46,7 +46,7 @@ urlpatterns = [
     path('delete-files/<feat_or_optset_or_modsim:file_type>/' + required + '/', views.delete_files),
     path('download-job/<jobid:job_id>/' + required + '/', views.download_job),
     path('download-zip/<feat_or_optset_or_modsim_or_optres:file_type>/' + required + '/', views.download_zip),
-    path('embedded-efel-gui/', views.embedded_efel_gui),
+    path('embedded-efel-gui/' + required + '/', views.embedded_efel_gui),
     path('embedded-naas/' + required + '/', views.embedded_naas),
     path('fetch-opt-set-file/<source_opt_id:source_opt_name>/<source_opt_id:source_opt_id>/' + required + '/', views.fetch_opt_set_file),
     path('get-data-model-catalog/' + required + '/', views.get_data_model_catalog),

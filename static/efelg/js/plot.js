@@ -36,7 +36,6 @@ function plotVoltageCorrection(plot_id, correction) {
     refreshPlot(plot_id);
 }
 
-
 // plot all cells contained in cells
 function plotCells(cells, isUploaded, id) {
     if (cells.length > 5) {
@@ -46,7 +45,6 @@ function plotCells(cells, isUploaded, id) {
         sendParallelRequests(plotMinibatch(cells, isUploaded, id));
     }
 }
-
 
 async function sendParallelRequests(promises) {
     writeMessage("wmd-first", "Loading traces");
@@ -76,8 +74,15 @@ function loadMore(cells, isUploaded, id) {
 }
 
 
-function createCellHeader(cell_name, cell_id) {
-    var cell_container = $('<div id="cell-' + cell_id + '"class="text-center"/>');
+function createCellHeader(cell_name, cell_id, cellHeaderIds) {
+        
+    var cell_container;
+    if (cellHeaderIds.includes(cell_id)) {
+        cell_container = $('<div id="cell-' + cell_id + '"class=text-center" style="display: none"/>');
+    } else {
+        cell_container = $('<div id="cell-' + cell_id + '"class="text-center"/>');
+    }) 
+    
     cell_container.append(' \
             <div class="row bg-light-grey mx-auto py-2"> \
                 <div class="col-12 my-2"> \
@@ -180,6 +185,7 @@ function createCellPlotBox(id, container, currentPlotData, xLabel, yLabel, cellI
 
 function plotMinibatch(cells, isUploaded, id) {
     var promises = [];
+    var cellHeaderIds = [];
     for (var i = 0; i < cells.length; i++) {
         var cell = null;
         var cell_name = null;
@@ -196,7 +202,8 @@ function plotMinibatch(cells, isUploaded, id) {
             cell_name = contributor + ' > ' + specie + ' > ' + structure + ' > ' + region + ' > ' + type + ' > ' + etype + ' > ' + cell;
             files = files.concat(Object.values(json['Contributors'][contributor][specie][structure][region][type][etype][cell]));
         }
-        var cellHeader = createCellHeader(cell_name, cell)
+      
+        var cellHeader = createCellHeader(cell_name, cell, cellHeaderIds)
         cellHeader.addClass("mt-4");
         cellHeader.append('<div id="charts-' + cell + '"></div>');
         $(divId).append(cellHeader);
@@ -239,7 +246,16 @@ function plotMinibatch(cells, isUploaded, id) {
                             cellinfo.push(dict[key]);
                         }
                     }
-                    createCellPlotBox(fileName, container, currentPlotData, "ms", dict["voltage_unit"], cellinfo, dict['contributors']['message']);
+                    ccc = ""
+                    if (dict.contributors_affiliations) {
+                        ccc = "Data contributors: " + dict.contributors_affiliations;
+                    } else if (dict.contributors.message) {
+                        ccc = dict.contributors.message;
+                    } else {
+                        ccc = "N/A";
+                    }
+                   // createCellPlotBox(fileName, container, currentPlotData, "ms", dict["voltage_unit"], cellinfo, dict['contributors']['message']);
+                    createCellPlotBox(fileName, container, currentPlotData, "ms", dict["voltage_unit"], cellinfo, ccc);
                     resolve();
                 });
             }));
@@ -298,8 +314,6 @@ function plot(plot_id, input_id, data) {
         })
 
     }
-
-    console.log("Plotting...");
 
     plotData[plot_id] = {};
     plotData[plot_id]["segments"] = [];

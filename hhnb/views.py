@@ -409,14 +409,20 @@ def fetch_wf_from_storage(request, wfid="", exc="", ctx=""):
     return HttpResponse(json.dumps({"response": "OK"}), content_type="application/json")
 
 
-def embedded_efel_gui(request):
+def embedded_efel_gui(request, exc='', ctx=''):
     """
     Serving page for rendering embedded efel gui page
     """
 
     #accesslogger.info(resources.string_for_log('embedded_efel_gui', request))
+    context = {}
+    
+    if request.session[exc].get('hhf_etraces', None):
+        context = {'hhf_etraces_dir': request.session[exc].get('hhf_etraces_dir', None)}
+    
+    print(context)
 
-    return render(request, 'hhnb/embedded_efel_gui.html')
+    return render(request, 'hhnb/embedded_efel_gui.html', context)
 
 
 def workflow(request, exc='', ctx=''):
@@ -535,6 +541,14 @@ def fetch_opt_set_file(request, source_opt_name="", source_opt_id="", exc="", ct
     """
     Set optimization setting file
     """
+    
+    if request.session[exc].get('from_hhf', None):
+        for f in os.listdir(os.path.join(request.session[exc]['hhf_dir'], 'config')):
+            if f == 'features.json' or f == 'protocols.json':
+                shutil.copy(os.path.join(request.session[exc]['hhf_dir'], 'config', f), request.session[exc]['user_dir_data_feat']) 
+        r = hhf_delete_all(request, exc, ctx)
+    
+    
     #source_opt_id = str(source_opt_id)
     response = {"response": "OK", "message": ""}
 
@@ -929,11 +943,12 @@ def check_cond_exist(request, exc="", ctx=""):
     wf_id = request.session[exc]['wf_id']
     dest_dir = request.session[exc]['user_dir_data_opt_launch']
 
-    # check if feature files exist
+    etraces_files = request.session[exc].get('hhf_etraces', None)
+    
     features_file = False
     protocols_file = False
     if os.path.isfile(os.path.join(data_feat, 'features.json')):
-        features_file = True 
+        features_file = True
     if os.path.isfile(os.path.join(data_feat, "protocols.json")):
         protocols_file = True
     if features_file and protocols_file:
@@ -945,6 +960,11 @@ def check_cond_exist(request, exc="", ctx=""):
     elif protocols_file and not features_file:
         response['feat']['status'] = False
         response['feat']['message'] = '"features.json" NOT present'
+
+    # check if feature files exist
+    elif etraces_files:
+        response['feat']['status'] = 'hhf_etraces'
+        response['feat']['message'] = 'Extract features from fetched files'
 
     # check if optimization file exist
     if request.session[exc].get('from_hhf', None):
@@ -1368,6 +1388,7 @@ def download_job(request, job_id="", exc="", ctx=""):
 
         resp = hpc_job_manager.Unicore.fetch_job_results(hpc=hpc_sys_fetch, job_url=str(job_url), dest_dir=opt_res_dir, token=access_token)  # , proxies=PROXIES, wf_id=wf_id)
 
+    print(resp)
     return HttpResponse(json.dumps(resp), content_type="application/json")
 
 
@@ -2213,6 +2234,7 @@ def get_authentication(request):
     return HttpResponse(status=401)
 
 
+@csrf_exempt
 def check_nsg_login(request, exc='', ctx=''):
     data = request.POST
     print(json.dumps(data, indent=4))
@@ -2255,6 +2277,7 @@ def hhf_comm(request, exc='', ctx=''):
     print('hhf-comm called()')
          
     hhf_dict = json.loads(request.GET.get('hhf_dict', None))
+    print(json.dumps(hhf_dict, indent=4))
 
     if hhf_dict:
 
@@ -2281,6 +2304,8 @@ def hhf_comm(request, exc='', ctx=''):
 
         morp = hhf_dict['HHF-Comm'].get('morphology', None)
         mod = hhf_dict['HHF-Comm'].get('modFiles', None)
+        etraces = hhf_dict['HHF-Comm'].get('electrophysiologies', None)
+
 
         if morp:
             morp_dir = os.path.join(hhf_dir, 'morphology')
@@ -2310,13 +2335,40 @@ def hhf_comm(request, exc='', ctx=''):
                     for chunk in r.iter_content():
                         fd.write(chunk)
 
+        hhf_etraces = False
+        if etraces:
+            # add etraces on user_tmp dir
+            etraces_dir = os.path.join(request.session[exc]['user_dir'], 'tmp', 'etraces')
+            if not os.path.exists(etraces_dir):
+                os.makedirs(etraces_dir)
+
+            # downloading etraces files
+            for e in etraces:
+                r = requests.get(e['url'], verify=False)
+                with open(os.path.join(etraces_dir, e['name'] + '.abf'), 'wb') as fd:
+                    for chunk in r.iter_content():
+                        fd.write(chunk)
+                if e.get('metadata', None):
+                    r = requests.get(e['metadata'], verify=False)
+                    with open(os.path.join(etraces_dir, e['name'] + '_metadata.json'), 'wb') as fd:
+                        for chunk in r.iter_content():
+                            fd.write(chunk)
+
+            hhf_etraces = True
+            request.session[exc]['hhf_etraces_dir'] = etraces_dir
+
         request.session[exc]['from_hhf'] = True
         request.session[exc]['hhf_dir'] = hhf_dir
+        request.session[exc]['hhf_etraces'] = hhf_etraces
         request.session[exc]['hhf_model_key'] = hhf_model_key
         request.session.save()
 
         # apply model key after 
         hhf_apply_model_key(request, exc, ctx, hhf_model_key)
+        
+        if etraces and not mod and not morp:
+            r = hhf_delete_all(request, exc, ctx)
+
 
         return render(request, 'hhnb/workflow.html', context={"exc": exc, "ctx": str(ctx)})
 
@@ -2575,7 +2627,7 @@ def hhf_delete_all(request, exc, ctx):
 
     # find all hhf session keys
     for k in request.session[exc].keys():
-        if 'hhf' in k:
+        if 'hhf' in k and (k != 'hhf_etraces' and k != 'hhf_etraces_dir'):
             kk.append(k)
 
     # remove all hhf session keys

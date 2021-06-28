@@ -35,4 +35,6 @@ urlpatterns = [
     # path('upload_zip_file_to_storage', views.upload_zip_file_to_storage),
     # path('hbp-redirect/', views.hbp_redirect),
     
+    path('hhf_etraces/', views.hhf_etraces),
+    path('load_hhf_etraces/', views.load_hhf_etraces),
 ]
