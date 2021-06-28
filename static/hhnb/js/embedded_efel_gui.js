@@ -63,7 +63,9 @@ function saveFeatures(){
 
 //
 function workflowPage() {
-    window.location.href = "/hh-neuron-builder/workflow/";
+    // window.location.href = "/hh-neuron-builder/workflow/";
+    $("#modalNFE").removeClass("show").addClass("hide");
+    
 }
 
 
