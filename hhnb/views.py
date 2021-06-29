@@ -70,36 +70,38 @@ def home(request, exc=None, ctx=None):
         
         return render(request, 'hhnb/workflow.html', context={"exc": exc, "ctx": str(ctx)})
 
-    #if not exc:
-    #    exc = "tab_" + datetime.datetime.now().strftime('%Y%m%d%H%M%S')
-    #if not ctx:
-    #    # generate random uuid for ctx
-    #    ctx = uuid.uuid4()
-
     context = {"exc": exc, "ctx": str(ctx)}
     return render(request, 'hhnb/home.html', context)
 
 
 def set_exc_tags(request, exc="", ctx=""):
     print('set_exc_tags() called.')
-    if exc in request.session:
-        exc = ""
-    else:
-        request.session[exc] = {}
-        request.session[exc]['ctx'] = str(ctx)
-        request.session.save()
-    if exc not in request.session:
-        exc = ""
-    if exc == "" or "ctx" not in request.session[exc]:
-        ctx = ""
 
-    if exc == "" or ctx == "":
-        resp = {
-            "response": "KO",
-            "message": "An error occurred while loading the application.<br><br>Please reload."
-        }
-    else:
-        resp = {"response": "OK", "message": ""}
+    if exc in request.session and not request.session[exc].get('ctx', None):
+        return HttpResponse(json.dumps({'response': 'KO', 'message': 'An error occurred while loading the application.<br><br>Please reload.'}), content_type='application/json')
+
+    request.session[exc] = {'ctx': str(ctx)}
+    request.session.save()
+
+
+    #if exc in request.session:
+    #    exc = ""
+    #else:
+    #    request.session[exc] = {}
+    #    request.session[exc]['ctx'] = str(ctx)
+    #    request.session.save()
+    #if exc not in request.session:
+    #    exc = ""
+    #if exc == "" or "ctx" not in request.session[exc]:
+    #    ctx = ""
+
+    #if exc == "" or ctx == "":
+    #    resp = {
+    #        "response": "KO",
+    #        "message": "An error occurred while loading the application.<br><br>Please reload."
+    #    }
+    #else:
+    resp = {"response": "OK", "message": ""}
 
     return HttpResponse(json.dumps(resp), content_type="application/json")
 
@@ -416,7 +418,8 @@ def embedded_efel_gui(request, exc='', ctx=''):
 
     #accesslogger.info(resources.string_for_log('embedded_efel_gui', request))
     context = {}
-    
+   
+    print(request.session[exc])
     if request.session[exc].get('hhf_etraces', None):
         context = {'hhf_etraces_dir': request.session[exc].get('hhf_etraces_dir', None)}
     
@@ -2619,16 +2622,20 @@ def hhf_get_model_key(request, exc, ctx):
 
 def hhf_delete_all(request, exc, ctx):
     
+    # find all hhf session keys and if exists maintain hhf_etraces_dir references
+    # and copy features.json and protocolos.json files on the standard worflow
+    kk = []
+    for k in request.session[exc].keys():
+        if 'hhf' in k and (k != 'hhf_etraces' and k != 'hhf_etraces_dir'):
+            kk.append(k)
+        for f in os.listdir(os.path.join(request.session[exc]['hhf_dir'], 'config')):
+            if f == 'features.json' or f == 'protocols.json':
+                shutil.copy(os.path.join(request.session[exc]['hhf_dir'], 'config', f), request.session[exc]['user_dir_data_feat']) 
+    
     # delete all folders
     hhf_dir = request.session[exc].get('hhf_dir', None)
     if hhf_dir and os.path.exists(hhf_dir):
         shutil.rmtree(hhf_dir)
-    kk = []
-
-    # find all hhf session keys
-    for k in request.session[exc].keys():
-        if 'hhf' in k and (k != 'hhf_etraces' and k != 'hhf_etraces_dir'):
-            kk.append(k)
 
     # remove all hhf session keys
     for k in kk:

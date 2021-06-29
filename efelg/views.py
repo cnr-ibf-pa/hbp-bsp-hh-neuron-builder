@@ -175,10 +175,11 @@ def get_list(request):
     """
     
     # if not ctx exit the application
-    if "ctx" not in request.session:
-        return render(request, 'efelg/overview.html')
+    #if "ctx" not in request.session:
+    #    return render(request, 'efelg/overview.html')
 
     # metadata file path
+    request.session['main_json_dir'] = os.path.join(settings.MEDIA_ROOT, 'efel_data', 'eg_json_data')
     output_file_path = os.path.join(request.session['main_json_dir'], 'all_traces_metadata.json')
     #file_auth_fullpath = os.path.join(request.session['main_json_dir'], "files_authorization.json")
 
@@ -422,8 +423,10 @@ def extract_features(request):
 
         crr_key = '____'.join(keys2)
         
-        print(json.dumps(selected_traces_rest_json[k], indent=4))
+        print(selected_traces_rest_json[k]['v_corr'])
         crr_vcorr = float(selected_traces_rest_json[k]['v_corr'])
+        
+        print('CRR_VCORR: ' + cvv_vcorr)
         if crr_key in cell_dict:
             cell_dict[crr_key]['stim'].append(crr_file_sel_stim)
             cell_dict[crr_key]['files'].append(k)
@@ -437,6 +440,7 @@ def extract_features(request):
             cell_dict[crr_key]['v_corr'] = 0
 
     print('STEP 2')
+    print(cell_dict[crr_key]['v_corr'])
 
     target = []
     final_cell_dict = {}
@@ -735,24 +739,27 @@ def load_hhf_etraces(request):
         "refused_files": []
     }
     print(hhf_etraces_dir)
-    for f in os.listdir(hhf_etraces_dir):
-        if not f.endswith('.abf'):
-            continue
-        try:
-            with open(os.path.join(hhf_etraces_dir, f[:-4] + '_metadata.json'), 'r') as fd:
-                metadata_dict = json.load(fd)
-            data = manage_json.extract_data(os.path.join(hhf_etraces_dir, f), metadata_dict=metadata_dict)
-            output_filename = manage_json.create_file_name(data)
-            output_filename = output_filename.replace(' ', '_')
-            #output_filename = output_filename.replace('.abf', '')
-            print(output_filename)
-            with open(os.path.join(request.session['user_files_dir'], output_filename), 'w') as fd:
-                json.dump(data, fd, indent=4)
-            if output_filename[:-5] not in data_name_dict['all_json_names']:
-                data_name_dict['all_json_names'].append(output_filename[:-5])
-                #all_authorized_files.append(output_filename[:-5])
-        except Exception as e:
-            print(e)
+    try:
+        for f in os.listdir(hhf_etraces_dir):
+            if not f.endswith('.abf'):
+                continue
+            try:
+                with open(os.path.join(hhf_etraces_dir, f[:-4] + '_metadata.json'), 'r') as fd:
+                    metadata_dict = json.load(fd)
+                data = manage_json.extract_data(os.path.join(hhf_etraces_dir, f), metadata_dict=metadata_dict)
+                output_filename = manage_json.create_file_name(data)
+                output_filename = output_filename.replace(' ', '_')
+                #output_filename = output_filename.replace('.abf', '')
+                print(output_filename)
+                with open(os.path.join(request.session['user_files_dir'], output_filename), 'w') as fd:
+                    json.dump(data, fd, indent=4)
+                if output_filename[:-5] not in data_name_dict['all_json_names']:
+                    data_name_dict['all_json_names'].append(output_filename[:-5])
+                    #all_authorized_files.append(output_filename[:-5])
+            except Exception as e:
+                print(e)
+    except FileNotFoundError:
+        return HttpResponse(json.dumps({'resp':'KO', 'message': 'file not found error'}))
 
     return HttpResponse(json.dumps(data_name_dict), content_type="application/json")
 
