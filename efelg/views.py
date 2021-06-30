@@ -426,7 +426,6 @@ def extract_features(request):
         print(selected_traces_rest_json[k]['v_corr'])
         crr_vcorr = float(selected_traces_rest_json[k]['v_corr'])
         
-        print('CRR_VCORR: ' + cvv_vcorr)
         if crr_key in cell_dict:
             cell_dict[crr_key]['stim'].append(crr_file_sel_stim)
             cell_dict[crr_key]['files'].append(k)
