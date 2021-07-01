@@ -282,21 +282,27 @@ body {
     max-width: unset;
 }
 .object-iframe {
-    width: calc(100% * (1/0.75));
-    height: calc(98% * (1/0.75));
+    /* width: calc(100% * (1/0.75)); */
+    /* height: calc(98% * (1/0.75)); */
+    /* height: calc(100vh * (1/0.9)); */
+    /* width: 100vw; */
+    /* height: 100vh; */
+    width: 100%;
+    height: 100%;
+    margin: auto;
     position: relative;
     overflow: visible;
     border: solid 1px lightgray;
     border-radius: .5rem;
     scrollbar-width: thin;
-    zoom: 0.75;
+/*     zoom: 0.75;
     -ms-zoom: 0.75;
     -moz-transform: scale(0.75);
     -moz-transform-origin: 0 0;
     -o-transform: scale(0.75);
     -o-transform-origin: 0 0;
     -webkit-transform: scale(0.75);
-    -webkit-transform-origin: 0 0;
+    -webkit-transform-origin: 0 0; */
 }
 
 /* Overview page content */
@@ -971,8 +977,8 @@ td {
 /* file manager ui */
 
 .file-manager {
-    width: 1100px;
-    height: 700px;
+    width: 100%;
+    height: 100%;
     border: solid rgba(250, 250, 250, .8) 8px;
     background-color: rgba(250, 250, 250, .5);
     border-radius: inherit;
@@ -980,23 +986,24 @@ td {
 
 
 .file-manager-container {
-    min-width: 1084px;
+    /* min-width: 1084px; */
     line-height: 1.5;
-    height: 484px;
+    height: 100%;
 }
 .file-manager-container > .row {
     margin: 0;
     padding: 0;
 }
 .file-manager-container > .row.full {
-    height: 93%;
+    height: 95%;
 }
 .file-manager-ui-button {
-    height: 7%;
+    height: 5%;
 }
 .file-manager-group {
     width: auto;
     padding: 0;
+    height: 100%;
 }
 .file-manager-group:first-child {
     border-top-right-radius: 0;
@@ -1015,6 +1022,11 @@ td {
     display: none;
     opacity: 0;
 }
+
+.folder-selector {
+    height: 90%;
+    min-width: 240px;
+} 
 
 .folder-selector.fade-out, .file-selector.fade-out {
     animation: fade-out .15s linear 0s 1 forwards ;
@@ -1036,9 +1048,10 @@ td {
 .file-selector {
     background-color: rgba(255, 255, 255, .2);
     line-height: 1;
-    height: calc( 684px - 7% );
     overflow: auto;
     scrollbar-width: thin;
+    min-width: 480px;
+    height: 100%;
 }
 .file-group {
     background-color: none;
@@ -1062,8 +1075,17 @@ td {
 }
 
 .overlay-content.file-manager-content {
-    top: calc( (100vh - 700px) / 2 - 50px);
+    /* vertically centered */
+    top: 50%;
+    transform: translateY(-50%);
+    /***********************/
     padding: 0rem;
+    width: 100%;
+    height: 100%;
+    max-width: 1200px;
+    max-height: 800px;
+    min-width: 750px;
+    min-height: 500px;
 }
 
 .file-code {
@@ -1124,7 +1146,6 @@ td {
 
 .model-key-flex-col {
     display: flex;
-    height: calc( 100% - 211px );
 }
 .model-key-group {
     align-self: end;
@@ -1560,3 +1581,4 @@ i.disabled:hover {
     transform: scale(0%);
     -webkit-transform: scale(0);
 }
+

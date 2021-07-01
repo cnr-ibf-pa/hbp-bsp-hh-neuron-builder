@@ -193,27 +193,45 @@ $(document).ready(function () {
             method: "POST",
             data: {"hhf_etraces_dir": hhf_etraces_dir},
             success: async function(name_dict) {
+                try {
 
-                var loaded_filenames = name_dict.all_json_names;
-                var refused_filenames = [];
-                loaded_filenames = loaded_filenames.map(function (item) {
-                    var splitted = item.split('____');
-                    return splitted[splitted.length - 1] + '.abf'
-                })
-                selected_files.forEach(function (elem) {
-                    if (loaded_filenames.indexOf(elem) == -1)
-                        refused_filenames.push(elem);
-                })
+                    var loaded_filenames = name_dict.all_json_names;
+                    var refused_filenames = [];
+                    loaded_filenames = loaded_filenames.map(function (item) {
+                        var splitted = item.split('____');
+                        return splitted[splitted.length - 1] + '.abf'
+                    })
+                    selected_files.forEach(function (elem) {
+                        if (loaded_filenames.indexOf(elem) == -1)
+                            refused_filenames.push(elem);
+                    })
                 
-                all_json_names = name_dict['all_json_names'];
+                    all_json_names = name_dict['all_json_names'];
 
-                plotCells(all_json_names, true, 1, false).then(() => {
+                    plotCells(all_json_names, true, 1, false).then(() => {
+                        closeMessageDiv("wait-message-div", "main-e-st-div");
+                        writeMessage("wmd-first", "");
+                        writeMessage("wmd-second", "");
+                        isLoadingHHFEtraces = false;
+                        $("#upload_files_1").css("display", "none"); 
+                    });
+                
+                } catch(e) {
+                    
+                    console.warn(e);
+
+                    var response = JSON.parse(name_dict);
+                    var message = "Some error occurred.<br>Please restart the application";
+                    if (response.resp == "KO") {
+                        if (response.message == "file not found error") {
+                            message = "Something went wrong while fetching traces.<br>Please restart the application to fetch files again";
+                        }
+                    }
+
                     closeMessageDiv("wait-message-div", "main-e-st-div");
-                    writeMessage("wmd-first", "");
-                    writeMessage("wmd-second", "");
-                    isLoadingHHFEtraces = false;
-                    $("#upload_files_1").css("display", "none"); 
-                });
+                    openWarning(message);
+                }
+
             },
             error: function(error) {
                 isLoadingHHFEtraces = false;

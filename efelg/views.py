@@ -12,6 +12,7 @@ from django.http.response import HttpResponse, JsonResponse, HttpResponseBadRequ
 
 from hh_neuron_builder import settings
 from efelg.tools import resources, manage_json
+from efelg.tools.manage_storage import EfelStorage
 
 import efel
 import requests
@@ -39,9 +40,7 @@ import bluepyefe as bpefe
 # Create your views here.
 
 
-import pprint
-# @login_required()
-def overview(request):
+def overview(request, wfid=None):
 
     # set context
     request.session['ctx'] = request.GET.get('ctx', None)
@@ -51,25 +50,20 @@ def overview(request):
     else:
         username = 'anonymous'
         
-    collab_id = '100000'
-
-    request.session['main_json_dir'] = os.path.join(settings.MEDIA_ROOT, 'efel_data', 'eg_json_data')
-    request.session['traces_base_url'] = "https://object.cscs.ch:443/v1/AUTH_c0a333ecf7c045809321ce9d9ecdfdea/web-resources-bsp/data/NFE/eg_json_data/traces/"
+    # request.session['main_json_dir'] = os.path.join(settings.MEDIA_ROOT, 'efel_data', 'eg_json_data')
+    # request.session['traces_base_url'] = "https://object.cscs.ch:443/v1/AUTH_c0a333ecf7c045809321ce9d9ecdfdea/web-resources-bsp/data/NFE/eg_json_data/traces/"
 
     # save parameters in request.session
-    request.session["username"] = username
-    #request.session["user_id"] = user_id
-    #request.session["current_authorized_files"] = []
-
-    # request.session["headers"] = headers
-    # request.session["authorized_data_list"] = []
-
-    # reading parameters from request.session
-    # username = request.session["username"]
 
     # parameters for folder creation
-    time_info = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
+    if wfid:
+        time_info = wfid
+    else:
+        time_info = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
+    
+    request.session["username"] = username
     request.session["time_info"] = time_info
+<<<<<<< HEAD
 
     # build local folder complete paths
     #u_time_f = os.path.join(userid, time_info)
@@ -109,12 +103,32 @@ def overview(request):
     uploaded_files_dir = os.path.join(user_base_dir, "uploaded")
     if not os.path.exists(uploaded_files_dir):
         os.makedirs(uploaded_files_dir)
+=======
+     
+    # user_base_dir =  os.path.join(
+    #     settings.MEDIA_ROOT,
+    #     "efel_data",
+    #     "efel_gui",
+    #     "results",
+    #     username,
+    #     "data_" + str(time_info)
+    # )
 
-    user_results_dir = os.path.join(user_base_dir, "u_res")
-    if not os.path.exists(user_results_dir):
-        os.makedirs(user_results_dir)
+    # user_files_dir = os.path.join(user_base_dir, "u_data")
+    # if not os.path.exists(user_files_dir):
+    #     os.makedirs(user_files_dir)
+    
+    # uploaded_files_dir = os.path.join(user_base_dir, "uploaded")
+    # if not os.path.exists(uploaded_files_dir):
+    #     os.makedirs(uploaded_files_dir)
+>>>>>>> hhf_traces_api
+
+    # user_results_dir = os.path.join(user_base_dir, "u_res")
+    # if not os.path.exists(user_results_dir):
+    #     os.makedirs(user_results_dir)
 
     # store paths in request.session
+<<<<<<< HEAD
     #request.session['media_rel_crr_user_res'] = media_rel_crr_user_res
     #request.session['media_abs_crr_user_res'] = media_abs_crr_user_res
     #request.session['st_rel_user_results_folder'] = st_rel_user_results_folder
@@ -125,6 +139,12 @@ def overview(request):
     request.session['traces_dir'] = traces_dir
     request.session['uploaded_files_dir'] = uploaded_files_dir
     request.session['user_results_dir'] = user_results_dir
+=======
+
+    # request.session['user_files_dir'] = user_files_dir
+    # request.session['uploaded_files_dir'] = uploaded_files_dir
+    # request.session['user_results_dir'] = user_results_dir
+>>>>>>> hhf_traces_api
 
     #accesslogger.info(resources.string_for_log('overview', request))
 
@@ -143,13 +163,6 @@ def select_features(request):
     if "ctx" not in request.session:
         return render(request, 'efelg/overview.html')
 
-
-    """
-    # read features groups
-    with open(os.path.join(settings.BASE_DIR, 'static', 'efelg', 'efel_features_final.json')) as json_file:
-        features_dict = json.load(json_file)
-    """
-
     feature_names = efel.getFeatureNames()
     selected_traces_rest = request.POST.get('data')
     request.session['selected_traces_rest_json'] = json.loads(selected_traces_rest)
@@ -158,7 +171,6 @@ def select_features(request):
     return render(request, 'efelg/select_features.html')
 
 
-# @login_required()
 def show_traces(request):
     """"
     Render the efel/show_traces.html page
@@ -175,54 +187,21 @@ def show_traces(request):
     return render(request, 'efelg/show_traces.html')
 
 
-# @login_required()
 def get_list(request):
     """"
     Retrieve the list of .json files to be displayed for trace selection
     """
     
     # if not ctx exit the application
-    if "ctx" not in request.session:
-        return render(request, 'efelg/overview.html')
+    #if "ctx" not in request.session:
+    #    return render(request, 'efelg/overview.html')
 
     # metadata file path
-    output_file_path = os.path.join(request.session['main_json_dir'], 'all_traces_metadata.json')
-    #file_auth_fullpath = os.path.join(request.session['main_json_dir'], "files_authorization.json")
-
-    """
-    # final list of authorized files
-    allfiles = []
+    # request.session['main_json_dir'] = os.path.join(settings.MEDIA_ROOT, 'efel_data', 'eg_json_data')
+    # output_file_path = os.path.join(request.session['main_json_dir'], 'all_traces_metadata.json')
     
-
-    with open(file_auth_fullpath) as f:
-        files_auth = json.load(f)
-
-    for f in files_auth:
-        if files_auth[f] == "all":
-            allfiles.append(f[:-5])
-    """
-    """
-    for i in os.listdir(request.session['main_json_dir']):
-        crr_file_path = os.path.join(request.session['main_json_dir'], i)
-        if i in files_auth:
-            crr_file_auth = files_auth[i]
-            if crr_file_auth[0] == 'all':
-                allfiles.append(i[:-5])
-    """
-
-    #request.session["current_authorized_files"] = allfiles
-
-    """
-    # if metadata all already computed, avoid extraction
-    if os.path.isfile(output_file_path):
-        with open(output_file_path, 'r') as f:
-            output_json = json.load(f)
-
-    else:
-        output_json = manage_json.generate_json_output(allfiles, json_dir)
-        with open(output_file_path, 'w') as f:
-            json.dump(output_json, f)
-    """
+    output_file_path = os.path.join(EfelStorage.getMainJsonDir(), 'all_traces_metadata.json')
+    #file_auth_fullpath = os.path.join(request.session['main_json_dir'], "files_authorization.json")
 
     try:
         with open(output_file_path, 'r') as f:
@@ -230,12 +209,9 @@ def get_list(request):
     except FileNotFoundError:
         return HttpResponse()
 
-    # return HttpResponse(json.dumps(allfiles), content_type="application/json")
     return HttpResponse(json.dumps(output_json), content_type="application/json")
 
 
-#####
-# @login_required(login_url='/login/hbp/')
 def get_data(request, cellname=""):
     
     print('get_data() called.')
@@ -246,16 +222,11 @@ def get_data(request, cellname=""):
 
     #current_authorized_files = request.session["current_authorized_files"]
 
-    """
-    if cellname not in current_authorized_files and not os.path.isfile(os.path.join(u_up_dir, cellname)):
-        return HttpResponse("")
 
-    if os.path.isfile(os.path.join(json_dir, cellname) + '.json'):
-        cellname_path = os.path.join(json_dir, cellname) + '.json'
+    # user_files_dir = request.session['user_files_dir']
+    user_files_dir = EfelStorage.getUserFilesDir(request.session['username'], request.session['time_info'])
 
-    elif os.path.isfile(os.path.join(u_up_dir, cellname) + '.json'):
-        cellname_path = os.path.join(u_up_dir, cellname) + '.json'
-
+<<<<<<< HEAD
     with open(cellname_path) as f:
         content_json = f.read()
     content = json.loads(content_json)
@@ -273,6 +244,14 @@ def get_data(request, cellname=""):
             r = requests.get(request.session['traces_base_url'] + file_name)
             with open(path_to_file, "w") as f:
                 json.dump(r.json(), f)
+=======
+    file_name = cellname + ".json"
+    path_to_file = os.path.join(user_files_dir, file_name)
+    if not file_name in os.listdir(user_files_dir):
+        r = requests.get(request.session['traces_base_url'] + file_name)
+        with open(path_to_file, "w") as f:
+            json.dump(r.json(), f)
+>>>>>>> hhf_traces_api
 
     with open(path_to_file, "r") as f:
         content = json.loads(f.read())
@@ -333,20 +312,17 @@ def get_data(request, cellname=""):
     return HttpResponse(json.dumps(json.dumps(trace_info)), content_type="application/json")
 
 
-#####
-# @login_required(login_url='/login/hbp/')
 def extract_features(request):
 
     # if not ctx exit the application
     if "ctx" not in request.session:
         return render(request, 'efelg/overview.html')
 
-    print('EXTRACTING FEATURES')
-    
     selected_traces_rest_json = request.session['selected_traces_rest_json']
     global_parameters_json = request.session['global_parameters_json']
     allfeaturesnames = efel.getFeatureNames()
 
+<<<<<<< HEAD
     """
     crr_user_folder = request.session['time_info']
     full_crr_result_folder = request.session['u_crr_res_r_dir']
@@ -359,14 +335,26 @@ def extract_features(request):
     uploaded_files_dir = request.session['uploaded_files_dir']
     traces_dir = request.session['traces_dir']
     user_results_dir = request.session['user_results_dir']
+=======
+    username = request.session['username']
+>>>>>>> hhf_traces_api
     time_info = request.session['time_info']
+
+    # conf_dir = request.session['main_json_dir']
+    conf_dir = EfelStorage.getMainJsonDir()
+    # uploaded_files_dir = request.session['uploaded_files_dir']
+    uploaded_files_dir = EfelStorage.getUploadedFilesDir(username, time_info)
+    # user_files_dir = request.session['user_files_dir']
+    user_files_dir = EfelStorage.getUserFilesDir(username, time_info)
+    # user_results_dir = request.session['user_results_dir']
+    user_results_dir = EfelStorage.getResultsDir(username, time_info)
+
     selected_features = request.session["selected_features"]
 
     cell_dict = {}
 
-    print('STEP 1')
-
     for k in selected_traces_rest_json:
+<<<<<<< HEAD
         print("FILE: " + str(k))
         if k + '.json' in os.listdir(uploaded_files_dir):
             path_to_file = os.path.join(uploaded_files_dir, k + '.json')
@@ -375,21 +363,13 @@ def extract_features(request):
         new_path_to_file = os.path.join(user_results_dir, k + '.json')
         shutil.copy2(path_to_file, new_path_to_file)
         with open(new_path_to_file) as f:
+=======
+        path_to_file = os.path.join(user_files_dir, k + '.json')
+        with open(path_to_file) as f:
+>>>>>>> hhf_traces_api
             crr_file_dict = json.loads(f.read()) 
         crr_file_all_stim = list(crr_file_dict['traces'].keys())
         crr_file_sel_stim = selected_traces_rest_json[k]['stim']
-
-        """
-        if os.path.isfile(os.path.join(json_dir, crr_file_rest_name)):
-            crr_json_file = os.path.join(json_dir, crr_file_rest_name)
-        elif os.path.isfile(os.path.join(full_crr_uploaded_folder, crr_file_rest_name)):
-            crr_json_file = os.path.join(full_crr_uploaded_folder, crr_file_rest_name)
-        else:
-            continue
-
-        with open(crr_json_file) as f:
-            crr_file_dict_read = f.read()
-        """
 
         if "stimulus_unit" in crr_file_dict:
             crr_file_amp_unit = crr_file_dict["stimulus_unit"]
@@ -405,15 +385,6 @@ def extract_features(request):
         else:
             raise Exception("cell_id not found!")
 
-        """
-        cell_results_folder = os.path.join(user_results_dir, crr_cell_name)
-        if not os.path.exists(cell_results_folder):
-            os.makedirs(cell_results_folder)
-        shutil.copy2(path_to_file, cell_results_folder)
-        """
-
-        print('STEP 1.5')
-
         new_keys = [
             ("animal_species", "species") , 
             ("brain_structure", "area"),
@@ -424,7 +395,6 @@ def extract_features(request):
         ]
 
         keys = [crr_file_dict[t[0]] if t[0] in crr_file_dict else crr_file_dict[t[1]] for t in new_keys]
-        print(keys)
         keys2 = []
         for kk2 in keys:
             if not type(kk2) == list:
@@ -435,8 +405,8 @@ def extract_features(request):
 
         crr_key = '____'.join(keys2)
         
-        print(json.dumps(selected_traces_rest_json[k], indent=4))
         crr_vcorr = float(selected_traces_rest_json[k]['v_corr'])
+        
         if crr_key in cell_dict:
             cell_dict[crr_key]['stim'].append(crr_file_sel_stim)
             cell_dict[crr_key]['files'].append(k)
@@ -448,8 +418,6 @@ def extract_features(request):
             cell_dict[crr_key]['cell_name'] = crr_cell_name
             cell_dict[crr_key]['all_stim'] = crr_file_all_stim
             cell_dict[crr_key]['v_corr'] = 0
-
-    print('STEP 2')
 
     target = []
     final_cell_dict = {}
@@ -479,7 +447,6 @@ def extract_features(request):
                 'exclude_unit': [crr_file_amp_unit for i in range(len(crr_exc))]
             }
 
-    print('STEP 3')
     # build configuration dictionary
 
     config = {}
@@ -533,11 +500,6 @@ def extract_features(request):
     except ValueError as e:
         print('SOME ERROR OCCURED')
         print(e)
-        # return render(request, 'efelg/hbp_redirect.html', {"status": "KO",
-        #                                                    "message": "An error occured while extracting the features. \
-        #         Either you selected too many data or the traces were corrupted."})
-
-    print('STEP 4')
 
     conf_cit = os.path.join(conf_dir, 'citation_list.json')
     final_cit_file = os.path.join(main_results_folder, 'HOWTOCITE.txt')
@@ -564,7 +526,6 @@ def extract_features(request):
                 absolute_path = os.path.join(root, file_name)
                 relative_path = absolute_path.replace(main_results_folder + os.sep, '')
                 zip_file.write(absolute_path, relative_path)
-                print('STEP 5')
     except IOError as message:
         print(message)
         sys.exit(1)
@@ -577,14 +538,11 @@ def extract_features(request):
     finally:
         zip_file.close()
 
-    print('EXTRACTION OK 200')
     # accesslogger.info(resources.string_for_log('extract_features', request, page_spec_string='___'.join(check_features)))
     return HttpResponse(json.dumps({"status": "OK"}))
 
 
 
-#####
-# @login_required(login_url='/login/hbp/')
 def results(request):
     
     # if not ctx exit the application
@@ -597,9 +555,6 @@ def results(request):
     return render(request, 'efelg/results.html')
 
 
-#####
-
-# @login_required(login_url='/login/hbp/')
 def download_zip(request):
     
     # if not ctx exit the application
@@ -613,8 +568,6 @@ def download_zip(request):
     return response
 
 
-#####
-# @login_required(login_url='/login/hbp/')
 def features_dict(request):
     
     # if not ctx exit the application
@@ -627,8 +580,6 @@ def features_dict(request):
     return HttpResponse(json.dumps(features))
 
 
-#####
-# @login_required(login_url='/login/hbp/')
 @csrf_exempt
 def upload_files(request):
     """
@@ -639,20 +590,14 @@ def upload_files(request):
     if "ctx" not in request.session:
         return render(request, 'efelg/overview.html')
 
-    uploaded_files_dir = request.session['uploaded_files_dir']
-    #all_authorized_files = request.session["current_authorized_files"]
+    username = request.session['username']
+    time_info = request.session['time_info']
 
-    # list of modified names of uploaded files
-    # name_abf_list = []
-
-    # list of json files that have the corresponding abf file
-    # name_json_list = []
-
-    # list of standalone json files
-    # name_standalone_json_list = []
-
-    # list of uploaded files full paths
-
+    # uploaded_files_dir = request.session['uploaded_files_dir']
+    upload_files_dir = EfelStorage.getUploadedFilesDir(username, time_info)
+    # user_files_dir = request.session['user_files_dir']
+    user_files_dir = EfelStorage.getUserFilesDir(username, time_info)
+    
     names_full_path = []
 
     data_name_dict = {
@@ -688,7 +633,6 @@ def upload_files(request):
     for f in names_full_path:
         try:
             data = manage_json.extract_data(f, request.POST)
-            #outfilename = '____'.join(manage_json.get_cell_info(metadata, upload_flag=True, cell_name=cell_name)) + '.json'
             output_filename = manage_json.create_file_name(data)
             output_filepath = os.path.join(uploaded_files_dir, output_filename)
             if os.path.isfile(output_filepath):
@@ -697,14 +641,9 @@ def upload_files(request):
                 json.dump(data, f)
             if output_filename[:-5] not in data_name_dict['all_json_names']:
                 data_name_dict['all_json_names'].append(output_filename[:-5])
-                #all_authorized_files.append(output_filename[:-5])
         except:
             pass   
 
-
-    #request.session["current_authorized_files"] = all_authorized_files
-
-    # accesslogger.info(resources.string_for_log('upload_files', request, page_spec_string=str(len(names_full_path))))
     return HttpResponse(json.dumps(data_name_dict), content_type="application/json")
 
 
@@ -718,24 +657,13 @@ def file_formats_docs(request):
 
 
 def get_result_dir(request):
-    username = request.session['username']
-    time_info = request.session['time_info']
-    user_base_dir =  os.path.join(
-        settings.MEDIA_ROOT,
-        "efel_data",
-        "efel_gui",
-        "results",
-        username,
-        "data_" + str(time_info)
-    )
-    
-    user_results_dir = os.path.join(user_base_dir, "u_res")
+    user_results_dir = EfelStorage.getResultsDir(request.session['username'], request.session['time_info'])
     data = {'result_dir': user_results_dir}
     return JsonResponse(data=json.dumps(data), status=200, safe=False)
 
 
-def hhf_etraces(request):
-    r = overview(request)
+def hhf_etraces(request, wfid):
+    r = overview(request, wfid)
     return render(request, 'efelg/show_traces.html')
 
 
@@ -749,6 +677,7 @@ def load_hhf_etraces(request):
         "all_json_names": [],
         "refused_files": []
     }
+<<<<<<< HEAD
     print(hhf_etraces_dir)
     for f in os.listdir(hhf_etraces_dir):
         if not f.endswith('.abf'):
@@ -801,175 +730,25 @@ def generate_json_data(request):
             fname = os.path.splitext(name)[0]
             metadata_file = os.path.join(data_dir, fname + '_metadata.json')
             if not os.path.isfile(metadata_file):
+=======
+    try:
+        for f in os.listdir(hhf_etraces_dir):
+            if not f.endswith('.abf'):
+>>>>>>> hhf_traces_api
                 continue
-            else:
-                outfilename = '____'.join(manage_json.get_cell_info(metadata_file)) + '.json'
-                outfilepath = os.path.join(json_dir, outfilename)
-                crr_file_auth_collab = manage_json.extract_authorized_collab(metadata_file)
-                if outfilepath not in files_authorization:
-                    files_authorization[outfilename] = crr_file_auth_collab
+            try:
+                with open(os.path.join(hhf_etraces_dir, f[:-4] + '_metadata.json'), 'r') as fd:
+                    metadata_dict = json.load(fd)
+                data = manage_json.extract_data(os.path.join(hhf_etraces_dir, f), metadata_dict=metadata_dict)
+                output_filename = manage_json.create_file_name(data)
+                output_filename = output_filename.replace(' ', '_')
+                with open(os.path.join(request.session['user_files_dir'], output_filename), 'w') as fd:
+                    json.dump(data, fd, indent=4)
+                if output_filename[:-5] not in data_name_dict['all_json_names']:
+                    data_name_dict['all_json_names'].append(output_filename[:-5])
+            except Exception as e:
+                print(e)
+    except FileNotFoundError:
+        return HttpResponse(json.dumps({'resp':'KO', 'message': 'file not found error'}))
 
-                # if the .json file has not been created
-                if not os.path.isfile(outfilepath):
-                    path_dd_name = os.path.join(data_dir, name)
-                    data = manage_json.gen_data_struct(path_dd_name, metadata_file)
-                    with open(outfilepath, 'w') as f:
-                        json.dump(data, f)
-    #
-    file_auth_fullpath = os.path.join(app_data_dir, "files_authorization.json")
-    with open(file_auth_fullpath, 'w') as fa:
-        json.dump(files_authorization, fa)
-
-    return HttpResponse("")
-"""
-
-
-#####
-"""
-Retrieve the list of .json files to be displayed for trace selection
-"""
-
-"""
-# @login_required(login_url='/login/hbp/')
-def get_list_new(request):
-    json_file = open(os.path.join(settings.MEDIA_ROOT, 'efel_data', 'eg_json_data', 'output.json'))
-    return HttpResponse(json_file, content_type="application/json")
-"""
-
-
-"""
-#####
-# @login_required(login_url='/login/hbp/')
-def features_json(request):
-    # if not ctx exit the application
-    if "ctx" not in request.session:
-        return render(request, 'efelg/hbp_redirect.html')
-
-    u_crr_res_r_dir = request.session['u_crr_res_r_dir']
-    with open(os.path.join(u_crr_res_r_dir, 'features.json')) as json_file:
-        features = json.load(json_file)
-    return HttpResponse(json.dumps(features))
-"""
-
-
-"""
-#####
-# @login_required(login_url='/login/hbp/')
-def features_json_path(request):
-    # if not ctx exit the application
-    if "ctx" not in request.session:
-        return render(request, 'efelg/hbp_redirect.html')
-
-    abs_url = request.session['media_abs_crr_user_res']
-    full_feature_json_file = os.path.join(abs_url, 'features.json')
-    return HttpResponse(json.dumps({'path': full_feature_json_file}))
-"""
-
-
-"""
-#####
-# @login_required(login_url='/login/hbp/')
-def features_json_files_path(request):
-    # if not ctx exit the application
-    if "ctx" not in request.session:
-        return render(request, 'efelg/hbp_redirect.html')
-
-    abs_url = request.session['media_abs_crr_user_res']
-    return HttpResponse(json.dumps({'path': abs_url}))
-"""
-
-
-"""
-#####
-# @login_required(login_url='/login/hbp/')
-def protocols_json_path(request):
-    # if not ctx exit the application
-    if "ctx" not in request.session:
-        return render(request, 'efelg/hbp_redirect.html')
-
-    rel_url = request.session['media_rel_crr_user_res']
-    full_feature_json_file = os.path.join(rel_url, 'protocols.json')
-    return HttpResponse(json.dumps({'path': os.path.join(os.sep, full_feature_json_file)}))
-"""
-
-
-"""
-#####
-# @login_required(login_url='/login/hbp/')
-def features_pdf_path(request):
-    # if not ctx exit the application
-    if "ctx" not in request.session:
-        return render(request, 'efelg/hbp_redirect.html')
-
-    rel_url = request.session['media_rel_crr_user_res']
-    full_feature_json_file = os.path.join(rel_url, 'features_step.pdf')
-    return HttpResponse(json.dumps({'path': os.path.join(os.sep, full_feature_json_file)}))
-"""
-
-
-"""
-# @login_required(login_url='/login/hbp/')
-def get_directory_structure(request):
-    Creates a nested dictionary that represents the folder structure of root_dir
-
-    # if not ctx exit the application
-    if "ctx" not in request.session:
-        return render(request, 'efelg/hbp_redirect.html')
-
-    # accesslogger.info(resources.string_for_log('get_directory_structure', request))
-    root_dir = os.path.join(settings.MEDIA_ROOT, 'efel_data', 'app_data')
-    root_dir = root_dir.rstrip(os.sep)
-    start = root_dir.rfind(os.sep) + 1
-    for path, dirs, files in os.walk(root_dir):
-        folders = path[start:].split(os.sep)
-        subdir = dict.fromkeys(files)
-        parent = functools.reduce(dict.get, folders[:-1], dir)
-        parent[folders[-1]] = subdir
-    with open(os.path.join(settings.BASE_DIR, 'static', 'efel_features_final.json')) as json_file:
-        features = json.load(json_file)
-    return HttpResponse(json.dumps(features))
-"""
-
-"""
-# handle file upload to storage collab
-def upload_zip_file_to_storage(request):
-    #TODO: get token
-    access_token = {'token': 'token'} # get_access_token(request.user.social_auth.get())
-    # retrieve data from request.session
-    headers = request.session['headers']
-    collab_id = request.session['collab_id']
-    st_rel_user_results_folder = request.session['st_rel_user_results_folder']
-    st_rel_user_uploaded_folder = request.session['st_rel_user_uploaded_folder']
-    crr_user_folder = request.session['time_info']
-    output_path = request.session['result_file_zip']
-    context = request.session['context']
-    # services = bsc.get_services()
-
-    # get clients from bbp python packages
-    # oidc_client = BBPOIDCClient.bearer_auth(services['oidc_service']['prod']['url'], access_token)
-    # bearer_client = BBPOIDCClient.bearer_auth('prod', access_token)
-    # doc_client = DocClient(services['document_service']['prod']['url'], oidc_client)
-
-    context = request.session['context']
-    # logout(request)
-    next_url = urllib.quote('%s?ctx=%s' % (request.path, context))
-
-    # extract project from collab_id
-    # project = doc_client.get_project_by_collab_id(collab_id)
-
-    # extract collab storage root path
-    # storage_root = doc_client.get_path_by_id(project["_uuid"])
-    # crr_collab_storage_folder = os.path.join(storage_root, st_rel_user_results_folder)
-    # if not doc_client.exists(crr_collab_storage_folder):
-    #     doc_client.makedirs(crr_collab_storage_folder)
-    #
-    # final zip collab storage path
-    # zip_collab_storage_path = os.path.join(crr_collab_storage_folder, crr_user_folder + '_results.zip')
-    #
-    # bypassing uploading data to collab storage
-    # if not doc_client.exists(zip_collab_storage_path):
-    #     doc_client.upload_file(output_path, zip_collab_storage_path)
-    #
-        # render to html page
-    return HttpResponse("")
-"""
+    return HttpResponse(json.dumps(data_name_dict), content_type="application/json")
