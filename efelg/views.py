@@ -54,7 +54,7 @@ def overview(request):
     collab_id = '100000'
 
     request.session['main_json_dir'] = os.path.join(settings.MEDIA_ROOT, 'efel_data', 'eg_json_data')
-    request.session['traces_base_url'] = "https://object.cscs.ch:443/v1/AUTH_c0a333ecf7c045809321ce9d9ecdfdea/web-resources-bsp/data/NFE/eg_json_data/traces/"
+    request.session['traces_base_url'] = "https://object.cscs.ch:443/v1/AUTH_c0a333ecf7c045809321ce9d9ecdfdea/web-resources-bsp/data/NFE/eg_json_data/traces_temp/"
 
     # save parameters in request.session
     request.session["username"] = username
@@ -288,12 +288,13 @@ def get_data(request, cellname=""):
     trace_info['md5'] = content['md5']
     trace_info['sampling_rate'] = content['sampling_rate']
     trace_info['etype'] = content['etype']
-    trace_info['type'] = content['type']
-    trace_info['contributors'] = content['contributors']
+    #trace_info['type'] = content['cell_type']
+    #trace_info['contributors'] = content['contributors']
     trace_info['coefficient'] = coefficient
     trace_info['disp_sampling_rate'] = disp_sampling_rate
 
     new_keys = {
+        "type": "cell_type",
         "name": "cell_id",
         "area": "brain_structure",
         "sample": "filename",
