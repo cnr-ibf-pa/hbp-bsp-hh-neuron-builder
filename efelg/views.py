@@ -57,13 +57,13 @@ def overview(request, wfid=None):
 
     # parameters for folder creation
     if wfid:
-        time_info = wfid
+        time_info = wfid.split('_')[0]
     else:
         time_info = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
     
     request.session["username"] = username
     request.session["time_info"] = time_info
-     
+    
     # user_base_dir =  os.path.join(
     #     settings.MEDIA_ROOT,
     #     "efel_data",
@@ -94,6 +94,7 @@ def overview(request, wfid=None):
     #accesslogger.info(resources.string_for_log('overview', request))
 
     # render to html
+    
     request.session.save()
     return render(request, 'efelg/overview.html')
 
@@ -174,7 +175,7 @@ def get_data(request, cellname=""):
     file_name = cellname + ".json"
     path_to_file = os.path.join(user_files_dir, file_name)
     if not file_name in os.listdir(user_files_dir):
-        r = requests.get(request.session['traces_base_url'] + file_name)
+        r = requests.get(EfelStorage.getTracesBaseUrl() + file_name)
         with open(path_to_file, "w") as f:
             json.dump(r.json(), f)
 
@@ -492,11 +493,16 @@ def upload_files(request):
     username = request.session['username']
     time_info = request.session['time_info']
 
+    print(username, time_info)
+
+
     # uploaded_files_dir = request.session['uploaded_files_dir']
     upload_files_dir = EfelStorage.getUploadedFilesDir(username, time_info)
     # user_files_dir = request.session['user_files_dir']
     user_files_dir = EfelStorage.getUserFilesDir(username, time_info)
     
+    print(upload_files_dir)
+
     names_full_path = []
 
     data_name_dict = {
@@ -511,7 +517,7 @@ def upload_files(request):
     for k in user_files:
         if k.name.endswith('.abf') or k.name.endswith('.json'):
             file_name = re.sub('-', '_', k.name)
-            path_to_file = os.path.join(uploaded_files_dir, file_name)
+            path_to_file = os.path.join(upload_files_dir, file_name)
 
             # if file exists delete and recreate it
             if os.path.isfile(path_to_file):
@@ -562,15 +568,34 @@ def get_result_dir(request):
 
 
 def hhf_etraces(request, wfid):
+    print("Workflow ID: " + wfid)
+    print(request.session)
     r = overview(request, wfid)
     return render(request, 'efelg/show_traces.html')
 
 
 @csrf_exempt
 def load_hhf_etraces(request):
+
     hhf_etraces_dir = request.POST.get('hhf_etraces_dir', None)
+    wfid = request.POST.get('wfid', None) 
+    
+    print(wfid.split('_'))
+
     if not hhf_etraces_dir:
-        return HttpResponseBadRequest()
+        return HttpResponseBadRequest('"hhf_etraces_dir" not found')
+
+    try:
+        username = request.session['username']
+        time_info = request.session['time_info']
+    except KeyError:
+        if not wfid:
+            try:
+                wfid = request.session['wfid']
+            except KeyError:
+                return HttpResponse(json.dumps({'resp': 'KO', 'message': 'key error occurred'}))
+
+    time_info, username = wfid.split('_')
 
     data_name_dict = {
         "all_json_names": [],
@@ -586,7 +611,8 @@ def load_hhf_etraces(request):
                 data = manage_json.extract_data(os.path.join(hhf_etraces_dir, f), metadata_dict=metadata_dict)
                 output_filename = manage_json.create_file_name(data)
                 output_filename = output_filename.replace(' ', '_')
-                with open(os.path.join(request.session['user_files_dir'], output_filename), 'w') as fd:
+                #with open(os.path.join(request.session['user_files_dir'], output_filename), 'w') as fd:
+                with open(os.path.join(EfelStorage.getUserFilesDir(username, time_info), output_filename), 'w') as fd:
                     json.dump(data, fd, indent=4)
                 if output_filename[:-5] not in data_name_dict['all_json_names']:
                     data_name_dict['all_json_names'].append(output_filename[:-5])

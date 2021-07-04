@@ -81,7 +81,7 @@ function createCellHeader(cell_name, cell_id, cellHeaderIds) {
         cell_container = $('<div id="cell-' + cell_id + '"class=text-center" style="display: none"/>');
     } else {
         cell_container = $('<div id="cell-' + cell_id + '"class="text-center"/>');
-    }) 
+    } 
     
     cell_container.append(' \
             <div class="row bg-light-grey mx-auto py-2"> \

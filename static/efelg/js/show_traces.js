@@ -5,6 +5,7 @@ writeMessage("wmd-second", "Please wait...");
 openMessageDiv("wait-message-div", "main-e-st-div");
 
 var hhf_etraces_dir = sessionStorage.getItem("hhf_etraces_dir", hhf_etraces_dir);
+var wfid = sessionStorage.getItem("wfid", wfid) ? sessionStorage.getItem("wfid") : "";
 
 var contributor = null;
 var specie = null;
@@ -191,8 +192,10 @@ $(document).ready(function () {
         $.ajax({
             url: "/efelg/load_hhf_etraces/",
             method: "POST",
-            data: {"hhf_etraces_dir": hhf_etraces_dir},
+            data: {"hhf_etraces_dir": hhf_etraces_dir, "wfid": wfid},
             success: async function(name_dict) {
+                console.log(name_dict)
+                
                 try {
 
                     var loaded_filenames = name_dict.all_json_names;
@@ -208,13 +211,14 @@ $(document).ready(function () {
                 
                     all_json_names = name_dict['all_json_names'];
 
-                    plotCells(all_json_names, true, 1, false).then(() => {
+                    /*plotCells(all_json_names, true, 1).then(() => {
                         closeMessageDiv("wait-message-div", "main-e-st-div");
                         writeMessage("wmd-first", "");
                         writeMessage("wmd-second", "");
                         isLoadingHHFEtraces = false;
                         $("#upload_files_1").css("display", "none"); 
-                    });
+                    });*/
+                    plotCells(all_json_names, true, 1);
                 
                 } catch(e) {
                     
@@ -733,8 +737,6 @@ function createUploadBox() {
                     if (all_json_names.length == 0) {
                         closeMessageDiv("wait-message-div", "main-e-st-div");
                     }
-                    console.log('plotCells ID');
-                    console.log(id);
                     plotCells(all_json_names, true, id).then(() => {
                         closeMessageDiv("wait-message-div", "main-e-st-div");
                         writeMessage("wmd-first", "");

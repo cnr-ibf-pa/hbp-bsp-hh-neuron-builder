@@ -8,7 +8,7 @@ register_converter(WorkflowIdConverter, 'workflow_id')
 
 urlpatterns = [
     path('', views.overview),
-    path('overview/<', views.overview),
+    path('overview/', views.overview),
     path('get_list', views.get_list),
     path('get_data/<slug:cellname>', views.get_data),
     path('show_traces/', views.show_traces),
@@ -24,6 +24,6 @@ urlpatterns = [
 
     path('get_result_dir/', views.get_result_dir),
     
-    path('hhf_etraces/', views.hhf_etraces),
+    path('hhf_etraces/<workflow_id:wfid>', views.hhf_etraces),
     path('load_hhf_etraces/', views.load_hhf_etraces),
 ]
