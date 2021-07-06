@@ -138,7 +138,7 @@ $(document).ready(function(){
 
 // serve embedded-efel-gui page
 function efelPage() {
-    window.location.href = "/hh-neuron-builder/embedded-efel-gui/";
+    window.location.href = "/hh-neuron-builder/embedded-efel-gui/" + req_pattern + "/";
 }
 
 function inSilicoPage() {
@@ -205,7 +205,6 @@ function manageErrorDiv(isOpen=false, isClose=false, message="", tag="") {
     let overlayWrapperError = $("#overlaywrappererror");
     let errorDynamicText = $("#errordynamictext");
     let button = $("#ok-error-div-btn");
-    button.removeClass("blue", "red", "green");
     if (isOpen) {
         overlayWrapper.css("display", "block");
         overlayWrapperError.css("display", "block");
@@ -213,15 +212,15 @@ function manageErrorDiv(isOpen=false, isClose=false, message="", tag="") {
         if (tag == "error") {
             overlayWrapperError.css("box-shadow", "0 0 1rem 0 rgba(255, 0, 0, .8)");
             overlayWrapperError.css("border-color", "red");
-            button.addClass("red");
+            button.addClass("red").removeClass("blue green");
         } else if (tag == "info") {
             overlayWrapperError.css("box-shadow", "0 0 1rem 0 rgba(0, 0, 255, .8)");
             overlayWrapperError.css("border-color", "blue");
-            button.addClass("blue");
+            button.addClass("blue").removeClass("red green");
         } else if (tag == "success") {
             overlayWrapperError.css("box-shadow", "0 0 1rem 0 rgba(0, 255, 0, .8)");
             overlayWrapperError.css("border-color", "green");
-            button.addClass("green");
+            button.addClass("green").removeClass("red blue");
         }
     } else if (isClose) {
         overlayWrapper.css("display", "none");
@@ -310,22 +309,30 @@ function checkConditions(){
                 openExpirationDiv("The workflow directory tree is expired on the server.<br>Please go to the Home page and start a new workflow.<br>");
                 return false
             }
-            if (data['feat']['status']){
+            if (data['feat']['status'] == 'hhf_etraces') {
                 let featBar = $("#feat-bar");
-                featBar.removeClass("red");
-                featBar.addClass("green");
-                featBar.html("");
-                $("#del-feat-btn").prop("disabled", false);
-                $("#down-feat-btn").prop("disabled", false);
-            } else {
-                let featBar = $("#feat-bar");
-                featBar.removeClass("green");
-                featBar.addClass("red");
-                featBar.html(data['feat']['message']);
+                featBar.removeClass("red green");
+                featBar.addClass("orange");
+                featBar.html(data['feat']['message'])
                 $("#del-feat-btn").prop("disabled", true);
                 $("#down-feat-btn").prop("disabled", true);
-            };
-
+            } else {
+                if (data['feat']['status']){
+                    let featBar = $("#feat-bar");
+                    featBar.removeClass("red orange");
+                    featBar.addClass("green");
+                    featBar.html("");
+                    $("#del-feat-btn").prop("disabled", false);
+                    $("#down-feat-btn").prop("disabled", false);
+                } else {
+                    let featBar = $("#feat-bar");
+                    featBar.removeClass("green orange");
+                    featBar.addClass("red");
+                    featBar.html(data['feat']['message']);
+                    $("#del-feat-btn").prop("disabled", true);
+                    $("#down-feat-btn").prop("disabled", true);
+                };
+            }
             if (data['opt_files']['status']){
                 let optFilesBar = $("#opt-files-bar");
                 optFilesBar.removeClass("red");
@@ -438,7 +445,7 @@ function checkConditions(){
 
             // HHF Integration
             if (data['from_hhf']['status']) {
-                $("#opt-db-hpc-btn").prop("disabled", true);
+                //$("#opt-db-hpc-btn").prop("disabled", true);
                 $("#opt-up-btn").prop("disabled", true);
                 $("#down-opt-set-btn").prop("disabled", false);
                 if (data['opt_flag']['status']) {
@@ -907,15 +914,18 @@ function downloadURI(uri, name) {
 }
 
 function saveWorkflow() {
+    showLoadingAnimation("Loading...");
     console.log("saveWorkflow() called.");
     $("#wf-btn-save").blur();
-    showLoadingAnimation("Loading...")
     fetch("/hh-neuron-builder/workflow-download/" + req_pattern, {
         method: "GET"
     }).then(
-        data => downloadURI(data.url, 'workflow')
+        data => {
+            downloadURI(data.url, 'workflow'); 
+            hideLoadingAnimation();
+        }
     ).then(
-        hideLoadingAnimation()
+       // hideLoadingAnimation()
     ).catch(
         error => console.log(error)
     );

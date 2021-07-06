@@ -284,7 +284,7 @@ def get_traces_info(filename, upload_flag = False):
             sampling_rate = "unknown"
         else:
             sampling_rate = str(metadata["sampling_rate"][0])
-            
+
     #
     volt_unit = segments[0].analogsignals[0].units
     volt_unit = str(volt_unit.dimensionality)
@@ -308,6 +308,7 @@ def get_traces_info(filename, upload_flag = False):
     # build dictionaries 
     traces = {}
     tonoff = {}
+
     for i, signal in enumerate(segments):
         # signal conversion to mV
         if not (signal.analogsignals[0].units == pq.mV):
@@ -463,35 +464,65 @@ def perform_conversions_json_file(filename):
         return data
 
 
-def extract_data(name, dict):
+def extract_data(name, dict=None, metadata_dict=None, upload_flag=True):
+    data = None
+    if metadata_dict:
+        data = metadata_dict
+        data.update({'type': 'anonymous'})
+    
     if name.endswith(".abf"):
         metadata = name[:-4] + "_metadata.json"
-        data = gen_data_struct(name, metadata, upload_flag=True)
+        if data:
+            data.update(gen_data_struct(name, metadata, upload_flag=upload_flag))
+        else:
+            data = gen_data_struct(name, metadata, upload_flag=upload_flag)
     elif name.endswith(".json"):
-        data = perform_conversions_json_file(name)
+        if data:
+            data.update(perform_conversions_json_file(name))
+        else:
+            data = perform_conversions_json_file(name)
     
-    filled_keys = {
-        "cell_id": dict["cell_name"],
-        "contributors_affiliations": dict["contributors"],
-        "animal_species": dict["species"],
-        "brain_structure": dict["structure"],
-        "cell_soma_location": dict["region"],
-        "type": dict["type"],
-        "etype": dict["etype"]
-    }
+    if dict:
+        filled_keys = {
+            "cell_id": dict["cell_name"],
+            "contributors_affiliations": dict["contributors"],
+            "animal_species": dict["species"],
+            "brain_structure": dict["structure"],
+            "cell_soma_location": dict["region"],
+            "type": dict["type"],
+            "etype": dict["etype"]
+        }
 
-    for key in filled_keys:
-        data[key] = filled_keys[key]
+        for key in filled_keys:
+            data[key] = filled_keys[key]
+    
 
     return data
 
 
-def create_file_name(data):
+def create_file_name(data, cell_id=None):
+    print('create_file_name() called.')
     filename_keys = ["animal_species", "brain_structure", "cell_soma_location", "type", "etype", "cell_id"]
     if "filename" in data.keys():
         filename_keys.append("filename")
+        print('filename key found')
+        print('data[\'filename\'] = %s' % data['filename']) 
     elif "sample" in data.keys():
         filename_keys.append("sample")
+        print('sample key found')
+        print("data['sample'] = %s" % data['sample'])
     else:
         raise Exception("filename not found!")
+    #try:
     return '____'.join([data[key] for key in filename_keys]) + ".json"
+    #fn_values = []
+    #for k in filename_keys:
+    #    try:
+    #        if k == 'filename':
+    #            fn_values.append(''.join(data[k].split('.')[:-1]))
+    #        else:
+    #            fn_values.append(data[k])
+    #    except KeyError:
+    #        fn_values.append('unknown')
+    #return '___'.join(fn_values) + '.json'
+

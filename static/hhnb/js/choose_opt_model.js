@@ -70,9 +70,6 @@ $('body').on('click', '.model-info-div', function(){
             });
 });
 
-function launchOptimizationHPC() {
-    window.location.href = "/hh-neuron-builder/launch-opt-hpc/" + exc + "/" + ctx; 
-}
 
 function reloadCurrentPage() {
     window.location.href = ""

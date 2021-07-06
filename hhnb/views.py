@@ -70,36 +70,38 @@ def home(request, exc=None, ctx=None):
         
         return render(request, 'hhnb/workflow.html', context={"exc": exc, "ctx": str(ctx)})
 
-    #if not exc:
-    #    exc = "tab_" + datetime.datetime.now().strftime('%Y%m%d%H%M%S')
-    #if not ctx:
-    #    # generate random uuid for ctx
-    #    ctx = uuid.uuid4()
-
     context = {"exc": exc, "ctx": str(ctx)}
     return render(request, 'hhnb/home.html', context)
 
 
 def set_exc_tags(request, exc="", ctx=""):
     print('set_exc_tags() called.')
-    if exc in request.session:
-        exc = ""
-    else:
-        request.session[exc] = {}
-        request.session[exc]['ctx'] = str(ctx)
-        request.session.save()
-    if exc not in request.session:
-        exc = ""
-    if exc == "" or "ctx" not in request.session[exc]:
-        ctx = ""
 
-    if exc == "" or ctx == "":
-        resp = {
-            "response": "KO",
-            "message": "An error occurred while loading the application.<br><br>Please reload."
-        }
-    else:
-        resp = {"response": "OK", "message": ""}
+    if exc in request.session and not request.session[exc].get('ctx', None):
+        return HttpResponse(json.dumps({'response': 'KO', 'message': 'An error occurred while loading the application.<br><br>Please reload.'}), content_type='application/json')
+
+    request.session[exc] = {'ctx': str(ctx)}
+    request.session.save()
+
+
+    #if exc in request.session:
+    #    exc = ""
+    #else:
+    #    request.session[exc] = {}
+    #    request.session[exc]['ctx'] = str(ctx)
+    #    request.session.save()
+    #if exc not in request.session:
+    #    exc = ""
+    #if exc == "" or "ctx" not in request.session[exc]:
+    #    ctx = ""
+
+    #if exc == "" or ctx == "":
+    #    resp = {
+    #        "response": "KO",
+    #        "message": "An error occurred while loading the application.<br><br>Please reload."
+    #    }
+    #else:
+    resp = {"response": "OK", "message": ""}
 
     return HttpResponse(json.dumps(resp), content_type="application/json")
 
@@ -409,14 +411,18 @@ def fetch_wf_from_storage(request, wfid="", exc="", ctx=""):
     return HttpResponse(json.dumps({"response": "OK"}), content_type="application/json")
 
 
-def embedded_efel_gui(request):
+def embedded_efel_gui(request, exc='', ctx=''):
     """
     Serving page for rendering embedded efel gui page
     """
 
     #accesslogger.info(resources.string_for_log('embedded_efel_gui', request))
-
-    return render(request, 'hhnb/embedded_efel_gui.html')
+    context = {}
+   
+    if request.session[exc].get('hhf_etraces', None):
+        context = {'hhf_etraces_dir': request.session[exc].get('hhf_etraces_dir', None), 'wfid': request.session[exc]['wf_id']}
+    
+    return render(request, 'hhnb/embedded_efel_gui.html', context)
 
 
 def workflow(request, exc='', ctx=''):
@@ -491,24 +497,24 @@ def get_model_list2(request, exc="", ctx=""):
 @csrf_exempt
 def copy_feature_files(request, exc='', ctx=''):
 
+    
     feature_folder = request.POST.get('folder', None)
-    feature_folder = feature_folder.replace('u_res', '')
     
     response = {"expiration": False}
    
-    if not os.path.exists(feature_folder):
-        feature_folder = '/' + feature_folder
-    
     if not os.path.exists(request.session[exc]["user_dir"]) or not os.path.exists(feature_folder):
         print("efelg results folders not existing")
         response = {"expiration": True}
         return HttpResponse(json.dumps(response), content_type="application/json")
 
+    print(os.listdir(feature_folder))
     for d in os.listdir(feature_folder):
-        if d.endswith('fe_results'):
-            feature_folder = feature_folder + d
+        print(d)
+        if os.path.isdir(os.path.join(feature_folder, d)):
+            feature_folder = os.path.join(feature_folder, d)
             break
 
+    print(os.listdir(feature_folder))
     if os.path.isfile(os.path.join(feature_folder, 'features.json')) and os.path.isfile(os.path.join(feature_folder, 'protocols.json')):
         if request.session[exc].get('from_hhf', None):
             dst_dir = os.path.join(request.session[exc]['hhf_dir'], 'config')
@@ -535,6 +541,14 @@ def fetch_opt_set_file(request, source_opt_name="", source_opt_id="", exc="", ct
     """
     Set optimization setting file
     """
+    
+    if request.session[exc].get('from_hhf', None):
+        for f in os.listdir(os.path.join(request.session[exc]['hhf_dir'], 'config')):
+            if f == 'features.json' or f == 'protocols.json':
+                shutil.copy(os.path.join(request.session[exc]['hhf_dir'], 'config', f), request.session[exc]['user_dir_data_feat']) 
+        r = hhf_delete_all(request, exc, ctx)
+    
+    
     #source_opt_id = str(source_opt_id)
     response = {"response": "OK", "message": ""}
 
@@ -929,11 +943,12 @@ def check_cond_exist(request, exc="", ctx=""):
     wf_id = request.session[exc]['wf_id']
     dest_dir = request.session[exc]['user_dir_data_opt_launch']
 
-    # check if feature files exist
+    etraces_files = request.session[exc].get('hhf_etraces', None)
+    
     features_file = False
     protocols_file = False
     if os.path.isfile(os.path.join(data_feat, 'features.json')):
-        features_file = True 
+        features_file = True
     if os.path.isfile(os.path.join(data_feat, "protocols.json")):
         protocols_file = True
     if features_file and protocols_file:
@@ -945,6 +960,11 @@ def check_cond_exist(request, exc="", ctx=""):
     elif protocols_file and not features_file:
         response['feat']['status'] = False
         response['feat']['message'] = '"features.json" NOT present'
+
+    # check if feature files exist
+    elif etraces_files:
+        response['feat']['status'] = 'hhf_etraces'
+        response['feat']['message'] = 'Extract features from fetched files'
 
     # check if optimization file exist
     if request.session[exc].get('from_hhf', None):
@@ -1368,6 +1388,7 @@ def download_job(request, job_id="", exc="", ctx=""):
 
         resp = hpc_job_manager.Unicore.fetch_job_results(hpc=hpc_sys_fetch, job_url=str(job_url), dest_dir=opt_res_dir, token=access_token)  # , proxies=PROXIES, wf_id=wf_id)
 
+    print(resp)
     return HttpResponse(json.dumps(resp), content_type="application/json")
 
 
@@ -2256,6 +2277,7 @@ def hhf_comm(request, exc='', ctx=''):
     print('hhf-comm called()')
          
     hhf_dict = json.loads(request.GET.get('hhf_dict', None))
+    print(json.dumps(hhf_dict, indent=4))
 
     if hhf_dict:
 
@@ -2282,6 +2304,8 @@ def hhf_comm(request, exc='', ctx=''):
 
         morp = hhf_dict['HHF-Comm'].get('morphology', None)
         mod = hhf_dict['HHF-Comm'].get('modFiles', None)
+        etraces = hhf_dict['HHF-Comm'].get('electrophysiologies', None)
+
 
         if morp:
             morp_dir = os.path.join(hhf_dir, 'morphology')
@@ -2311,13 +2335,40 @@ def hhf_comm(request, exc='', ctx=''):
                     for chunk in r.iter_content():
                         fd.write(chunk)
 
+        hhf_etraces = False
+        if etraces:
+            # add etraces on user_tmp dir
+            etraces_dir = os.path.join(request.session[exc]['user_dir'], 'tmp', 'etraces')
+            if not os.path.exists(etraces_dir):
+                os.makedirs(etraces_dir)
+
+            # downloading etraces files
+            for e in etraces:
+                r = requests.get(e['url'], verify=False)
+                with open(os.path.join(etraces_dir, e['name'] + '.abf'), 'wb') as fd:
+                    for chunk in r.iter_content():
+                        fd.write(chunk)
+                if e.get('metadata', None):
+                    r = requests.get(e['metadata'], verify=False)
+                    with open(os.path.join(etraces_dir, e['name'] + '_metadata.json'), 'wb') as fd:
+                        for chunk in r.iter_content():
+                            fd.write(chunk)
+
+            hhf_etraces = True
+            request.session[exc]['hhf_etraces_dir'] = etraces_dir
+
         request.session[exc]['from_hhf'] = True
         request.session[exc]['hhf_dir'] = hhf_dir
+        request.session[exc]['hhf_etraces'] = hhf_etraces
         request.session[exc]['hhf_model_key'] = hhf_model_key
         request.session.save()
 
         # apply model key after 
         hhf_apply_model_key(request, exc, ctx, hhf_model_key)
+        
+        if etraces and not mod and not morp:
+            r = hhf_delete_all(request, exc, ctx)
+
 
         return render(request, 'hhnb/workflow.html', context={"exc": exc, "ctx": str(ctx)})
 
@@ -2568,16 +2619,20 @@ def hhf_get_model_key(request, exc, ctx):
 
 def hhf_delete_all(request, exc, ctx):
     
+    # find all hhf session keys and if exists maintain hhf_etraces_dir references
+    # and copy features.json and protocolos.json files on the standard worflow
+    kk = []
+    for k in request.session[exc].keys():
+        if 'hhf' in k and (k != 'hhf_etraces' and k != 'hhf_etraces_dir'):
+            kk.append(k)
+        for f in os.listdir(os.path.join(request.session[exc]['hhf_dir'], 'config')):
+            if f == 'features.json' or f == 'protocols.json':
+                shutil.copy(os.path.join(request.session[exc]['hhf_dir'], 'config', f), request.session[exc]['user_dir_data_feat']) 
+    
     # delete all folders
     hhf_dir = request.session[exc].get('hhf_dir', None)
     if hhf_dir and os.path.exists(hhf_dir):
         shutil.rmtree(hhf_dir)
-    kk = []
-
-    # find all hhf session keys
-    for k in request.session[exc].keys():
-        if 'hhf' in k:
-            kk.append(k)
 
     # remove all hhf session keys
     for k in kk:
