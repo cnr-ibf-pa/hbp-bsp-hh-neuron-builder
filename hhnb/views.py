@@ -419,12 +419,9 @@ def embedded_efel_gui(request, exc='', ctx=''):
     #accesslogger.info(resources.string_for_log('embedded_efel_gui', request))
     context = {}
    
-    print(request.session[exc])
     if request.session[exc].get('hhf_etraces', None):
         context = {'hhf_etraces_dir': request.session[exc].get('hhf_etraces_dir', None), 'wfid': request.session[exc]['wf_id']}
     
-    print(context)
-
     return render(request, 'hhnb/embedded_efel_gui.html', context)
 
 

@@ -210,13 +210,7 @@ $(document).ready(function () {
                 
                     all_json_names = name_dict['all_json_names'];
 
-                    /*plotCells(all_json_names, true, 1).then(() => {
-                        closeMessageDiv("wait-message-div", "main-e-st-div");
-                        writeMessage("wmd-first", "");
-                        writeMessage("wmd-second", "");
-                        isLoadingHHFEtraces = false;
-                        $("#upload_files_1").css("display", "none"); 
-                    });*/
+                    $("#upload_files_1").css("display", "none");
                     plotCells(all_json_names, true, 1);
                 
                 } catch(e) {

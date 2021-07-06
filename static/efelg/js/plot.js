@@ -81,6 +81,7 @@ function createCellHeader(cell_name, cell_id, cellHeaderIds) {
         cell_container = $('<div id="cell-' + cell_id + '"class=text-center" style="display: none"/>');
     } else {
         cell_container = $('<div id="cell-' + cell_id + '"class="text-center"/>');
+        cellHeaderIds.push(cell_id);
     } 
     
     cell_container.append(' \
@@ -183,9 +184,9 @@ function createCellPlotBox(id, container, currentPlotData, xLabel, yLabel, cellI
     });
 }
 
+var cellHeaderIds = [];
 function plotMinibatch(cells, isUploaded, id) {
     var promises = [];
-    var cellHeaderIds = [];
     for (var i = 0; i < cells.length; i++) {
         var cell = null;
         var cell_name = null;
@@ -202,7 +203,7 @@ function plotMinibatch(cells, isUploaded, id) {
             cell_name = contributor + ' > ' + specie + ' > ' + structure + ' > ' + region + ' > ' + type + ' > ' + etype + ' > ' + cell;
             files = files.concat(Object.values(json['Contributors'][contributor][specie][structure][region][type][etype][cell]));
         }
-      
+        
         var cellHeader = createCellHeader(cell_name, cell, cellHeaderIds)
         cellHeader.addClass("mt-4");
         cellHeader.append('<div id="charts-' + cell + '"></div>');

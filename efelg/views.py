@@ -64,6 +64,7 @@ def overview(request, wfid=None):
     request.session["username"] = username
     request.session["time_info"] = time_info
     
+    print(username, time_info)
     # user_base_dir =  os.path.join(
     #     settings.MEDIA_ROOT,
     #     "efel_data",
@@ -139,8 +140,8 @@ def get_list(request):
     """
     
     # if not ctx exit the application
-    #if "ctx" not in request.session:
-    #    return render(request, 'efelg/overview.html')
+    if "ctx" not in request.session:
+        return render(request, 'efelg/overview.html')
 
     # metadata file path
     # request.session['main_json_dir'] = os.path.join(settings.MEDIA_ROOT, 'efel_data', 'eg_json_data')
