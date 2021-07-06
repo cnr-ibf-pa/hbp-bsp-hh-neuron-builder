@@ -340,7 +340,6 @@ def extract_features(request):
             crr_stim_val = [float(i) for i in crr_list]
             crr_exc.append(crr_stim_val)
 
-        print(crr_el['v_corr'])
         final_cell_dict[cell_dict[key]['cell_name']] = \
             {
                 'v_corr': crr_el['v_corr'],
