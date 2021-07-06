@@ -587,8 +587,6 @@ def load_hhf_etraces(request):
 
     hhf_etraces_dir = request.POST.get('hhf_etraces_dir', None)
     wfid = request.POST.get('wfid', None) 
-    
-    print(wfid.split('_'))
 
     if not hhf_etraces_dir:
         return HttpResponseBadRequest('"hhf_etraces_dir" not found')
