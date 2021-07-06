@@ -205,12 +205,13 @@ def get_data(request, cellname=""):
     trace_info['md5'] = content['md5']
     trace_info['sampling_rate'] = content['sampling_rate']
     trace_info['etype'] = content['etype']
-    trace_info['type'] = content['type']
-    trace_info['contributors'] = content['contributors']
+    #trace_info['type'] = content['cell_type']
+    #trace_info['contributors'] = content['contributors']
     trace_info['coefficient'] = coefficient
     trace_info['disp_sampling_rate'] = disp_sampling_rate
 
     new_keys = {
+        "type": "cell_type",
         "name": "cell_id",
         "area": "brain_structure",
         "sample": "filename",

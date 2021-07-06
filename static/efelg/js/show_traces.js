@@ -384,9 +384,9 @@ function toggleParametersMenu(button) {
     toggleMenu(button, '#parameters_menu');
     var menu = $('#parameters_menu');
     if (menu.css('overflow') == 'visible') {
-        menu.css({overflow: 'hidden'})
+        menu.css({ overflow: 'hidden' })
     } else {
-        menu.css({overflow: 'visible'})
+        menu.css({ overflow: 'visible' })
     }
 }
 
@@ -445,7 +445,7 @@ function checkEventsValue() {
 
 //
 function onChangeEventsValue() {
-    $('#events_value').on("change", function() {
+    $('#events_value').on("change", function () {
         if ($(this).val() > 5) {
             updateValue(this, value);
         }
@@ -507,7 +507,7 @@ function checkUploadedFiles(id) {
     }
 
     if (refused_filenames.length > 0) {
-        openWarning('Rejected files:<br>' + refused_filenames.join(', ') + 
+        openWarning('Rejected files:<br>' + refused_filenames.join(', ') +
             '<br><br>Please read the information note at this \
             <span class="text-decoration-underline clickable" onclick="openInfoPanel(uploadTitle, uploadText)">link</span>');
         return false;
@@ -526,7 +526,7 @@ function checkIfUploadable(id) {
     //
     function areInputTextAllFilled(id) {
         var areAllFilled = true;
-        $('#upload_files_' + id).find('input[type=text][name!=cell_name]').each(function() {
+        $('#upload_files_' + id).find('input[type=text][name!=cell_name]').each(function () {
             if ($(this).val() == "") {
                 $(this).addClass("is-invalid");
                 $(this).removeClass("is-valid");
@@ -593,7 +593,7 @@ function createUploadBox() {
                         <input id="json_extension_' + i_box + '" type="radio" name="extension_' + i_box + '" value=".json" class="ms-3"> \
                         <label for="json_extension_' + i_box + '">json</label> \
                     </div> \
-                    <div class="col-lg-2 col-md-3 col-4 text-center"> \
+                    <div class="col-lg-2 col-md-3 col-4 text-end"> \
                         <i class="far fa-question-circle fa-lg" \
                             onclick="openInfoPanel(uploadTitle, uploadText)"> \
                         </i> \
@@ -687,7 +687,7 @@ function createUploadBox() {
 
     $('#upload_files_' + i_box).find('input[type=text]').click(function () {
         if ($(this).val().toLowerCase().includes("unknown")) {
-            $(this).val("");          
+            $(this).val("");
         }
     });
 
@@ -696,7 +696,58 @@ function createUploadBox() {
         var id = this.id.split("_");
         id = id[id.length - 1];
         checkIfUploadable(id);
-    })
+        var files = $("#user_files_" + id).prop("files")
+        for (var i = 0; i < files.length; i++) {
+            var file = files[i];
+            var splitted_name = file["name"].split(".");
+            var ext = splitted_name[splitted_name.length - 1];
+            if (ext == "json") {
+                var read = new FileReader();
+                read.readAsBinaryString(file);
+                read.onloadend = function () {
+                    var data = JSON.parse(read.result);
+                    var cell_name = $("#cell_name_" + id);
+                    var structure = $("#structure_" + id);
+                    var species = $("#species_" + id);
+                    var region = $("#region_" + id);
+                    var contributors = $("#contributors_" + id)
+                    var type = $("#type_" + id);
+                    var etype = $("#etype_" + id);
+                    if ("name" in data) {
+                        cell_name.val(data["name"].toLowerCase());
+                    } else if ("cell_id" in data) {
+                        cell_name.val(data["cell_id"].toLowerCase());
+                    }
+                    if ("area" in data) {
+                        structure.val(data["area"].toLowerCase());
+                    } else if ("brain_structure" in data) {
+                        structure.val(data["brain_structure"].toLowerCase());
+                    }
+                    if ("species" in data) {
+                        species.val(data["species"].toLowerCase());
+                    } else if ("animal_species" in data) {
+                        species.val(data["animal_species"].toLowerCase());
+                    }
+                    if ("region" in data) {
+                        region.val(data["region"].toLowerCase());
+                    } else if ("cell_soma_location" in data) {
+                        region.val(data["cell_soma_location"].toLowerCase());
+                    }
+                    if ("contributors_affiliations" in data) {
+                        contributors.val(data["contributors_affiliations"].toLowerCase());
+                    } else if ("contributors" in data) {
+                        contributors.val(data["contributors"]["name"].toLowerCase());
+                    }
+                    if ("type" in data) {
+                        type.val(data["type"].toLowerCase());
+                    }
+                    if ("etype" in data) {
+                        etype.val(data["etype"].toLowerCase());
+                    }
+                }
+            }
+        }
+    });
 
     $('#upload_files_' + i_box).find('input[type=text]').on("input click", function () {
         var id = this.id.split("_");
@@ -712,6 +763,10 @@ function createUploadBox() {
             writeMessage("wmd-first", "Loading traces");
             writeMessage("wmd-second", "Please wait...");
             openMessageDiv("wait-message-div", "main-e-st-div");
+            var inputs = $(this).find('input[type=text]');
+            for (var i = 0; i < inputs.length; i++) {
+                $(inputs[i]).val($(inputs[i]).val().replaceAll(" ", "_"));
+            }
             var formData = new FormData($(this)[0]);
             $.ajax({
                 url: $(this).attr("action"),
@@ -731,7 +786,7 @@ function createUploadBox() {
                         if (loaded_filenames.indexOf(elem) == -1)
                             refused_filenames.push(elem);
                     })
-                   
+
                     all_json_names = name_dict['all_json_names'];
                     if (all_json_names.length == 0) {
                         closeMessageDiv("wait-message-div", "main-e-st-div");
