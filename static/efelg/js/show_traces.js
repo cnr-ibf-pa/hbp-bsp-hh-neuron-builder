@@ -197,7 +197,6 @@ $(document).ready(function () {
                 console.log(name_dict)
                 
                 try {
-
                     var loaded_filenames = name_dict.all_json_names;
                     var refused_filenames = [];
                     loaded_filenames = loaded_filenames.map(function (item) {

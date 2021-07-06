@@ -307,19 +307,21 @@ def extract_features(request):
 
         crr_key = '____'.join(keys2)
         
-        crr_vcorr = float(selected_traces_rest_json[k]['v_corr'])
-        
+        """
         if crr_key in cell_dict:
+            print("here")
             cell_dict[crr_key]['stim'].append(crr_file_sel_stim)
             cell_dict[crr_key]['files'].append(k)
-            cell_dict[crr_key]['v_corr'] = float(crr_vcorr)
+            cell_dict[crr_key]['v_corr'] = crr_vcorr
         else:
-            cell_dict[crr_key] = {}
-            cell_dict[crr_key]['stim'] = [crr_file_sel_stim]
-            cell_dict[crr_key]['files'] = [k]
-            cell_dict[crr_key]['cell_name'] = crr_cell_name
-            cell_dict[crr_key]['all_stim'] = crr_file_all_stim
-            cell_dict[crr_key]['v_corr'] = 0
+        """
+
+        cell_dict[crr_key] = {}
+        cell_dict[crr_key]['stim'] = [crr_file_sel_stim]
+        cell_dict[crr_key]['files'] = [k]
+        cell_dict[crr_key]['cell_name'] = crr_cell_name
+        cell_dict[crr_key]['all_stim'] = crr_file_all_stim
+        cell_dict[crr_key]['v_corr'] = [int(selected_traces_rest_json[k]['v_corr'])]
 
     target = []
     final_cell_dict = {}
@@ -334,6 +336,7 @@ def extract_features(request):
         for crr_list in exc_stim_lists:
             crr_stim_val = [float(i) for i in crr_list]
             crr_exc.append(crr_stim_val)
+
         final_cell_dict[cell_dict[key]['cell_name']] = \
             {
                 'v_corr': crr_el['v_corr'],
@@ -353,7 +356,7 @@ def extract_features(request):
 
     config = {}
     config['features'] = {'step': [str(i) for i in selected_features]}
-    config['path'] = user_results_dir
+    config['path'] = user_files_dir
     config['format'] = 'ibf_json'
     config['comment'] = []
     config['cells'] = final_cell_dict
@@ -413,7 +416,9 @@ def extract_features(request):
     request.session['nfe_result_file_zip_name'] = zip_name
 
     for k in selected_traces_rest_json:
-        os.remove(os.path.join(user_results_dir, k + ".json"))
+        f = os.path.join(user_results_dir, k + ".json")
+        if os.path.exists(f):
+            os.remove(f)
 
     #parent_folder = os.path.dirname(full_crr_result_folder)
     contents = os.walk(main_results_folder)

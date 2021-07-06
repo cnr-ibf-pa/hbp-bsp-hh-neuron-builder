@@ -227,7 +227,7 @@ function plotMinibatch(cells, isUploaded, id) {
                             label: label
                         });
                     });
-                    currentPlotData = currentPlotData.sort((dict1, dict2) => parseFloat(dict1["label"]) - parseFloat(dict2["label"]));
+                    currentPlotData = currentPlotData.sort((dict1, dict2) => parseFloat(dict2["label"]) - parseFloat(dict1["label"]));
                     currentPlotData.forEach(d => d["label"] += " " + dict["stimulus_unit"]);
                     var new_keys = {
                         "species": "animal_species",
