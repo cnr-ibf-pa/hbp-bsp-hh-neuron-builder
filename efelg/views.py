@@ -25,37 +25,24 @@ import json
 import bluepyefe as bpefe
 
 
-
-# set logging up
-#logging.basicConfig(stream=sys.stdout)
-#logger = logging.getLogger()
-#logger.setLevel(logging.DEBUG)
-
-# create logger if not in DEBUG mode
-#accesslogger = logging.getLogger('efelg_access.log')
-#accesslogger.addHandler(logging.FileHandler('efelg_access.log'))
-#accesslogger.setLevel(logging.DEBUG)
-
-
 # Create your views here.
 
 
 def overview(request, wfid=None):
+    """
+    This function serves the first page of the NFE and instantiates the environment variables
+    """
 
     # set context
     request.session['ctx'] = request.GET.get('ctx', None)
 
+    # get username if user is authenticated otherwise anonymous is set as username
     if request.user.is_authenticated:
         username = request.user.username
     else:
         username = 'anonymous'
-        
-    # request.session['main_json_dir'] = os.path.join(settings.MEDIA_ROOT, 'efel_data', 'eg_json_data')
-    # request.session['traces_base_url'] = "https://object.cscs.ch:443/v1/AUTH_c0a333ecf7c045809321ce9d9ecdfdea/web-resources-bsp/data/NFE/eg_json_data/traces/"
-
-    # save parameters in request.session
-
-    # parameters for folder creation
+  
+    # if Efelg is run from HHNB the workflow ID is set as time_info to successfully retrive session variables
     if wfid:
         time_info = wfid.split('_')[0]
     else:
@@ -64,43 +51,10 @@ def overview(request, wfid=None):
     request.session["username"] = username
     request.session["time_info"] = time_info
     
-    print(username, time_info)
-    # user_base_dir =  os.path.join(
-    #     settings.MEDIA_ROOT,
-    #     "efel_data",
-    #     "efel_gui",
-    #     "results",
-    #     username,
-    #     "data_" + str(time_info)
-    # )
-
-    # user_files_dir = os.path.join(user_base_dir, "u_data")
-    # if not os.path.exists(user_files_dir):
-    #     os.makedirs(user_files_dir)
-    
-    # uploaded_files_dir = os.path.join(user_base_dir, "uploaded")
-    # if not os.path.exists(uploaded_files_dir):
-    #     os.makedirs(uploaded_files_dir)
-
-    # user_results_dir = os.path.join(user_base_dir, "u_res")
-    # if not os.path.exists(user_results_dir):
-    #     os.makedirs(user_results_dir)
-
-    # store paths in request.session
-
-    # request.session['user_files_dir'] = user_files_dir
-    # request.session['uploaded_files_dir'] = uploaded_files_dir
-    # request.session['user_results_dir'] = user_results_dir
-
-    #accesslogger.info(resources.string_for_log('overview', request))
-
-    # render to html
-    
     request.session.save()
     return render(request, 'efelg/overview.html')
 
 
-# @login_required()
 def select_features(request):
     """
     This function serves the application select-features page
@@ -110,11 +64,10 @@ def select_features(request):
     if "ctx" not in request.session:
         return render(request, 'efelg/overview.html')
 
-    feature_names = efel.getFeatureNames()
+    # feature_names = efel.getFeatureNames() ## unused variable ?
     selected_traces_rest = request.POST.get('data')
     request.session['selected_traces_rest_json'] = json.loads(selected_traces_rest)
     request.session['global_parameters_json'] = json.loads(request.POST.get('global_parameters'))
-    #accesslogger.info(resources.string_for_log('select_features', request, page_spec_string=selected_traces_rest))
     return render(request, 'efelg/select_features.html')
 
 
@@ -127,10 +80,6 @@ def show_traces(request):
     if "ctx" not in request.session:
         return render(request, 'efelg/overview.html')
 
-
-    #accesslogger.info(resources.string_for_log('show_traces', request))
-    #time_info = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
-    #accesslogger.info("user " + request.session['username'] + " has accepted terms and conditions at this time " + time_info)
     return render(request, 'efelg/show_traces.html')
 
 
@@ -142,13 +91,8 @@ def get_list(request):
     # if not ctx exit the application
     if "ctx" not in request.session:
         return render(request, 'efelg/overview.html')
-
-    # metadata file path
-    # request.session['main_json_dir'] = os.path.join(settings.MEDIA_ROOT, 'efel_data', 'eg_json_data')
-    # output_file_path = os.path.join(request.session['main_json_dir'], 'all_traces_metadata.json')
     
     output_file_path = os.path.join(EfelStorage.getMainJsonDir(), 'all_traces_metadata.json')
-    #file_auth_fullpath = os.path.join(request.session['main_json_dir'], "files_authorization.json")
 
     try:
         with open(output_file_path, 'r') as f:
@@ -160,6 +104,9 @@ def get_list(request):
 
 
 def get_data(request, cellname=""):
+    """
+    Return trace's information about the cell, passed as cellname, as a dictionary
+    """
     
     print('get_data() called.')
 
@@ -167,14 +114,9 @@ def get_data(request, cellname=""):
     if "ctx" not in request.session:
         return render(request, 'efelg/overview.html')
 
-    #current_authorized_files = request.session["current_authorized_files"]
-
-
-    # user_files_dir = request.session['user_files_dir']
     user_files_dir = EfelStorage.getUserFilesDir(request.session['username'], request.session['time_info'])
-    print(user_files_dir)
 
-
+    # if the trace file exists on the disk will be used it otherwise it will be fetch from the server
     file_name = cellname + ".json"
     path_to_file = os.path.join(user_files_dir, file_name)
     if not file_name in os.listdir(user_files_dir):
@@ -192,7 +134,6 @@ def get_data(request, cellname=""):
     else:
         crr_sampling_rate = int(content['sampling_rate'])
 
-    #crr_sampling_rate = int(content['sampling_rate'][0])
     coefficient = int(math.floor(crr_sampling_rate / disp_sampling_rate))
     if coefficient < 1:
         coefficient = 1
@@ -242,6 +183,9 @@ def get_data(request, cellname=""):
 
 
 def extract_features(request):
+    """
+
+    """
 
     # if not ctx exit the application
     if "ctx" not in request.session:
@@ -254,13 +198,10 @@ def extract_features(request):
     username = request.session['username']
     time_info = request.session['time_info']
 
-    # conf_dir = request.session['main_json_dir']
+    # retrieve all user's workflow paths
     conf_dir = EfelStorage.getMainJsonDir()
-    # uploaded_files_dir = request.session['uploaded_files_dir']
     uploaded_files_dir = EfelStorage.getUploadedFilesDir(username, time_info)
-    # user_files_dir = request.session['user_files_dir']
     user_files_dir = EfelStorage.getUserFilesDir(username, time_info)
-    # user_results_dir = request.session['user_results_dir']
     user_results_dir = EfelStorage.getResultsDir(username, time_info)
 
     selected_features = request.session["selected_features"]
@@ -307,15 +248,6 @@ def extract_features(request):
                     keys2.append(kkk)
 
         crr_key = '____'.join(keys2)
-        
-        """
-        if crr_key in cell_dict:
-            print("here")
-            cell_dict[crr_key]['stim'].append(crr_file_sel_stim)
-            cell_dict[crr_key]['files'].append(k)
-            cell_dict[crr_key]['v_corr'] = crr_vcorr
-        else:
-        """
 
         cell_dict[crr_key] = {}
         cell_dict[crr_key]['stim'] = [crr_file_sel_stim]
@@ -404,7 +336,7 @@ def extract_features(request):
         extractor.feature_config_cells(version="legacy")
         extractor.feature_config_all(version="legacy")
     except ValueError as e:
-        print('SOME ERROR OCCURED')
+        print('SOME ERROR OCCUREED')
         print(e)
 
     conf_cit = os.path.join(conf_dir, 'citation_list.json')
@@ -452,7 +384,11 @@ def extract_features(request):
 
 
 def results(request):
-    
+    """
+    Serve results page 
+    """
+
+
     # if not ctx exit the application
     if "ctx" not in request.session:
         return render(request, 'efelg/overview.html')
@@ -464,12 +400,14 @@ def results(request):
 
 
 def download_zip(request):
+    """
+    Return a zip file of the extracted features on the selected traces
+    """
     
     # if not ctx exit the application
     if "ctx" not in request.session:
         return render(request, 'efelg/overview.html')
 
-    # accesslogger.info(resources.string_for_log('download_zip', request))
     zip_file = open(request.session['nfe_result_file_zip'], 'rb')
     response = HttpResponse(zip_file, content_type='application/force-download')
     response['Content-Disposition'] = 'attachment; filename="%s"' % request.session['nfe_result_file_zip_name']
