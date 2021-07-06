@@ -205,8 +205,6 @@ def get_data(request, cellname=""):
     trace_info['md5'] = content['md5']
     trace_info['sampling_rate'] = content['sampling_rate']
     trace_info['etype'] = content['etype']
-    #trace_info['type'] = content['cell_type']
-    #trace_info['contributors'] = content['contributors']
     trace_info['coefficient'] = coefficient
     trace_info['disp_sampling_rate'] = disp_sampling_rate
 
@@ -218,7 +216,8 @@ def get_data(request, cellname=""):
         "species": "animal_species",
         "region": "cell_soma_location",
         "amp_unit": "stimulus_unit",
-        "volt_unit": "voltage_unit"
+        "volt_unit": "voltage_unit",
+        "v_unit": "voltage_unit"
     }
 
     for key in new_keys:
@@ -237,6 +236,9 @@ def get_data(request, cellname=""):
     else:
         #raise Exception("contributors_affiliations not found!")
         trace_info['contributors_affiliations'] = 'unknown'
+
+    if "note" in content:
+        trace_info["note"] = content["note"]
 
     return HttpResponse(json.dumps(json.dumps(trace_info)), content_type="application/json")
 
@@ -338,6 +340,7 @@ def extract_features(request):
             crr_stim_val = [float(i) for i in crr_list]
             crr_exc.append(crr_stim_val)
 
+        print(crr_el['v_corr'])
         final_cell_dict[cell_dict[key]['cell_name']] = \
             {
                 'v_corr': crr_el['v_corr'],

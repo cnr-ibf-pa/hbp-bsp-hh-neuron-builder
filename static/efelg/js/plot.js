@@ -5,7 +5,7 @@ const SHOW_HOVER = 1.0;
 var plotData = {}
 var num = 0;
 
-var minibatch_size = 5;
+var minibatch_size = 4;
 var n_plots = 0;
 
 // refresh the plot with new opacities
@@ -127,7 +127,7 @@ function createCellPlotBox(id, container, currentPlotData, xLabel, yLabel, cellI
         'class': 'table-responsive',
     }).appendTo(container);
     if (note != null) {
-        plotbox.prepend("<em>" + note + "</em>")
+        inputbox.append("<em>" + note + "</em>")
     }
 
     plot(plot_id, 'input_' + id, {
