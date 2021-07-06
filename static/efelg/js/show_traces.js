@@ -737,11 +737,7 @@ function createUploadBox() {
                     if (all_json_names.length == 0) {
                         closeMessageDiv("wait-message-div", "main-e-st-div");
                     }
-                    plotCells(all_json_names, true, id).then(() => {
-                        closeMessageDiv("wait-message-div", "main-e-st-div");
-                        writeMessage("wmd-first", "");
-                        writeMessage("wmd-second", "");
-                    });
+                    plotCells(all_json_names, true, id);
                 }
             })
         }

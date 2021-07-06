@@ -171,6 +171,8 @@ def get_data(request, cellname=""):
 
     # user_files_dir = request.session['user_files_dir']
     user_files_dir = EfelStorage.getUserFilesDir(request.session['username'], request.session['time_info'])
+    print(user_files_dir)
+
 
     file_name = cellname + ".json"
     path_to_file = os.path.join(user_files_dir, file_name)
@@ -500,7 +502,7 @@ def upload_files(request):
     upload_files_dir = EfelStorage.getUploadedFilesDir(username, time_info)
     # user_files_dir = request.session['user_files_dir']
     user_files_dir = EfelStorage.getUserFilesDir(username, time_info)
-    
+    print(user_files_dir)
     print(upload_files_dir)
 
     names_full_path = []
@@ -539,7 +541,7 @@ def upload_files(request):
         try:
             data = manage_json.extract_data(f, request.POST)
             output_filename = manage_json.create_file_name(data)
-            output_filepath = os.path.join(uploaded_files_dir, output_filename)
+            output_filepath = os.path.join(user_files_dir, output_filename)
             if os.path.isfile(output_filepath):
                 os.remove(output_filepath)
             with open(output_filepath, 'w') as f:
