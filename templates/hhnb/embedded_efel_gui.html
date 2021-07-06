@@ -39,6 +39,8 @@
 <script type="text/javascript" src="{% static 'hhnb/js/embedded_efel_gui.js' %}"></script>
 <script>
     var hhf_etraces_dir = "{{ hhf_etraces_dir }}";
+    var wfid = "{{ wfid }}"
     sessionStorage.setItem("hhf_etraces_dir", hhf_etraces_dir);
+    sessionStorage.setItem("wfid", wfid);
 </script>
 {% endblock %}

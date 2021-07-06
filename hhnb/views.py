@@ -421,7 +421,7 @@ def embedded_efel_gui(request, exc='', ctx=''):
    
     print(request.session[exc])
     if request.session[exc].get('hhf_etraces', None):
-        context = {'hhf_etraces_dir': request.session[exc].get('hhf_etraces_dir', None)}
+        context = {'hhf_etraces_dir': request.session[exc].get('hhf_etraces_dir', None), 'wfid': request.session[exc]['wf_id']}
     
     print(context)
 

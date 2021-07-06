@@ -77,7 +77,7 @@ class SourceOptConverter:
 
 
 class WorkflowIdConverter:
-    regex = '[0-9]{14}_[0-9]+'
+    regex = '[0-9]{14}_[a-z]+'
 
     def to_python(self, value):
         return value

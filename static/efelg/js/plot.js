@@ -81,7 +81,7 @@ function createCellHeader(cell_name, cell_id, cellHeaderIds) {
         cell_container = $('<div id="cell-' + cell_id + '"class=text-center" style="display: none"/>');
     } else {
         cell_container = $('<div id="cell-' + cell_id + '"class="text-center"/>');
-    }) 
+    } 
     
     cell_container.append(' \
             <div class="row bg-light-grey mx-auto py-2"> \
@@ -227,7 +227,7 @@ function plotMinibatch(cells, isUploaded, id) {
                             label: label
                         });
                     });
-                    currentPlotData = currentPlotData.sort((dict1, dict2) => parseFloat(dict1["label"]) - parseFloat(dict2["label"]));
+                    currentPlotData = currentPlotData.sort((dict1, dict2) => parseFloat(dict2["label"]) - parseFloat(dict1["label"]));
                     currentPlotData.forEach(d => d["label"] += " " + dict["stimulus_unit"]);
                     var new_keys = {
                         "species": "animal_species",
