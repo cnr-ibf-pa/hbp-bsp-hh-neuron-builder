@@ -281,8 +281,6 @@ def extract_features(request):
     conf_dir = EfelStorage.getMainJsonDir()
     # traces_files_dir = request.session['user_files_dir']
     traces_files_dir = EfelStorage.getTracesDir()
-    # uploaded_files_dir = request.session['uploaded_files_dir']
-    uploaded_files_dir = EfelStorage.getUploadedFilesDir(username, time_info)
     # user_files_dir = request.session['user_files_dir']
     user_files_dir = EfelStorage.getUserFilesDir(username, time_info)
     # user_results_dir = request.session['user_results_dir']
@@ -293,10 +291,9 @@ def extract_features(request):
     cell_dict = {}
 
     for k in selected_traces_rest_json:
-        if k + '.json' in os.listdir(user_files_dir):
-            path_to_file = os.path.join(user_files_dir, k + '.json')
-        else:
-            path_to_file = os.path.join(traces_files_dir, k + '.json')
+        path_to_file = os.path.join(user_files_dir, k + '.json')
+        if k + '.json' not in os.listdir(user_files_dir):
+            shutil.copy2(os.path.join(traces_files_dir, k + '.json'), path_to_file)
         with open(path_to_file) as f:
             crr_file_dict = json.loads(f.read()) 
         crr_file_all_stim = list(crr_file_dict['traces'].keys())
