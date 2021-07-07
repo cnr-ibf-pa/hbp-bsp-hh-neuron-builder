@@ -168,18 +168,18 @@ def get_data(request, cellname=""):
 
     #current_authorized_files = request.session["current_authorized_files"]
 
-
-    # user_files_dir = request.session['user_files_dir']
     user_files_dir = EfelStorage.getUserFilesDir(request.session['username'], request.session['time_info'])
-    print(user_files_dir)
-
+    traces_files_dir = EfelStorage.getTracesDir()
 
     file_name = cellname + ".json"
-    path_to_file = os.path.join(user_files_dir, file_name)
-    if not file_name in os.listdir(user_files_dir):
-        r = requests.get(EfelStorage.getTracesBaseUrl() + file_name)
-        with open(path_to_file, "w") as f:
-            json.dump(r.json(), f)
+    if file_name in os.listdir(user_files_dir): 
+        path_to_file = os.path.join(user_files_dir, file_name)
+    else:
+        path_to_file = os.path.join(traces_files_dir, file_name)
+        if not file_name in os.listdir(traces_files_dir):
+            r = requests.get(EfelStorage.getTracesBaseUrl() + file_name)
+            with open(path_to_file, "w") as f:
+                json.dump(r.json(), f)
 
     with open(path_to_file, "r") as f:
         content = json.loads(f.read())
@@ -279,6 +279,8 @@ def extract_features(request):
 
     # conf_dir = request.session['main_json_dir']
     conf_dir = EfelStorage.getMainJsonDir()
+    # traces_files_dir = request.session['user_files_dir']
+    traces_files_dir = EfelStorage.getTracesDir()
     # uploaded_files_dir = request.session['uploaded_files_dir']
     uploaded_files_dir = EfelStorage.getUploadedFilesDir(username, time_info)
     # user_files_dir = request.session['user_files_dir']
@@ -291,7 +293,10 @@ def extract_features(request):
     cell_dict = {}
 
     for k in selected_traces_rest_json:
-        path_to_file = os.path.join(user_files_dir, k + '.json')
+        if k + '.json' in os.listdir(user_files_dir):
+            path_to_file = os.path.join(user_files_dir, k + '.json')
+        else:
+            path_to_file = os.path.join(traces_files_dir, k + '.json')
         with open(path_to_file) as f:
             crr_file_dict = json.loads(f.read()) 
         crr_file_all_stim = list(crr_file_dict['traces'].keys())
