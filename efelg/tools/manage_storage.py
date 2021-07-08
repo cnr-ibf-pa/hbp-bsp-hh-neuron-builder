@@ -11,13 +11,20 @@ def createDirIfNotExists(mpath):
 class EfelStorage():
 
     @staticmethod
+    def getTracesBaseUrl():
+        return "https://object.cscs.ch:443/v1/AUTH_c0a333ecf7c045809321ce9d9ecdfdea/web-resources-bsp/data/NFE/eg_json_data/traces/"
+
+    @staticmethod
     def getMainJsonDir():
         mpath = os.path.join(MEDIA_ROOT, 'efel_data', 'eg_json_data')
+        createDirIfNotExists(mpath)
         return mpath
 
     @staticmethod
-    def getTracesBaseUrl():
-        return "https://object.cscs.ch:443/v1/AUTH_c0a333ecf7c045809321ce9d9ecdfdea/web-resources-bsp/data/NFE/eg_json_data/traces/"
+    def getTracesDir():
+        mpath = os.path.join(MEDIA_ROOT, 'efel_data', 'efel_gui', 'traces')
+        createDirIfNotExists(mpath)
+        return mpath
 
     @staticmethod
     def getUserBaseDir(username, timestamp):
