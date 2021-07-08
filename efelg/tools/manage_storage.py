@@ -4,8 +4,11 @@ import os
 
 
 def createDirIfNotExists(mpath):
-    if not os.path.exists(mpath):
-        os.makedirs(mpath)
+    try:
+        if not os.path.exists(mpath):
+            os.makedirs(mpath)
+    except FileExistsError:
+        pass
 
 
 class EfelStorage():
