@@ -205,25 +205,6 @@ def get_data(request, cellname=""):
 
     trace_info['coefficient'] = coefficient
     trace_info['disp_sampling_rate'] = disp_sampling_rate
-
-    keys = [
-        "cell_type", 
-        "cell_id",
-        "brain_structure",
-        "filename",
-        "animal_species",
-        "cell_soma_location",
-        "stimulus_unit",
-        "voltage_unit",
-        "md5",
-        "sampling_rate",
-        "etype"
-    ]
-
-    for key in keys:
-        trace_info[key] = content[key]
-
-    """
     trace_info['md5'] = content['md5']
     trace_info['sampling_rate'] = content['sampling_rate']
     trace_info['etype'] = content['etype']
@@ -246,9 +227,7 @@ def get_data(request, cellname=""):
         elif key in content:
             trace_info[new_keys[key]] = content[key]
         else:
-            #raise Exception(new_keys[key] + " not found!")
             trace_info[new_keys[key]] = 'unknown'
-    """
 
     if 'contributors_affiliations' in content:
         trace_info['contributors_affiliations'] = content['contributors_affiliations']
