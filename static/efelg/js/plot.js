@@ -5,7 +5,7 @@ const SHOW_HOVER = 1.0;
 var plotData = {}
 var num = 0;
 
-var minibatch_size = 5;
+var minibatch_size = 4;
 var n_plots = 0;
 
 // refresh the plot with new opacities
@@ -41,7 +41,7 @@ function plotCells(cells, isUploaded, id) {
     if (cells.length > 5) {
         loadMore(cells, isUploaded, id);
     } else {
-        $("#load-more-button").remove()
+        $("#load-more-button").remove();
         sendParallelRequests(plotMinibatch(cells, isUploaded, id));
     }
 }
@@ -110,7 +110,7 @@ function createCellHeader(cell_name, cell_id, cellHeaderIds) {
     return cell_container;
 }
 
-function createCellPlotBox(id, container, currentPlotData, xLabel, yLabel, cellInfo, contributors) {
+function createCellPlotBox(id, container, currentPlotData, xLabel, yLabel, cellInfo, note) {
 
     var infobox = $('<div/>', {
         'id': 'info_' + id,
@@ -123,10 +123,13 @@ function createCellPlotBox(id, container, currentPlotData, xLabel, yLabel, cellI
     }).appendTo(container);
 
     var plot_id = 'plot_' + id;
-    $('<div/>', {
+    var plotbox = $('<div/>', {
         'id': plot_id,
         'class': 'table-responsive',
     }).appendTo(container);
+    if (note != null) {
+        inputbox.append("<em>" + note + "</em>")
+    }
 
     plot(plot_id, 'input_' + id, {
         data: currentPlotData,
@@ -139,7 +142,7 @@ function createCellPlotBox(id, container, currentPlotData, xLabel, yLabel, cellI
     infobox.append(' \
         <div class="col-12 mb-2"> \
             <a> \
-                Cell properties: ' + cellInfo.join(' > ') + '   [' + contributors + '] \
+                Cell properties: ' + cellInfo.join(' > ') + ' \
             </a> \
         </div> \
         <div class="col-12 mb-2"> \
@@ -247,16 +250,11 @@ function plotMinibatch(cells, isUploaded, id) {
                             cellinfo.push(dict[key]);
                         }
                     }
-                    ccc = ""
-                    if (dict.contributors_affiliations) {
-                        ccc = "Data contributors: " + dict.contributors_affiliations;
-                    } else if (dict.contributors.message) {
-                        ccc = dict.contributors.message;
-                    } else {
-                        ccc = "N/A";
+                    var note = null;
+                    if ("note" in dict) {
+                        note = dict["note"]
                     }
-                   // createCellPlotBox(fileName, container, currentPlotData, "ms", dict["voltage_unit"], cellinfo, dict['contributors']['message']);
-                    createCellPlotBox(fileName, container, currentPlotData, "ms", dict["voltage_unit"], cellinfo, ccc);
+                    createCellPlotBox(fileName, container, currentPlotData, "ms", dict["voltage_unit"], cellinfo, note);
                     resolve();
                 });
             }));

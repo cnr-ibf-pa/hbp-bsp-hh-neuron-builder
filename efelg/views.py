@@ -169,18 +169,18 @@ def get_data(request, cellname=""):
 
     #current_authorized_files = request.session["current_authorized_files"]
 
-
-    # user_files_dir = request.session['user_files_dir']
     user_files_dir = EfelStorage.getUserFilesDir(request.session['username'], request.session['time_info'])
-    print(user_files_dir)
-
+    traces_files_dir = EfelStorage.getTracesDir()
 
     file_name = cellname + ".json"
-    path_to_file = os.path.join(user_files_dir, file_name)
-    if not file_name in os.listdir(user_files_dir):
-        r = requests.get(EfelStorage.getTracesBaseUrl() + file_name)
-        with open(path_to_file, "w") as f:
-            json.dump(r.json(), f)
+    if file_name in os.listdir(user_files_dir): 
+        path_to_file = os.path.join(user_files_dir, file_name)
+    else:
+        path_to_file = os.path.join(traces_files_dir, file_name)
+        if not file_name in os.listdir(traces_files_dir):
+            r = requests.get(EfelStorage.getTracesBaseUrl() + file_name)
+            with open(path_to_file, "w") as f:
+                json.dump(r.json(), f)
 
     with open(path_to_file, "r") as f:
         content = json.loads(f.read())
@@ -198,27 +198,28 @@ def get_data(request, cellname=""):
         coefficient = 1
         disp_sampling_rate = crr_sampling_rate
 
+    # downsampling
     trace_info = {}
     trace_info['traces'] = {}
     for key in content['traces'].keys():
         trace_info['traces'][key] = content['traces'][key][::coefficient]
 
+    trace_info['coefficient'] = coefficient
+    trace_info['disp_sampling_rate'] = disp_sampling_rate
     trace_info['md5'] = content['md5']
     trace_info['sampling_rate'] = content['sampling_rate']
     trace_info['etype'] = content['etype']
-    trace_info['type'] = content['type']
-    trace_info['contributors'] = content['contributors']
-    trace_info['coefficient'] = coefficient
-    trace_info['disp_sampling_rate'] = disp_sampling_rate
 
     new_keys = {
+        "type": "cell_type",
         "name": "cell_id",
         "area": "brain_structure",
         "sample": "filename",
         "species": "animal_species",
         "region": "cell_soma_location",
         "amp_unit": "stimulus_unit",
-        "volt_unit": "voltage_unit"
+        "volt_unit": "voltage_unit",
+        "v_unit": "voltage_unit"
     }
 
     for key in new_keys:
@@ -227,7 +228,6 @@ def get_data(request, cellname=""):
         elif key in content:
             trace_info[new_keys[key]] = content[key]
         else:
-            #raise Exception(new_keys[key] + " not found!")
             trace_info[new_keys[key]] = 'unknown'
 
     if 'contributors_affiliations' in content:
@@ -237,6 +237,9 @@ def get_data(request, cellname=""):
     else:
         #raise Exception("contributors_affiliations not found!")
         trace_info['contributors_affiliations'] = 'unknown'
+
+    if "note" in content:
+        trace_info["note"] = content["note"]
 
     return HttpResponse(json.dumps(json.dumps(trace_info)), content_type="application/json")
 
@@ -256,8 +259,8 @@ def extract_features(request):
 
     # conf_dir = request.session['main_json_dir']
     conf_dir = EfelStorage.getMainJsonDir()
-    # uploaded_files_dir = request.session['uploaded_files_dir']
-    uploaded_files_dir = EfelStorage.getUploadedFilesDir(username, time_info)
+    # traces_files_dir = request.session['user_files_dir']
+    traces_files_dir = EfelStorage.getTracesDir()
     # user_files_dir = request.session['user_files_dir']
     user_files_dir = EfelStorage.getUserFilesDir(username, time_info)
     # user_results_dir = request.session['user_results_dir']
@@ -269,6 +272,8 @@ def extract_features(request):
 
     for k in selected_traces_rest_json:
         path_to_file = os.path.join(user_files_dir, k + '.json')
+        if k + '.json' not in os.listdir(user_files_dir):
+            shutil.copy2(os.path.join(traces_files_dir, k + '.json'), path_to_file)
         with open(path_to_file) as f:
             crr_file_dict = json.loads(f.read()) 
         crr_file_all_stim = list(crr_file_dict['traces'].keys())
