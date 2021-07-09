@@ -330,3 +330,8 @@ label.withinTable:hover {
 .site-header {
     z-index: 99;
 }
+
+.far,
+.fas {
+    cursor: pointer;
+}
