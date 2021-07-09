@@ -317,7 +317,9 @@ function checkConditions(){
                 featBar.html(data['feat']['message'])
                 $("#del-feat-btn").prop("disabled", true);
                 $("#down-feat-btn").prop("disabled", true);
+                $("#efelgui-frame").attr("src", "/efelg/hhf_etraces/" + data["wf_id"]);
             } else {
+                $("#efelgui-frame").attr("src", "/efelg/?ctx=" + ctx);
                 if (data['feat']['status']){
                     let featBar = $("#feat-bar");
                     featBar.removeClass("red orange");
