@@ -588,8 +588,6 @@ def hhf_etraces(request, wfid):
     return render(request, 'efelg/show_traces.html', context)
 
 
-from hhnb.views import hhf_get_etraces_dir
-
 @csrf_exempt
 def load_hhf_etraces(request):
 
