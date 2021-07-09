@@ -584,8 +584,11 @@ def hhf_etraces(request, wfid):
     print("Workflow ID: " + wfid)
     print(request.session)
     r = overview(request, wfid)
-    return render(request, 'efelg/show_traces.html')
+    context = {'hhf_etraces_dir': True, 'wfid': wfid} 
+    return render(request, 'efelg/show_traces.html', context)
 
+
+from hhnb.views import hhf_get_etraces_dir
 
 @csrf_exempt
 def load_hhf_etraces(request):
@@ -593,8 +596,6 @@ def load_hhf_etraces(request):
     hhf_etraces_dir = request.POST.get('hhf_etraces_dir', None)
     wfid = request.POST.get('wfid', None) 
     
-    print(wfid.split('_'))
-
     if not hhf_etraces_dir:
         return HttpResponseBadRequest('"hhf_etraces_dir" not found')
 
@@ -614,7 +615,21 @@ def load_hhf_etraces(request):
         "all_json_names": [],
         "refused_files": []
     }
+
     try:
+    
+        if hhf_etraces_dir == 'True':
+            for k in request.session.keys():
+                try:
+                    if 'wf_id' in request.session[k].keys() and request.session[k]['wf_id'] == wfid:
+                        try:
+                            hhf_etraces_dir = request.session[k]['hhf_etraces_dir']
+                        except:
+                            # if exception is thrown then "hhf_etraces_dir" is not present and an error code is returned
+                            return JsonResponse({'resp': 'KO', 'message': 'etraces dir not present error'})
+                except AttributeError:
+                    continue
+
         for f in os.listdir(hhf_etraces_dir):
             if not f.endswith('.abf'):
                 continue
@@ -630,7 +645,8 @@ def load_hhf_etraces(request):
                 if output_filename[:-5] not in data_name_dict['all_json_names']:
                     data_name_dict['all_json_names'].append(output_filename[:-5])
             except Exception as e:
-                print(e)
+                print('metadata not found')
+    
     except FileNotFoundError:
         return HttpResponse(json.dumps({'resp':'KO', 'message': 'file not found error'}))
 

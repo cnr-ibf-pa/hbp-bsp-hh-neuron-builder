@@ -362,4 +362,10 @@
 <script type="text/javascript" src="{% static 'efelg/js/show_traces.js' %} "></script>
 <script type="text/javascript" src="{% static 'bspganalytics.js' %}"></script>
 
+<script>
+    var hhf_etraces_dir = "{{ hhf_etraces_dir }}";
+    var wfid = "{{ wfid }}"
+    sessionStorage.setItem("hhf_etraces_dir", hhf_etraces_dir);
+    sessionStorage.setItem("wfid", wfid);
+</script>
 </html>
