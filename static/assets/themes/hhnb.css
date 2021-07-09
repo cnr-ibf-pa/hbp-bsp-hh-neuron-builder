@@ -1591,7 +1591,7 @@ i.disabled:hover {
     left: -1px;
     width: 101vw;
     height: 101vh;
-    background-color: rgba(0,0,0,0.70);
+    background-color: rgba(0,0,0,0.8);
     text-align: center;
     z-index: 100;
     overflow-y: auto;
@@ -1625,8 +1625,8 @@ i.disabled:hover {
     /* display: none; */
     position: relative;
     margin: auto;
-    width: calc(100vw - 10%);
-    height: calc(100vh - 10%);
+    width: calc(100vw - 5%);
+    height: calc(100vh - 5%);
     /* background-color: rgba(255, 255, 255, 0.144); */
     border: solid 1px black;
     padding: 2rem;
