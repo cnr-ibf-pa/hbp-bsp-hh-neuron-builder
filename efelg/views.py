@@ -25,7 +25,6 @@ import json
 import bluepyefe as bpefe
 
 
-
 # set logging up
 #logging.basicConfig(stream=sys.stdout)
 #logger = logging.getLogger()
