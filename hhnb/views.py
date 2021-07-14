@@ -542,6 +542,8 @@ def fetch_opt_set_file(request, source_opt_name="", source_opt_id="", exc="", ct
     Set optimization setting file
     """
     
+    print('fetch_opt_set_file() called.')
+
     if request.session[exc].get('from_hhf', None):
         for f in os.listdir(os.path.join(request.session[exc]['hhf_dir'], 'config')):
             if f == 'features.json' or f == 'protocols.json':
@@ -557,7 +559,9 @@ def fetch_opt_set_file(request, source_opt_name="", source_opt_id="", exc="", ct
 
     if not os.path.exists(user_dir_data_opt):
         response.update({"response": "KO", "message": "Folder does not exist anymore."})
-        return HttpResponse(json.dumps(response), content_type="application/json")
+        return JsonResponse(response)
+
+    print('setting up directories')
 
     shutil.rmtree(user_dir_data_opt)
     os.makedirs(user_dir_data_opt)
@@ -585,15 +589,19 @@ def fetch_opt_set_file(request, source_opt_name="", source_opt_id="", exc="", ct
     #        zip_url = instance['source']
     #        break
 
+    print('downloading the model')
     r = requests.get(zip_url)
-    opt_zip_path = os.path.join(user_dir_data_opt, source_opt_name + '.zip')
+    opt_zip_path = os.path.join(user_dir_data_opt, source_opt_name + '.zip')  
     with open(opt_zip_path, 'wb') as f:
-        f.write(r.content)
+        for chunk in r.iter_content(chunk_size=4096):
+            f.write(chunk)
+    print('finish')
     request.session[exc]['source_opt_zip'] = opt_zip_path
     request.session[exc]['source_opt_id'] = source_opt_id
 
     request.session.save()
-    return HttpResponse("")
+
+    return JsonResponse(response)
 
 
 def run_optimization(request, exc="", ctx=""):
