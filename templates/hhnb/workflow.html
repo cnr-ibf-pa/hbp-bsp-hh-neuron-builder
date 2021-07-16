@@ -39,7 +39,7 @@
                     </div>
                     <br>
                     <div class="row">
-                        <button type="button" id="feat-efel-btn" class="btn workflow-btn" onclick="efelPage()">Extract features</button>
+                        <button type="button" id="feat-efel-btn" class="btn workflow-btn" onclick="openNFE()">Extract features</button>
                     </div>
                     <div class="row">
                         <button type="button" id="feat-up-btn" class="btn workflow-btn" onclick="displayFeatUploadDiv()">Upload files</button>
@@ -684,7 +684,7 @@
 
 
 <div id="modalNFE" class="modal-content sublayer hide">
-    <div class="modal-content container-glass nfe">
+    <div id="modalNFEContainer" class="modal-content container-glass nfe">
         <div class="container modal-container">
             <div class="row" style="height: 90%;">
                 <div id="efelgui-frame-div-modal">
@@ -695,7 +695,7 @@
             </div>
             <div class="row" style="height: 10%; margin-top: 10px;">
                 <div class="col flex-center">
-                    <button type="button" id="back-to-workflow" class="btn main-panel-btn extends modal-btn">Cancel</button>
+                    <button type="button" class="btn main-panel-btn extends modal-btn" onclick="closeNFE()">Cancel</button>
                 </div>
                 <div class="col flex-center">
                     <button type="button" id="save-feature-files" class="btn main-panel-btn extends modal-btn" disabled="true">Save to workflow</button>
@@ -721,7 +721,7 @@
 
 
 <div id="modalBlueNaas" class="modal-content sublayer hide">
-    <div class="modal-content container-glass bn">
+    <div id="modalBlueNaasContainer" class="modal-content container-glass bn">
         <div class="container modal-container">
             <div class="row" style="height: 90%;">
                 <div id="bluenaas-frame-div-modal">

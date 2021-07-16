@@ -136,45 +136,6 @@ $(document).ready(function(){
     // hideLoadingAnimation();
 });
 
-// serve embedded-efel-gui page
-function efelPage() {
-    // window.location.href = "/hh-neuron-builder/embedded-efel-gui/" + req_pattern + "/";
-    $("#modalNFE").addClass("show").removeClass("hide");
-}
-
-function inSilicoPage() {
-    console.log("inSilicoPage() called");
-    showLoadingAnimation("Uploading to blue-naas...")
-    $("#run-sim-btn").prop("disabled", true);
-    $.getJSON("/hh-neuron-builder/upload-to-naas/" + req_pattern, function(data){
-        hideLoadingAnimation();
-        if (data.response == 'KO') {
-            openErrorDiv(data.message, "error");
-            return;
-        }
-        $.getJSON("/hh-neuron-builder/model-loaded-flag/" + req_pattern, function(data){
-            console.log(data);
-            var o = data["response"];
-            if (o == "KO"){
-                openErrorDiv("Some error occurred.", "error");
-                return;
-            }
-            $("#bluenaas-frame").attr("src", "https://blue-naas-bsp-epfl.apps.hbp.eu/#/model/" + o);
-            // window.location.href = "/hh-neuron-builder/embedded-naas/" + req_pattern + "/";
-            $("#modalBlueNaas").removeClass("hide").addClass("show");
-        });
-    });
-
-    // $("#modalBlueNaas").removeClass("hide").addClass("show");
-
-}
-
-
-function closeBlueNaasModal() {
-    $("#modalBlueNaas").removeClass("show").addClass("hide");
-}
-
-
 // reload current page
 function reloadCurrentPage() {
     window.location.href = "";
@@ -1768,15 +1729,18 @@ function formatDescription(meta = ""){
 var modelsReady = false;
 // serve choose-opt-model page
 function chooseOptModel() {
-    $("#modalMC").modal("show");
-    $("#closeModalMCButton").css("display", "block").addClass("show");
     if (modelsReady) {
+        $("#modalMC").modal("show");
+        $("#closeModalMCButton").css("display", "block").addClass("show");
         return false;
     }
+    showLoadingAnimation("Fetching models from Model Catalog...");
     $.getJSON("/hh-neuron-builder/get_model_list/" + exc + "/" + ctx, function(data){
+        hideLoadingAnimation();
         var counter = 0;
         if (data.length == 0) {
-            alert("Something goes wrong. Please reload the page.");
+            openErrorDiv("Something goes wrong.<br>Please restart the application.", "error");
+            return;
         }
         $.each(data, function(idx, val){
             $.each(val, function(index, e){
@@ -1805,21 +1769,10 @@ function chooseOptModel() {
                 img_div.append(mor_img);
                 $("#" + model_uuid + 'a').append(img_div);
                 $('#' + model_uuid + 'a').append("<div style='max-width:40%;padding:5px;font-size:13px'>" + formatDescription(e['meta']) + "</div>");
-                // spk_img.onload = function(){
-                //     counter += 1;
-                //     if (counter == 2 * data.length){
-                //         hideLoadingAnimation();
-                //     }
-                // };
-                // mor_img.onload = function(){
-                //     counter += 1;
-                //     if (counter == 2 * data.length){
-                //         hideLoadingAnimation();
-                //         $("#page").css("display", "block");
-                //     }
-                // };
             });
         });
+        $("#modalMC").modal("show");
+        $("#closeModalMCButton").css("display", "block").addClass("show");
     });
     modelsReady = true;
 }
@@ -1852,4 +1805,85 @@ function fetchModel(modelButton) {
             openErrorDiv("Some errors occurred. Please try again or restar the application", "error");
         }
     }) 
+}
+
+
+// serve embedded-efel-gui page
+function openNFE() {
+    $("#modalNFE").css("z-index", "100").addClass("show");
+    // $("#modalNFEContainer").addClass("show");
+}
+
+$("#modalNFE")[0].addEventListener("transitionend", function(transition) {
+    if (transition.target == $("#modalNFE")[0]) {
+        if ($(this).hasClass("show")) {
+            console.log("modalNFE transition end");
+            $("#modalNFEContainer").addClass("show");
+        } else {
+            $(this).css("z-index", "-100");
+        }
+    }
+})
+$("#modalNFEContainer")[0].addEventListener("transitionend", function(transition) {
+    if (transition.target == $("#modalNFEContainer")[0]) { 
+        if (!$(this).hasClass("show")) {
+            $("#modalNFE").removeClass("show")
+        }
+    }
+})
+
+function closeNFE(b) {
+    $("#modalNFEContainer").removeClass("show");
+}
+
+function inSilicoPage() {
+    showLoadingAnimation("Uploading to blue-naas...")
+    $("#run-sim-btn").prop("disabled", true);
+    $.getJSON("/hh-neuron-builder/upload-to-naas/" + req_pattern, function(data){
+        if (data.response == 'KO') {
+            hideLoadingAnimation();
+            openErrorDiv(data.message, "error");
+            return;
+        }
+        $.getJSON("/hh-neuron-builder/model-loaded-flag/" + req_pattern, function(data){
+            console.log(data);
+            var o = data["response"];
+            if (o == "KO"){
+                hideLoadingAnimation();
+                openErrorDiv("Some error occurred.", "error");
+                return;
+            }
+            setLoadingAnimationText("Loading...");
+            $("#bluenaas-frame").attr("src", "https://blue-naas-bsp-epfl.apps.hbp.eu/#/model/" + o);
+            $("#bluenaas-frame").on("load", function() {
+                hideLoadingAnimation();
+                $("#modalBlueNaas").css("z-index", "100").addClass("show");
+            })
+        });
+    });
+    
+
+}
+
+$("#modalBlueNaas")[0].addEventListener("transitionend", function(transition) {
+    if (transition.target == $("#modalBlueNaas")[0]) {
+        if ($(this).hasClass("show")) {
+            console.log("modalBlueNaas transition end");
+            $("#modalBlueNaasContainer").addClass("show");
+        } else {
+            $(this).css("z-index", "-100");
+        }
+    }
+})
+$("#modalBlueNaasContainer")[0].addEventListener("transitionend", function(transition) {
+    if (transition.target == $("#modalBlueNaasContainer")[0]) { 
+        if (!$(this).hasClass("show")) {
+            $("#modalBlueNaas").removeClass("show")
+        }
+    }
+})
+
+
+function closeBlueNaasModal() {
+    $("#modalBlueNaasContainer").removeClass("show");
 }
