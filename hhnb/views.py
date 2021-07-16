@@ -797,15 +797,20 @@ def upload_to_naas(request, exc="", ctx=""):
             break
 
     if not abs_res_file:
-        return HttpResponse(json.dumps({"response": "KO", "message": "No simulation .zip file is present"}), content_type="application/json")
+        response = {"response": "KO", "message": "No simulation .zip file is present."}
     else:
         request.session[exc]['res_file_name'] = os.path.splitext(filename)[0]
         # r = requests.post("https://blue-naas-svc.humanbrainproject.eu/upload", files={"file": open(abs_res_file, "rb")})
         r = requests.post("https://blue-naas-svc-bsp-epfl.apps.hbp.eu/upload", files={"file": open(abs_res_file, "rb")}, verify=False)
+        print(r.status_code, r.content)
+        if r.status_code == 200:
+            response = {'response': 'OK', 'message': 'Model correctly uploaded to naas.'}
+        else:
+            response = {'response': 'KO', 'message': 'Model uploading failed.<br>Try again later'}
 
     request.session.save()
 
-    return HttpResponse(json.dumps({"response": "OK", "message": "Model correctly uploaded to naas"}), content_type="application/json")
+    return JsonResponse(response)
 
 
 def submit_run_param(request, exc="", ctx=""):

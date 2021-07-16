@@ -146,18 +146,32 @@ function inSilicoPage() {
     console.log("inSilicoPage() called");
     showLoadingAnimation("Uploading to blue-naas...")
     $("#run-sim-btn").prop("disabled", true);
-    $.getJSON("/hh-neuron-builder/upload-to-naas/" + req_pattern, function(uploaddata){
-        console.log(uploaddata);
+    $.getJSON("/hh-neuron-builder/upload-to-naas/" + req_pattern, function(data){
+        hideLoadingAnimation();
+        if (data.response == 'KO') {
+            openErrorDiv(data.message, "error");
+            return;
+        }
         $.getJSON("/hh-neuron-builder/model-loaded-flag/" + req_pattern, function(data){
             console.log(data);
             var o = data["response"];
             if (o == "KO"){
-                window.location.href = "";
-            } else {
-                window.location.href = "/hh-neuron-builder/embedded-naas/" + req_pattern + "/";
+                openErrorDiv("Some error occurred.", "error");
+                return;
             }
+            $("#bluenaas-frame").attr("src", "https://blue-naas-bsp-epfl.apps.hbp.eu/#/model/" + o);
+            // window.location.href = "/hh-neuron-builder/embedded-naas/" + req_pattern + "/";
+            $("#modalBlueNaas").removeClass("hide").addClass("show");
         });
     });
+
+    // $("#modalBlueNaas").removeClass("hide").addClass("show");
+
+}
+
+
+function closeBlueNaasModal() {
+    $("#modalBlueNaas").removeClass("show").addClass("hide");
 }
 
 
@@ -1628,7 +1642,7 @@ async function runCheckDiffWorker() {
         $("#saveFileButton").addClass("show");
     }
 }
-
+    
 
 $("#saveFileButton").mousedown(function() {
     if ($(this).hasClass("disabled")) {
