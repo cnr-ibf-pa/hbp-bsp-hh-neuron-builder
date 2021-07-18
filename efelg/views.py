@@ -5,7 +5,7 @@ import shutil
 import urllib.parse as urllib
 import zipfile
 
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from django.http.response import HttpResponse, JsonResponse, HttpResponseBadRequest
@@ -42,8 +42,13 @@ import bluepyefe as bpefe
 
 def overview(request, wfid=None):
 
-    # set context
-    request.session['ctx'] = request.GET.get('ctx', None)
+    _, _, free = shutil.disk_usage("/")
+
+    if (free // (2**30)) < 500:
+        request.session['ctx'] = False
+        return render(request, 'efelg/error_space_left.html')
+    else:
+        request.session['ctx'] = True
 
     if request.user.is_authenticated:
         username = request.user.username
@@ -107,8 +112,8 @@ def select_features(request):
     """
 
     # if not ctx exit the application
-    if "ctx" not in request.session:
-        return render(request, 'efelg/overview.html')
+    if request.session["ctx"] is None or request.session["ctx"] is False:
+        return redirect('/efelg')
 
     feature_names = efel.getFeatureNames()
     selected_traces_rest = request.POST.get('data')
@@ -122,10 +127,9 @@ def show_traces(request):
     """"
     Render the efel/show_traces.html page
     """
-
     # if not ctx exit the application
-    if "ctx" not in request.session:
-        return render(request, 'efelg/overview.html')
+    if request.session["ctx"] is None or request.session["ctx"] is False:
+        return redirect('/efelg')
 
 
     #accesslogger.info(resources.string_for_log('show_traces', request))
@@ -140,8 +144,8 @@ def get_list(request):
     """
     
     # if not ctx exit the application
-    if "ctx" not in request.session:
-        return render(request, 'efelg/overview.html')
+    if request.session["ctx"] is None or request.session["ctx"] is False:
+        return redirect('/efelg')
 
     # metadata file path
     # request.session['main_json_dir'] = os.path.join(settings.MEDIA_ROOT, 'efel_data', 'eg_json_data')
@@ -164,8 +168,8 @@ def get_data(request, cellname=""):
     print('get_data() called.')
 
     # if not ctx exit the application
-    if "ctx" not in request.session:
-        return render(request, 'efelg/overview.html')
+    if request.session["ctx"] is None or request.session["ctx"] is False:
+        return redirect('/efelg')
 
     #current_authorized_files = request.session["current_authorized_files"]
 
@@ -247,8 +251,8 @@ def get_data(request, cellname=""):
 def extract_features(request):
 
     # if not ctx exit the application
-    if "ctx" not in request.session:
-        return render(request, 'efelg/overview.html')
+    if request.session["ctx"] is None or request.session["ctx"] is False:
+        return redirect('/efelg')
 
     selected_traces_rest_json = request.session['selected_traces_rest_json']
     global_parameters_json = request.session['global_parameters_json']
@@ -312,15 +316,6 @@ def extract_features(request):
                     keys2.append(kkk)
 
         crr_key = '____'.join(keys2)
-        
-        """
-        if crr_key in cell_dict:
-            print("here")
-            cell_dict[crr_key]['stim'].append(crr_file_sel_stim)
-            cell_dict[crr_key]['files'].append(k)
-            cell_dict[crr_key]['v_corr'] = crr_vcorr
-        else:
-        """
 
         cell_dict[crr_key] = {}
         cell_dict[crr_key]['stim'] = [crr_file_sel_stim]
@@ -459,8 +454,8 @@ def extract_features(request):
 def results(request):
     
     # if not ctx exit the application
-    if "ctx" not in request.session:
-        return render(request, 'efelg/overview.html')
+    if request.session["ctx"] is None or request.session["ctx"] is False:
+        return redirect('/efelg')
     
     # Render final page containing the link to the result zip file if any
 
@@ -471,8 +466,8 @@ def results(request):
 def download_zip(request):
     
     # if not ctx exit the application
-    if "ctx" not in request.session:
-        return render(request, 'efelg/overview.html')
+    if request.session["ctx"] is None or request.session["ctx"] is False:
+        return redirect('/efelg')
 
     # accesslogger.info(resources.string_for_log('download_zip', request))
     zip_file = open(request.session['nfe_result_file_zip'], 'rb')
@@ -484,8 +479,8 @@ def download_zip(request):
 def features_dict(request):
     
     # if not ctx exit the application
-    if "ctx" not in request.session:
-        return render(request, 'efelg/overview.html')
+    if request.session["ctx"] is None or request.session["ctx"] is False:
+        return redirect('/efelg')
 
     # Render the feature dictionary containing all feature names, grouped by feature type
     with open(os.path.join(settings.BASE_DIR, 'static', 'efelg', 'efel_features_final.json')) as json_file:
@@ -500,21 +495,16 @@ def upload_files(request):
     """
 
     # if not ctx exit the application
-    if "ctx" not in request.session:
-        return render(request, 'efelg/overview.html')
+    if request.session["ctx"] is None or request.session["ctx"] is False:
+        return redirect('/efelg')
 
     username = request.session['username']
     time_info = request.session['time_info']
-
-    print(username, time_info)
-
 
     # uploaded_files_dir = request.session['uploaded_files_dir']
     upload_files_dir = EfelStorage.getUploadedFilesDir(username, time_info)
     # user_files_dir = request.session['user_files_dir']
     user_files_dir = EfelStorage.getUserFilesDir(username, time_info)
-    print(user_files_dir)
-    print(upload_files_dir)
 
     names_full_path = []
 
@@ -565,6 +555,17 @@ def upload_files(request):
     return HttpResponse(json.dumps(data_name_dict), content_type="application/json")
 
 
+def get_result_dir(request):
+
+    # if not ctx exit the application
+    if request.session["ctx"] is None or request.session["ctx"] is False:
+        return redirect('/efelg')
+
+    user_results_dir = EfelStorage.getResultsDir(request.session['username'], request.session['time_info'])
+    data = {'result_dir': user_results_dir}
+    return JsonResponse(data=json.dumps(data), status=200, safe=False)
+
+
 def index_docs(request):
     return render(request, 'efelg/docs/index.html')
 
@@ -573,14 +574,8 @@ def file_formats_docs(request):
     return render(request, 'efelg/docs/file_formats.html')
 
 
-
-def get_result_dir(request):
-    user_results_dir = EfelStorage.getResultsDir(request.session['username'], request.session['time_info'])
-    data = {'result_dir': user_results_dir}
-    return JsonResponse(data=json.dumps(data), status=200, safe=False)
-
-
 def hhf_etraces(request, wfid):
+
     print("Workflow ID: " + wfid)
     print(request.session)
     r = overview(request, wfid)
