@@ -671,7 +671,7 @@ body {
 /* overlay content */
 
 .overlay-wrapper {
-    display: none;
+    /* display: none; */
     position: absolute;
     top: 0;
     left: 0;
@@ -679,10 +679,10 @@ body {
     height: 100%;
     background-color: rgba(0,0,0,0.8);
     text-align: center;
-    z-index: 100;
+    z-index: -100;
     overflow-y: auto;
     padding: 50px;
-    transition: opacity linear .3s;
+    transition: opacity ease-out .4s;
     opacity: 0
 }
 
@@ -708,19 +708,26 @@ body {
     display: none;
     position: relative;
     margin: auto;
-    top: calc(30%);
+    /* top: calc(30%); */
     width: max-content;
-    /* min-width: 50%; */
     height: max-content;
-    /* border: solid 1px black; */
     padding: 2rem;
     text-align: center;
     border-radius: 20px;
     background-color: rgb(255, 255, 255, 0.8);
     box-shadow: 0 0 1rem 0 rgb(0, 0, 0, .8); 
     z-index: 100;
-    transition: all ease-out 0.3s;
+    transition: all ease-out .4s;
+    top: 0%;
+    opacity: 0;
 }
+
+.overlay-content.show {
+    top: 50%;
+    transform: translateY(-50%);
+    opacity: 1;
+}
+
 .overlay-content.upper-daint {
     /* --h: calc(((589px - 277px)/-4)); */
     transform: translateY( -13% );

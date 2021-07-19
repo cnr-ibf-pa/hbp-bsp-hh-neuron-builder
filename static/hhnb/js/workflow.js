@@ -145,7 +145,8 @@ function reloadCurrentPage() {
 function openHpcParameterDiv() {
     console.log("openParameterDiv() called.");
     manageOptSetInput();
-    $("#overlaywrapper").css("display", "block");
+    // $("#overlaywrapper").css("display", "block");
+    $("#overlaywrapper").css("z-index", "100").addClass("show")
     $("#overlayparam").css("display", "block");
     if($(".accordion-button.hpc").hasClass("active")) {
         $("#apply-param").prop("disabled", false);
@@ -504,13 +505,14 @@ function displayOptSetUploadDiv() {
 }
 
 function displayOptResUploadDiv() {
-    $("#overlayupload").addClass("upper-daint");
+    // $("#overlayupload").addClass("upper-daint");
     openUploadDiv("modsim", "Upload model (\".zip\")");
 }
 
-/* function openUploadDiv(type, msg) {
-    $("#overlaywrapper").css("display", "block");
+function openUploadDiv(type, msg) {
+    // $("#overlaywrapper").css("display", "block");
     $("#overlayupload").css("display", "block");
+    $("#overlaywrapper").css("z-index", "100").addClass("show");
     $("#uploadForm").attr("action", "/hh-neuron-builder/upload-files/" + type + "/" + req_pattern + "/");
     $("#uploadFormLabel").html("<strong>" + msg + "</strong>");
     $("#uploadFornButton").prop("disabled", true);
@@ -524,25 +526,59 @@ function displayOptResUploadDiv() {
     } else {
         $("#uploadImg").css("display", "none");
     }
-} */
-
-function openUploadDiv(type, msg) {
-    $("#overlaywrapper").css("display", "block");
-    $("#overlaywrapper").addClass("show");
 }
 
-$("#overlaywrapper")[0].addEventListener("transitionend", function() {
+/* function openUploadDiv(type, msg) {
+    // $("#overlaywrapper").css("display", "block");
+    $("#overlaywrapper").css("z-index", "100").addClass("show");
+    $("#overlayupload").css("display", "block");
+} */
 
-})
+$("#overlaywrapper")[0].addEventListener("transitionend", function(transition) {
+    if (transition.target == $(this)[0]) {
+        if (!$(this).hasClass("show")) {
+            $(this).css("z-index", "-100");
+        }
+    }
+});
+$("#overlaywrapper")[0].addEventListener("transitionstart", function(transition) {
+    if (transition.target == $(this)[0]) {
+        if ($(this).hasClass("show")) {
+            $("#overlayupload").addClass("show");
+            $("#overlayparam").addClass("show");
+        }
+    }
+});
+$("#overlayupload")[0].addEventListener("transitionstart", function(transition) {
+    if (transition.target == $(this)[0]) {
+        if (!$(this).hasClass("show")) {
+            $("#overlaywrapper").removeClass("show");
+        }
+    }
+});
+$("#overlayupload")[0].addEventListener("transitionend", function(transition) {
+    if (transition.target == $(this)[0]) {
+        if (!$(this).hasClass("show")) {
+            $(this).css("display", "none");
+        }
+    }
+});
 
 function closeUploadDiv(empty=true) {
+    $("#overlayupload").removeClass("show");
+    if (empty) {
+        $("#formFile").val();
+    }
+}
+
+/* function closeUploadDiv(empty=true) {
     $("#overlaywrapper").css("display", "none");
     $("#overlayupload").css("display", "none");
     if (empty) {
         $("#formFile").val("");
     }
     $("#overlayupload").removeClass("upper-daint");
-}
+} */
 
 function displayJobFetchDiv() {
     $("#overlaywrapper").css("display", "block");
