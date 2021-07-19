@@ -508,7 +508,7 @@ function displayOptResUploadDiv() {
     openUploadDiv("modsim", "Upload model (\".zip\")");
 }
 
-function openUploadDiv(type, msg) {
+/* function openUploadDiv(type, msg) {
     $("#overlaywrapper").css("display", "block");
     $("#overlayupload").css("display", "block");
     $("#uploadForm").attr("action", "/hh-neuron-builder/upload-files/" + type + "/" + req_pattern + "/");
@@ -524,7 +524,16 @@ function openUploadDiv(type, msg) {
     } else {
         $("#uploadImg").css("display", "none");
     }
+} */
+
+function openUploadDiv(type, msg) {
+    $("#overlaywrapper").css("display", "block");
+    $("#overlaywrapper").addClass("show");
 }
+
+$("#overlaywrapper")[0].addEventListener("transitionend", function() {
+
+})
 
 function closeUploadDiv(empty=true) {
     $("#overlaywrapper").css("display", "none");

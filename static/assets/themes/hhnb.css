@@ -682,8 +682,14 @@ body {
     z-index: 100;
     overflow-y: auto;
     padding: 50px;
-    transition: all ease 0.3s;
+    transition: opacity linear .3s;
+    opacity: 0
 }
+
+.overlay-wrapper.show {
+    opacity: 1;
+}
+
 
 .overlay-content:before {
     content: "";
@@ -1623,6 +1629,9 @@ i.disabled:hover {
     top: 0%
 }
 
+#modalMC {
+    background-color: rgba(0, 0, 0, .8);
+}
 
 .modal-content.container-glass.mc {
     height: unset;
