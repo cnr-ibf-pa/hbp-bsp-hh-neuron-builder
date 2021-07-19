@@ -1,6 +1,7 @@
 from hh_neuron_builder.settings import BASE_DIR, MEDIA_ROOT
 
 import os
+import shutil
 
 
 def createDirIfNotExists(mpath):
@@ -16,6 +17,12 @@ class EfelStorage():
     @staticmethod
     def getTracesBaseUrl():
         return "https://object.cscs.ch:443/v1/AUTH_c0a333ecf7c045809321ce9d9ecdfdea/web-resources-bsp/data/NFE/eg_json_data/traces/"
+
+    @staticmethod
+    def isThereEnoughFreeSpace():
+        _, _, free = shutil.disk_usage(MEDIA_ROOT)
+        # if there are more than 10 Gb, there is enough free space
+        return free // (2**30) > 500
 
     @staticmethod
     def getMainJsonDir():

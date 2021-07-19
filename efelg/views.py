@@ -42,14 +42,6 @@ import bluepyefe as bpefe
 
 def overview(request, wfid=None):
 
-    _, _, free = shutil.disk_usage("/")
-
-    if (free // (2**30)) < 500:
-        request.session['ctx'] = False
-        return render(request, 'efelg/error_space_left.html')
-    else:
-        request.session['ctx'] = True
-
     if request.user.is_authenticated:
         username = request.user.username
     else:
@@ -112,8 +104,8 @@ def select_features(request):
     """
 
     # if not ctx exit the application
-    if request.session["ctx"] is None or request.session["ctx"] is False:
-        return redirect('/efelg')
+    if request.session["is_free_space_enough"] is None or request.session["is_free_space_enough"] is False:
+        return redirect('/efelg/error_space_left/')
 
     feature_names = efel.getFeatureNames()
     selected_traces_rest = request.POST.get('data')
@@ -124,17 +116,16 @@ def select_features(request):
 
 
 def show_traces(request):
+
+    if EfelStorage.isThereEnoughFreeSpace():
+        request.session['is_free_space_enough'] = True
+    else:
+        request.session['is_free_space_enough'] = False
+        return redirect('/efelg/error_space_left/')
+
     """"
     Render the efel/show_traces.html page
     """
-    # if not ctx exit the application
-    if request.session["ctx"] is None or request.session["ctx"] is False:
-        return redirect('/efelg')
-
-
-    #accesslogger.info(resources.string_for_log('show_traces', request))
-    #time_info = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
-    #accesslogger.info("user " + request.session['username'] + " has accepted terms and conditions at this time " + time_info)
     return render(request, 'efelg/show_traces.html')
 
 
@@ -144,8 +135,8 @@ def get_list(request):
     """
     
     # if not ctx exit the application
-    if request.session["ctx"] is None or request.session["ctx"] is False:
-        return redirect('/efelg')
+    if request.session["is_free_space_enough"] is None or request.session["is_free_space_enough"] is False:
+        return redirect('/efelg/error_space_left/')
 
     # metadata file path
     # request.session['main_json_dir'] = os.path.join(settings.MEDIA_ROOT, 'efel_data', 'eg_json_data')
@@ -168,8 +159,8 @@ def get_data(request, cellname=""):
     print('get_data() called.')
 
     # if not ctx exit the application
-    if request.session["ctx"] is None or request.session["ctx"] is False:
-        return redirect('/efelg')
+    if request.session["is_free_space_enough"] is None or request.session["is_free_space_enough"] is False:
+        return redirect('/efelg/error_space_left/')
 
     #current_authorized_files = request.session["current_authorized_files"]
 
@@ -251,8 +242,8 @@ def get_data(request, cellname=""):
 def extract_features(request):
 
     # if not ctx exit the application
-    if request.session["ctx"] is None or request.session["ctx"] is False:
-        return redirect('/efelg')
+    if request.session["is_free_space_enough"] is None or request.session["is_free_space_enough"] is False:
+        return redirect('/efelg/error_space_left/')
 
     selected_traces_rest_json = request.session['selected_traces_rest_json']
     global_parameters_json = request.session['global_parameters_json']
@@ -454,8 +445,8 @@ def extract_features(request):
 def results(request):
     
     # if not ctx exit the application
-    if request.session["ctx"] is None or request.session["ctx"] is False:
-        return redirect('/efelg')
+    if request.session["is_free_space_enough"] is None or request.session["is_free_space_enough"] is False:
+        return redirect('/efelg/error_space_left/')
     
     # Render final page containing the link to the result zip file if any
 
@@ -466,8 +457,8 @@ def results(request):
 def download_zip(request):
     
     # if not ctx exit the application
-    if request.session["ctx"] is None or request.session["ctx"] is False:
-        return redirect('/efelg')
+    if request.session["is_free_space_enough"] is None or request.session["is_free_space_enough"] is False:
+        return redirect('/efelg/error_space_left/')
 
     # accesslogger.info(resources.string_for_log('download_zip', request))
     zip_file = open(request.session['nfe_result_file_zip'], 'rb')
@@ -479,8 +470,8 @@ def download_zip(request):
 def features_dict(request):
     
     # if not ctx exit the application
-    if request.session["ctx"] is None or request.session["ctx"] is False:
-        return redirect('/efelg')
+    if request.session["is_free_space_enough"] is None or request.session["is_free_space_enough"] is False:
+        return redirect('/efelg/error_space_left/')
 
     # Render the feature dictionary containing all feature names, grouped by feature type
     with open(os.path.join(settings.BASE_DIR, 'static', 'efelg', 'efel_features_final.json')) as json_file:
@@ -495,8 +486,8 @@ def upload_files(request):
     """
 
     # if not ctx exit the application
-    if request.session["ctx"] is None or request.session["ctx"] is False:
-        return redirect('/efelg')
+    if request.session["is_free_space_enough"] is None or request.session["is_free_space_enough"] is False:
+        return redirect('/efelg/error_space_left/')
 
     username = request.session['username']
     time_info = request.session['time_info']
@@ -558,8 +549,8 @@ def upload_files(request):
 def get_result_dir(request):
 
     # if not ctx exit the application
-    if request.session["ctx"] is None or request.session["ctx"] is False:
-        return redirect('/efelg')
+    if request.session["is_free_space_enough"] is None or request.session["is_free_space_enough"] is False:
+        return redirect('/efelg/error_space_left/')
 
     user_results_dir = EfelStorage.getResultsDir(request.session['username'], request.session['time_info'])
     data = {'result_dir': user_results_dir}
@@ -585,6 +576,12 @@ def hhf_etraces(request, wfid):
 
 @csrf_exempt
 def load_hhf_etraces(request):
+
+    if EfelStorage.isThereEnoughFreeSpace():
+        request.session['is_free_space_enough'] = True
+    else:
+        request.session['is_free_space_enough'] = False
+        return redirect('/efelg/error_space_left/')
 
     hhf_etraces_dir = request.POST.get('hhf_etraces_dir', None)
     wfid = request.POST.get('wfid', None) 
@@ -645,3 +642,6 @@ def load_hhf_etraces(request):
 
     return HttpResponse(json.dumps(data_name_dict), content_type="application/json")
 
+
+def error_space_left(request):
+    return render(request, 'efelg/error_space_left.html')
