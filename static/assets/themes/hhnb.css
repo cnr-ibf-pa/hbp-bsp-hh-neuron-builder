@@ -1595,7 +1595,7 @@ i.disabled:hover {
     text-align: center;
     overflow-y: auto;
     z-index: -100;
-    transition: opacity ease .3s;
+    transition: opacity ease-out .5s;
     opacity: 0;
 }
 
@@ -1616,6 +1616,7 @@ i.disabled:hover {
 }
 
 .modal-content.container-glass {
+    display: none;
     position: relative;
     margin: auto;
     width: calc(100vw - 5%);
@@ -1627,8 +1628,8 @@ i.disabled:hover {
     background-color: rgb(255, 255, 255, 0.75);
     box-shadow: 0 0 1rem 0 rgb(0, 0, 0, .8); 
     z-index: 100;
-    top: -25%;
-    transition: all ease-out .3s;
+    top: -50%;
+    transition: all ease-out .5s;
     opacity: 0;
 }
 .modal-content.container-glass.show {
@@ -1637,7 +1638,7 @@ i.disabled:hover {
 }
 
 #modalMC {
-    background-color: rgba(0, 0, 0, .8);
+    background-color: rgba(0, 0, 0, .6);
 }
 
 .modal-content.container-glass.mc {

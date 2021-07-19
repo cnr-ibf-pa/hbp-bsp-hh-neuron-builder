@@ -1855,27 +1855,32 @@ function fetchModel(modelButton) {
 
 // serve embedded-efel-gui page
 function openNFE() {
+    $("#modalNFEContainer").css("display", "block");
     $("#modalNFE").css("z-index", "100").addClass("show");
-    // $("#modalNFEContainer").addClass("show");
 }
 
-$("#modalNFE")[0].addEventListener("transitionend", function(transition) {
-    if (transition.target == $("#modalNFE")[0]) {
+$("#modalNFE")[0].addEventListener("transitionstart", function(transition) {
+    if (transition.target == $(this)[0]) {
         if ($(this).hasClass("show")) {
-            console.log("modalNFE transition end");
             $("#modalNFEContainer").addClass("show");
-        } else {
+        }
+    }
+})
+$("#modalNFE")[0].addEventListener("transitionend", function(transition) {
+    if (transition.target == $(this)[0]) {
+        if (!$(this).hasClass("show")) {
+            $("#modalNFEContainer").css("display", "none");
             $(this).css("z-index", "-100");
         }
     }
 })
-$("#modalNFEContainer")[0].addEventListener("transitionend", function(transition) {
-    if (transition.target == $("#modalNFEContainer")[0]) { 
+$("#modalNFEContainer")[0].addEventListener("transitionstart", function(transition) {
+    if (transition.target == $(this)[0]) {
         if (!$(this).hasClass("show")) {
-            $("#modalNFE").removeClass("show")
+            $("#modalNFE").removeClass("show");
         }
     }
-})
+}) 
 
 function closeNFE(b) {
     $("#modalNFEContainer").removeClass("show");
@@ -1902,6 +1907,7 @@ function inSilicoPage() {
             $("#bluenaas-frame").attr("src", "https://blue-naas-bsp-epfl.apps.hbp.eu/#/model/" + o);
             $("#bluenaas-frame").on("load", function() {
                 hideLoadingAnimation();
+                $("#modalBlueNaasContainer").css("display", "block");
                 $("#modalBlueNaas").css("z-index", "100").addClass("show");
             })
         });
@@ -1910,20 +1916,25 @@ function inSilicoPage() {
 
 }
 
-$("#modalBlueNaas")[0].addEventListener("transitionend", function(transition) {
-    if (transition.target == $("#modalBlueNaas")[0]) {
+$("#modalBlueNaas")[0].addEventListener("transitionstart", function(transition) {
+    if (transition.target == $(this)[0]) {
         if ($(this).hasClass("show")) {
-            console.log("modalBlueNaas transition end");
             $("#modalBlueNaasContainer").addClass("show");
-        } else {
+        }
+    }
+})
+$("#modalBlueNaas")[0].addEventListener("transitionend", function(transition) {
+    if (transition.target == $(this)[0]) {
+        if (!$(this).hasClass("show")) {
+            $("#modalBlueNaasContainer").css("display", "none");
             $(this).css("z-index", "-100");
         }
     }
 })
-$("#modalBlueNaasContainer")[0].addEventListener("transitionend", function(transition) {
-    if (transition.target == $("#modalBlueNaasContainer")[0]) { 
+$("#modalBlueNaasContainer")[0].addEventListener("transitionstart", function(transition) {
+    if (transition.target == $(this)[0]) { 
         if (!$(this).hasClass("show")) {
-            $("#modalBlueNaas").removeClass("show")
+            $("#modalBlueNaas").removeClass("show");
         }
     }
 })
