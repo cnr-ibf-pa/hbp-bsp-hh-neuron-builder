@@ -6,6 +6,7 @@ function showLoadingAnimation(message="") {
 }
 
 function hideLoadingAnimation() {
+    console.log("hideLoadingAnimation() called.");
     $(".loading-animation").removeClass("show");
     $(".loading-animation").addClass("hide");
 }

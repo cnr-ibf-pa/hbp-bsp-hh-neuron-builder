@@ -65,7 +65,7 @@ input[type=number] {
 
 input[type=text],
 input[type=password] {
-    width: 7.5rem;
+    width: 11rem;
 }
 
 input[type=number] {
@@ -329,4 +329,9 @@ label.withinTable:hover {
 
 .site-header {
     z-index: 99;
+}
+
+.far,
+.fas {
+    cursor: pointer;
 }

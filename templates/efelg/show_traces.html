@@ -65,7 +65,7 @@
                         </div>
                         <div class="col-xl-1 col-lg-1 col-md-1 col-sm-2 text-end order-xl-last">
                             <i class="far fa-question-circle fa-lg"
-                                onclick="openInfo('Feature Extraction Parameters info', parametersInfo)">
+                                onclick="openInfoPanel('Feature Extraction Parameters info', parametersInfo)">
                             </i>
                         </div>
                         <div class="col-xl-3 col-lg-6 col-md-6">
@@ -270,8 +270,8 @@
                 <span>
                     *
                     <em>
-                        All uploaded files are removed from the server after the execution ended.
-                        At runtime, they are only accessible to the user who uploaded them
+                        All files are only accessible to the user who uploaded them and are removed from the server in two hours.
+                        Upon expiration of this time slot, the user will have to upload the data again
                     </em>
                 </span>
             </div>
@@ -362,4 +362,10 @@
 <script type="text/javascript" src="{% static 'efelg/js/show_traces.js' %} "></script>
 <script type="text/javascript" src="{% static 'bspganalytics.js' %}"></script>
 
+<script>
+    var hhf_etraces_dir = "{{ hhf_etraces_dir }}";
+    var wfid = "{{ wfid }}"
+    sessionStorage.setItem("hhf_etraces_dir", hhf_etraces_dir);
+    sessionStorage.setItem("wfid", wfid);
+</script>
 </html>
