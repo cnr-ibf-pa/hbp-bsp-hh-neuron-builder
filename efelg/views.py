@@ -496,53 +496,64 @@ def upload_files(request):
     upload_files_dir = EfelStorage.getUploadedFilesDir(username, time_info)
     user_files_dir = EfelStorage.getUserFilesDir(username, time_info)
 
-    names_full_path = []
-    data_name_dict = {
-        "all_json_names": [],
-        "refused_files": []
-    }
 
-    cell_name = "up_cell_" + request.POST['cell_name']
-    user_files = request.FILES.getlist('user_files')
-    # for every files to be uploaded, save them in local folders:
-    for k in user_files:
-        if k.name.endswith('.abf') or k.name.endswith('.json'):
-            file_name = re.sub('-', '_', k.name)
-            path_to_file = os.path.join(upload_files_dir, file_name)
+    print(request.POST["file_name"] == "")
 
-            # if file exists delete and recreate it
-            if os.path.isfile(path_to_file):
-                os.remove(path_to_file)
+    if request.POST["file_name"] != "":
+        output_filename = manage_json.create_file_name(request.POST)
+        os.rename(os.path.join(
+            user_files_dir, request.POST["file_name"] + ".json"),
+            os.path.join(user_files_dir, output_filename)
+        )
+    else:
+        names_full_path = []
 
-            with open(path_to_file, 'wb') as f:
-                # save chunks or entire file based on dimensions
-                if k.multiple_chunks():
-                    for chunk in k.chunks():
-                        f.write(chunk)
-                else:
-                    f.write(k.read())
+        data_name_dict = {
+            "all_json_names": [],
+            "refused_files": []
+        }
 
-                if not k.name.endswith('_metadata.json'):
-                    names_full_path.append(path_to_file)
+        cell_name = "up_cell_" + request.POST['cell_name']
 
-    # save file to local disk
-    for f in names_full_path:
-        try:
-            data = manage_json.extract_data(f, request.POST)
-            output_filename = manage_json.create_file_name(data)
-            output_filepath = os.path.join(user_files_dir, output_filename)
-            if os.path.isfile(output_filepath):
-                os.remove(output_filepath)
-            with open(output_filepath, 'w') as f:
-                json.dump(data, f)
-            if output_filename[:-5] not in data_name_dict['all_json_names']:
-                data_name_dict['all_json_names'].append(output_filename[:-5])
-        except:
-            pass   
+        user_files = request.FILES.getlist('user_files')
+        # for every files to be uploaded, save them on local folders:
+        for k in user_files:
+            if k.name.endswith('.abf') or k.name.endswith('.json'):
+                file_name = re.sub('-', '_', k.name)
+                path_to_file = os.path.join(upload_files_dir, file_name)
 
-    # return uploaded file names
-    return HttpResponse(json.dumps(data_name_dict),
-                        content_type="application/json")
+                # if file exists delete and recreate it
+                if os.path.isfile(path_to_file):
+                    os.remove(path_to_file)
+
+                with open(path_to_file, 'wb') as f:
+
+                    # save chunks or entire file based on dimensions
+                    if k.multiple_chunks():
+                        for chunk in k.chunks():
+                            f.write(chunk)
+                    else:
+                        f.write(k.read())
+
+                    if not k.name.endswith('_metadata.json'):
+                        names_full_path.append(path_to_file)
+
+        for f in names_full_path:
+            try:
+                data = manage_json.extract_data(f)
+                output_filename = manage_json.create_file_name(request.POST)
+                output_filepath = os.path.join(user_files_dir, output_filename)
+                if os.path.isfile(output_filepath):
+                    os.remove(output_filepath)
+                with open(output_filepath, 'w') as f:
+                    json.dump(data, f)
+                if output_filename[:-5] not in data_name_dict['all_json_names']:
+                    data_name_dict['all_json_names'].append(output_filename[:-5])
+            except:
+                pass
+                #data_name_dict['refused_files'].append(f)   
+
+        return HttpResponse(json.dumps(data_name_dict), content_type="application/json")
 
 
 def get_result_dir(request):
