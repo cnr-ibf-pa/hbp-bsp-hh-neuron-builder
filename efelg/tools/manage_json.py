@@ -464,7 +464,7 @@ def perform_conversions_json_file(filename):
         return data
 
 
-def extract_data(name, dict=None, metadata_dict=None, upload_flag=True):
+def extract_data(name, metadata_dict=None, upload_flag=True):
     data = None
     if metadata_dict:
         data = metadata_dict
@@ -481,21 +481,6 @@ def extract_data(name, dict=None, metadata_dict=None, upload_flag=True):
             data.update(perform_conversions_json_file(name))
         else:
             data = perform_conversions_json_file(name)
-    
-    if dict:
-        filled_keys = {
-            "cell_id": dict["cell_name"],
-            "contributors_affiliations": dict["contributors"],
-            "animal_species": dict["species"],
-            "brain_structure": dict["structure"],
-            "cell_soma_location": dict["region"],
-            "type": dict["type"],
-            "etype": dict["etype"]
-        }
-
-        for key in filled_keys:
-            data[key] = filled_keys[key]
-    
 
     return data
 

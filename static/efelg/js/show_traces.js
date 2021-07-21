@@ -19,11 +19,6 @@ var i_box = 0;
 var selected_files = [];
 var json;
 
-addParametersMenuListener();
-createUploadBox();
-onChangeEventsValue();
-
-
 //
 function addParametersMenuListener() {
     menus.push($('#parameters_menu'));
@@ -170,6 +165,10 @@ function closeUserChoiceList() {
 
 //
 $(document).ready(function () {
+
+    addParametersMenuListener();
+    createUploadBox();
+    onChangeEventsValue();
 
     var isLoadingHHFEtraces = false;
     
@@ -578,6 +577,7 @@ function createUploadBox() {
     <div class="border border-primary rounded-3 mx-auto my-4 p-4" id="upload_box_' + i_box + '"> \
         <form id="upload_files_' + i_box + '" method="POST" enctype="multipart/form-data" action="/efelg/upload_files" class="needs-validation" novalidate> \
             <fieldset id="fieldset_' + i_box + '"> \
+                <input id="file_name_' + i_box + '" type="hidden" name="file_name" value=""> \
                 <div class="row"> \
                     <div class="col-lg-2 col-md-4 col-12"> \
                         <label>File type:</label> \
@@ -770,7 +770,10 @@ function createUploadBox() {
                 contentType: false,
                 processData: false,
                 success: function (name_dict) {
-                    $('#fieldset_' + id).prop("disabled", true);
+                    $("#upload_button_" + id).text("Upload data");
+                    $("#user_files_" + id).prop("disabled", true);
+                    $("#browse_label_" + id).addClass("disabled");
+                    $("#file_name_" + id).val(name_dict["all_json_names"][0]);
                     var loaded_filenames = name_dict.all_json_names;
                     var refused_filenames = [];
                     loaded_filenames = loaded_filenames.map(function (item) {
