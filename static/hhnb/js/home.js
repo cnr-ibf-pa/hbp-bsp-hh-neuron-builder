@@ -8,12 +8,15 @@ console.log(ctx);
 jQuery(document).ready(function(){
     showLoadingAnimation("Inizializing");
     $.getJSON("/hh-neuron-builder/set-exc-tags/" + req_pattern, function(exc_data){
+        console.log(exc_data)
         if (exc_data["response"]=="KO"){
             // closePleaseWaitDiv();
             hideLoadingAnimation();
             openReloadDiv(exc_data["message"]);
         } else {
+            console.log(exc, ctx)
             $.getJSON("/hh-neuron-builder/initialize/" + exc + "/" + ctx + "", function(data){
+                console.log(data);
                 if (data["response"]=="KO"){
                     // closePleaseWaitDiv();
                     hideLoadingAnimation();
@@ -30,6 +33,7 @@ jQuery(document).ready(function(){
 function initNewWorkflow() {
     showLoadingAnimation("Inizializing workflow.");
     $.getJSON("/hh-neuron-builder/create-wf-folders/new/" + exc + "/" + ctx, function(data){
+        console.log(data);
         if (data["response"] == "KO"){
             hideLoadingAnimation();
             openReloadDiv(data["message"]);

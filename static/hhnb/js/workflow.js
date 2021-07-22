@@ -141,32 +141,6 @@ function reloadCurrentPage() {
     window.location.href = "";
 }
 
-// open div for optimization run parameter settings
-function openHpcParameterDiv() {
-    console.log("openParameterDiv() called.");
-    manageOptSetInput();
-    // $("#overlaywrapper").css("display", "block");
-    $("#overlaywrapper").css("z-index", "100").addClass("show")
-    $("#overlayparam").css("display", "block");
-    if($(".accordion-button.hpc").hasClass("active")) {
-        $("#apply-param").prop("disabled", false);
-    }
-}
-
-$(".accordion-button.hpc").on("click", function() {
-    $("#apply-param").prop("disabled", false);
-    $(".accordion-button").removeClass("active");
-    $(this).addClass("active");
-})
-
-// close side div for optimization run parameter settings
-function closeHpcParameterDiv() {
-    $("#overlaywrapper").css("display", "none");
-    $("#overlayparam").css("display", "none");
-    $("#apply-param").prop("disabled", true);
-    $("#hpcAuthAlert").removeClass("show");
-} 
-
 function applyJobParam() {
     $("#apply-param").blur();
     var submitJobParamForm = $("#submitJobParamForm");
@@ -179,8 +153,9 @@ function manageErrorDiv(isOpen=false, isClose=false, message="", tag="") {
     let errorDynamicText = $("#errordynamictext");
     let button = $("#ok-error-div-btn");
     if (isOpen) {
-        overlayWrapper.css("display", "block");
+        // overlayWrapper.css("display", "block");
         overlayWrapperError.css("display", "block");
+        overlayWrapper.addClass("show");
         errorDynamicText.html(message);
         if (tag == "error") {
             overlayWrapperError.css("box-shadow", "0 0 1rem 0 rgba(255, 0, 0, .8)");
@@ -196,7 +171,8 @@ function manageErrorDiv(isOpen=false, isClose=false, message="", tag="") {
             button.addClass("green").removeClass("red blue");
         }
     } else if (isClose) {
-        overlayWrapper.css("display", "none");
+        // overlayWrapper.css("display", "none");
+        overlayWrapper.removeClass("show");
         overlayWrapperError.css("display", "none");
     }
 }
@@ -510,7 +486,6 @@ function displayOptResUploadDiv() {
 }
 
 function openUploadDiv(type, msg) {
-    // $("#overlaywrapper").css("display", "block");
     $("#overlayupload").css("display", "block");
     $("#overlaywrapper").css("z-index", "100").addClass("show");
     $("#uploadForm").attr("action", "/hh-neuron-builder/upload-files/" + type + "/" + req_pattern + "/");
@@ -528,27 +503,22 @@ function openUploadDiv(type, msg) {
     }
 }
 
-/* function openUploadDiv(type, msg) {
-    // $("#overlaywrapper").css("display", "block");
-    $("#overlaywrapper").css("z-index", "100").addClass("show");
-    $("#overlayupload").css("display", "block");
-} */
-
 $("#overlaywrapper")[0].addEventListener("transitionend", function(transition) {
     if (transition.target == $(this)[0]) {
         if (!$(this).hasClass("show")) {
             $(this).css("z-index", "-100");
+            $(".overlay-content").css("display", "none").removeClass("show");
         }
     }
 });
 $("#overlaywrapper")[0].addEventListener("transitionstart", function(transition) {
     if (transition.target == $(this)[0]) {
         if ($(this).hasClass("show")) {
-            $("#overlayupload").addClass("show");
-            $("#overlayparam").addClass("show");
+            $(".overlay-content").addClass("show");
         }
     }
 });
+
 $("#overlayupload")[0].addEventListener("transitionstart", function(transition) {
     if (transition.target == $(this)[0]) {
         if (!$(this).hasClass("show")) {
@@ -556,33 +526,46 @@ $("#overlayupload")[0].addEventListener("transitionstart", function(transition) 
         }
     }
 });
-$("#overlayupload")[0].addEventListener("transitionend", function(transition) {
+$("#overlayparam")[0].addEventListener("transitionstart", function(transition) {
     if (transition.target == $(this)[0]) {
         if (!$(this).hasClass("show")) {
-            $(this).css("display", "none");
+            $("#overlaywrapper").removeClass("show");
         }
     }
 });
 
 function closeUploadDiv(empty=true) {
     $("#overlayupload").removeClass("show");
+    $("#overlayparam").removeClass("show");
     if (empty) {
         $("#formFile").val();
     }
 }
 
-/* function closeUploadDiv(empty=true) {
-    $("#overlaywrapper").css("display", "none");
-    $("#overlayupload").css("display", "none");
-    if (empty) {
-        $("#formFile").val("");
+$(".accordion-button.hpc").on("click", function() {
+    $("#apply-param").prop("disabled", false);
+    $(".accordion-button").removeClass("active");
+    $(this).addClass("active");
+});
+
+function openHpcParameterDiv() {
+    manageOptSetInput();
+    $("#overlayparam").css("display", "block");
+    if ($(".accordion-button.hpc").hasClass("active")) {
+        $("#apply-param").prop("disabled", false);
     }
-    $("#overlayupload").removeClass("upper-daint");
-} */
+    $("#overlaywrapper").css("z-index", "100").addClass("show");
+}
+
+function closeHpcParameterDiv() {
+    $("#apply-param").prop("disabled", true);
+    $("#hpcAuthAlert").removeClass("show");
+    $("#overlayparam").removeClass("show");
+}
 
 function displayJobFetchDiv() {
-    $("#overlaywrapper").css("display", "block");
     $("#overlayjobs").css("display", "block");
+    $("#overlaywrapper").css("z-index", "100").addClass("show");
     $(".list-group-item.fetch-jobs").attr("aria-disabled", "false").removeClass("disabled active");
 }
 
@@ -603,10 +586,24 @@ function resetJobFetchDiv() {
 }
 
 function closeJobFetchDiv() {
-    $("#overlaywrapper").css("display", "none");
-    $("#overlayjobs").css("display", "none");
-    resetJobFetchDiv();
+    $("#overlayjobs").removeClass("show");
+    // resetJobFetchDiv();
 }
+
+$("#overlayjobs")[0].addEventListener("transitionstart", function(transition) {
+    if (transition.target == $(this)[0]) {
+        if (!$(this).hasClass("show")) {
+            $("#overlaywrapper").removeClass("show");
+        }
+    }
+})
+$("#overlayjobs")[0].addEventListener("transitionend", function(transition) {
+    if (transition.target == $(this)[0]) {
+        if (!$(this).hasClass("show")) {
+            resetJobFetchDiv();
+        }
+    }
+})
 
 function checkNsgLogin() {
     $("#checkNsgSpinnerButton").css("opacity", "1");
@@ -718,7 +715,7 @@ function displayJobList(button) {
                 downloadButton.innerHTML = "Download";
                 downloadButton.className = "btn workflow-btn job-download-button";
                 downloadButton.disabled = true;
-                downloadButton.setAttribute("onclick", "downloadJob(this)");
+                downloadButton.setAttribute("onclick", "downloadJobButtonHandler(this)");
 
                 let tr = document.createElement("tr");
                 let tdWf = document.createElement("td");
@@ -790,53 +787,122 @@ function displayJobList(button) {
     });
 }
 
-function closeDownloadJob() {
+function closeDownloadJob(hideOverlayWrapper=false) {
     resetProgressBar();
-    $("#overlaywrapper").css("display", "none");
-    $("#overlayjobprocessing").css("display", "none");
+    // $("#overlaywrapper").css("display", "none").removeClass("show");
+    // $("#overlayjobprocessing").css("display", "none").removeClass("show");
+    $("#overlayjobprocessing").removeClass("show");
+    $("#overlayjobs").removeClass("show hide-to-left").css("display", "none");
+    if (hideOverlayWrapper) {
+        $("#overlaywrapper").removeClass("show");
+    }
 }
+
+$("#overlayjobs")[0].addEventListener("transitionstart", function(transition) {
+    if (transition.target == $(this)[0]) {
+        if ($(this).hasClass("hide-to-left")) {
+            $("#overlayjobprocessing").css("display", "block");
+        }
+    }
+});
+$("#overlayjobs")[0].addEventListener("transitionend", function(transition) {
+    if (transition.target == $(this)[0]) {
+        if ($(this).hasClass("hide-to-left")) {
+            $(this).css("display", "none");
+            $("#overlayjobprocessing").addClass("show");
+            closeJobFetchDiv();
+        }
+    }
+});
+
+$("#overlayjobprocessing")[0].addEventListener("transitionend", function(transition) {
+    if (transition.target == $(this)[0]) {
+        if (!$(this).hasClass("show")) {
+            
+        }
+    }
+});
+$("#overlayjobprocessing")[0].addEventListener("transitionstart", function(transition) {
+    if (transition.target == $(this)[0]) {
+        if (!$(this).hasClass("show")) {
+            $("#overlaywrapper").removeClass("show");
+            $("#overlayjobs").removeClass("hide-to-left");
+        }
+    }
+});
+
+function downloadJobButtonHandler(button) {
+    console.log("im here")
+    $("#overlayjobprocessing").removeClass("show");
+    $("#overlayjobs").addClass("hide-to-left");
+    setProgressBarValue(0);
+    downloadJob(button);
+} 
+
+function setJobProcessingTitle(message) {
+    console.log(message);
+    var title = $("#jobProcessingTitle");
+    
+    function eventListener(transition) {
+        if (transition.target == title[0]) {
+            if (title.hasClass("fade-text")) {
+                title.html(message);
+                title.removeClass("fade-text");
+                title[0].removeEventListener("transitionend", eventListener);
+            }
+        }
+    }
+    title[0].addEventListener("transitionend", eventListener);
+    title.addClass("fade-text");
+}
+
 
 async function downloadJob(button) {
     console.log("downloadJob() called");
     // disable all buttons
     jobId = button.id;
-    closeJobFetchDiv();
-    $("#overlaywrapper").css("display", "block");
-    $("#overlayjobprocessing").css("display", "block");
     $("#jobProcessingTitle").html("Downloading job:<br>" + jobId + "<br>");
-    await sleep(2000);
-    setProgressBarValue(20);
+    await sleep(500);
+    $("#progressBarFetchJob").addClass("s40").removeClass("s4 s2");
+    setProgressBarValue(40);
     $.getJSON("/hh-neuron-builder/download-job/" + jobId + "/" + req_pattern + "/", function(data) {
         if (data["response"] == "KO") {
             closeDownloadJob();
             openErrorDiv(data["message"], "error");
             return false;
         }
-        setProgressBarValue(50);
-        $("#jobProcessingTitle").html("Running Analysis<br>");
-        var p = $.getJSON("/hh-neuron-builder/run-analysis/" + req_pattern, function(modifydata) {
+        setJobProcessingTitle("Running Analysis<br> ");
+        setProgressBarValue(80);
+        var p = $.getJSON("/hh-neuron-builder/run-analysis/" + req_pattern, async function(modifydata) {
             var resp_flag = false;
+            console.log(modifydata);
             if (modifydata["response"] == "KO") {
                 closeDownloadJob();
                 openErrorDiv(data["message", "error"]);
                 return false;
             } else {
                 var resp_flag = true;
+                setJobProcessingTitle("Creating ZIP file<br> ");
+                // $("#jobProcessingTitle").html("Creating ZIP file<br>")
+                $("#progressBarFetchJob").addClass("s4").removeClass("s40 s2");
                 setProgressBarValue(80);
-                $("#jobProcessingTitle").html("Creating ZIP file<br>")
+                await sleep(4000);
                 $.getJSON("/hh-neuron-builder/zip-sim/" + jobId + "/" + req_pattern, async function(zip_data) {
                     if (zip_data["response"] == "KO") {
                         closeDownloadJob();
                         openErrorDiv(zip_data["message"], "error");
                         return false;
                     } else {
-                        $("#jobProcessingTitle").html("Completing...<br>");
+                        // $("#jobProcessingTitle").html("Completing<br>");
+                        setJobProcessingTitle("Completing...<br> ");
+                        $("#progressBarFetchJob").addClass("s2").removeClass("s40 s4");
                         setProgressBarValue(100);
                         await sleep(2000);
                     }
                     checkConditions();
-                    $("#overlayjobprocessing").css("display", "none");
-                    $("#overlaywrapper").css("display", "none");
+                    // $("#overlayjobprocessing").css("display", "none");
+                    $("#overlayjobprocessing").removeClass("show");
+                    // $("#overlaywrapper").css("display", "none");
                 }).fail(function (error) { 
                     console.log("failing on zip-sim");
                     console.log(error);
@@ -998,28 +1064,6 @@ function manageOptSetInput() {
         $("#nsg-runtime").val(2);
     }
 }
-
-$("#daintCollapse")[0].addEventListener('show.bs.collapse', function () {
-    $("#overlayparam").addClass("upper-daint");
-})
-
-$("#serviceAccountCollapse")[0].addEventListener('show.bs.collapse', function () {
-    $("#overlayparam").addClass("upper-sa-daint");
-})
-$("#nsgCollapse")[0].addEventListener('show.bs.collapse', function () {
-    $("#overlayparam").addClass("upper-nsg");
-})
-
-$("#daintCollapse")[0].addEventListener('hide.bs.collapse', function () {
-    $("#overlayparam").removeClass("upper-daint");
-})
-
-$("#serviceAccountCollapse")[0].addEventListener('hide.bs.collapse', function () {
-    $("#overlayparam").removeClass("upper-sa-daint");
-})
-$("#nsgCollapse")[0].addEventListener('hide.bs.collapse', function () {
-    $("#overlayparam").removeClass("upper-nsg");
-})
 
 function animateProgressBar(progress) {
     current_progress = parseFloat($(".progress-bar").attr("aria-valuenow"));
@@ -1860,8 +1904,11 @@ function openNFE() {
 }
 
 $("#modalNFE")[0].addEventListener("transitionstart", function(transition) {
+    console.log('im here');
     if (transition.target == $(this)[0]) {
+        console.log("and not here");
         if ($(this).hasClass("show")) {
+            console.log("but the trick is here");
             $("#modalNFEContainer").addClass("show");
         }
     }

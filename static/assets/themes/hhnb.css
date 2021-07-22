@@ -619,6 +619,25 @@ body {
 #jobProcessingTitle {
     font-weight: bold;
     margin: 20px;
+    transition: opacity linear .6s;
+}
+ 
+
+.progress-bar-animated {
+    animation-duration: .5s;
+}
+#progressBarFetchJob.s40 {
+    transition: width 40s linear;
+}
+#progressBarFetchJob.s4 {
+    transition: width 4s linear;
+}
+#progressBarFetchJob.s2 {
+    transition: width 2s linear;
+}
+
+.fade-text {
+    opacity: 0;
 }
 
 
@@ -708,7 +727,6 @@ body {
     display: none;
     position: relative;
     margin: auto;
-    /* top: calc(30%); */
     width: max-content;
     height: max-content;
     padding: 2rem;
@@ -728,21 +746,14 @@ body {
     opacity: 1;
 }
 
-.overlay-content.upper-daint {
-    /* --h: calc(((589px - 277px)/-4)); */
-    transform: translateY( -13% );
-}
-.overlay-content.upper-sa-daint {
-    /* --h: calc(((526px - 317px)/-4)); */
-    transform: translateY( -17% );
-}
-.overlay-content.upper-nsg {
-    /* --h: calc(((589px - 357px)/-4)); */
-    transform: translateY( -20% );
-}
-
 .overlay-content.overflow {
     overflow-y: auto;
+}
+
+.overlay-content.hide-to-left {
+    transform: translate(-100%, -50%);
+    opacity: 0;
+    transition: all cubic-bezier(.55,.09,.68,.53) .3s;
 }
 
 .reg-model-content {
