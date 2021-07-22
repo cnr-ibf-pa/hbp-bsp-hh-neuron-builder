@@ -271,12 +271,22 @@ def extract_data(name, metadata_dict=None, upload_flag=True):
     return data
 
 
-def create_file_name(data, cell_id=None):
+def create_file_name(data, dictionary=None, cell_id=None):
     filename_keys = ["animal_species", "brain_structure", "cell_soma_location", "type", "etype", "cell_id"]
-    if "filename" in data.keys():
+    if dictionary:
+        d = dictionary
+    else:
+        d = data
+    
+    if "filename" in d.keys():
         filename_keys.append("filename")
-    elif "sample" in data.keys():
+    elif "sample" in d.keys():
         filename_keys.append("sample")
     else:
         raise Exception("filename not found!")
-    return '____'.join([data[key] for key in filename_keys]) + ".json"
+
+    if dictionary:
+        for key in filename_keys:
+            data[key] = dictionary[key]
+    return '____'.join([d[key] for key in filename_keys]) + ".json"
+

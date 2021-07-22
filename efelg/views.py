@@ -500,11 +500,15 @@ def upload_files(request):
     print(request.POST["file_name"] == "")
 
     if request.POST["file_name"] != "":
-        output_filename = manage_json.create_file_name(request.POST)
-        os.rename(os.path.join(
-            user_files_dir, request.POST["file_name"] + ".json"),
-            os.path.join(user_files_dir, output_filename)
-        )
+        old_filepath = os.path.join(user_files_dir, request.POST["file_name"] + ".json")
+        with open(old_filepath, "r") as new_file:
+            data = json.load(new_file)
+        os.remove(file_path)
+        new_filename = manage_json.create_file_name(data, dictionary=request.POST)
+        new_filepath = os.path.join(user_files_dir, output_filename)
+        with open(output_filepath, "w") as new_file:
+            json.dump(data, new_file)
+
     else:
         names_full_path = []
 
@@ -513,9 +517,8 @@ def upload_files(request):
             "refused_files": []
         }
 
-        cell_name = "up_cell_" + request.POST['cell_name']
-
         user_files = request.FILES.getlist('user_files')
+
         # for every files to be uploaded, save them on local folders:
         for k in user_files:
             if k.name.endswith('.abf') or k.name.endswith('.json'):
@@ -541,7 +544,7 @@ def upload_files(request):
         for f in names_full_path:
             try:
                 data = manage_json.extract_data(f)
-                output_filename = manage_json.create_file_name(request.POST)
+                output_filename = manage_json.create_file_name(data, dictionary=request.POST)
                 output_filepath = os.path.join(user_files_dir, output_filename)
                 if os.path.isfile(output_filepath):
                     os.remove(output_filepath)
@@ -550,8 +553,8 @@ def upload_files(request):
                 if output_filename[:-5] not in data_name_dict['all_json_names']:
                     data_name_dict['all_json_names'].append(output_filename[:-5])
             except:
-                pass
-                #data_name_dict['refused_files'].append(f)   
+                print(f)
+                data_name_dict['refused_files'].append(f)   
 
         return HttpResponse(json.dumps(data_name_dict), content_type="application/json")
 
