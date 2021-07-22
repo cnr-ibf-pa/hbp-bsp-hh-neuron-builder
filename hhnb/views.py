@@ -542,8 +542,6 @@ def fetch_opt_set_file(request, source_opt_name="", source_opt_id="", exc="", ct
     Set optimization setting file
     """
     
-    print('fetch_opt_set_file() called.')
-
     if request.session[exc].get('from_hhf', None):
         for f in os.listdir(os.path.join(request.session[exc]['hhf_dir'], 'config')):
             if f == 'features.json' or f == 'protocols.json':
@@ -559,9 +557,7 @@ def fetch_opt_set_file(request, source_opt_name="", source_opt_id="", exc="", ct
 
     if not os.path.exists(user_dir_data_opt):
         response.update({"response": "KO", "message": "Folder does not exist anymore."})
-        return JsonResponse(response)
-
-    print('setting up directories')
+        return HttpResponse(json.dumps(response), content_type="application/json")
 
     shutil.rmtree(user_dir_data_opt)
     os.makedirs(user_dir_data_opt)
@@ -589,19 +585,15 @@ def fetch_opt_set_file(request, source_opt_name="", source_opt_id="", exc="", ct
     #        zip_url = instance['source']
     #        break
 
-    print('downloading the model')
     r = requests.get(zip_url)
-    opt_zip_path = os.path.join(user_dir_data_opt, source_opt_name + '.zip')  
+    opt_zip_path = os.path.join(user_dir_data_opt, source_opt_name + '.zip')
     with open(opt_zip_path, 'wb') as f:
-        for chunk in r.iter_content(chunk_size=4096):
-            f.write(chunk)
-    print('finish')
+        f.write(r.content)
     request.session[exc]['source_opt_zip'] = opt_zip_path
     request.session[exc]['source_opt_id'] = source_opt_id
 
     request.session.save()
-
-    return JsonResponse(response)
+    return HttpResponse("")
 
 
 def run_optimization(request, exc="", ctx=""):
@@ -797,20 +789,15 @@ def upload_to_naas(request, exc="", ctx=""):
             break
 
     if not abs_res_file:
-        response = {"response": "KO", "message": "No simulation .zip file is present."}
+        return HttpResponse(json.dumps({"response": "KO", "message": "No simulation .zip file is present"}), content_type="application/json")
     else:
         request.session[exc]['res_file_name'] = os.path.splitext(filename)[0]
         # r = requests.post("https://blue-naas-svc.humanbrainproject.eu/upload", files={"file": open(abs_res_file, "rb")})
         r = requests.post("https://blue-naas-svc-bsp-epfl.apps.hbp.eu/upload", files={"file": open(abs_res_file, "rb")}, verify=False)
-        print(r.status_code, r.content)
-        if r.status_code == 200:
-            response = {'response': 'OK', 'message': 'Model correctly uploaded to naas.'}
-        else:
-            response = {'response': 'KO', 'message': 'Model uploading failed.<br>Try again later'}
 
     request.session.save()
 
-    return JsonResponse(response)
+    return HttpResponse(json.dumps({"response": "OK", "message": "Model correctly uploaded to naas"}), content_type="application/json")
 
 
 def submit_run_param(request, exc="", ctx=""):
