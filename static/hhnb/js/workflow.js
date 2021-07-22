@@ -787,15 +787,13 @@ function displayJobList(button) {
     });
 }
 
-function closeDownloadJob(hideOverlayWrapper=false) {
+function closeDownloadJob() {
     resetProgressBar();
     // $("#overlaywrapper").css("display", "none").removeClass("show");
     // $("#overlayjobprocessing").css("display", "none").removeClass("show");
-    $("#overlayjobprocessing").removeClass("show");
+    $("#overlaywrapper").removeClass("show");
+    $("#overlayjobprocessing").removeClass("show").css("display", "none");
     $("#overlayjobs").removeClass("show hide-to-left").css("display", "none");
-    if (hideOverlayWrapper) {
-        $("#overlaywrapper").removeClass("show");
-    }
 }
 
 $("#overlayjobs")[0].addEventListener("transitionstart", function(transition) {
