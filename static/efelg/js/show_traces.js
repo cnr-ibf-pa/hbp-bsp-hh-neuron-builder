@@ -185,7 +185,7 @@ $(document).ready(function () {
     window.scrollTo(0, 0);
     $('#charts').empty();
 
-    console.log(hhf_etraces_dir);
+    //console.log(hhf_etraces_dir);
     if (hhf_etraces_dir) {
         isLoadingHHFEtraces = true;
         console.log(isLoadingHHFEtraces);
