@@ -20,154 +20,39 @@ def md5(filename):
     return hash_md5.hexdigest()
 
 
-def gen_data_struct(filename, filename_meta, upload_flag= False):
-    sampling_rate, tonoff, traces, volt_unit, amp_unit = get_traces_info(filename, upload_flag)
-    obj = {
-        'abfpath': filename,
-        'md5': md5(filename),
-        'sample': os.path.splitext(os.path.basename(filename))[0],
-        'volt_unit': volt_unit,
-        'amp_unit': amp_unit,
-        'traces': traces,
-        'tonoff': tonoff,
-        'sampling_rate': sampling_rate,
-        'contributors': {'message': ''}
-    }    
-    return obj
+def get_traces_abf(filename):
 
-
-def get_cell_info(filename, upload_flag=False, cell_name="cellName"):
-    with open(filename, "r") as f:
-        metadata = json.load(f)
-    if upload_flag:
-        c_species = "cellSpecies"
-        c_area = "cellArea"
-        c_region = "cellRegion"
-        c_type = "cellType"
-        c_etype = "cellEtype"
-        c_name = cell_name
-        c_sample = os.path.splitext(os.path.basename(filename))[0]
-    else:
-        with open(filename) as f:
-            data = json.load(f)
-        if "animal_species" not in data:
-            c_species = "unknown"
-        else:
-            c_species = data["animal_species"]
-            c_species = c_species.replace(" ", "-")
-            # c_species = c_species.replace("_", "-")
-
-        if "brain_structure" not in data:
-            c_area = "unknown"
-        else:
-            c_area = data["brain_structure"]
-            c_area = c_area.replace(" ", "-")
-            # c_area = c_area.replace("_", "-")
-
-        if "cell_soma_location" not in data:
-            c_region = "unknown"
-        else:
-            c_region = data["cell_soma_location"]
-            c_region = c_region.replace(" ", "-")
-            # c_region = c_region.replace("_", "-")
-
-        if "cell_type" not in data:
-            c_type = "unknown"
-        else:
-            c_type = data["cell_type"]
-            c_type = c_type.replace(" ", "-")
-            # c_type = c_type.replace("_", "-")
-
-        if "etype" not in data:
-            c_etype = "unknown"
-        else:
-            c_etype = data["etype"]
-            c_etype = c_etype.replace(" ", "-")
-            # c_etype = c_etype.replace("_", "-")
-
-        if "cell_id" not in data:
-            c_name = "unknown"
-        else:
-            c_name = data["cell_id"]
-            c_name = c_name.replace(" ", "-")
-            # c_name = c_name.replace("_", "-")
-
-        if "filename" not in data: 
-            c_sample = "unknown"
-        else:
-            c_sample = data["filename"]
-            c_sample = os.path.splitext(c_sample)[0]
-            c_sample = c_sample.replace(" ", "-")
-            # c_sample = c_sample.replace("_", "-")
-        
-        if "cell_id" not in data:
-            c_name = "unknown"
-        else:
-            c_name = data["cell_id"]
-            c_name = c_name.replace(" ", "-")
-            # c_name = c_name.replace("_", "-")
-    return c_species, c_area, c_region, c_type, c_etype, c_name, c_sample
-
-# extract data info (i.e. voltage trace, stimulus and stimulus unit) from experimental and metadata files
-
-def get_traces_info(filename, upload_flag = False):
-
-    if (filename.endswith(".json")):
-        with open(filename) as json_file:
-            data = json.load(json_file)
-            metadata = data
-    elif (filename.endswith(".abf")):
-        data = neo.io.AxonIO(filename)
-        metadata = get_metadata(filename)
+    data = neo.io.AxonIO(filename)
+    metadata = get_metadata(filename)
    
     bl = data.read_block()
     segments = bl.segments
     data._parse_header()
     header = data._axon_info
-    # sampling_rate = 1.e6 / header['protocol']['fADCSequenceInterval']  # read sampling rate
-    a_pow = 1
-    if upload_flag:
-        if ("stimulus_unit" in metadata) and (not metadata["stimulus_unit"].lower() in ["na", "unknown"]):
-            if metadata["stimulus_unit"].lower() == "a":
-                a_pow = 9
-            elif metadata["stimulus_unit"].lower() == "ma":
-                a_pow = 6
-            elif metadata["stimulus_unit"].lower() == "ua":
-                a_pow = 3
-            elif metadata["stimulus_unit"].lower() == "pa":
-                a_pow = -3
-            metadata["stimulus_increment"] = [value * pow(10, a_pow) for value in metadata["stimulus_increment"]]
-            metadata["stimulus_first_amplitude"] = [value * pow(10, a_pow) for value in metadata["stimulus_first_amplitude"]]
-            metadata["stimulus_unit"] = "nA"
-        if ("sampling_rate_unit" in metadata) and (not metadata["sampling_rate_unit"].lower() in ["hz", "unknown"]):
-            if metadata["sampling_rate_unit"].lower() == "khz":
-                metadata["sampling_rate"] = [value * pow(10, 3) for value in metadata["sampling_rate"]]
-            metadata["sampling_rate_unit"] = "Hz"
-        
-        if "sampling_rate" not in metadata:
-            sampling_rate = "unknown"
-        else:
-            sampling_rate = str(metadata["sampling_rate"][0])
+    
+    stim_res = stimulus_extraction.stim_feats_from_meta(metadata, len(segments))
+    stim = stim_res[1]
 
-    #
-    volt_unit = segments[0].analogsignals[0].units
-    volt_unit = str(volt_unit.dimensionality)
 
+    """
     # extract stimulus
-    if not upload_flag:
-        crr_dict = get_metadata(filename)
-        stim_res = stimulus_extraction.stim_feats_from_meta(crr_dict, len(segments))
+    if upload_flag
+        
+    else:
         if not stim_res[0]:
             stim_res = stimulus_extraction.stim_feats_from_header(header)
         if not stim_res[0]:
             return 0
         stim = stim_res[1]
-    else:
-        #stim_res = stimulus_extraction.stim_feats_from_header(header)
-        stim_res = stimulus_extraction.stim_feats_from_meta(metadata, len(segments))
-        stim = stim_res[1]
+    """
     
+    volt_unit = str(segments[0].analogsignals[0].units.dimensionality)    
     amp_unit = stim[0][-1]
+
+    if "sampling_rate" not in metadata:
+        sampling_rate = "unknown"
+    else:
+        sampling_rate = str(metadata["sampling_rate"][0])
    
     # build dictionaries 
     traces = {}
@@ -198,21 +83,13 @@ def get_metadata(filename):
 
     return data
 
-
-# extract authorized collab from metadata file
-def extract_authorized_collab(metadata_file):
-    with open(metadata_file) as meta:
-        all_meta = json.load(meta)
-    
-    return all_meta['authorized_collabs']
-
-
 # perform units conversions
-def perform_conversions_json_file(filename):
+def perform_conversions_json(filename):
     with open(filename, "r") as input_file:
 
         data = json.load(input_file)
 
+        #if ("stimulus_unit" in metadata) and (not metadata["stimulus_unit"].lower() in ["na", "unknown"]):
         if ("amp_unit" in data) and (not data["amp_unit"].lower() in ["na", "unknown"]):
             a_pow = 1
             if data["amp_unit"].lower() == "a":
@@ -233,6 +110,8 @@ def perform_conversions_json_file(filename):
                 temp[str(round(float(key) * pow(10, a_pow), 3))] = data["tonoff"][key]
             data["tonoff"] = temp.copy()
             temp.clear()
+            data["stimulus_increment"] = [value * pow(10, a_pow) for value in data["stimulus_increment"]]
+            data["stimulus_first_amplitude"] = [value * pow(10, a_pow) for value in data["stimulus_first_amplitude"]]
             data["amp_unit"] = "nA"
         
         if ("volt_unit" in data) and (not data["volt_unit"].lower() in ["mv", "unknown"]):
@@ -247,46 +126,41 @@ def perform_conversions_json_file(filename):
             temp.clear()
             data["volt_unit"] = "mV"
 
+        if ("sampling_rate_unit" in data) and (not data["sampling_rate_unit"].lower() in ["hz", "unknown"]):
+            if data["sampling_rate_unit"].lower() == "khz":
+                data["sampling_rate"] = [value * pow(10, 3) for value in data["sampling_rate"]]
+            data["sampling_rate_unit"] = "Hz"
+
         return data
 
 
-def extract_data(name, metadata_dict=None, upload_flag=True):
-    data = None
-    if metadata_dict:
-        data = metadata_dict
-        data.update({'type': 'anonymous'})
+def extract_data(filepath, metadata_dict=None):
+
+    if filepath.endswith(".abf"):
+        sampling_rate, tonoff, traces, volt_unit, amp_unit = get_traces_abf(filepath)
+        data = {
+            'abfpath': filepath,
+            'md5': md5(filepath),
+            'volt_unit': volt_unit,
+            'amp_unit': amp_unit,
+            'traces': traces,
+            'tonoff': tonoff,
+            'sampling_rate': sampling_rate
+        }
+    elif filepath.endswith(".json"):
+        with open(filepath, "r") as f:
+            data = json.load(f)
+    # SI BLOCCA QUI
+    data = perform_conversion_json(data)
     
-    if name.endswith(".abf"):
-        metadata = name[:-4] + "_metadata.json"
-        if data:
-            data.update(gen_data_struct(name, metadata, upload_flag=upload_flag))
-        else:
-            data = gen_data_struct(name, metadata, upload_flag=upload_flag)
-    elif name.endswith(".json"):
-        if data:
-            data.update(perform_conversions_json_file(name))
-        else:
-            data = perform_conversions_json_file(name)
+    for key in metadata_dict:
+        data[key] = metadata_dict[key]
 
     return data
 
 
-def create_file_name(data, dictionary=None, cell_id=None):
-    filename_keys = ["animal_species", "brain_structure", "cell_soma_location", "type", "etype", "cell_id"]
-    if dictionary:
-        d = dictionary
-    else:
-        d = data
-    
-    if "filename" in d.keys():
-        filename_keys.append("filename")
-    elif "sample" in d.keys():
-        filename_keys.append("sample")
-    else:
-        raise Exception("filename not found!")
-
-    if dictionary:
-        for key in filename_keys:
-            data[key] = dictionary[key]
-    return '____'.join([d[key] for key in filename_keys]) + ".json"
-
+def create_file_name(data):
+    filename_keys = [
+        "animal_species", "brain_structure", "cell_soma_location", "cell_type", "etype", "cell_id", "filename"
+    ]
+    return '____'.join([data[key] for key in filename_keys]) + ".json"

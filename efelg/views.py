@@ -262,17 +262,9 @@ def extract_features(request):
         else:
             raise Exception("cell_id not found!")
 
-        new_keys = [
-            ("animal_species", "species") , 
-            ("brain_structure", "area"),
-            ("cell_soma_location", "region"),
-            ("cell_type", "type"),
-            ("etype", "etype"),
-            ("cell_id", "name")
-        ]
+        new_keys = ["animal_species", "brain_structure", "cell_soma_location", "cell_type", "etype", "cell_id"]
 
-        keys = [crr_file_dict[t[0]] if t[0] in crr_file_dict else 
-                crr_file_dict[t[1]] for t in new_keys]
+        keys = [crr_file_dict[t] for t in new_keys]
         keys2 = []
         for kk2 in keys:
             if not type(kk2) == list:
@@ -480,13 +472,8 @@ def features_dict(request):
 
 @csrf_exempt
 def upload_files(request):
-    """
-    Save uploaded files to local folder
-    """
 
-    # if not enough space is left on disk display error page 
-    if (request.session["is_free_space_enough"] is None or 
-        request.session["is_free_space_enough"] is False):
+    if request.session["is_free_space_enough"] is None or request.session["is_free_space_enough"] is False:
         return redirect('/efelg/error_space_left/')
 
     username = request.session['username']
@@ -500,11 +487,11 @@ def upload_files(request):
     print(request.POST["file_name"] == "")
 
     if request.POST["file_name"] != "":
-        old_filepath = os.path.join(user_files_dir, request.POST["file_name"] + ".json")
+        old_filepath = os.path.join(user_files_dir, request.POST["file_name"])
         with open(old_filepath, "r") as new_file:
             data = json.load(new_file)
         os.remove(file_path)
-        new_filename = manage_json.create_file_name(data, dictionary=request.POST)
+        new_filename = manage_json.create_file_name(data)
         new_filepath = os.path.join(user_files_dir, output_filename)
         with open(output_filepath, "w") as new_file:
             json.dump(data, new_file)
@@ -512,15 +499,8 @@ def upload_files(request):
     else:
         names_full_path = []
 
-        data_name_dict = {
-            "all_json_names": [],
-            "refused_files": []
-        }
-
-        user_files = request.FILES.getlist('user_files')
-
         # for every files to be uploaded, save them on local folders:
-        for k in user_files:
+        for k in request.FILES.getlist('user_files'):
             if k.name.endswith('.abf') or k.name.endswith('.json'):
                 file_name = re.sub('-', '_', k.name)
                 path_to_file = os.path.join(upload_files_dir, file_name)
@@ -541,20 +521,23 @@ def upload_files(request):
                     if not k.name.endswith('_metadata.json'):
                         names_full_path.append(path_to_file)
 
+        data_name_dict = {
+            "all_json_names": [],
+            "refused_files": []
+        }
+
         for f in names_full_path:
             try:
-                data = manage_json.extract_data(f)
-                output_filename = manage_json.create_file_name(data, dictionary=request.POST)
+                data = manage_json.extract_data(f, request.POST)
+                output_filename = manage_json.create_file_name(data)
                 output_filepath = os.path.join(user_files_dir, output_filename)
                 if os.path.isfile(output_filepath):
                     os.remove(output_filepath)
                 with open(output_filepath, 'w') as f:
                     json.dump(data, f)
-                if output_filename[:-5] not in data_name_dict['all_json_names']:
-                    data_name_dict['all_json_names'].append(output_filename[:-5])
+                data_name_dict['all_json_names'].append(output_filename)
             except:
-                print(f)
-                data_name_dict['refused_files'].append(f)   
+                data_name_dict['refused_files'].append(f[f.rindex("/")+1:])   
 
         return HttpResponse(json.dumps(data_name_dict), content_type="application/json")
 
