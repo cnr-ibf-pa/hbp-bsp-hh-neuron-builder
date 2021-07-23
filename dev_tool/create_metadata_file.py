@@ -2,8 +2,8 @@ import os
 import json
 
 # you need to specify these two paths in order to generate the file
-path_to_traces = "/code/luca/generate_json/conversion/new_traces"
-destination_path = "/code/luca/hh-neuron-builder-3/dev_tool/all_traces_metadata.json"
+path_to_traces = ""
+destination_path = ""
 
 
 dictionary = {"Contributors": {}}
