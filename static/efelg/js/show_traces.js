@@ -774,22 +774,18 @@ function createUploadBox() {
                     $("#user_files_" + id).prop("disabled", true);
                     $("#browse_label_" + id).addClass("disabled");
                     $("#file_name_" + id).val(name_dict["all_json_names"][0]);
-                    var loaded_filenames = name_dict.all_json_names;
-                    var refused_filenames = [];
-                    loaded_filenames = loaded_filenames.map(function (item) {
-                        var splitted = item.split('____');
-                        return splitted[splitted.length - 1] + '.abf'
-                    })
-                    selected_files.forEach(function (elem) {
-                        if (loaded_filenames.indexOf(elem) == -1)
-                            refused_filenames.push(elem);
-                    })
-
-                    all_json_names = name_dict['all_json_names'];
-                    if (all_json_names.length == 0) {
+                    var refused_filenames = name_dict.refused_files;
+                    if (refused_filenames.length > 0) {
                         closeMessageDiv("wait-message-div", "main-e-st-div");
+                        openWarning(
+                            'Rejected files:<br>' + refused_filenames.join(', ') +
+                            '<br><br>Please read the information note at this \
+                            <span class="text-decoration-underline clickable" onclick="openInfoPanel(uploadTitle, uploadText)">link</span>'
+                        );
+                        $("#fieldset_" + id).prop("disabled", true);
+                    } else {
+                        plotCells(name_dict['all_json_names'], true, id);
                     }
-                    plotCells(all_json_names, true, id);
                 }
             })
         }
