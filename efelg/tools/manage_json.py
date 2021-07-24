@@ -150,12 +150,15 @@ def extract_data(filepath, metadata_dict=None):
     elif filepath.endswith(".json"):
         with open(filepath, "r") as f:
             data = json.load(f)
-    # SI BLOCCA QUI
-    data = perform_conversion_json(data)
-    
-    for key in metadata_dict:
-        data[key] = metadata_dict[key]
 
+    filename = os.path.basename(filepath)
+    data["filename"] = filename[:filename.index(".")]
+
+    if metadata_dict:
+        update_file_name(data, metadata_dict)
+    
+    #data = perform_conversion_json(data)
+    
     return data
 
 
@@ -164,3 +167,13 @@ def create_file_name(data):
         "animal_species", "brain_structure", "cell_soma_location", "cell_type", "etype", "cell_id", "filename"
     ]
     return '____'.join([data[key] for key in filename_keys]) + ".json"
+
+
+def update_file_name(data, metadata_dict):
+    data["cell_id"] = metadata_dict["cell_name"]
+    data["contributors_affiliations"] = metadata_dict["contributors"]
+    data["animal_species"] = metadata_dict["species"]
+    data["brain_structure"] = metadata_dict["structure"]
+    data["cell_soma_location"] = metadata_dict["region"]
+    data["cell_type"] = metadata_dict["type"]
+    data["etype"] = metadata_dict["etype"]
