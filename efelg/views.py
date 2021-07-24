@@ -483,19 +483,23 @@ def upload_files(request):
     upload_files_dir = EfelStorage.getUploadedFilesDir(username, time_info)
     user_files_dir = EfelStorage.getUserFilesDir(username, time_info)
 
-
-    print(request.POST["file_name"] == "")
+    data_name_dict = {
+        "all_json_names": [],
+        "refused_files": []
+    }
 
     if request.POST["file_name"] != "":
         old_filepath = os.path.join(user_files_dir, request.POST["file_name"])
-        with open(old_filepath, "r") as new_file:
-            data = json.load(new_file)
-        os.remove(file_path)
+        with open(old_filepath, "r") as old_file:
+            data = json.load(old_file)
+        os.remove(old_filepath)
+        manage_json.update_file_name(data, request.POST)
         new_filename = manage_json.create_file_name(data)
-        new_filepath = os.path.join(user_files_dir, output_filename)
-        with open(output_filepath, "w") as new_file:
+        new_filepath = os.path.join(user_files_dir, new_filename)
+        with open(new_filepath, "w") as new_file:
             json.dump(data, new_file)
-
+        data_name_dict['all_json_names'].append(new_filename)
+        
     else:
         names_full_path = []
 
@@ -521,11 +525,6 @@ def upload_files(request):
                     if not k.name.endswith('_metadata.json'):
                         names_full_path.append(path_to_file)
 
-        data_name_dict = {
-            "all_json_names": [],
-            "refused_files": []
-        }
-
         for f in names_full_path:
             try:
                 data = manage_json.extract_data(f, request.POST)
@@ -539,7 +538,7 @@ def upload_files(request):
             except:
                 data_name_dict['refused_files'].append(f[f.rindex("/")+1:])   
 
-        return HttpResponse(json.dumps(data_name_dict), content_type="application/json")
+    return HttpResponse(json.dumps(data_name_dict), content_type="application/json")
 
 
 def get_result_dir(request):

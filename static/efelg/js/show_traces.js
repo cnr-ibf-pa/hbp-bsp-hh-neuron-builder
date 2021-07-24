@@ -535,7 +535,7 @@ function checkIfUploadable(id) {
         var cell_names = $('input[name=cell_name]').get().map(x => x.value);
         var cell_name = $('#cell_name_' + id).val();
         cell_names.splice(cell_names.indexOf(cell_name), 1);
-        if (cell_names.includes(cell_name) || cell_name == "") {
+        if (cell_names.includes(cell_name) || cell_name == "" || $("#cell-" + cell_name).length > 0) {
             $('#cell_name_alert_' + id).removeClass("d-none");
             $('#cell_name_' + id).addClass("is-invalid");
             $('#cell_name_' + id).removeClass("is-valid");
@@ -757,7 +757,8 @@ function createUploadBox() {
             for (var i = 0; i < inputs.length; i++) {
                 $(inputs[i]).val($(inputs[i]).val().replaceAll(" ", "_"));
             }
-            var formData = new FormData($(this)[0]);
+            var formData = new FormData($(this)[0]);;
+            $("#charts_upload_" + id).children().remove();
             $.ajax({
                 url: $(this).attr("action"),
                 data: formData,
@@ -766,6 +767,7 @@ function createUploadBox() {
                 processData: false,
                 success: function (name_dict) {
                     $("#upload_button_" + id).text("Upload data");
+                    $("#upload_button_" + id).prop("disabled", true);
                     $("#user_files_" + id).prop("disabled", true);
                     $("#browse_label_" + id).addClass("disabled");
                     $("#file_name_" + id).val(name_dict["all_json_names"][0]);
