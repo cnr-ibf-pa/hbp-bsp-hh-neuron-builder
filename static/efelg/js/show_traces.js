@@ -1100,8 +1100,13 @@ var parametersInfo = ' \
     </p> \
     <p> \
         <b>Accept zero std</b>: \
-        <br>If set to &quotFalse&quot only mean feature values with std > 0 or mean = 0 \
-        will be collected; otherwise all mean values (different than &quotnan&quot) will be collected. \
+        <br>If set to &quotTrue&quot, all mean values different than &quotnan&quot will be collected; \
+        &quotnan&quot is returned when a feature value cannot be extracted; \
+        this may occur, for example, for features like &quotinv_time_to_first_spike&quot when no spikes are present. \
+        <br>If set to &quotFalse&quot, only mean values with std > 0 are collected. \
+        However, std = 0 will be also collected when mean = 0; \
+        this scenario can occur, for example, for the average number of spikes during currents close to spike threshold; \
+        under these conditions it could happen that a set of traces has a spike count with mean = 0 and std = 0. \
     </p> \
     <p> \
         <b>Convert zero feature values to</b>: \
