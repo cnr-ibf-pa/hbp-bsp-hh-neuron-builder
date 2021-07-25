@@ -87,13 +87,17 @@ $.getJSON('/efelg/features_dict', function(data) {
         $('#' + innerDivId).append(crrElemDivClearButton);
         $('#' + innerDivId).append(crrElemDivInvButton).append("<br>");
         $('#' + innerDivId).toggle();
-
-        orderedInnerKeys = Object.keys(ob).sort(function(a, b) {
+        
+        orderedInnerKeys = Object.keys(Object.fromEntries(Object.entries(ob).filter(([key, value]) => value != "")))
+            .sort(function(a, b) {
             return a.toLowerCase().localeCompare(b.toLowerCase());
         });
+
         $.each(orderedInnerKeys, function(inneridx) {
+
             var ind = orderedInnerKeys[inneridx];
             var obj = ob[ind];
+
             var crrElemLabelId = ind + "label";
             var crrElemLabel = $("<label>");
             var crrInputElem = $("<input>");
@@ -114,6 +118,7 @@ $.getJSON('/efelg/features_dict', function(data) {
             $('#' + innerDivId).append(crrElemLabel);
             $('#' + crrElemLabelId).append(crrInputElem);
             $('#' + crrElemLabelId).append(crrSpanElem);
+
             if (inneridx < orderedInnerKeys.length - 1) {
                 $('#' + crrElemLabelId).append(" - ");
             }
