@@ -137,19 +137,17 @@ def get_list(request):
     # if not ctx exit the application
     if request.session["is_free_space_enough"] is None or request.session["is_free_space_enough"] is False:
         return redirect('/efelg/error_space_left/')
-
-    # metadata file path
-    # request.session['main_json_dir'] = os.path.join(settings.MEDIA_ROOT, 'efel_data', 'eg_json_data')
-    # output_file_path = os.path.join(request.session['main_json_dir'], 'all_traces_metadata.json')
     
-    output_file_path = os.path.join(EfelStorage.getMainJsonDir(), 'all_traces_metadata.json')
-    #file_auth_fullpath = os.path.join(request.session['main_json_dir'], "files_authorization.json")
+    metadata_path = os.path.join(EfelStorage.getMainJsonDir ,"all_traces_metadata.json")
 
-    try:
-        with open(output_file_path, 'r') as f:
-            output_json = json.load(f)
-    except FileNotFoundError:
-        return HttpResponse()
+    r = requests.get(EfelStorage.getMetadataTracesUrl())
+    if 200 < r.status_code < 299:
+        with open(metadata_path, "w") as f:
+            json.dump(r.json(), f)
+        output_json = r.json()
+    else:
+        with open(metadata_path, "r") as f:
+            output_json = json.loads(f)
 
     return HttpResponse(json.dumps(output_json), content_type="application/json")
 

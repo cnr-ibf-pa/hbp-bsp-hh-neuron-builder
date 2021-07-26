@@ -88,10 +88,13 @@ $.getJSON('/efelg/features_dict', function(data) {
         $('#' + innerDivId).append(crrElemDivInvButton).append("<br>");
         $('#' + innerDivId).toggle();
         
-        orderedInnerKeys = Object.keys(Object.fromEntries(Object.entries(ob).filter(([key, value]) => value != "")))
+        orderedInnerKeys = Object.keys(
+                Object.fromEntries(Object.entries(ob).filter(([key, value]) => value != ""))
+            )
             .sort(function(a, b) {
-            return a.toLowerCase().localeCompare(b.toLowerCase());
-        });
+                return a.toLowerCase().localeCompare(b.toLowerCase());
+            }
+        );
 
         $.each(orderedInnerKeys, function(inneridx) {
 
