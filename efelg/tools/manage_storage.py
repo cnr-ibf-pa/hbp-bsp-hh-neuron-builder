@@ -22,7 +22,7 @@ class EfelStorage():
     def isThereEnoughFreeSpace():
         _, _, free = shutil.disk_usage(MEDIA_ROOT)
         # if there are more than 10 Gb, there is enough free space
-        return free // (2**30) > 5000
+        return free // (2**30) > 10
 
     @staticmethod
     def getMainJsonDir():
