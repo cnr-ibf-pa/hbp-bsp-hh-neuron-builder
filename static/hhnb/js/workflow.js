@@ -136,6 +136,35 @@ $(document).ready(function(){
     // hideLoadingAnimation();
 });
 
+// serve embedded-efel-gui page
+function efelPage() {
+    // window.location.href = "/hh-neuron-builder/embedded-efel-gui/" + req_pattern + "/";
+    $("#modalNFE").addClass("show").removeClass("hide");
+}
+
+function inSilicoPage() {
+    console.log("inSilicoPage() called");
+    showLoadingAnimation("Uploading to blue-naas...")
+    $("#run-sim-btn").prop("disabled", true);
+    $.getJSON("/hh-neuron-builder/upload-to-naas/" + req_pattern, function(uploaddata){
+        console.log(uploaddata);
+        $.getJSON("/hh-neuron-builder/model-loaded-flag/" + req_pattern, function(data){
+            console.log(data);
+            var o = data["response"];
+            if (o == "KO"){
+                window.location.href = "";
+            } else {
+                window.location.href = "/hh-neuron-builder/embedded-naas/" + req_pattern + "/";
+            }
+        });
+    });
+}
+
+// serve choose-opt-model page
+function chooseOptModel() {
+    window.location.href = "/hh-neuron-builder/choose-opt-model"; 
+}
+
 // reload current page
 function reloadCurrentPage() {
     window.location.href = "";
@@ -1690,7 +1719,7 @@ async function runCheckDiffWorker() {
         $("#saveFileButton").addClass("show");
     }
 }
-    
+
 
 $("#saveFileButton").mousedown(function() {
     if ($(this).hasClass("disabled")) {
@@ -1755,7 +1784,6 @@ $("#editorAlert")[0].addEventListener("transitionend", async function(){
     await sleep(2000);
     $(this).removeClass("show");
 });
-
 
 function formatDescription(meta = ""){
     var description = meta['description']

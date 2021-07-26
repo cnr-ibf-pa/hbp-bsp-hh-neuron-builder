@@ -5,10 +5,16 @@ import collections
 import neo
 import pprint
 from datetime import datetime
+# from efelg.tools import stimulus_extraction
 import requests
+# from django.conf import settings
+# if not settings.DEBUG:
+#     from hbp_app_python_auth.auth import get_auth_header
+# create logger
 import logging
 import bluepyefe.formats.axon as fa
 
+# set logging up
 logging.basicConfig(stream=sys.stdout)
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
@@ -243,3 +249,10 @@ def print_citations(json_file_list, conf_file, final_file):
             tf.write("Use the following reference:\n\n")
             tf.write(key + "\n\n")
             tf.write("===========\n\n")
+
+
+
+
+
+
+

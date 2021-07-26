@@ -1,3 +1,4 @@
+document.getElementById("back-to-workflow").onclick = workflowPage;
 document.getElementById("save-feature-files").onclick = saveFeatures;
 
 var exc = sessionStorage.getItem("exc", exc) ?  sessionStorage.getItem("exc") : "";
@@ -60,12 +61,12 @@ function saveFeatures(){
     });
 }
 
-// //
-// function workflowPage() {
-//     // window.location.href = "/hh-neuron-builder/workflow/";
-//     $("#modalNFE").removeClass("show");
+//
+function workflowPage() {
+    // window.location.href = "/hh-neuron-builder/workflow/";
+    $("#modalNFE").removeClass("show").addClass("hide");
     
-// }
+}
 
 
 function newWorkflow() {
