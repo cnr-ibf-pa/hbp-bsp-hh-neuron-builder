@@ -1518,7 +1518,9 @@ def run_analysis(request, exc="", ctx=""):
         try:
             resp = hpc_job_manager.OptResultManager.create_analysis_files(opt_res_folder, opt_res_file)
             up_folder = resp["up_folder"]
+            print(up_folder)
             tempresp = subprocess.call('. /usr/local/hhnb-dev/venv3/bin/activate; cd ' + up_folder + '; nrnivmodl mechanisms; python opt_neuron.py --analyse --checkpoint ./checkpoints > /dev/null 2>&1', shell=True)
+            print(tempresp)
         except Exception as e:
             msg = traceback.format_exception(*sys.exc_info())
             resp = {"response": "KO", "msg": "An error occurred while analysis results. Check your files."}
