@@ -32,8 +32,7 @@
       "Spikecount_stimint": "Number of spikes inside the stimulus interval",
       "time_to_first_spike": "Time from the start of the stimulus to the maximum of the first peak",
       "time_to_last_spike": "Time from the start of the stimulus to the maximum of the last peak",
-      "time_to_second_spike": "Time from the start of the stimulus to the maximum of the second peak",
-      "trace_check": "Causes feature extraction failure with error message when peaks before or after the stimulus are detected"
+      "time_to_second_spike": "Time from the start of the stimulus to the maximum of the second peak"
     },
     "Spike shape features": {
       "adaptation_index": "",
