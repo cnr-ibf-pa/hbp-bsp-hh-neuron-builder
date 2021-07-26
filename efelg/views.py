@@ -138,7 +138,7 @@ def get_list(request):
     if request.session["is_free_space_enough"] is None or request.session["is_free_space_enough"] is False:
         return redirect('/efelg/error_space_left/')
     
-    metadata_path = os.path.join(EfelStorage.getMainJsonDir ,"all_traces_metadata.json")
+    metadata_path = os.path.join(EfelStorage.getMainJsonDir() ,"all_traces_metadata.json")
 
     r = requests.get(EfelStorage.getMetadataTracesUrl())
     if 200 < r.status_code < 299:
@@ -147,7 +147,7 @@ def get_list(request):
         output_json = r.json()
     else:
         with open(metadata_path, "r") as f:
-            output_json = json.loads(f)
+            output_json = json.load(f)
 
     return HttpResponse(json.dumps(output_json), content_type="application/json")
 
