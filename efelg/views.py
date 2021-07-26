@@ -140,14 +140,18 @@ def get_list(request):
     
     metadata_path = os.path.join(EfelStorage.getMainJsonDir() ,"all_traces_metadata.json")
 
-    r = requests.get(EfelStorage.getMetadataTracesUrl())
-    if 200 < r.status_code < 299:
-        with open(metadata_path, "w") as f:
-            json.dump(r.json(), f)
-        output_json = r.json()
-    else:
-        with open(metadata_path, "r") as f:
-            output_json = json.load(f)
+    try:
+        r = requests.get(EfelStorage.getMetadataTracesUrl())
+        if 200 <= r.status_code <= 299:
+            with open(metadata_path, "w") as f:
+                json.dump(r.json(), f)
+            output_json = r.json()
+        else:
+            with open(metadata_path, "r") as f:
+                output_json = json.load(f)
+    except:
+        print("Error loading metadata!")
+        
 
     return HttpResponse(json.dumps(output_json), content_type="application/json")
 
