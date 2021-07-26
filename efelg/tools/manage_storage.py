@@ -16,11 +16,11 @@ class EfelStorage():
 
     @staticmethod
     def getTracesBaseUrl():
-        return "https://object.cscs.ch:443/v1/AUTH_c0a333ecf7c045809321ce9d9ecdfdea/web-resources-bsp/data/NFE/eg_json_data/traces_new/"
+        return "https://object.cscs.ch:443/v1/AUTH_c0a333ecf7c045809321ce9d9ecdfdea/web-resources-bsp/data/NFE/eg_json_data/traces/"
 
     @staticmethod
     def getMetadataTracesUrl():
-        return "https://object.cscs.ch:443/v1/AUTH_c0a333ecf7c045809321ce9d9ecdfdea/web-resources-bsp/data/NFE/eg_json_data/traces_new/all_traces_metadata.json"
+        return "https://object.cscs.ch:443/v1/AUTH_c0a333ecf7c045809321ce9d9ecdfdea/web-resources-bsp/data/NFE/eg_json_data/traces/all_traces_metadata.json"
 
     @staticmethod
     def isThereEnoughFreeSpace():
