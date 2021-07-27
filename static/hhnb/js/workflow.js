@@ -84,6 +84,7 @@ $(document).ready(function(){
                 } else {
                     $("#username_submit").removeClass("is-invalid");
                     $("#password_submit").removeClass("is-invalid");
+                    closeHpcParameterDiv();
                     checkConditions();
                 } 
             },
@@ -149,31 +150,31 @@ function applyJobParam() {
 }
 
 function manageErrorDiv(isOpen=false, isClose=false, message="", tag="") {
-    let overlayWrapper = $("#overlaywrapper");
+    let overlayWrapper = $("#overlaywrapperinformation");
     let overlayWrapperError = $("#overlaywrappererror");
     let errorDynamicText = $("#errordynamictext");
     let button = $("#ok-error-div-btn");
     if (isOpen) {
-        // overlayWrapper.css("display", "block");
+        overlayWrapper.css("display", "block");
         // overlayWrapper.css("z-index", "100");
         // overlayWrapper.addClass("show");
         overlayWrapperError.css("display", "block");
         errorDynamicText.html(message);
         if (tag == "error") {
-            overlayWrapperError.css("box-shadow", "0 0 5rem 1rem rgba(255, 0, 0, .8)");
+            overlayWrapperError.css("box-shadow", "0 0 1rem 1rem rgba(255, 0, 0, .8)");
             overlayWrapperError.css("border-color", "red");
             button.addClass("red").removeClass("blue green");
         } else if (tag == "info") {
-            overlayWrapperError.css("box-shadow", "0 0 5rem 1rem rgba(0, 0, 255, .8)");
+            overlayWrapperError.css("box-shadow", "0 0 1rem 1rem rgba(0, 0, 255, .8)");
             overlayWrapperError.css("border-color", "blue");
             button.addClass("blue").removeClass("red green");
         } else if (tag == "success") {
-            overlayWrapperError.css("box-shadow", "0 0 5rem 1rem rgba(0, 255, 0, .8)");
+            overlayWrapperError.css("box-shadow", "0 0 1rem 1rem rgba(0, 128, 0, .8)");
             overlayWrapperError.css("border-color", "green");
             button.addClass("green").removeClass("red blue");
         }
     } else if (isClose) {
-        // overlayWrapper.css("display", "none");
+        overlayWrapper.css("display", "none");
         // overlayWrapper.removeClass("show");
         overlayWrapperError.css("display", "none");
     }
@@ -189,15 +190,15 @@ function closeErrorDiv() {
 }
 
 function manageExpirationDiv(isOpen=false, isClose=false, message="") {
-    let overlayWrapper = $("#overlaywrapper");
+    let overlayWrapper = $("#overlaywrapperinformation");
     let overlayWrapperExpiration = $("#overlaywrapperexpiration");
     let expirationDynamicText = $("#expirationdynamictext");
     if (isOpen) {
         overlayWrapperExpiration.css("display", "block");
-        // overlayWrapper.addClass("show");
+        overlayWrapper.css("display", "block");
         expirationDynamicText.html(message);
     } else if (isClose) {
-        // overlayWrapper.removeClass("show");
+        overlayWrapper.css("display", "none");
         overlayWrapperExpiration.css("display", "none");
     }
 }
@@ -211,15 +212,15 @@ function closeExpirationDiv() {
 }
 
 function manageReloadDiv(isOpen=false, isClose=false, message="") {
-    let overlayWrapper = $("#overlaywrapper");
+    let overlayWrapper = $("#overlaywrapperinformation");
     let overlayWrapperReload = $("#overlaywrapperreload");
     let reloadDynamicText = $("#reloaddynamictext");
     if (isOpen) {
-        // overlayWrapper.css("display", "block");
+        overlayWrapper.css("display", "block");
         overlayWrapperReload.css("display", "block");
         reloadDynamicText.html(message);
     } else if (isClose) {
-        // overlayWrapper.css("display", "none");
+        overlayWrapper.css("display", "none");
         overlayWrapperReload.css("display", "none");
     }
 }

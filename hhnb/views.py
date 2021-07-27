@@ -1152,7 +1152,7 @@ def upload_files(request, filetype='', exc='', ctx=''):
 
     if filetype == "feat":
         for f in filename_list:
-            if f.name != 'features.json' or 'protocols.json':
+            if f.name != 'features.json' and f.name != 'protocols.json':
                 return JsonResponse(data={'response': 'KO', 'message': 'Wrong file uploaded.<br>Please upload "features.json" and/or "protocols.json" file only.'})
         if request.session[exc].get('from_hhf', None):
             final_res_folder = os.path.join(request.session[exc]['hhf_dir'], 'config')

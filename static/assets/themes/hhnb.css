@@ -1733,6 +1733,13 @@ i.disabled:hover {
     transform: unset;
 }
 
+#overlaywrapperinformation {
+    display: none;
+    z-index: 1000;
+    opacity: 1;
+    background-color: rgba(0, 0, 0, .5);
+}
+
 #overlaywrapperreload, #overlaywrappererror, #overlaywrapperexpiration {
     /* display: block; */
     position: absolute;
@@ -1740,4 +1747,5 @@ i.disabled:hover {
     left: 50%;
     transform: translate(-50%, -50%);
     background-color: #ffffff;
+    opacity: 1;
 }
