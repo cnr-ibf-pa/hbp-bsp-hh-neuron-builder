@@ -154,8 +154,9 @@ function manageErrorDiv(isOpen=false, isClose=false, message="", tag="") {
     let button = $("#ok-error-div-btn");
     if (isOpen) {
         // overlayWrapper.css("display", "block");
-        overlayWrapperError.css("display", "block");
+        overlayWrapper.css("z-index", "100");
         overlayWrapper.addClass("show");
+        overlayWrapperError.css("display", "block");
         errorDynamicText.html(message);
         if (tag == "error") {
             overlayWrapperError.css("box-shadow", "0 0 1rem 0 rgba(255, 0, 0, .8)");
@@ -191,11 +192,11 @@ function manageExpirationDiv(isOpen=false, isClose=false, message="") {
     let overlayWrapperExpiration = $("#overlaywrapperexpiration");
     let expirationDynamicText = $("#expirationdynamictext");
     if (isOpen) {
-        overlayWrapper.css("display", "block");
         overlayWrapperExpiration.css("display", "block");
+        overlayWrapper.addClass("show");
         expirationDynamicText.html(message);
     } else if (isClose) {
-        overlayWrapper.css("display", "none");
+        overlayWrapper.removeClass("show");
         overlayWrapperExpiration.css("display", "none");
     }
 }
