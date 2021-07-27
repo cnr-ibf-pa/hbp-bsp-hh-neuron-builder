@@ -240,8 +240,8 @@ class Unicore:
     """
 
     MAX_SIZE = 20240000
-    SA_CSCS_JOBS_URL = "https://bspsa.cineca.it/jobs/pizdaint/bsp_pizdaint_01/"
-    SA_CSCS_FILES_URL = "https://bspsa.cineca.it/files/pizdaint/bsp_pizdaint_01/"
+    SA_CSCS_JOBS_URL = "https://bspsa.cineca.it/jobs/pizdaint/hhnb_daint_cscs/"
+    SA_CSCS_FILES_URL = "https://bspsa.cineca.it/files/pizdaint/hhnb_daint_cscs/"
 
 
     @classmethod
@@ -293,7 +293,7 @@ class Unicore:
                     "Project": project
                 },
                 "Tags": [
-                    "hhnb"
+                    "hhnb",
                 ]
             }
             print(job)
@@ -310,6 +310,7 @@ class Unicore:
                 'node_number': str(node_num),
                 'core_number': str(core_num),
                 'runtime': str(runtime),
+                'title': jobname,
             }
             job_file = {'file': open(filename, 'rb')}
             auth = unicore_client.get_oidc_auth(token=token)
@@ -321,14 +322,14 @@ class Unicore:
             hpc_sub = "jureca"
         try:
             if hpc == "SA-CSCS":
-                SUBMIT_URL = 'https://bspsa.cineca.it/jobs/pizdaint/'
+                SUBMIT_URL = 'https://bspsa.cineca.it/jobs/pizdaint/hhnb_daint_cscs/'
                 r = requests.post(url=SUBMIT_URL, headers=auth, files=job_file)
                 print(r.status_code, r.content, sep='\n')
                 job = r.json()
                 if r.status_code == 400:
                     return {'response': 'KO', 'message': r.text}
                 jobname = job['job_id']
-                job_url = 'https://bspsa.cineca.it/jobs/pizdaint/bsp_pizdaint_01/' + jobname + '/'
+                job_url = 'https://bspsa.cineca.it/jobs/pizdaint/hhnb_daint_cscs/' + jobname + '/'
             else:
                 job_url = unicore_client.submit(base_url + '/jobs', job, auth, inputs)  # , proxies=proxies)
                 # print('job_url: %s' % job_url)
@@ -385,12 +386,12 @@ class Unicore:
                 job_list_dict[job_title]['url'] = j.links['self']
 
         elif hpc == "SA-CSCS":
-            listofjobs = unicore_client.get_properties(base_url + '/jobs/pizdaint/bsp_pizdaint_01/', auth, proxies=proxies)
+            listofjobs = unicore_client.get_properties(base_url + '/jobs/pizdaint/hhnb_daint_cscs/', auth, proxies=proxies)
             jobs = listofjobs
             for i in jobs:
                 job_title = i["job_id"]
                 job_list_dict[job_title] = collections.OrderedDict()
-                job_list_dict[job_title]['url'] = base_url + '/jobs/pizdaint/bsp_pizdaint_01/' + job_title 
+                job_list_dict[job_title]['url'] = base_url + '/jobs/pizdaint/hhnb_daint_cscs/' + job_title 
 
         return job_list_dict
 
@@ -416,11 +417,12 @@ class Unicore:
                 job_list_dict[job_title]['url'] = j.links['self']
 
         elif hpc == 'SA-CSCS':
-            jobs = unicore_client.get_properties(base_url + '/jobs/pizdaint/bsp_pizdaint_01/', auth)
+            jobs = unicore_client.get_properties(base_url + '/jobs/pizdaint/hhnb_daint_cscs/', auth)
+            print(jobs)
             for j in jobs:
                 job_title = j['job_id']
                 job_list_dict[job_title] = collections.OrderedDict()
-                job_list_dict[job_title]['url'] = base_url + '/jobs/pizdaint/bsp_pizdaint_01/' + job_title
+                job_list_dict[job_title]['url'] = base_url + '/jobs/pizdaint/hhnb_daint_cscs/' + job_title
 
         return job_list_dict
 
@@ -442,7 +444,7 @@ class Unicore:
             },
             "job_res_url": {
                 "DAINT-CSCS": job_url,
-                "SA-CSCS": "https://bspsa.cineca.it/files/pizdaint/bsp_pizdaint_01/" + job_url
+                "SA-CSCS": "https://bspsa.cineca.it/files/pizdaint/hhnb_daint_cscs/" + job_url
             },
             "job_name": {
                 "DAINT-CSCS": 'name',

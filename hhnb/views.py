@@ -1239,6 +1239,7 @@ def get_job_list2(request, hpc, exc='', ctx=''):
         access_token = 'Bearer ' + request.session['oidc_access_token']
         resp = hpc_job_manager.Unicore.fetch_job_list2(hpc, access_token)
 
+    print(resp)
     request.session[exc]['hpc_fetch_job_list'] = resp
     request.session.save()
 
