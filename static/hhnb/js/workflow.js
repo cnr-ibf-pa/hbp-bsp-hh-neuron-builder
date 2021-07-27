@@ -586,7 +586,7 @@ function resetJobFetchDiv() {
 }
 
 function closeJobFetchDiv() {
-    $("#overlayjobs").removeClass("show");
+    $("#overlayjobs").removeClass("show scroll-long-content");
     // resetJobFetchDiv();
 }
 
@@ -659,6 +659,7 @@ function displayNsgJobList(button) {
 }
 
 function refreshJobListDiv() {
+    $("#overlayjobs").removeClass("scroll-long-content");
     $("#job-list-body").empty();
     $("#tableRow").css("display", "none");
     $("#refresh-job-list-btn").prop("disabled", true);
@@ -667,7 +668,7 @@ function refreshJobListDiv() {
 }
 
 function displayJobList(button) {
-    
+    $("#overlayjobs").removeClass("scroll-long-content");
     $("#cancel-job-list-btn").prop("disabled", true);
     $("#spinnerRow").css("display", "flex");
     $(".list-group-item.fetch-jobs").addClass("disabled").attr("aria-disabled", "true");
@@ -681,6 +682,8 @@ function displayJobList(button) {
         $("#spinnerRow").css("display", "none");
         $("#progressRow").css("display", "flex");
         
+        console.log(jobList);
+
         jobList = JSON.parse(jobList);
         console.log(jobList);
         if ($.isEmptyObject(jobList)) {
@@ -772,6 +775,7 @@ function displayJobList(button) {
                 });
                 tableRows.reverse();
                 $("#job-list-body").empty();
+
                 for (let i = 0; i < tableRows.length; i++) {
                     tableBody.appendChild(tableRows[i]);
                 }
@@ -781,6 +785,14 @@ function displayJobList(button) {
                 $("#refresh-job-list-btn").prop("disabled", false).blur();
                 $("#cancel-job-list-btn").prop("disabled", false);
                 $(".list-group-item.fetch-jobs").attr("aria-disabled", "false").removeClass("disabled clicked");
+                
+                windowHeight = $(window).height();
+                overlayJobsHeight = $("#overlayjobs").height();
+
+                if ( overlayJobsHeight > ( windowHeight - (windowHeight / 10) ) ) {
+                    $("#overlayjobs").addClass("scroll-long-content");
+                }
+
                 return true;
             }
         }
@@ -830,7 +842,6 @@ $("#overlayjobprocessing")[0].addEventListener("transitionstart", function(trans
 });
 
 function downloadJobButtonHandler(button) {
-    console.log("im here")
     $("#overlayjobprocessing").removeClass("show");
     $("#overlayjobs").addClass("hide-to-left");
     setProgressBarValue(0);
@@ -1902,11 +1913,8 @@ function openNFE() {
 }
 
 $("#modalNFE")[0].addEventListener("transitionstart", function(transition) {
-    console.log('im here');
     if (transition.target == $(this)[0]) {
-        console.log("and not here");
         if ($(this).hasClass("show")) {
-            console.log("but the trick is here");
             $("#modalNFEContainer").addClass("show");
         }
     }

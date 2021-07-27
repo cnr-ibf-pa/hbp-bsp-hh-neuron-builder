@@ -1728,4 +1728,7 @@ i.disabled:hover {
     width: 70%;
 }
 
-
+#overlayjobs.scroll-long-content {
+    top: unset;
+    transform: unset;
+}
