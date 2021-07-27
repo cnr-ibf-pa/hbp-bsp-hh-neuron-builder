@@ -353,6 +353,7 @@ $(document).ready(function () {
 //
 function applySelection() {
     $('#charts').empty();
+    cellHeaderIds = [];
     plotCells(Object.keys(json['Contributors'][contributor][specie][structure][region][type][etype]), false, null);
 }
 
