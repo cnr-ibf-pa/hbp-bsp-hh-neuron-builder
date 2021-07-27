@@ -1,7 +1,7 @@
 appdirs==1.4.3
 asgiref==3.4.1
 backcall==0.2.0
-bluepyefe==0.3.67
+bluepyefe==0.3.90
 bluepyopt==1.9.149
 CacheControl==0.12.6
 certifi==2020.6.20
@@ -58,7 +58,7 @@ pep517==0.8.2
 pexpect==4.8.0
 pickleshare==0.7.5
 Pillow==8.3.0
-pkg-resources==0.0.0
+pkg_resources==0.0.0
 progress==1.5
 prompt-toolkit==3.0.10
 psycopg2==2.7.7
