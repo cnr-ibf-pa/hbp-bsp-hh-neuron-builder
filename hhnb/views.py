@@ -1516,14 +1516,14 @@ def run_analysis(request, exc="", ctx=""):
                 f.writelines(new_line)
                 f.close()
 
-                subprocess.call('. /usr/local/hhnb-dev/venv3/bin/activate; cd ' + up_folder + '; /usr/local/hhnb-dev/venv3/bin/nrnivmodl mechanisms', shell=True)
+                subprocess.call('. /usr/local/hhnb/venv3/bin/activate; cd ' + up_folder + '; /usr/local/hhnb/venv3/bin/nrnivmodl mechanisms', shell=True)
 
                 r_0_fold = os.path.join(up_folder, 'r_0')
                 if os.path.isdir(r_0_fold):
                     shutil.rmtree(r_0_fold)
                 os.mkdir(r_0_fold)
 
-                subprocess.call('. /usr/local/hhnb-dev/venv3/bin/activate; cd ' + up_folder + '; python opt_neuron.py --analyse --checkpoint ./checkpoints', shell=True)
+                subprocess.call('. /usr/local/hhnb/venv3/bin/activate; cd ' + up_folder + '; python opt_neuron.py --analyse --checkpoint ./checkpoints', shell=True)
 
             except Exception as e:
                 msg = traceback.format_exception(*sys.exc_info())
@@ -1536,7 +1536,7 @@ def run_analysis(request, exc="", ctx=""):
             resp = hpc_job_manager.OptResultManager.create_analysis_files(opt_res_folder, opt_res_file)
             up_folder = resp["up_folder"]
             print(up_folder)
-            tempresp = subprocess.call('. /usr/local/hhnb-dev/venv3/bin/activate; cd ' + up_folder + '; nrnivmodl mechanisms; python opt_neuron.py --analyse --checkpoint ./checkpoints > /dev/null 2>&1', shell=True)
+            tempresp = subprocess.call('. /usr/local/hhnb/venv3/bin/activate; cd ' + up_folder + '; nrnivmodl mechanisms; python opt_neuron.py --analyse --checkpoint ./checkpoints > /dev/null 2>&1', shell=True)
             print(tempresp)
         except Exception as e:
             msg = traceback.format_exception(*sys.exc_info())
