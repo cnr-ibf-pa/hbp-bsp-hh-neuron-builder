@@ -120,6 +120,7 @@ function createCellPlotBox(id, container, currentPlotData, xLabel, yLabel, cellI
     var inputbox = $('<div/>', {
         'id': 'input_' + id,
         'class': 'input_box',
+        'style': 'max-height: none'
     }).appendTo(container);
 
     var plot_id = 'plot_' + id;
