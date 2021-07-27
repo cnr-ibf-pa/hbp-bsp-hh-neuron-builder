@@ -1988,4 +1988,3 @@ $("#modalBlueNaasContainer")[0].addEventListener("transitionstart", function(tra
 function closeBlueNaasModal() {
     $("#modalBlueNaasContainer").removeClass("show");
 }
-
