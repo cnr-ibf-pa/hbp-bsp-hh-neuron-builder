@@ -75,7 +75,7 @@ $(document).ready(function(){
             async: false,
             success: function(response) {
                 hideLoadingAnimation();
-                closeHpcParameterDiv();
+                // closeHpcParameterDiv();
                 if (response['response'] == "KO"){
                     openErrorDiv(response.message, 'error');
                     $("#username_submit").addClass("is-invalid").attr("aria-describedby", "User not valid");
@@ -101,7 +101,7 @@ $(document).ready(function(){
     var $uploadFileForm = $("#uploadForm");
     $uploadFileForm.submit(function(e){
         files = $("#formFile").prop("files");
-        closeUploadDiv(false);
+        // closeUploadDiv(false);
         console.log("uploadingFileForm() called.");
         showLoadingAnimation("Loading...");
         var uploadFormData = new FormData($("#uploadForm")[0]);
@@ -118,6 +118,7 @@ $(document).ready(function(){
                     openErrorDiv(resp["message"], 'error');
                 } else {
                     checkConditions();
+                    closeUploadDiv(false);
                 }
                 $("#formFile").val("");
                 hideLoadingAnimation();
@@ -154,26 +155,26 @@ function manageErrorDiv(isOpen=false, isClose=false, message="", tag="") {
     let button = $("#ok-error-div-btn");
     if (isOpen) {
         // overlayWrapper.css("display", "block");
-        overlayWrapper.css("z-index", "100");
-        overlayWrapper.addClass("show");
+        // overlayWrapper.css("z-index", "100");
+        // overlayWrapper.addClass("show");
         overlayWrapperError.css("display", "block");
         errorDynamicText.html(message);
         if (tag == "error") {
-            overlayWrapperError.css("box-shadow", "0 0 1rem 0 rgba(255, 0, 0, .8)");
+            overlayWrapperError.css("box-shadow", "0 0 5rem 1rem rgba(255, 0, 0, .8)");
             overlayWrapperError.css("border-color", "red");
             button.addClass("red").removeClass("blue green");
         } else if (tag == "info") {
-            overlayWrapperError.css("box-shadow", "0 0 1rem 0 rgba(0, 0, 255, .8)");
+            overlayWrapperError.css("box-shadow", "0 0 5rem 1rem rgba(0, 0, 255, .8)");
             overlayWrapperError.css("border-color", "blue");
             button.addClass("blue").removeClass("red green");
         } else if (tag == "success") {
-            overlayWrapperError.css("box-shadow", "0 0 1rem 0 rgba(0, 255, 0, .8)");
+            overlayWrapperError.css("box-shadow", "0 0 5rem 1rem rgba(0, 255, 0, .8)");
             overlayWrapperError.css("border-color", "green");
             button.addClass("green").removeClass("red blue");
         }
     } else if (isClose) {
         // overlayWrapper.css("display", "none");
-        overlayWrapper.removeClass("show");
+        // overlayWrapper.removeClass("show");
         overlayWrapperError.css("display", "none");
     }
 }
@@ -193,10 +194,10 @@ function manageExpirationDiv(isOpen=false, isClose=false, message="") {
     let expirationDynamicText = $("#expirationdynamictext");
     if (isOpen) {
         overlayWrapperExpiration.css("display", "block");
-        overlayWrapper.addClass("show");
+        // overlayWrapper.addClass("show");
         expirationDynamicText.html(message);
     } else if (isClose) {
-        overlayWrapper.removeClass("show");
+        // overlayWrapper.removeClass("show");
         overlayWrapperExpiration.css("display", "none");
     }
 }
@@ -214,17 +215,18 @@ function manageReloadDiv(isOpen=false, isClose=false, message="") {
     let overlayWrapperReload = $("#overlaywrapperreload");
     let reloadDynamicText = $("#reloaddynamictext");
     if (isOpen) {
-        overlayWrapper.css("display", "block");
+        // overlayWrapper.css("display", "block");
         overlayWrapperReload.css("display", "block");
         reloadDynamicText.html(message);
     } else if (isClose) {
-        overlayWrapper.css("display", "none");
+        // overlayWrapper.css("display", "none");
         overlayWrapperReload.css("display", "none");
     }
 }
 
 // Open reload div
 function openReloadDiv(message="") {
+    console.log("reload div");
     manageReloadDiv(isOpen=true, isClose=false, message);
 }
 
@@ -588,7 +590,6 @@ function resetJobFetchDiv() {
 
 function closeJobFetchDiv() {
     $("#overlayjobs").removeClass("show scroll-long-content");
-    // resetJobFetchDiv();
 }
 
 $("#overlayjobs")[0].addEventListener("transitionstart", function(transition) {
@@ -668,7 +669,7 @@ function refreshJobListDiv() {
     displayJobList($(".list-group-item.fetch-jobs.active"));
 }
 
-function displayJobList(button) {
+async function displayJobList(button) {
     $("#overlayjobs").removeClass("scroll-long-content");
     $("#cancel-job-list-btn").prop("disabled", true);
     $("#spinnerRow").css("display", "flex");
@@ -688,7 +689,9 @@ function displayJobList(button) {
         jobList = JSON.parse(jobList);
         console.log(jobList);
         if ($.isEmptyObject(jobList)) {
-            closeJobFetchDiv();
+            // closeJobFetchDiv();
+            resetJobFetchDiv();
+            // await sleep(500);
             openErrorDiv("You have no job on the hpc system", "info");
             checkConditions();
             return false;
@@ -699,17 +702,21 @@ function displayJobList(button) {
         step = 100 / (Object.keys(jobList).length + 1);
         animateProgressBar(step);
 
+        var failedCounter = 0;
         $.each(jobList, function(id, job){
             $.getJSON("/hh-neuron-builder/get-job-details2/" + id + "/" + req_pattern + "/", function(jobDetails) {
 
                 jobDetails = JSON.parse(jobDetails);
                 console.log(jobDetails);
-
+                
                 keys = Object.keys(jobDetails);
+                console.log(keys);
                 for (let k = 0; k < keys.length; k++) {
-                    if (k == "resp" && jobDetails[k] == "KO") {
-                        console.error(jobDetails.message);
-                        openReloadDiv("Something goes wrong while fetching jobs.<br>Please realod the page.");
+                    if (keys[k] == "resp" && jobDetails[keys[k]] == "KO") {
+                        failedCounter++;
+                        if (failedCounter.length == jobList.length) {
+                            openReloadDiv("Something goes wrong while fetching jobs.<br>Please realod the page.");
+                        }
                         return false;
                     }
                 }

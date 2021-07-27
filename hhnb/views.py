@@ -1149,8 +1149,11 @@ def upload_modsim_files(request, exc='', ctx=''):
 
 def upload_files(request, filetype='', exc='', ctx=''):
     filename_list = request.FILES.getlist('formFile')
-    
+
     if filetype == "feat":
+        for f in filename_list:
+            if f.name != 'features.json' or 'protocols.json':
+                return JsonResponse(data={'response': 'KO', 'message': 'Wrong file uploaded.<br>Please upload "features.json" and/or "protocols.json" file only.'})
         if request.session[exc].get('from_hhf', None):
             final_res_folder = os.path.join(request.session[exc]['hhf_dir'], 'config')
         else:
@@ -1176,7 +1179,7 @@ def upload_files(request, filetype='', exc='', ctx=''):
         ext = '.zip'
 
     if not filename_list:
-        return HttpResponse(json.dumps({"resp": False}), content_type="application/json")
+        return HttpResponse(json.dumps({"response": False}), content_type="application/json")
 
     for k in filename_list:
         filename = k.name
@@ -1315,7 +1318,7 @@ def get_job_details2(request, jobid='', exc='', ctx=''):
 
     except RuntimeError:
         return JsonResponse(data=json.dumps({'resp': 'KO', 'message': 'RuntimeError on get_job_details2()'}), status=200, safe=False)
-
+        
     return JsonResponse(data=json.dumps(resp), status=200, safe=False)
 
 
