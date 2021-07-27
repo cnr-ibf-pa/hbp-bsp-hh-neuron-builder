@@ -410,6 +410,8 @@ class Unicore:
 
             daint_client = UnicoreClient().get_instance(token).get_daint_client()
             jobs = daint_client.get_jobs(tags=['hhnb'])
+            
+            print(jobs)
 
             for j in jobs:
                 job_title = j.job_id
@@ -502,13 +504,16 @@ class Unicore:
             
         elif hpc == "DAINT-CSCS":
             daint_client = UnicoreClient().get_instance(token).get_daint_client()
+            print(daint_client)
             for storage in daint_client.get_storages():
+                print(storage)
                 if storage.storage_url.endswith(job_url.split('/')[-1] + '-uspace'):
                     job_storage = storage
                     results_list = job_storage.listdir('.')
                     print('storage found!')
                     break
            
+            print(results_list)
             for f in results_list:
                 if f == 'stderr' or f == 'stdout' or f == 'output.zip':
                     files_found = True

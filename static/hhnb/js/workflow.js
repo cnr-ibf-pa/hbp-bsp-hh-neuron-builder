@@ -715,10 +715,15 @@ async function displayJobList(button) {
                 for (let k = 0; k < keys.length; k++) {
                     if (keys[k] == "resp" && jobDetails[keys[k]] == "KO") {
                         failedCounter++;
-                        if (failedCounter.length == jobList.length) {
-                            openReloadDiv("Something goes wrong while fetching jobs.<br>Please realod the page.");
+                        console.log("failedCounter");
+                        console.log(failedCounter);
+                        console.log("jobList");
+                        console.log(jobList);
+                        if (failedCounter == Object.keys(jobList).length) {
+                            
+                            openReloadDiv("Something went wrong while fetching jobs.<br>Please realod the page.");
+                            return false;
                         }
-                        return false;
                     }
                 }
 
