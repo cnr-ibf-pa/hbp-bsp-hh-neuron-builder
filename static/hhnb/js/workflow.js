@@ -709,11 +709,12 @@ async function displayJobList(button) {
 
                 jobDetails = JSON.parse(jobDetails);
                 console.log(jobDetails);
-                
+                                
                 keys = Object.keys(jobDetails);
                 console.log(keys);
-                for (let k = 0; k < keys.length; k++) {
+                /*for (let k = 0; k < keys.length; k++) {
                     if (keys[k] == "resp" && jobDetails[keys[k]] == "KO") {
+                        retur ;
                         failedCounter++;
                         console.log("failedCounter");
                         console.log(failedCounter);
@@ -725,7 +726,7 @@ async function displayJobList(button) {
                             return false;
                         }
                     }
-                }
+                }*/
 
                 let downloadButton = document.createElement("button");
                 downloadButton.id = jobDetails.job_id;
