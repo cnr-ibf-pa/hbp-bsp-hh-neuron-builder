@@ -21,7 +21,7 @@ urlpatterns = [
     path('download_zip', views.download_zip),
     path('docs/', views.index_docs),
     path('docs/index/', views.index_docs),
-    path('docs/index/', views.dataset),
+    path('docs/dataset/', views.dataset),
     path('docs/file_formats/', views.file_formats_docs),
     path('get_result_dir/', views.get_result_dir),
     path('hhf_etraces/<workflow_id:wfid>', views.hhf_etraces),
