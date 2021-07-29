@@ -565,6 +565,9 @@ def index_docs(request):
 
 def file_formats_docs(request):
     return render(request, 'efelg/docs/file_formats.html')
+    
+def dataset(request):
+    return render(request, 'efelg/docs/dataset.html')
 
 
 def hhf_etraces(request, wfid):

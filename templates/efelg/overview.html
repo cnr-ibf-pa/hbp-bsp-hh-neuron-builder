@@ -7,7 +7,9 @@
     <title>Feature extraction GUI</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css"
+        rel="stylesheet" integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl"
+        crossorigin="anonymous">
     <link rel="stylesheet" href="{% static 'assets/fontawesome/css/all.css' %}">
     <link rel="stylesheet" href="{% static 'assets/themes/efelg.css' %}">
     <link rel="icon" href="{% static 'efelg/img/favicon.ico' %}">
@@ -18,17 +20,18 @@
         <div class="row">
             <div class="col-xl-3 col-6 text-start align-self-center">
                 <a href="https://ebrains.eu" target="_blank">
-                    <img src="{% static 'efelg/img/ebrains_logo.png' %}" alt="ebrains_logo" style="max-width:130px"/>
+                    <img src="{% static 'efelg/img/ebrains_logo.png' %}" alt="ebrains_logo" style="max-width:130px" />
                 </a>
             </div>
             <div class="col-xl-6 align-self-center order-last">
-                <h2 class="m-0"><strong><a class="text-white text-decoration-none" href="/efelg/overview/">NeuroFeatureExtract</a></strong></h2>
+                <h2 class="m-0"><strong><a class="text-white text-decoration-none"
+                            href="/efelg/overview/">NeuroFeatureExtract</a></strong></h2>
             </div>
             <div class="col-xl-3 col-6 text-end align-self-center order-xl-last">
                 <a href="/efelg/overview/"><i class="fas fa-home text-white ms-4"></i></a>
                 <a href="/efelg/docs/" target="_blank"><i class="fas fa-info-circle text-white ms-4"></i></a>
                 <a href="https://object.cscs.ch:443/v1/AUTH_c0a333ecf7c045809321ce9d9ecdfdea/web-resources-bsp/cls-video-tutorial/NFE/NFE_video_tutorial_v01.mp4"
-                        target="_blank"><i class="fas fa-play text-white ms-4"></i>
+                    target="_blank"><i class="fas fa-play text-white ms-4"></i>
                 </a>
             </div>
         </div>
@@ -40,26 +43,29 @@
         <div class="text-center">
             <h4>
                 <p>
-                    The NeuroFeatureExtract tool allows users to select data from an HBP dataset and/or upload their own, and
+                    The NeuroFeatureExtract tool allows users to select data from an HBP dataset and/or upload their
+                    own, and
                     extract electrophysiological features of interest.
                 </p>
                 <br>
                 <p>
                     The application leverages the Python Electrophys Feature Extract Library
                     (<a class="link-secondary" href="https://pypi.python.org/pypi/efel" target=_blank>eFEL</a>)
-                    and provides a friendly interface to select both individual voltage traces (based on the stimulus current applied) 
+                    and provides a friendly interface to select both individual voltage traces (based on the stimulus
+                    current applied)
                     and features to be extracted.
                 </p>
                 <br>
-                <p> 
-                    Please find below a short tutorial on how to use the application, or refer to the complete guide at this
-                    <a class="link-secondary" href="https://collab.humanbrainproject.eu/#/collab/1655/nav/18580" target=_blank>link</a>.
-                </p>         
+                <p>
+                    Please find below a short tutorial on how to use the application, or refer to the complete guide at
+                    this
+                    <a class="link-secondary" href="https://collab.humanbrainproject.eu/#/collab/1655/nav/18580"
+                        target=_blank>link</a>.
+                </p>
             </h4>
         </div>
         <div class="text-center mt-3 mb-5">
-            <button class="btn btn-lg btn-outline-primary w-25 mt-4 mb-3" type="submit" 
-                onclick="loadShowTraces()">
+            <button class="btn btn-lg btn-outline-primary w-25 mt-4 mb-3" type="submit" onclick="loadShowTraces()">
                 Next
             </button>
             <br>
@@ -74,9 +80,9 @@
                         <div class="row py-3 w-75 m-auto">
                             <div class="col-xl-6">
                                 <b>Step 1 of 4</b>
-                                <a class="light-grey-text text-decoration-none ms-4 clickable"	
-                                    onclick="loadShowTraces()">	
-                                    [skip introduction]	
+                                <a class="light-grey-text text-decoration-none ms-4 clickable"
+                                    onclick="loadShowTraces()">
+                                    [skip introduction]
                                 </a>
                                 <p class="mt-2">
                                     Select the data from a dataset, based on cell properties to be chosen from the
@@ -100,7 +106,7 @@
                             </div>
                             <div class="col-xl-6 align-self-center">
                                 <figure>
-                                    <img src="{% static 'efelg/img/efelg_selection.png' %}" alt="efel_selection" 
+                                    <img src="{% static 'efelg/img/efelg_selection.png' %}" alt="efel_selection"
                                         class="border border-2 border-light img-fluid" />
                                     <figcaption class="text-center">Fig 1. - Selection/upload screen</figcaption>
                                 </figure>
@@ -111,16 +117,16 @@
                         <div class="row py-3 w-75 m-auto">
                             <div class="col-xl-6 align-self-center">
                                 <figure>
-                                    <img src="{% static 'efelg/img/efelg_traces.png' %}" alt="efel_traces" 
+                                    <img src="{% static 'efelg/img/efelg_traces.png' %}" alt="efel_traces"
                                         class="border border-2 border-light img-fluid" />
                                     <figcaption class="text-center">Fig 2. - Voltage traces selection</figcaption>
                                 </figure>
                             </div>
                             <div class="col-xl-6 align-self-center">
                                 <b>Step 2 of 4</b>
-                                <a class="light-grey-text text-decoration-none ms-4 clickable"	
-                                    onclick="loadShowTraces()">	
-                                    [skip introduction]	
+                                <a class="light-grey-text text-decoration-none ms-4 clickable"
+                                    onclick="loadShowTraces()">
+                                    [skip introduction]
                                 </a>
                                 <p class="mt-2">
                                     Once the filtering/upload done, individual traces are plotted and can be checked for
@@ -141,9 +147,9 @@
                         <div class="row py-3 w-75 m-auto">
                             <div class="col-xl-6 align-self-center">
                                 <b>Step 3 of 4</b>
-                                <a class="light-grey-text text-decoration-none ms-4 clickable"	
-                                    onclick="loadShowTraces()">	
-                                    [skip introduction]	
+                                <a class="light-grey-text text-decoration-none ms-4 clickable"
+                                    onclick="loadShowTraces()">
+                                    [skip introduction]
                                 </a>
                                 <p class="mt-2">
                                     The feature selection page allows you to select the features to extract from the
@@ -159,7 +165,7 @@
                             </div>
                             <div class="col-xl-6 align-self-center">
                                 <figure>
-                                    <img src="{% static 'efelg/img/efelg_features.png' %}" alt="efel_features" 
+                                    <img src="{% static 'efelg/img/efelg_features.png' %}" alt="efel_features"
                                         class="border border-2 border-light img-fluid" />
                                     <figcaption class="text-center">Fig 3. - Feature selection</figcaption>
                                 </figure>
@@ -170,16 +176,16 @@
                         <div class="row py-3 w-75 m-auto">
                             <div class="col-xl-6 align-self-center">
                                 <figure>
-                                    <img src="{% static 'efelg/img/efelg_download.png' %}" alt="efel_download" 
+                                    <img src="{% static 'efelg/img/efelg_download.png' %}" alt="efel_download"
                                         class="border border-2 border-light img-fluid" />
                                     <figcaption class="text-center">Fig 4. - Results page</figcaption>
                                 </figure>
                             </div>
                             <div class="col-xl-6 align-self-center">
                                 <b>Step 4 of 4</b>
-                                <a class="light-grey-text text-decoration-none ms-4 clickable"	
-                                    onclick="loadShowTraces()">	
-                                    [skip introduction]	
+                                <a class="light-grey-text text-decoration-none ms-4 clickable"
+                                    onclick="loadShowTraces()">
+                                    [skip introduction]
                                 </a>
                                 <p class="mt-2">
                                     The feature extraction process computes the means and standard deviations of the
@@ -192,17 +198,20 @@
                                     individual cells and
                                     the entire ensemble. These files contain the above mentioned grand-means and the
                                     protocols adopted for the experimental
-                                    recordings. They are intended to be used for the data-driven optimization step of
-                                    the
-                                    Hodgkin-Huxley Neuron Builder workflow, made available
-                                    to the user at this
-                                    <a class="link-secondary"
-                                        href="https://hbp-bsp-hhnb.cineca.it/hh-neuron-builder/"
+                                    recordings.
+                                    They are intended to be used for the data-driven optimization step of the
+                                    Hodgkin-Huxley Neuron Builder workflow
+                                    (via the
+                                    <a class="link-secondary" href="https://github.com/BlueBrain/BluePyOpt/"
+                                        target=_blank>
+                                        BluePyOpt</a>
+                                    software library), made available to the user at this
+                                    <a class="link-secondary" href="https://hbp-bsp-hhnb.cineca.it/hh-neuron-builder/"
                                         target=_blank>
                                         link</a>.
-                                    <br> A link to a .zip file containing the entire set of results is provided in the
-                                    results page
-                                    (see Fig. 5).
+                                    <br>
+                                    A link to a .zip file containing the entire set of results is provided in the
+                                    results page (see Fig. 5).
                                 </p>
                             </div>
                         </div>
@@ -260,7 +269,9 @@
 </body>
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js" integrity="sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0" crossorigin="anonymous"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0"
+    crossorigin="anonymous"></script>
 <script type="text/javascript" src="{% static 'efelg/js/overview.js' %}"></script>
 <script type="text/javascript" src="{% static 'bspganalytics.js' %}"></script>
 
