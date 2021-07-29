@@ -249,10 +249,3 @@ def print_citations(json_file_list, conf_file, final_file):
             tf.write("Use the following reference:\n\n")
             tf.write(key + "\n\n")
             tf.write("===========\n\n")
-
-
-
-
-
-
-

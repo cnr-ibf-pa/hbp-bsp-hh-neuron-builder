@@ -47,12 +47,6 @@ def overview(request, wfid=None):
     else:
         username = 'anonymous'
         
-    # request.session['main_json_dir'] = os.path.join(settings.MEDIA_ROOT, 'efel_data', 'eg_json_data')
-    # request.session['traces_base_url'] = "https://object.cscs.ch:443/v1/AUTH_c0a333ecf7c045809321ce9d9ecdfdea/web-resources-bsp/data/NFE/eg_json_data/traces/"
-
-    # save parameters in request.session
-
-    # parameters for folder creation
     if wfid:
         time_info = wfid.split('_')[0]
     else:
@@ -62,36 +56,6 @@ def overview(request, wfid=None):
     request.session["time_info"] = time_info
     
     print(username, time_info)
-    # user_base_dir =  os.path.join(
-    #     settings.MEDIA_ROOT,
-    #     "efel_data",
-    #     "efel_gui",
-    #     "results",
-    #     username,
-    #     "data_" + str(time_info)
-    # )
-
-    # user_files_dir = os.path.join(user_base_dir, "u_data")
-    # if not os.path.exists(user_files_dir):
-    #     os.makedirs(user_files_dir)
-    
-    # uploaded_files_dir = os.path.join(user_base_dir, "uploaded")
-    # if not os.path.exists(uploaded_files_dir):
-    #     os.makedirs(uploaded_files_dir)
-
-    # user_results_dir = os.path.join(user_base_dir, "u_res")
-    # if not os.path.exists(user_results_dir):
-    #     os.makedirs(user_results_dir)
-
-    # store paths in request.session
-
-    # request.session['user_files_dir'] = user_files_dir
-    # request.session['uploaded_files_dir'] = uploaded_files_dir
-    # request.session['user_results_dir'] = user_results_dir
-
-    #accesslogger.info(resources.string_for_log('overview', request))
-
-    # render to html
     
     request.session.save()
     return render(request, 'efelg/overview.html')

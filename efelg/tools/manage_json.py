@@ -202,49 +202,6 @@ def get_cell_info(filename, upload_flag=False, cell_name="cellName"):
     return c_species, c_area, c_region, c_type, c_etype, c_name, c_sample
 
 # extract data info (i.e. voltage trace, stimulus and stimulus unit) from experimental and metadata files
-"""
-def get_traces_info(filename, upload_flag = False):
-    
-    #
-    data = neo.io.AxonIO(filename)
-    bl = data.read_block()
-    segments = bl.segments
-    data._parse_header()
-    header = data._axon_info
-    sampling_rate = 1.e6 / header['protocol']['fADCSequenceInterval']  # read sampling rate
-
-    #
-    volt_unit = segments[0].analogsignals[0].units
-    volt_unit = str(volt_unit.dimensionality)
-
-    # extract stimulus
-    if not upload_flag:
-        crr_dict = get_metadata(filename)
-        stim_res = stimulus_extraction.stim_feats_from_meta(crr_dict, len(segments))
-        if not stim_res[0]:
-            stim_res = stimulus_extraction.stim_feats_from_header(header)
-        if not stim_res[0]:
-            return 0
-        stim = stim_res[1]
-    else:
-        stim_res = stimulus_extraction.stim_feats_from_header(header)
-        stim = stim_res[1]
-    
-    amp_unit = stim[0][-1]
-   
-    # build dictionaries 
-    traces = {}
-    tonoff = {}
-    for i, signal in enumerate(segments):
-        voltage = np.array(signal.analogsignals[0]).astype(np.float64)
-        voltage = [k[0] for k in voltage]
-        stimulus = stim[i][3]
-        label = "{0:.2f}".format(np.around(stimulus, decimals=3))
-        traces.update({label: voltage})
-        tonoff.update({label: {'ton': [stim[i][1]], 'toff': [stim[i][2]]}})
-
-    return sampling_rate, tonoff, traces, volt_unit, amp_unit
-"""
 
 def get_traces_info(filename, upload_flag = False):
 
@@ -513,16 +470,5 @@ def create_file_name(data, cell_id=None):
         print("data['sample'] = %s" % data['sample'])
     else:
         raise Exception("filename not found!")
-    #try:
-    return '____'.join([data[key] for key in filename_keys]) + ".json"
-    #fn_values = []
-    #for k in filename_keys:
-    #    try:
-    #        if k == 'filename':
-    #            fn_values.append(''.join(data[k].split('.')[:-1]))
-    #        else:
-    #            fn_values.append(data[k])
-    #    except KeyError:
-    #        fn_values.append('unknown')
-    #return '___'.join(fn_values) + '.json'
 
+    return '____'.join([data[key] for key in filename_keys]) + ".json"
