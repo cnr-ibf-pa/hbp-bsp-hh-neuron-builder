@@ -410,12 +410,6 @@ function selectAllCheckboxes(selectAll) {
 }
 
 
-//
-function updateVoltageCorrection(button, correction) {
-    updateValue(button, correction);
-    plotVoltageCorrection($(button).parents(".input_box").next()[0].id, correction);
-}
-
 
 //
 function updateValue(button, value) {

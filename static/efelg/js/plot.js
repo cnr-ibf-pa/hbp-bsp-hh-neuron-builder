@@ -27,10 +27,12 @@ function refreshPlot(plot_id) {
 // refresh the plot considering the voltage correction
 function plotVoltageCorrection(plot_id, correction) {
     var correctedSegments = plotData[plot_id]["segments"];
+    var real_correction =  correction - plotData[plot_id]["correction"];
+    plotData[plot_id]["correction"] = correction;
     correctedSegments.forEach(segment => {
         y = segment["y"];
         for (var i = 0; i < y.length; i++) {
-            y[i] += correction;
+            y[i] += real_correction;
         }
     });
     refreshPlot(plot_id);
@@ -119,8 +121,7 @@ function createCellPlotBox(id, container, currentPlotData, xLabel, yLabel, cellI
 
     var inputbox = $('<div/>', {
         'id': 'input_' + id,
-        'class': 'input_box',
-        'style': 'max-height: none'
+        'class': 'input_box mh-none',
     }).appendTo(container);
 
     var plot_id = 'plot_' + id;
@@ -317,6 +318,7 @@ function plot(plot_id, input_id, data) {
 
     plotData[plot_id] = {};
     plotData[plot_id]["segments"] = [];
+    plotData[plot_id]["correction"] = 0;
     plotData[plot_id]["opacities"] = [];
     var currentPlotData = plotData[plot_id]["segments"];
     var opacities = plotData[plot_id]["opacities"];
@@ -360,7 +362,6 @@ function plot(plot_id, input_id, data) {
         showlegend: true,
         width: data["plot_width"] * 0.99
     }; 
-
     Plotly.newPlot(plot_id, currentPlotData, layout, {
         scrollZoom: false,
         displayModeBar: false
@@ -401,6 +402,12 @@ function createSettingsMenu() {
     ';
 }
 
+
+function updateVoltageCorrection(button, correction) {
+    updateValue(button, correction);
+    var value = parseFloat($(button).siblings('input[type=number]').val());
+    plotVoltageCorrection($(button).parents(".input_box").next()[0].id, value);
+}
 
 vcorrTitle = "Voltage Correction";
 vcorrText = "The voltage correction value inserted by the user is added to all the  voltage values (i.e., all the sweeps) of the related file.";
