@@ -1,0 +1,392 @@
+{
+    "Thomson\u2019s lab, UCL": {
+        "97911000": {
+            "url": "https://humanbrainproject.github.io/hbp-bsp-live-papers/2018/migliore_et_al_2018/migliore_et_al_2018.html",
+            "note": "panel Electrophysiological Traces -> int-bAC"
+        },
+        "97911001": {
+            "url": "https://humanbrainproject.github.io/hbp-bsp-live-papers/2018/migliore_et_al_2018/migliore_et_al_2018.html",
+            "note": "panel Electrophysiological Traces -> int-bAC"
+        },
+        "97911002": {
+            "url": "https://humanbrainproject.github.io/hbp-bsp-live-papers/2018/migliore_et_al_2018/migliore_et_al_2018.html",
+            "note": "panel Electrophysiological Traces -> int-bAC"
+        },
+        "97509008": {
+            "url": "https://humanbrainproject.github.io/hbp-bsp-live-papers/2018/migliore_et_al_2018/migliore_et_al_2018.html",
+            "note": "panel Electrophysiological Traces -> int-cAC"
+        },
+        "97509009": {
+            "url": "https://humanbrainproject.github.io/hbp-bsp-live-papers/2018/migliore_et_al_2018/migliore_et_al_2018.html",
+            "note": "panel Electrophysiological Traces -> int-cAC"
+        },
+        "97509010": {
+            "url": "https://humanbrainproject.github.io/hbp-bsp-live-papers/2018/migliore_et_al_2018/migliore_et_al_2018.html",
+            "note": "panel Electrophysiological Traces -> int-cAC"
+        },
+        "97509011": {
+            "url": "https://humanbrainproject.github.io/hbp-bsp-live-papers/2018/migliore_et_al_2018/migliore_et_al_2018.html",
+            "note": "panel Electrophysiological Traces -> int-cAC"
+        },
+        "97717005": {
+            "url": "https://humanbrainproject.github.io/hbp-bsp-live-papers/2018/migliore_et_al_2018/migliore_et_al_2018.html",
+            "note": "panel Electrophysiological Traces -> int-cNAC"
+        }
+    },
+    "D\u2019Angelo\u2019s lab, UNIPV": {
+        "1912009": {
+            "url": "https://search.kg.ebrains.eu/instances/6783cede-b5b3-4009-84c7-285b19141eb5",
+            "note": "Files -> CC-step -> sub7r -> samp3 -> hbp-00810_CC-step_sub7r_samp3__1912012.abf"
+        },
+        "1912012": {
+            "url": "https://search.kg.ebrains.eu/instances/6783cede-b5b3-4009-84c7-285b19141eb5",
+            "note": "Files -> CC-step -> sub7r -> samp2 -> hbp-00810_CC-step_sub7r_samp2__1912012.abf"
+        },
+        "2012020": {
+            "url": "https://search.kg.ebrains.eu/instances/6783cede-b5b3-4009-84c7-285b19141eb5",
+            "note": "Files -> CC-step -> sub8r -> samp3 -> hbp-00810_CC-step_sub8r_samp3__2012020.abf"
+        },
+        "2002005": {
+            "url": "https://object.cscs.ch:443/v1/AUTH_c0a333ecf7c045809321ce9d9ecdfdea/web-resources-bsp/utils/NFE/DAngelo_data_01.zip"
+        },
+        "2902011": {
+            "url": "https://object.cscs.ch:443/v1/AUTH_c0a333ecf7c045809321ce9d9ecdfdea/web-resources-bsp/utils/NFE/DAngelo_data_01.zip"
+        },
+        "3001003": {
+            "url": "https://object.cscs.ch:443/v1/AUTH_c0a333ecf7c045809321ce9d9ecdfdea/web-resources-bsp/utils/NFE/DAngelo_data_01.zip"
+        },
+        "3001004": {
+            "url": "https://object.cscs.ch:443/v1/AUTH_c0a333ecf7c045809321ce9d9ecdfdea/web-resources-bsp/utils/NFE/DAngelo_data_01.zip"
+        }
+    },
+    "Marie\u2019s lab, CNRS": {
+        "191129000_s23": {
+            "url": "https://search.kg.ebrains.eu/?q=marie#bd5f91ff-e829-4b85-92eb-fc56991541f1",
+            "note": "Files -> ext-d000001_ADNeuronModel_pub -> APPPS1_mouse_model_3-4_months"
+        },
+        "191202004_rita_s22": {
+            "url": "https://search.kg.ebrains.eu/?q=marie#bd5f91ff-e829-4b85-92eb-fc56991541f1",
+            "note": "Files -> ext-d000001_ADNeuronModel_pub -> APPPS1_mouse_model_3-4_months"
+        },
+        "191202005_rita_s22": {
+            "url": "https://search.kg.ebrains.eu/?q=marie#bd5f91ff-e829-4b85-92eb-fc56991541f1",
+            "note": "Files -> ext-d000001_ADNeuronModel_pub -> APPPS1_mouse_model_3-4_months"
+        },
+        "191202006_rita_s22": {
+            "url": "https://search.kg.ebrains.eu/?q=marie#bd5f91ff-e829-4b85-92eb-fc56991541f1",
+            "note": "Files -> ext-d000001_ADNeuronModel_pub -> APPPS1_mouse_model_3-4_months"
+        },
+        "191202007_rita_s22": {
+            "url": "https://search.kg.ebrains.eu/?q=marie#bd5f91ff-e829-4b85-92eb-fc56991541f1",
+            "note": "Files -> ext-d000001_ADNeuronModel_pub -> APPPS1_mouse_model_3-4_months"
+        },
+        "191202008_rita_s22\r": {
+            "url": "https://search.kg.ebrains.eu/?q=marie#bd5f91ff-e829-4b85-92eb-fc56991541f1",
+            "note": "Files -> ext-d000001_ADNeuronModel_pub -> APPPS1_mouse_model_3-4_months"
+        },
+        "191202009_rita_s22": {
+            "url": "https://search.kg.ebrains.eu/?q=marie#bd5f91ff-e829-4b85-92eb-fc56991541f1",
+            "note": "Files -> ext-d000001_ADNeuronModel_pub -> APPPS1_mouse_model_3-4_months"
+        },
+        "191129002_s23": {
+            "url": "https://search.kg.ebrains.eu/?q=marie#bd5f91ff-e829-4b85-92eb-fc56991541f1",
+            "note": "Files -> ext-d000001_ADNeuronModel_pub -> APPPS1_mouse_model_3-4_months"
+        },
+        "191129003_s23": {
+            "url": "https://search.kg.ebrains.eu/?q=marie#bd5f91ff-e829-4b85-92eb-fc56991541f1",
+            "note": "Files -> ext-d000001_ADNeuronModel_pub -> APPPS1_mouse_model_3-4_months"
+        },
+        "191202000_rita_s26": {
+            "url": "https://search.kg.ebrains.eu/?q=marie#bd5f91ff-e829-4b85-92eb-fc56991541f1",
+            "note": "Files -> ext-d000001_ADNeuronModel_pub -> APPPS1_mouse_model_3-4_months"
+        },
+        "191202001_rita_s26": {
+            "url": "https://search.kg.ebrains.eu/?q=marie#bd5f91ff-e829-4b85-92eb-fc56991541f1",
+            "note": "Files -> ext-d000001_ADNeuronModel_pub -> APPPS1_mouse_model_3-4_months"
+        },
+        "191202002_rita_s23": {
+            "url": "https://search.kg.ebrains.eu/?q=marie#bd5f91ff-e829-4b85-92eb-fc56991541f1",
+            "note": "Files -> ext-d000001_ADNeuronModel_pub -> APPPS1_mouse_model_3-4_months"
+        },
+        "191202003_rita_s23": {
+            "url": "https://search.kg.ebrains.eu/?q=marie#bd5f91ff-e829-4b85-92eb-fc56991541f1",
+            "note": "Files -> ext-d000001_ADNeuronModel_pub -> APPPS1_mouse_model_3-4_months"
+        },
+        "191122000_rita_s77": {
+            "url": "https://search.kg.ebrains.eu/?q=marie#bd5f91ff-e829-4b85-92eb-fc56991541f1",
+            "note": "Files -> ext-d000001_ADNeuronModel_pub -> APPPS1_mouse_model_9-10_months"
+        },
+        "191122000_s77": {
+            "url": "https://search.kg.ebrains.eu/?q=marie#bd5f91ff-e829-4b85-92eb-fc56991541f1",
+            "note": "Files -> ext-d000001_ADNeuronModel_pub -> APPPS1_mouse_model_9-10_months"
+        },
+        "191122001_rita_s77": {
+            "url": "https://search.kg.ebrains.eu/?q=marie#bd5f91ff-e829-4b85-92eb-fc56991541f1",
+            "note": "Files -> ext-d000001_ADNeuronModel_pub -> APPPS1_mouse_model_9-10_months"
+        },
+        "191122002_rita_s77": {
+            "url": "https://search.kg.ebrains.eu/?q=marie#bd5f91ff-e829-4b85-92eb-fc56991541f1",
+            "note": "Files -> ext-d000001_ADNeuronModel_pub -> APPPS1_mouse_model_9-10_months"
+        },
+        "191122002_s77": {
+            "url": "https://search.kg.ebrains.eu/?q=marie#bd5f91ff-e829-4b85-92eb-fc56991541f1",
+            "note": "Files -> ext-d000001_ADNeuronModel_pub -> APPPS1_mouse_model_9-10_months"
+        },
+        "191122003_rita_s77": {
+            "url": "https://search.kg.ebrains.eu/?q=marie#bd5f91ff-e829-4b85-92eb-fc56991541f1",
+            "note": "Files -> ext-d000001_ADNeuronModel_pub -> APPPS1_mouse_model_9-10_months"
+        },
+        "191122003_s77": {
+            "url": "https://search.kg.ebrains.eu/?q=marie#bd5f91ff-e829-4b85-92eb-fc56991541f1",
+            "note": "Files -> ext-d000001_ADNeuronModel_pub -> APPPS1_mouse_model_9-10_months"
+        },
+        "200120000_s87": {
+            "url": "https://search.kg.ebrains.eu/?q=marie#bd5f91ff-e829-4b85-92eb-fc56991541f1",
+            "note": "Files -> ext-d000001_ADNeuronModel_pub -> APPPS1_mouse_model_9-10_months"
+        },
+        "200120004_s87": {
+            "url": "https://search.kg.ebrains.eu/?q=marie#bd5f91ff-e829-4b85-92eb-fc56991541f1",
+            "note": "Files -> ext-d000001_ADNeuronModel_pub -> APPPS1_mouse_model_9-10_months"
+        },
+        "200120005_s87": {
+            "url": "https://search.kg.ebrains.eu/?q=marie#bd5f91ff-e829-4b85-92eb-fc56991541f1",
+            "note": "Files -> ext-d000001_ADNeuronModel_pub -> APPPS1_mouse_model_9-10_months"
+        },
+        "200120006_s87": {
+            "url": "https://search.kg.ebrains.eu/?q=marie#bd5f91ff-e829-4b85-92eb-fc56991541f1",
+            "note": "Files -> ext-d000001_ADNeuronModel_pub -> APPPS1_mouse_model_9-10_months"
+        },
+        "200120007_s87": {
+            "url": "https://search.kg.ebrains.eu/?q=marie#bd5f91ff-e829-4b85-92eb-fc56991541f1",
+            "note": "Files -> ext-d000001_ADNeuronModel_pub -> APPPS1_mouse_model_9-10_months"
+        },
+        "200120008_s87": {
+            "url": "https://search.kg.ebrains.eu/?q=marie#bd5f91ff-e829-4b85-92eb-fc56991541f1",
+            "note": "Files -> ext-d000001_ADNeuronModel_pub -> APPPS1_mouse_model_9-10_months"
+        },
+        "200120009_s87": {
+            "url": "https://search.kg.ebrains.eu/?q=marie#bd5f91ff-e829-4b85-92eb-fc56991541f1",
+            "note": "Files -> ext-d000001_ADNeuronModel_pub -> APPPS1_mouse_model_9-10_months"
+        },
+        "200120010_s87": {
+            "url": "https://search.kg.ebrains.eu/?q=marie#bd5f91ff-e829-4b85-92eb-fc56991541f1",
+            "note": "Files -> ext-d000001_ADNeuronModel_pub -> APPPS1_mouse_model_9-10_months"
+        },
+        "200303004_rita_s96": {
+            "url": "https://search.kg.ebrains.eu/?q=marie#bd5f91ff-e829-4b85-92eb-fc56991541f1",
+            "note": "Files -> ext-d000001_ADNeuronModel_pub -> APPPS1_mouse_model_9-10_months"
+        },
+        "200303005_s96": {
+            "url": "https://search.kg.ebrains.eu/?q=marie#bd5f91ff-e829-4b85-92eb-fc56991541f1",
+            "note": "Files -> ext-d000001_ADNeuronModel_pub -> APPPS1_mouse_model_9-10_months"
+        },
+        "200303005_rita_s96": {
+            "url": "https://search.kg.ebrains.eu/?q=marie#bd5f91ff-e829-4b85-92eb-fc56991541f1",
+            "note": "Files -> ext-d000001_ADNeuronModel_pub -> APPPS1_mouse_model_9-10_months"
+        },
+        "200303006_rita_s96": {
+            "url": "https://search.kg.ebrains.eu/?q=marie#bd5f91ff-e829-4b85-92eb-fc56991541f1",
+            "note": "Files -> ext-d000001_ADNeuronModel_pub -> APPPS1_mouse_model_9-10_months"
+        },
+        "200303007_rita_s96": {
+            "url": "https://search.kg.ebrains.eu/?q=marie#bd5f91ff-e829-4b85-92eb-fc56991541f1",
+            "note": "Files -> ext-d000001_ADNeuronModel_pub -> APPPS1_mouse_model_9-10_months"
+        },
+        "200303009_rita_s96": {
+            "url": "https://search.kg.ebrains.eu/?q=marie#bd5f91ff-e829-4b85-92eb-fc56991541f1",
+            "note": "Files -> ext-d000001_ADNeuronModel_pub -> APPPS1_mouse_model_9-10_months"
+        },
+        "200303010_rita_s96": {
+            "url": "https://search.kg.ebrains.eu/?q=marie#bd5f91ff-e829-4b85-92eb-fc56991541f1",
+            "note": "Files -> ext-d000001_ADNeuronModel_pub -> APPPS1_mouse_model_9-10_months"
+        },
+        "191129000_rita_s24": {
+            "url": "https://search.kg.ebrains.eu/?q=marie#bd5f91ff-e829-4b85-92eb-fc56991541f1",
+            "note": "Files -> ext-d000001_ADNeuronModel_pub -> control_3-4_months"
+        },
+        "191129002_rita_s24": {
+            "url": "https://search.kg.ebrains.eu/?q=marie#bd5f91ff-e829-4b85-92eb-fc56991541f1",
+            "note": "Files -> ext-d000001_ADNeuronModel_pub -> control_3-4_months"
+        },
+        "191129003_rita_s24": {
+            "url": "https://search.kg.ebrains.eu/?q=marie#bd5f91ff-e829-4b85-92eb-fc56991541f1",
+            "note": "Files -> ext-d000001_ADNeuronModel_pub -> control_3-4_months"
+        },
+        "191129004_s24": {
+            "url": "https://search.kg.ebrains.eu/?q=marie#bd5f91ff-e829-4b85-92eb-fc56991541f1",
+            "note": "Files -> ext-d000001_ADNeuronModel_pub -> control_3-4_months"
+        },
+        "191203005_rita_s27": {
+            "url": "https://search.kg.ebrains.eu/?q=marie#bd5f91ff-e829-4b85-92eb-fc56991541f1",
+            "note": "Files -> ext-d000001_ADNeuronModel_pub -> control_3-4_months"
+        },
+        "191203006_rita_s27": {
+            "url": "https://search.kg.ebrains.eu/?q=marie#bd5f91ff-e829-4b85-92eb-fc56991541f1",
+            "note": "Files -> ext-d000001_ADNeuronModel_pub -> control_3-4_months"
+        },
+        "191203000_rita_s31": {
+            "url": "https://search.kg.ebrains.eu/?q=marie#bd5f91ff-e829-4b85-92eb-fc56991541f1",
+            "note": "Files -> ext-d000001_ADNeuronModel_pub -> control_3-4_months"
+        },
+        "191203001_rita_s31": {
+            "url": "https://search.kg.ebrains.eu/?q=marie#bd5f91ff-e829-4b85-92eb-fc56991541f1",
+            "note": "Files -> ext-d000001_ADNeuronModel_pub -> control_3-4_months"
+        },
+        "191203002_rita_s31": {
+            "url": "https://search.kg.ebrains.eu/?q=marie#bd5f91ff-e829-4b85-92eb-fc56991541f1",
+            "note": "Files -> ext-d000001_ADNeuronModel_pub -> control_3-4_months"
+        },
+        "191203003_rita_s31": {
+            "url": "https://search.kg.ebrains.eu/?q=marie#bd5f91ff-e829-4b85-92eb-fc56991541f1",
+            "note": "Files -> ext-d000001_ADNeuronModel_pub -> control_3-4_months"
+        },
+        "191203004_rita_s31": {
+            "url": "https://search.kg.ebrains.eu/?q=marie#bd5f91ff-e829-4b85-92eb-fc56991541f1",
+            "note": "Files -> ext-d000001_ADNeuronModel_pub -> control_3-4_months"
+        },
+        "191121000_rita_s76": {
+            "url": "https://search.kg.ebrains.eu/?q=marie#bd5f91ff-e829-4b85-92eb-fc56991541f1",
+            "note": "Files -> ext-d000001_ADNeuronModel_pub -> control_9-10_months"
+        },
+        "191121001_rita_s76": {
+            "url": "https://search.kg.ebrains.eu/?q=marie#bd5f91ff-e829-4b85-92eb-fc56991541f1",
+            "note": "Files -> ext-d000001_ADNeuronModel_pub -> control_9-10_months"
+        },
+        "191121003_rita_s76": {
+            "url": "https://search.kg.ebrains.eu/?q=marie#bd5f91ff-e829-4b85-92eb-fc56991541f1",
+            "note": "Files -> ext-d000001_ADNeuronModel_pub -> control_9-10_months"
+        },
+        "191113002_s75": {
+            "url": "https://search.kg.ebrains.eu/?q=marie#bd5f91ff-e829-4b85-92eb-fc56991541f1",
+            "note": "Files -> ext-d000001_ADNeuronModel_pub -> control_9-10_months"
+        },
+        "191113004_s75": {
+            "url": "https://search.kg.ebrains.eu/?q=marie#bd5f91ff-e829-4b85-92eb-fc56991541f1",
+            "note": "Files -> ext-d000001_ADNeuronModel_pub -> control_9-10_months"
+        },
+        "191113005_s75": {
+            "url": "https://search.kg.ebrains.eu/?q=marie#bd5f91ff-e829-4b85-92eb-fc56991541f1",
+            "note": "Files -> ext-d000001_ADNeuronModel_pub -> control_9-10_months"
+        },
+        "191121001_s76": {
+            "url": "https://search.kg.ebrains.eu/?q=marie#bd5f91ff-e829-4b85-92eb-fc56991541f1",
+            "note": "Files -> ext-d000001_ADNeuronModel_pub -> control_9-10_months"
+        },
+        "191121002_s76": {
+            "url": "https://search.kg.ebrains.eu/?q=marie#bd5f91ff-e829-4b85-92eb-fc56991541f1",
+            "note": "Files -> ext-d000001_ADNeuronModel_pub -> control_9-10_months"
+        },
+        "191121004_rita_s76": {
+            "url": "https://search.kg.ebrains.eu/?q=marie#bd5f91ff-e829-4b85-92eb-fc56991541f1",
+            "note": "Files -> ext-d000001_ADNeuronModel_pub -> control_9-10_months"
+        },
+        "200123000_s86": {
+            "url": "https://search.kg.ebrains.eu/?q=marie#bd5f91ff-e829-4b85-92eb-fc56991541f1",
+            "note": "Files -> ext-d000001_ADNeuronModel_pub -> control_9-10_months"
+        },
+        "200123001_s86": {
+            "url": "https://search.kg.ebrains.eu/?q=marie#bd5f91ff-e829-4b85-92eb-fc56991541f1",
+            "note": "Files -> ext-d000001_ADNeuronModel_pub -> control_9-10_months"
+        },
+        "200123002_s86": {
+            "url": "https://search.kg.ebrains.eu/?q=marie#bd5f91ff-e829-4b85-92eb-fc56991541f1",
+            "note": "Files -> ext-d000001_ADNeuronModel_pub -> control_9-10_months"
+        },
+        "200123003_s86": {
+            "url": "https://search.kg.ebrains.eu/?q=marie#bd5f91ff-e829-4b85-92eb-fc56991541f1",
+            "note": "Files -> ext-d000001_ADNeuronModel_pub -> control_9-10_months"
+        },
+        "200303000_s95": {
+            "url": "https://search.kg.ebrains.eu/?q=marie#bd5f91ff-e829-4b85-92eb-fc56991541f1",
+            "note": "Files -> ext-d000001_ADNeuronModel_pub -> control_9-10_months"
+        },
+        "200303001_rita_s95": {
+            "url": "https://search.kg.ebrains.eu/?q=marie#bd5f91ff-e829-4b85-92eb-fc56991541f1",
+            "note": "Files -> ext-d000001_ADNeuronModel_pub -> control_9-10_months"
+        },
+        "200303001_s95": {
+            "url": "https://search.kg.ebrains.eu/?q=marie#bd5f91ff-e829-4b85-92eb-fc56991541f1",
+            "note": "Files -> ext-d000001_ADNeuronModel_pub -> control_9-10_months"
+        },
+        "200303002_rita_s95": {
+            "url": "https://search.kg.ebrains.eu/?q=marie#bd5f91ff-e829-4b85-92eb-fc56991541f1",
+            "note": "Files -> ext-d000001_ADNeuronModel_pub -> control_9-10_months"
+        },
+        "200303002_s95": {
+            "url": "https://search.kg.ebrains.eu/?q=marie#bd5f91ff-e829-4b85-92eb-fc56991541f1",
+            "note": "Files -> ext-d000001_ADNeuronModel_pub -> control_9-10_months"
+        },
+        "200303003_rita_s95": {
+            "url": "https://search.kg.ebrains.eu/?q=marie#bd5f91ff-e829-4b85-92eb-fc56991541f1",
+            "note": "Files -> ext-d000001_ADNeuronModel_pub -> control_9-10_months"
+        },
+        "200303003_s95": {
+            "url": "https://search.kg.ebrains.eu/?q=marie#bd5f91ff-e829-4b85-92eb-fc56991541f1",
+            "note": "Files -> ext-d000001_ADNeuronModel_pub -> control_9-10_months"
+        },
+        "200303004_s95": {
+            "url": "https://search.kg.ebrains.eu/?q=marie#bd5f91ff-e829-4b85-92eb-fc56991541f1",
+            "note": "Files -> ext-d000001_ADNeuronModel_pub -> control_9-10_months"
+        }
+    },
+    "Allen Institute for Brain Science": {
+        "556369531": {
+            "url": "http://celltypes.brain-map.org/mouse/experiment/electrophysiology/556369531"
+        },
+        "565778331": {
+            "url": "http://celltypes.brain-map.org/mouse/experiment/electrophysiology/565778331"
+        },
+        "566991946": {
+            "url": "http://celltypes.brain-map.org/mouse/experiment/electrophysiology/566991946"
+        },
+        "569469018": {
+            "url": "http://celltypes.brain-map.org/mouse/experiment/electrophysiology/569469018"
+        }
+    },
+    "Segev\u2019s lab, ELSC": {
+        "2013_03_13cel06_0015_15khz_000": {
+            "url": "http://senselab.med.yale.edu/modeldb/data/238347/EyalEtAl2018.zip",
+            "note": "EyalEtAl2018 -> Figure7 -> data -> cell1303_06 -> 600_2013_03_13Cel06_0015_15kHz_trace_ix_1"
+        },
+        "2013_03_13cel06_0015_15khz_001": {
+            "url": "http://senselab.med.yale.edu/modeldb/data/238347/EyalEtAl2018.zip",
+            "note": "EyalEtAl2018 -> Figure7 -> data -> cell1303_06 -> 600_2013_03_13Cel06_0015_15kHz_trace_ix_2"
+        },
+        "2013_03_13cel06_0015_15khz_002": {
+            "url": "http://senselab.med.yale.edu/modeldb/data/238347/EyalEtAl2018.zip",
+            "note": "EyalEtAl2018 -> Figure7 -> data -> cell1303_06 -> 600_2013_03_13Cel06_0015_15kHz_trace_ix_3"
+        },
+        "2013_03_13cel06_0015_15khz_003": {
+            "url": "http://senselab.med.yale.edu/modeldb/data/238347/EyalEtAl2018.zip",
+            "note": "EyalEtAl2018 -> Figure7 -> data -> cell1303_06 -> 600_2013_03_13Cel06_0015_15kHz_trace_ix_4"
+        },
+        "2013_03_13cel06_0015_15khz_004": {
+            "url": "http://senselab.med.yale.edu/modeldb/data/238347/EyalEtAl2018.zip",
+            "note": "EyalEtAl2018 -> Figure7 -> data -> cell1303_06 -> 600_2013_03_13Cel06_0015_15kHz_trace_ix_5"
+        },
+        "2013_03_20cel03_0015_15khz": {},
+        "2013_03_06cel03_0013_14khz": {},
+        "2013_03_06cel08_0025_14khz": {}
+    },
+    "Grillner\u2019s lab, KI": {
+        "160628_fs2_apwaveform_ch5_500": {},
+        "160628_fs2_apwaveform_ch5_505": {},
+        "160628_fs2_idthresh_ch5_527": {},
+        "160628_fs2_idthresh_ch5_528": {},
+        "160628_fs2_iv_ch5_484": {},
+        "160628_fs2_iv_ch5_486": {},
+        "160628_fs2_iv_ch5_492": {},
+        "160628_fs2_iv_ch5_495": {},
+        "160628_fs2_iv_ch5_496": {},
+        "yj150915_c6_msn_d1_idthresh_ch1_603": {},
+        "yj150915_c6_msn_d1_idthresh_ch1_608": {},
+        "yj150915_c6_msn_d1_iv_ch1_561": {},
+        "yj150915_c6_msn_d1_iv_ch1_567": {},
+        "yj150915_c6_msn_d1_iv_ch1_572": {},
+        "yj150915_c7_msn_d2_idthresh_ch3_602": {},
+        "yj150915_c7_msn_d2_idthresh_ch3_608": {},
+        "yj150915_c7_msn_d2_iv_ch3_529": {},
+        "yj150915_c7_msn_d2_iv_ch3_535": {},
+        "yj150915_c7_msn_d2_iv_ch3_540": {}
+    }
+}

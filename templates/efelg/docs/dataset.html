@@ -43,19 +43,23 @@
     </header>
     <main class="my-4 mx-15">
         <div class="text-justify py-3">
-            <h4>
-                <p>
-                    The data provided in the Trace selection page are available at the following URLs:
-                    <br>
-                    <em>
-                        (The “File name” in the tables below is the last field of the “Cell properties” string, shown in the GUI once the data have been selected)
-                    </em>
-                </p>
-            </h4>
+            <h4>The data provided in the Trace selection page are available at the following URLs:</h4>
+            <em class="h6">
+                (The “File name” in the tables below is the last field of the “Cell properties” string, 
+                shown in the NFE GUI once the data have been selected)
+            </em>
+        </div>
+        <hr>
+        <br>
+        <div id="table-container">
         </div>
     </main>
+
 </body>
 
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script type="text/javascript" src="{% static 'bspganalytics.js' %}"></script>
+<script type="text/javascript" src="{% static 'common/js/global.js' %} "></script>
+<script type="text/javascript" src="{% static 'efelg/js/dataset.js' %}"></script>
 
 </html>

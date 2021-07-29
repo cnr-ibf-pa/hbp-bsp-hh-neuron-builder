@@ -22,6 +22,7 @@ urlpatterns = [
     path('docs/', views.index_docs),
     path('docs/index/', views.index_docs),
     path('docs/dataset/', views.dataset),
+    path('get_dataset/', views.get_dataset),
     path('docs/file_formats/', views.file_formats_docs),
     path('get_result_dir/', views.get_result_dir),
     path('hhf_etraces/<workflow_id:wfid>', views.hhf_etraces),

@@ -335,3 +335,22 @@ label.withinTable:hover {
 .fas {
     cursor: pointer;
 }
+
+table.table-sm-text tr td,
+table.table-sm-text tr th {
+    font-size: 13px;
+}
+
+
+table.center-first-column tr td:nth-child(odd),
+table.center-first-column tr th:nth-child(odd) {
+    text-align: center;
+}
+
+.table-hover tbody tr:hover td, .table-hover tbody tr:hover th {
+    background-color: #d7dce0;
+  }
+
+.mh-none {
+    max-height: none !important;
+}

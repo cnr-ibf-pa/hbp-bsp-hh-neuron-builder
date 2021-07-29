@@ -565,7 +565,14 @@ def index_docs(request):
 
 def file_formats_docs(request):
     return render(request, 'efelg/docs/file_formats.html')
-    
+
+
+def get_dataset(request):
+    with open(os.path.join(settings.BASE_DIR, 'static', 'efelg', 'dataset.json')) as json_file:
+        dataset = json.load(json_file)
+    return HttpResponse(json.dumps(dataset))
+
+
 def dataset(request):
     return render(request, 'efelg/docs/dataset.html')
 
