@@ -102,8 +102,6 @@
       "fast_AHP_change": "Difference of the fast AHP of the second and the first action potential divided by the fast AHP of the first action potential",
       "interburst_voltage": "The voltage average in between two bursts",
       "mean_AP_amplitude": "",
-      "ohmic_input_resistance": "The ohmic input resistance Rin of the cell",
-      "ohmic_input_resistance_vb_ssse": "",
       "spike_half_width": "The full width and half maximum the height of each peak; the height",
       "spike_width2": "",
       "time_constant": "The membrane time constant"
@@ -116,8 +114,6 @@
       "maximum_voltage_from_voltagebase": "",
       "max_duringstim": "",
       "max_duringstim_from_voltage_base": "",
-      "min_AHP_indices": "Voltage trace indices at the after-hyperpolarization",
-      "min_AHP_values": "Voltage values at the after-hyperpolarization",
       "min_duringstim": "",
       "min_duringstim_from_voltage_base": "",
       "min_voltage_between_spikes": "",
