@@ -8,7 +8,8 @@ import zipfile
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
-from django.http.response import HttpResponse, JsonResponse, HttpResponseBadRequest
+from django.http.response import HttpResponse, JsonResponse
+from django.http.response import HttpResponseBadRequest
 
 from hh_neuron_builder import settings
 from efelg.tools import resources, manage_json
@@ -24,24 +25,10 @@ import json
 
 import bluepyefe as bpefe
 
-
-
-# set logging up
-#logging.basicConfig(stream=sys.stdout)
-#logger = logging.getLogger()
-#logger.setLevel(logging.DEBUG)
-
-# create logger if not in DEBUG mode
-#accesslogger = logging.getLogger('efelg_access.log')
-#accesslogger.addHandler(logging.FileHandler('efelg_access.log'))
-#accesslogger.setLevel(logging.DEBUG)
-
-
-# Create your views here.
-
-
 def overview(request, wfid=None):
-
+    """
+    Render the NeuroFeatureExtract main page
+    """
     if request.user.is_authenticated:
         username = request.user.username
     else:
@@ -52,53 +39,60 @@ def overview(request, wfid=None):
     else:
         time_info = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
     
+    # save username and time info in the session variable dictionary
     request.session["username"] = username
     request.session["time_info"] = time_info
     
     print(username, time_info)
     
+    # update session variable dictionary
     request.session.save()
     return render(request, 'efelg/overview.html')
 
 
-# @login_required()
 def select_features(request):
     """
-    This function serves the application select-features page
+    Render the application select-features page
     """
 
-    # if not ctx exit the application
-    if request.session["is_free_space_enough"] is None or request.session["is_free_space_enough"] is False:
+    # if not context variable exists exit the application
+    if (request.session["is_free_space_enough"] is None or
+        request.session["is_free_space_enough"] is False):
+        # display error page
         return redirect('/efelg/error_space_left/')
 
+    # get all feature names
     feature_names = efel.getFeatureNames()
     selected_traces_rest = request.POST.get('data')
-    request.session['selected_traces_rest_json'] = json.loads(selected_traces_rest)
-    request.session['global_parameters_json'] = json.loads(request.POST.get('global_parameters'))
-    #accesslogger.info(resources.string_for_log('select_features', request, page_spec_string=selected_traces_rest))
+    request.session['selected_traces_rest_json'] = \
+        json.loads(selected_traces_rest)
+    request.session['global_parameters_json'] = \
+        json.loads(request.POST.get('global_parameters'))
+
     return render(request, 'efelg/select_features.html')
 
 
 def show_traces(request):
+    """
+    Render the trace selection page
+    """
 
+    # check the space left on disk and show a message in case >10GB are left
     if EfelStorage.isThereEnoughFreeSpace():
         request.session['is_free_space_enough'] = True
     else:
         request.session['is_free_space_enough'] = False
         return redirect('/efelg/error_space_left/')
-
-    """"
-    Render the efel/show_traces.html page
-    """
+    # 
     return render(request, 'efelg/show_traces.html')
 
 
 def get_list(request):
     """"
-    Retrieve the list of .json files to be displayed for trace selection
+    Retrieve the list of .json data files to be displayed for trace selection
     """
     
-    # if not ctx exit the application
+    # if no context variable is present exit the application
     if request.session["is_free_space_enough"] is None or request.session["is_free_space_enough"] is False:
         return redirect('/efelg/error_space_left/')
     
@@ -117,20 +111,25 @@ def get_list(request):
         print("Error loading metadata!")
         
 
-    return HttpResponse(json.dumps(output_json), content_type="application/json")
+    return HttpResponse(json.dumps(output_json), 
+                        content_type="application/json")
 
 
 def get_data(request, cellname=""):
+    """
+    Get eletctrophysiological data to be displayed
+    """
     
     print('get_data() called.')
 
-    # if not ctx exit the application
-    if request.session["is_free_space_enough"] is None or request.session["is_free_space_enough"] is False:
+    # if not enough space is left display error page
+    if (request.session["is_free_space_enough"] is None or 
+        request.session["is_free_space_enough"] is False):
+        # display error page
         return redirect('/efelg/error_space_left/')
 
-    #current_authorized_files = request.session["current_authorized_files"]
-
-    user_files_dir = EfelStorage.getUserFilesDir(request.session['username'], request.session['time_info'])
+    user_files_dir = EfelStorage.getUserFilesDir(request.session['username'], 
+                                                 request.session['time_info'])
     traces_files_dir = EfelStorage.getTracesDir()
 
     file_name = cellname + ".json"
@@ -146,20 +145,20 @@ def get_data(request, cellname=""):
     with open(path_to_file, "r") as f:
         content = json.loads(f.read())
 
-    # extract data to be sent to frontend
+    # extract data sampling rate
     disp_sampling_rate = 5000
     if type(content['sampling_rate']) == list:
         crr_sampling_rate = int(content['sampling_rate'][0])
     else:
         crr_sampling_rate = int(content['sampling_rate'])
 
-    #crr_sampling_rate = int(content['sampling_rate'][0])
+    # compute downsampled rate for display purposes exclusively
     coefficient = int(math.floor(crr_sampling_rate / disp_sampling_rate))
     if coefficient < 1:
         coefficient = 1
         disp_sampling_rate = crr_sampling_rate
 
-    # downsampling
+    # create dictionary to be sent to the frontend
     trace_info = {}
     trace_info['traces'] = {}
     for key in content['traces'].keys():
@@ -183,6 +182,7 @@ def get_data(request, cellname=""):
         "v_unit": "voltage_unit"
     }
 
+    # update dictionary keys
     for key in new_keys:
         if new_keys[key] in content:
             trace_info[new_keys[key]] = content[new_keys[key]]
@@ -206,35 +206,43 @@ def get_data(request, cellname=""):
 
 
 def extract_features(request):
+    """
+    Extract features from the selected traces
+    """
 
-    # if not ctx exit the application
-    if request.session["is_free_space_enough"] is None or request.session["is_free_space_enough"] is False:
+    # if not enough space is left on disk display error page
+    if (request.session["is_free_space_enough"] is None or 
+        request.session["is_free_space_enough"] is False):
+        # render error page
         return redirect('/efelg/error_space_left/')
 
+    # get variables from the session dictionary
     selected_traces_rest_json = request.session['selected_traces_rest_json']
     global_parameters_json = request.session['global_parameters_json']
-    allfeaturesnames = efel.getFeatureNames()
-
     username = request.session['username']
     time_info = request.session['time_info']
+    
+    # get feature names
+    allfeaturesnames = efel.getFeatureNames()
 
-    # conf_dir = request.session['main_json_dir']
+    # get folder paths for feature extraction
     conf_dir = EfelStorage.getMainJsonDir()
-    # traces_files_dir = request.session['user_files_dir']
     traces_files_dir = EfelStorage.getTracesDir()
-    # user_files_dir = request.session['user_files_dir']
     user_files_dir = EfelStorage.getUserFilesDir(username, time_info)
-    # user_results_dir = request.session['user_results_dir']
     user_results_dir = EfelStorage.getResultsDir(username, time_info)
 
+    # get features selected by the user 
     selected_features = request.session["selected_features"]
 
+    # initialize dictionary
     cell_dict = {}
-
+    
+    # extract traces and stimulus info for the feature extraction process
     for k in selected_traces_rest_json:
         path_to_file = os.path.join(user_files_dir, k + '.json')
         if k + '.json' not in os.listdir(user_files_dir):
-            shutil.copy2(os.path.join(traces_files_dir, k + '.json'), path_to_file)
+            shutil.copy2(os.path.join(traces_files_dir, k + '.json'), 
+                         path_to_file)
         with open(path_to_file) as f:
             crr_file_dict = json.loads(f.read()) 
         crr_file_all_stim = list(crr_file_dict['traces'].keys())
@@ -263,7 +271,8 @@ def extract_features(request):
             ("cell_id", "name")
         ]
 
-        keys = [crr_file_dict[t[0]] if t[0] in crr_file_dict else crr_file_dict[t[1]] for t in new_keys]
+        keys = [crr_file_dict[t[0]] if t[0] in crr_file_dict else 
+                crr_file_dict[t[1]] for t in new_keys]
         keys2 = []
         for kk2 in keys:
             if not type(kk2) == list:
@@ -279,17 +288,21 @@ def extract_features(request):
         cell_dict[crr_key]['files'] = [k]
         cell_dict[crr_key]['cell_name'] = crr_cell_name
         cell_dict[crr_key]['all_stim'] = crr_file_all_stim
-        cell_dict[crr_key]['v_corr'] = [int(selected_traces_rest_json[k]['v_corr'])]
+        cell_dict[crr_key]['v_corr'] = \
+            [int(selected_traces_rest_json[k]['v_corr'])]
 
     target = []
     final_cell_dict = {}
     final_exclude = []
 
+    # build data configuration dictionary for every cell
     for key in cell_dict:
         crr_el = cell_dict[key]
         for c_stim_el in crr_el['stim']:
-            [target.append(float(i)) for i in c_stim_el if float(i) not in target]
-        exc_stim_lists = [list(set(crr_el['all_stim']) - set(sublist)) for sublist in crr_el['stim']]
+            [target.append(float(i)) for i in c_stim_el 
+             if float(i) not in target]
+        exc_stim_lists = [list(set(crr_el['all_stim']) - set(sublist)) for 
+                          sublist in crr_el['stim']]
         crr_exc = []
         for crr_list in exc_stim_lists:
             crr_stim_val = [float(i) for i in crr_list]
@@ -310,8 +323,7 @@ def extract_features(request):
                 'exclude_unit': [crr_file_amp_unit for i in range(len(crr_exc))]
             }
 
-    # build configuration dictionary
-
+    # build option configuration dictionary for the feature extraction
     config = {}
     config['features'] = {'step': [str(i) for i in selected_features]}
     config['path'] = user_files_dir
@@ -319,12 +331,11 @@ def extract_features(request):
     config['comment'] = []
     config['cells'] = final_cell_dict
     config['options'] = {
-        # 'featconffile': './pt_conf.json',
-        # 'featzerotonan': False,
         'zero_to_nan': {
             'flag': bool(global_parameters_json['zero_to_nan']),
             'value': global_parameters_json['value'],
-            'mean_features_no_zeros': global_parameters_json['mean_features_no_zeros']
+            'mean_features_no_zeros': \
+                global_parameters_json['mean_features_no_zeros']
             },
         'relative': False,
         'tolerance': 0.02,
@@ -334,7 +345,6 @@ def extract_features(request):
         'nanmean': True,
         'logging': True,
         'nangrace': 0,
-        # 'spike_threshold': 1,
         'amp_min': -1e22,
         'zero_std': bool(global_parameters_json['zero_std']),
         'trace_check': False,
@@ -347,13 +357,16 @@ def extract_features(request):
         }
     }
 
+    # launch the feature extraction process
     try:
-        main_results_folder = os.path.join(user_results_dir, time_info + "_nfe_results")
+        main_results_folder = os.path.join(user_results_dir, 
+                                           time_info + "_nfe_results")
         extractor = bpefe.Extractor(main_results_folder, config)
         extractor.create_dataset()
         extractor.plt_traces()
         if global_parameters_json['threshold'] != '':
-            extractor.extract_features(threshold=int(global_parameters_json['threshold']))
+            extractor.extract_features(threshold=
+                                       int(global_parameters_json['threshold']))
         else:
             extractor.extract_features(threshold=-20)
         extractor.mean_features()
@@ -364,10 +377,13 @@ def extract_features(request):
         print('SOME ERROR OCCURED')
         print(e)
 
+    # manage how to cite instructions
     conf_cit = os.path.join(conf_dir, 'citation_list.json')
     final_cit_file = os.path.join(main_results_folder, 'HOWTOCITE.txt')
-    resources.print_citations(selected_traces_rest_json, conf_cit, final_cit_file)
+    resources.print_citations(selected_traces_rest_json, conf_cit, 
+                              final_cit_file)
 
+    # set result .zip file parameters
     zip_name = time_info + '_nfe_results.zip'
     zip_path = os.path.join(user_results_dir, zip_name)
     request.session['nfe_result_file_zip'] = zip_path
@@ -378,18 +394,20 @@ def extract_features(request):
         if os.path.exists(f):
             os.remove(f)
 
-    #parent_folder = os.path.dirname(full_crr_result_folder)
+    # create result .zip files
     contents = os.walk(main_results_folder)
     try:
         zip_file = zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED)
         for root, folders, files in contents:
             for folder_name in folders:
                 absolute_path = os.path.join(root, folder_name)
-                relative_path = absolute_path.replace(main_results_folder + os.sep, '')
+                relative_path = absolute_path.replace(main_results_folder +
+                                                      os.sep, '')
                 zip_file.write(absolute_path, relative_path)
             for file_name in files:
                 absolute_path = os.path.join(root, file_name)
-                relative_path = absolute_path.replace(main_results_folder + os.sep, '')
+                relative_path = absolute_path.replace(main_results_folder +
+                                                      os.sep, '')
                 zip_file.write(absolute_path, relative_path)
     except IOError as message:
         print(message)
@@ -403,44 +421,59 @@ def extract_features(request):
     finally:
         zip_file.close()
 
-    # accesslogger.info(resources.string_for_log('extract_features', request, page_spec_string='___'.join(check_features)))
     return HttpResponse(json.dumps({"status": "OK"}))
 
 
 
 def results(request):
-    
-    # if not ctx exit the application
-    if request.session["is_free_space_enough"] is None or request.session["is_free_space_enough"] is False:
+    """
+    Render result page
+    """
+
+    # if not enough space is left on disk display error page
+    if (request.session["is_free_space_enough"] is None or 
+        request.session["is_free_space_enough"] is False):
+        # render error page
         return redirect('/efelg/error_space_left/')
     
-    # Render final page containing the link to the result zip file if any
-
-    request.session["selected_features"] = request.POST.getlist('crr_feature_check_features')
+    # render final page containing the link to the result zip file if any
+        request.session["selected_features"] = \
+            request.POST.getlist('crr_feature_check_features')
     return render(request, 'efelg/results.html')
 
 
 def download_zip(request):
-    
-    # if not ctx exit the application
-    if request.session["is_free_space_enough"] is None or request.session["is_free_space_enough"] is False:
+    """
+    Provide file to be downloaded
+    """
+
+    # if not enough space is left on disk display error page
+    if (request.session["is_free_space_enough"] is None or 
+        request.session["is_free_space_enough"] is False):
+        # render html page
         return redirect('/efelg/error_space_left/')
 
-    # accesslogger.info(resources.string_for_log('download_zip', request))
     zip_file = open(request.session['nfe_result_file_zip'], 'rb')
     response = HttpResponse(zip_file, content_type='application/force-download')
-    response['Content-Disposition'] = 'attachment; filename="%s"' % request.session['nfe_result_file_zip_name']
+    response['Content-Disposition'] = \
+        'attachment; filename="%s"' % \
+        request.session['nfe_result_file_zip_name']
     return response
 
 
 def features_dict(request):
+    """
+    Return the feature dictionary containing all feature names, 
+    grouped by feature type
+    """
     
-    # if not ctx exit the application
-    if request.session["is_free_space_enough"] is None or request.session["is_free_space_enough"] is False:
+    # if not enough space is left on disk display error page
+    if (request.session["is_free_space_enough"] is None 
+        or request.session["is_free_space_enough"] is False):
         return redirect('/efelg/error_space_left/')
 
-    # Render the feature dictionary containing all feature names, grouped by feature type
-    with open(os.path.join(settings.BASE_DIR, 'static', 'efelg', 'efel_features_final.json')) as json_file:
+    with open(os.path.join(settings.BASE_DIR, 'static', 'efelg', 
+                           'efel_features_final.json')) as json_file:
         features = json.load(json_file)
     return HttpResponse(json.dumps(features))
 
@@ -448,32 +481,30 @@ def features_dict(request):
 @csrf_exempt
 def upload_files(request):
     """
-    Upload file to local folder
+    Save uploaded files to local folder
     """
 
-    # if not ctx exit the application
-    if request.session["is_free_space_enough"] is None or request.session["is_free_space_enough"] is False:
+    # if not enough space is left on disk display error page 
+    if (request.session["is_free_space_enough"] is None or 
+        request.session["is_free_space_enough"] is False):
         return redirect('/efelg/error_space_left/')
 
     username = request.session['username']
     time_info = request.session['time_info']
 
-    # uploaded_files_dir = request.session['uploaded_files_dir']
+    # get user's folders
     upload_files_dir = EfelStorage.getUploadedFilesDir(username, time_info)
-    # user_files_dir = request.session['user_files_dir']
     user_files_dir = EfelStorage.getUserFilesDir(username, time_info)
 
     names_full_path = []
-
     data_name_dict = {
         "all_json_names": [],
         "refused_files": []
     }
 
     cell_name = "up_cell_" + request.POST['cell_name']
-
     user_files = request.FILES.getlist('user_files')
-    # for every files to be uploaded, save them on local folders:
+    # for every files to be uploaded, save them in local folders:
     for k in user_files:
         if k.name.endswith('.abf') or k.name.endswith('.json'):
             file_name = re.sub('-', '_', k.name)
@@ -484,7 +515,6 @@ def upload_files(request):
                 os.remove(path_to_file)
 
             with open(path_to_file, 'wb') as f:
-
                 # save chunks or entire file based on dimensions
                 if k.multiple_chunks():
                     for chunk in k.chunks():
@@ -495,6 +525,7 @@ def upload_files(request):
                 if not k.name.endswith('_metadata.json'):
                     names_full_path.append(path_to_file)
 
+    # save file to local disk
     for f in names_full_path:
         try:
             data = manage_json.extract_data(f, request.POST)
@@ -509,39 +540,66 @@ def upload_files(request):
         except:
             pass   
 
-    return HttpResponse(json.dumps(data_name_dict), content_type="application/json")
+    # return uploaded file names
+    return HttpResponse(json.dumps(data_name_dict),
+                        content_type="application/json")
 
 
 def get_result_dir(request):
+    """
+    Return results dir
+    """
 
-    # if not ctx exit the application
-    if request.session["is_free_space_enough"] is None or request.session["is_free_space_enough"] is False:
+    # if not enough space is left on disk display error page 
+    if (request.session["is_free_space_enough"] is None or 
+        request.session["is_free_space_enough"] is False):
         return redirect('/efelg/error_space_left/')
 
-    user_results_dir = EfelStorage.getResultsDir(request.session['username'], request.session['time_info'])
+    user_results_dir = \
+        EfelStorage.getResultsDir(request.session['username'], 
+                                  request.session['time_info'])
     data = {'result_dir': user_results_dir}
     return JsonResponse(data=json.dumps(data), status=200, safe=False)
 
 
 def index_docs(request):
+    """
+    Render Guidebook main page
+    """
     return render(request, 'efelg/docs/index.html')
 
 
 def file_formats_docs(request):
+    """
+    Render Guidebook file formats page
+    """
     return render(request, 'efelg/docs/file_formats.html')
 
 
 def get_dataset(request):
-    with open(os.path.join(settings.BASE_DIR, 'static', 'efelg', 'dataset.json')) as json_file:
+    """
+    Return dataset metadata
+    """
+
+    with open(os.path.join(settings.BASE_DIR,
+                           'static', 'efelg', 'dataset.json')) as json_file:
         dataset = json.load(json_file)
     return HttpResponse(json.dumps(dataset))
 
 
 def dataset(request):
+    """
+    Return Guidebook dataset page
+    """
+
     return render(request, 'efelg/docs/dataset.html')
 
 
 def hhf_etraces(request, wfid):
+    """ 
+    Render NFE trace selection page in case electrophysiological signals have
+    been sent from the Hippocampus Hub
+    """
 
     print("Workflow ID: " + wfid)
     print(request.session)
@@ -553,12 +611,14 @@ def hhf_etraces(request, wfid):
 @csrf_exempt
 def load_hhf_etraces(request):
 
+    # if not enough space is left on disk display error page
     if EfelStorage.isThereEnoughFreeSpace():
         request.session['is_free_space_enough'] = True
     else:
         request.session['is_free_space_enough'] = False
         return redirect('/efelg/error_space_left/')
 
+    # get directory where traces sent from the hippocampus hub have been sent
     hhf_etraces_dir = request.POST.get('hhf_etraces_dir', None)
     wfid = request.POST.get('wfid', None) 
     
@@ -573,51 +633,67 @@ def load_hhf_etraces(request):
             try:
                 wfid = request.session['wfid']
             except KeyError:
-                return HttpResponse(json.dumps({'resp': 'KO', 'message': 'key error occurred'}))
+                return HttpResponse(json.dumps({'resp': 'KO', 'message': 
+                                                'key error occurred'}))
 
     time_info, username = wfid.split('_')
-
     data_name_dict = {
         "all_json_names": [],
         "refused_files": []
     }
 
     try:
-    
         if hhf_etraces_dir == 'True':
             for k in request.session.keys():
                 try:
-                    if 'wf_id' in request.session[k].keys() and request.session[k]['wf_id'] == wfid:
+                    if ('wf_id' in request.session[k].keys() and 
+                        request.session[k]['wf_id'] == wfid):
                         try:
-                            hhf_etraces_dir = request.session[k]['hhf_etraces_dir']
+                            hhf_etraces_dir = \
+                                request.session[k]['hhf_etraces_dir']
                         except:
-                            # if exception is thrown then "hhf_etraces_dir" is not present and an error code is returned
-                            return JsonResponse({'resp': 'KO', 'message': 'etraces dir not present error'})
+                            # if exception is thrown then "hhf_etraces_dir" is 
+                            # not present and an error code is returned
+                            return JsonResponse({'resp': 'KO', 'message': 
+                                                 'etraces dir not present error'
+                                                 })
                 except AttributeError:
                     continue
-
+        
+        # save data files sent from the HippocampusHub in the appropriate folder
         for f in os.listdir(hhf_etraces_dir):
             if not f.endswith('.abf'):
                 continue
             try:
-                with open(os.path.join(hhf_etraces_dir, f[:-4] + '_metadata.json'), 'r') as fd:
+                with open(os.path.join(hhf_etraces_dir, f[:-4] + 
+                                       '_metadata.json'), 'r') as fd:
                     metadata_dict = json.load(fd)
-                data = manage_json.extract_data(os.path.join(hhf_etraces_dir, f), metadata_dict=metadata_dict)
+                data = manage_json.extract_data(
+                    os.path.join(hhf_etraces_dir, f), 
+                    metadata_dict=metadata_dict)
                 output_filename = manage_json.create_file_name(data)
                 output_filename = output_filename.replace(' ', '_')
-                #with open(os.path.join(request.session['user_files_dir'], output_filename), 'w') as fd:
-                with open(os.path.join(EfelStorage.getUserFilesDir(username, time_info), output_filename), 'w') as fd:
+                
+                with open(os.path.join(EfelStorage.getUserFilesDir(
+                    username, time_info), output_filename), 'w') as fd:
                     json.dump(data, fd, indent=4)
                 if output_filename[:-5] not in data_name_dict['all_json_names']:
-                    data_name_dict['all_json_names'].append(output_filename[:-5])
+                    data_name_dict['all_json_names'].append(
+                        output_filename[:-5])
             except Exception as e:
                 print('metadata not found')
     
     except FileNotFoundError:
-        return HttpResponse(json.dumps({'resp':'KO', 'message': 'file not found error'}))
+        return HttpResponse(json.dumps({'resp':'KO', 'message': 
+                                        'file not found error'}))
 
-    return HttpResponse(json.dumps(data_name_dict), content_type="application/json")
+    return HttpResponse(json.dumps(data_name_dict), 
+                        content_type="application/json")
 
 
 def error_space_left(request):
+    """
+    Render no-space-left error page
+    """
+
     return render(request, 'efelg/error_space_left.html')
