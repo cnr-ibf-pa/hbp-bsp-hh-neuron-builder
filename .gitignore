@@ -2,6 +2,8 @@
 *.log
 .idea/
 .vscode/
+.vs/
+.editorconfig
 
 */migrations/
 
