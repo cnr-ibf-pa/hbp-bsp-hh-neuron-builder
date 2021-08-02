@@ -31,20 +31,11 @@ def get_traces_abf(filename):
     header = data._axon_info
     
     stim_res = stimulus_extraction.stim_feats_from_meta(metadata, len(segments))
+    if not stim_res[0]:
+        stim_res = stimulus_extraction.stim_feats_from_header(header)
+    if not stim_res[0]:
+        return 0
     stim = stim_res[1]
-
-
-    """
-    # extract stimulus
-    if upload_flag
-        
-    else:
-        if not stim_res[0]:
-            stim_res = stimulus_extraction.stim_feats_from_header(header)
-        if not stim_res[0]:
-            return 0
-        stim = stim_res[1]
-    """
     
     volt_unit = str(segments[0].analogsignals[0].units.dimensionality)    
     amp_unit = stim[0][-1]
@@ -83,66 +74,64 @@ def get_metadata(filename):
 
     return data
 
+
 # perform units conversions
-def perform_conversions_json(filename):
-    with open(filename, "r") as input_file:
+def perform_conversions_json(data):
 
-        data = json.load(input_file)
-
-        #if ("stimulus_unit" in metadata) and (not metadata["stimulus_unit"].lower() in ["na", "unknown"]):
-        if ("amp_unit" in data) and (not data["amp_unit"].lower() in ["na", "unknown"]):
-            a_pow = 1
-            if data["amp_unit"].lower() == "a":
-                a_pow = 9
-            elif data["amp_unit"].lower() == "ma":
-                a_pow = 6
-            elif data["amp_unit"].lower() == "ua":
-                a_pow = 3
-            elif data["amp_unit"].lower() == "pa":
-                a_pow = -3
-            
-            temp = dict()
-            for key in data["traces"]:
-                temp[str(round(float(key) * pow(10, a_pow), 3))] = data["traces"][key]
-            data["traces"] = temp.copy()
-            temp.clear()
-            for key in data["tonoff"]:
-                temp[str(round(float(key) * pow(10, a_pow), 3))] = data["tonoff"][key]
-            data["tonoff"] = temp.copy()
-            temp.clear()
-            data["stimulus_increment"] = [value * pow(10, a_pow) for value in data["stimulus_increment"]]
-            data["stimulus_first_amplitude"] = [value * pow(10, a_pow) for value in data["stimulus_first_amplitude"]]
-            data["amp_unit"] = "nA"
+    if ("stimulus_unit" in data) and (not data["stimulus_unit"].lower() in ["na", "unknown"]):
+        a_pow = 1
+        stimlus_unit = data["stimulus_unit"].lower()
+        if stimlus_unit == "a":
+            a_pow = 9
+        elif stimlus_unit == "ma":
+            a_pow = 6
+        elif stimlus_unit == "ua":
+            a_pow = 3
+        elif stimlus_unit == "pa":
+            a_pow = -3
         
-        if ("volt_unit" in data) and (not data["volt_unit"].lower() in ["mv", "unknown"]):
-            v_pow = 1
-            if data["volt_unit"].lower() == "v":
-                v_pow = 3
+        temp = dict()
+        for key in data["traces"]:
+            temp[str(round(float(key) * pow(10, a_pow), 3))] = data["traces"][key]
+        data["traces"] = temp.copy()
+        temp.clear()
+        for key in data["tonoff"]:
+            temp[str(round(float(key) * pow(10, a_pow), 3))] = data["tonoff"][key]
+        data["tonoff"] = temp.copy()
+        temp.clear()
+        data["stimulus_unit"] = "nA"
+        if "stimulus_increment" in data:
+            data["stimulus_increment"] = [value * pow(10, a_pow) for value in data["stimulus_increment"]]
+        if "stimulus_first_amplitude" in data:
+            data["stimulus_first_amplitude"] = [value * pow(10, a_pow) for value in data["stimulus_first_amplitude"]]
+    
+    if ("voltage_unit" in data) and (not data["voltage_unit"].lower() in ["mv", "unknown"]):
+        v_pow = 1
+        if data["voltage_unit"].lower() == "v":
+            v_pow = 3
 
-            temp = dict()
-            for key in data["traces"]:
-                temp[key] = [float(value) * pow(10, v_pow) for value in data["traces"][key]]
-            data["traces"] = temp.copy()
-            temp.clear()
-            data["volt_unit"] = "mV"
+        temp = dict()
+        for key in data["traces"]:
+            temp[key] = [float(value) * pow(10, v_pow) for value in data["traces"][key]]
+        data["traces"] = temp.copy()
+        temp.clear()
+        data["voltage_unit"] = "mV"
 
-        if ("sampling_rate_unit" in data) and (not data["sampling_rate_unit"].lower() in ["hz", "unknown"]):
-            if data["sampling_rate_unit"].lower() == "khz":
-                data["sampling_rate"] = [value * pow(10, 3) for value in data["sampling_rate"]]
-            data["sampling_rate_unit"] = "Hz"
-
-        return data
+    if ("sampling_rate_unit" in data) and (not data["sampling_rate_unit"].lower() in ["hz", "unknown"]):
+        if data["sampling_rate_unit"].lower() == "khz":
+            data["sampling_rate"] = [value * pow(10, 3) for value in data["sampling_rate"]]
+        data["sampling_rate_unit"] = "Hz"
 
 
 def extract_data(filepath, metadata_dict=None):
 
     if filepath.endswith(".abf"):
-        sampling_rate, tonoff, traces, volt_unit, amp_unit = get_traces_abf(filepath)
+        sampling_rate, tonoff, traces, voltage_unit, stimulus_unit = get_traces_abf(filepath)
         data = {
             'abfpath': filepath,
             'md5': md5(filepath),
-            'volt_unit': volt_unit,
-            'amp_unit': amp_unit,
+            'voltage_unit': voltage_unit,
+            'stimulus_unit': stimulus_unit,
             'traces': traces,
             'tonoff': tonoff,
             'sampling_rate': sampling_rate
@@ -150,14 +139,42 @@ def extract_data(filepath, metadata_dict=None):
     elif filepath.endswith(".json"):
         with open(filepath, "r") as f:
             data = json.load(f)
+    
+    new_keys = {
+        "type": "cell_type",
+        "name": "cell_id",
+        "area": "brain_structure",
+        "sample": "filename",
+        "species": "animal_species",
+        "region": "cell_soma_location",
+        "amp_unit": "stimulus_unit",
+        "volt_unit": "voltage_unit",
+        "v_unit": "voltage_unit"
+    }
+
+    # update dictionary keys
+    for key in new_keys:
+        if key in data:
+            if not new_keys[key] in data:
+                data[new_keys[key]] = data[key]
+            data.pop(key)
+        if not new_keys[key] in data:
+            data[new_keys[key]] = "unknown"
+
+    if "contributors" in data:
+        if "name" in data["contributors"]:
+            if not 'contributors_affiliations' in data:
+                data['contributors_affiliations'] = data['contributors']['name']
+    if not 'contributors_affiliations' in data:
+        data['contributors_affiliations'] = 'unknown'
+
+    perform_conversions_json(data)
 
     filename = os.path.basename(filepath)
     data["filename"] = filename[:filename.index(".")]
 
     if metadata_dict:
         update_file_name(data, metadata_dict)
-    
-    #data = perform_conversion_json(data)
     
     return data
 
