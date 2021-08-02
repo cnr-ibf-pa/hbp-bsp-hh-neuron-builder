@@ -20,32 +20,6 @@ def md5(filename):
     return hash_md5.hexdigest()
 
 
-# generate data structure containing data and metadata
-"""
-def gen_data_struct(filename, filename_meta, upload_flag= False):
-    c_species, c_area, c_region, c_type, c_etype, c_name, c_sample = get_cell_info(filename_meta, upload_flag)
-    sampling_rate, tonoff, traces, volt_unit, amp_unit = get_traces_info(filename, upload_flag)
-    obj = {
-        'abfpath': filename,
-        'md5': md5(filename),
-        'species': c_species,
-        'area': c_area,
-        'region': c_region,
-        'type': c_type,
-        'etype': c_etype,
-        'name': c_name,
-        'sample': c_sample,
-        'volt_unit': volt_unit,
-        'amp_unit': amp_unit,
-        'traces': traces,
-        'tonoff': tonoff,
-        'sampling_rate': sampling_rate,
-        'contributors': {'name': '', 'message': ''}
-    }
-    
-    return obj
-"""
-
 def gen_data_struct(filename, filename_meta, upload_flag= False):
     sampling_rate, tonoff, traces, volt_unit, amp_unit = get_traces_info(filename, upload_flag)
     obj = {
@@ -61,73 +35,6 @@ def gen_data_struct(filename, filename_meta, upload_flag= False):
     }    
     return obj
 
-
-# extract cell info from the metadata file
-"""
-def get_cell_info(filename, upload_flag=False):
-    if upload_flag:
-        c_species = "cellSpecies"
-        c_area = "cellArea"
-        c_region = "cellRegion"
-        c_type = "cellType"
-        c_etype = "cellEtype"
-        c_name = "cellName"
-        c_sample = os.path.splitext(os.path.basename(filename))[0]
-    else:
-        with open(filename) as f:
-            data = json.load(f)
-        if "animal_species" not in data or "animal_species" is None:
-            c_species = "unknown"
-        else:
-            c_species = data["animal_species"]
-            c_species = c_species.replace(" ", "-")
-            # c_species = c_species.replace("_", "-")
-
-        if "brain_structure" not in data or "brain_structure" is None:
-            c_area = "unknown"
-        else:
-            c_area = data["brain_structure"]
-            c_area = c_area.replace(" ", "-")
-            # c_area = c_area.replace("_", "-")
-
-        if "cell_soma_location" not in data or "cell_soma_location" is None:
-            c_region = "unknown"
-        else:
-            c_region = data["cell_soma_location"]
-            c_region = c_region.replace(" ", "-")
-            # c_region = c_region.replace("_", "-")
-
-        if "cell_type" not in data or "cell_type" is None:
-            c_type = "unknown"
-        else:
-            c_type = data["cell_type"]
-            c_type = c_type.replace(" ", "-")
-            # c_type = c_type.replace("_", "-")
-
-        if "etype" not in data or "etype" is None:
-            c_etype = "unknown"
-        else:
-            c_etype = data["etype"]
-            c_etype = c_etype.replace(" ", "-")
-            # c_etype = c_etype.replace("_", "-")
-
-        if "cell_id" not in data or "cell_id" is None:
-            c_name = "unknown"
-        else:
-            c_name = data["cell_id"]
-            c_name = c_name.replace(" ", "-")
-            # c_name = c_name.replace("_", "-")
-
-        if "filename" not in data or "filename" is None: 
-            c_sample = "unknown"
-        else:
-            c_sample = data["filename"]
-            c_sample = os.path.splitext(c_sample)[0]
-            c_sample = c_sample.replace(" ", "-")
-            # c_sample = c_sample.replace("_", "-")
-
-    return c_species, c_area, c_region, c_type, c_etype, c_name, c_sample
-"""
 
 def get_cell_info(filename, upload_flag=False, cell_name="cellName"):
     with open(filename, "r") as f:
@@ -300,84 +207,6 @@ def extract_authorized_collab(metadata_file):
     return all_meta['authorized_collabs']
 
 
-# generate json output from all authorized user traces
-def generate_json_output(authorized_list, source_dir):
-    output_file = {"Contributors": {}}
-
-    for i in authorized_list:
-        file_name = i + '.json'
-        with open(os.path.join(source_dir, file_name), 'r') as f:
-            json_file = json.load(f)
-
-        if "contributors_affiliations" in json_file:
-            contributor = json_file["contributors_affiliations"]
-        elif "name" in json_file["contributors"]:
-            contributor = json_file["contributors"]["name"]
-        else:
-            raise Exception("contributors_affiliations not found!")
-
-        if "animal_species" in json_file:
-            specie = json_file["animal_species"]
-        elif "species" in json_file:
-            specie = json_file["species"]
-        else:
-            raise Exception("animal_species not found!")
-
-        if "brain_structure" in json_file:
-            structure = json_file["brain_structure"]
-        elif "area" in json_file:
-            structure = json_file["area"]
-        else:
-            raise Exception("brain_structure not found!")
-
-        if "cell_soma_location" in json_file:
-            region = json_file["cell_soma_location"]
-        elif "region" in json_file:
-            region = json_file["region"]
-        else:
-            raise Exception("cell_soma_location not found!")
-
-        if "cell_id" in json_file:
-            cell_id = json_file["cell_id"]
-        elif "name" in json_file:
-            cell_id = json_file["name"]
-        else:
-            raise Exception("cell_id not found!")
-
-        cell_type = json_file["type"]
-        etype = json_file["etype"]
-        filename = file_name
-
-        if contributor not in output_file["Contributors"]:
-            output_file["Contributors"][contributor] = {}
-
-        if specie not in output_file["Contributors"][contributor]:
-            output_file["Contributors"][contributor][specie] = {}
-
-        if structure not in output_file["Contributors"][contributor][specie]:
-            output_file["Contributors"][contributor][specie][structure] = {}
-
-        if region not in output_file["Contributors"][contributor][specie][structure]:
-            output_file["Contributors"][contributor][specie][structure][region] = {}
-
-        if cell_type not in output_file["Contributors"][contributor][specie][structure][region]:
-            output_file["Contributors"][contributor][specie][structure][region][cell_type] = {}
-
-        if etype not in output_file["Contributors"][contributor][specie][structure][region][cell_type]:
-            output_file["Contributors"][contributor][specie][structure][region][cell_type][etype] = {}
-
-        if cell_id not in output_file["Contributors"][contributor][specie][structure][region][cell_type][etype]:
-            output_file["Contributors"][contributor][specie][structure][region][cell_type][etype][cell_id] = {}
-
-        if len(output_file["Contributors"][contributor][specie][structure][region][cell_type][etype][cell_id]) == 0:
-            output_file["Contributors"][contributor][specie][structure][region][cell_type][etype][cell_id] = [filename]
-
-        elif i not in output_file["Contributors"][contributor][specie][structure][region][cell_type][etype][cell_id]:
-            output_file["Contributors"][contributor][specie][structure][region][cell_type][etype][cell_id].append(filename)
-
-    return output_file
-
-
 # perform units conversions
 def perform_conversions_json_file(filename):
     with open(filename, "r") as input_file:
@@ -458,17 +287,11 @@ def extract_data(name, dict=None, metadata_dict=None, upload_flag=True):
 
 
 def create_file_name(data, cell_id=None):
-    print('create_file_name() called.')
     filename_keys = ["animal_species", "brain_structure", "cell_soma_location", "type", "etype", "cell_id"]
     if "filename" in data.keys():
         filename_keys.append("filename")
-        print('filename key found')
-        print('data[\'filename\'] = %s' % data['filename']) 
     elif "sample" in data.keys():
         filename_keys.append("sample")
-        print('sample key found')
-        print("data['sample'] = %s" % data['sample'])
     else:
         raise Exception("filename not found!")
-
     return '____'.join([data[key] for key in filename_keys]) + ".json"
