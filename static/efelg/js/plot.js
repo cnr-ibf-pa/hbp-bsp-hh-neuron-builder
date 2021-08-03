@@ -18,7 +18,7 @@ function refreshPlot(plot_id) {
     Plotly.redraw(plot_id);
 
     // set the opacities of the legend's labels
-    Plotly.d3.select('div#' + plot_id + ' g.legend').selectAll('g.traces').each(function (item, i) {
+    Plotly.d3.select('div#' + plot_id + ' g.legend').selectAll('g.traces').each(function(item, i) {
         Plotly.d3.select(this).style('opacity', 1);
     })
 }
@@ -27,7 +27,7 @@ function refreshPlot(plot_id) {
 // refresh the plot considering the voltage correction
 function plotVoltageCorrection(plot_id, correction) {
     var correctedSegments = plotData[plot_id]["segments"];
-    var real_correction =  correction - plotData[plot_id]["correction"];
+    var real_correction = correction - plotData[plot_id]["correction"];
     plotData[plot_id]["correction"] = correction;
     correctedSegments.forEach(segment => {
         y = segment["y"];
@@ -60,32 +60,32 @@ async function sendParallelRequests(promises) {
 
 function loadMore(cells, isUploaded, id) {
     n_plots = 1;
-    var promises = plotMinibatch(cells.slice((n_plots - 1) * minibatch_size,  n_plots * minibatch_size), isUploaded, id);
+    var promises = plotMinibatch(cells.slice((n_plots - 1) * minibatch_size, n_plots * minibatch_size), isUploaded, id);
     $("#charts").append("<button id='load-more-button' class='btn btn-outline-primary w-25 mt-3'>Load more</button>");
     $("#load-more-button").click(() => {
         n_plots++;
-        sendParallelRequests(plotMinibatch(cells.slice((n_plots - 1) * minibatch_size,  n_plots * minibatch_size), isUploaded, id));
+        sendParallelRequests(plotMinibatch(cells.slice((n_plots - 1) * minibatch_size, n_plots * minibatch_size), isUploaded, id));
         if (cells.length > n_plots * minibatch_size) {
             $("#charts").append($("#load-more-button"));
         } else {
             $("#load-more-button").remove();
         }
-        
+
     });
     sendParallelRequests(promises)
 }
 
 
 function createCellHeader(cell_name, cell_id, cellHeaderIds) {
-        
+
     var cell_container;
     if (cellHeaderIds.includes(cell_id)) {
         cell_container = $('<div id="cell-' + cell_id + '"class=text-center" style="display: none"/>');
     } else {
         cell_container = $('<div id="cell-' + cell_id + '"class="text-center"/>');
         cellHeaderIds.push(cell_id);
-    } 
-    
+    }
+
     cell_container.append(' \
             <div class="row bg-light-grey mx-auto py-2"> \
                 <div class="col-12 my-2"> \
@@ -98,8 +98,7 @@ function createCellHeader(cell_name, cell_id, cellHeaderIds) {
                     <a class="cell_dselall clickable mx-2">Deselect all traces</a> \
                     <a class="cell_invsel clickable mx-2">Invert selection</a> \
                 </div> \
-            </div>'
-    );
+            </div>');
     cell_container.find('.cell_selall').click(() => {
         $('#cell-' + cell_id).find('.selall').click();
     });
@@ -164,7 +163,7 @@ function createCellPlotBox(id, container, currentPlotData, xLabel, yLabel, cellI
     menus.push($(settingsMenu));
 
     // Select every trace
-    infobox.find('.selall').click(() => { 
+    infobox.find('.selall').click(() => {
         plotData[plot_id]["opacities"].fill(SHOW_CHECK);
         inputbox.find('input').prop('checked', true);
         refreshPlot(plot_id);
@@ -190,6 +189,7 @@ function createCellPlotBox(id, container, currentPlotData, xLabel, yLabel, cellI
 }
 
 var cellHeaderIds = [];
+
 function plotMinibatch(cells, isUploaded, id) {
     var promises = [];
     for (var i = 0; i < cells.length; i++) {
@@ -208,7 +208,7 @@ function plotMinibatch(cells, isUploaded, id) {
             cell_name = contributor + ' > ' + specie + ' > ' + structure + ' > ' + region + ' > ' + type + ' > ' + etype + ' > ' + cell;
             files = files.concat(Object.values(json['Contributors'][contributor][specie][structure][region][type][etype][cell]));
         }
-        
+
         var cellHeader = createCellHeader(cell_name, cell, cellHeaderIds)
         cellHeader.addClass("mt-4");
         cellHeader.append('<div id="charts-' + cell + '"></div>');
@@ -224,7 +224,7 @@ function plotMinibatch(cells, isUploaded, id) {
                     Object.keys(dict["traces"]).forEach(label => {
                         y = dict["traces"][label];
                         x = Array
-                            .apply(null, {length: y.length})
+                            .apply(null, { length: y.length })
                             .map(Number.call, Number)
                             .map(x => x * 1000 / dict['disp_sampling_rate']);
                         currentPlotData.push({
@@ -234,7 +234,10 @@ function plotMinibatch(cells, isUploaded, id) {
                         });
                     });
                     currentPlotData = currentPlotData.sort((dict1, dict2) => parseFloat(dict2["label"]) - parseFloat(dict1["label"]));
-                    currentPlotData.forEach(d => d["label"] += " " + dict["stimulus_unit"]);
+                    currentPlotData.forEach(d => {
+                        d["label"] = (Math.round(d["label"] * 100) / 100).toFixed(2);
+                        d["label"] += " " + dict["stimulus_unit"];
+                    });
                     var new_keys = {
                         "species": "animal_species",
                         "area": "brain_structure",
@@ -277,8 +280,8 @@ function plot(plot_id, input_id, data) {
 
     function manageLegend() {
 
-        var legend =  Plotly.d3.select('div#' + plot_id + ' g.legend');
-        
+        var legend = Plotly.d3.select('div#' + plot_id + ' g.legend');
+
         // save the opacity value before the mousehover
         function savePrevious(item) {
             var i = item[0].trace.index;
@@ -286,14 +289,14 @@ function plot(plot_id, input_id, data) {
             opacities[i] = SHOW_HOVER;
             refreshPlot(plot_id);
         }
-    
+
         // restore the opacity value after the mouseleave
         function restorePrevious(item) {
             var i = item[0].trace.index;
             opacities[i] = previousOpacity;
             refreshPlot(plot_id);
         }
-    
+
         // toggle the opacity value of the specified trace
         function onclick(item) {
             var name = item[0]["trace"]["name"];
@@ -305,10 +308,10 @@ function plot(plot_id, input_id, data) {
                 checkbox.prop('checked', false);
                 previousOpacity = SHOW_FADED;
             }
-        }        
-    
+        }
+
         // bind the events for each legend item
-       legend.selectAll('g.traces rect').each(function () {
+        legend.selectAll('g.traces rect').each(function() {
             Plotly.d3.select(this).on('click', onclick);
             Plotly.d3.select(this).on('mouseenter', savePrevious);
             Plotly.d3.select(this).on('mouseleave', restorePrevious);
@@ -323,21 +326,21 @@ function plot(plot_id, input_id, data) {
     var currentPlotData = plotData[plot_id]["segments"];
     var opacities = plotData[plot_id]["opacities"];
     var previousOpacity = null;
-    
+
     $("<form id='" + input_id + "-form'></form>").appendTo($("#" + input_id));
     var form = $("#" + input_id + "-form");
     data["data"].forEach(segment => {
         var label = segment["label"];
         form.append("<input id='" + input_id + "_segment" + label.substring(0, label.lastIndexOf(" ")).replace(".", "") +
-                    "' type='checkbox' name='" + label + "' style='display: none'>");
-            currentPlotData.push({
-                x: segment["x"],
-                y: segment["y"],
-                name: segment["label"],
-                mode: 'lines',
-                hoverinfo: 'none',
-                opacity: SHOW_FADED
-            });
+            "' type='checkbox' name='" + label + "' style='display: none'>");
+        currentPlotData.push({
+            x: segment["x"],
+            y: segment["y"],
+            name: segment["label"],
+            mode: 'lines',
+            hoverinfo: 'none',
+            opacity: SHOW_FADED
+        });
         opacities.push(SHOW_FADED);
     });
     var layout = {
@@ -361,7 +364,7 @@ function plot(plot_id, input_id, data) {
         },
         showlegend: true,
         width: data["plot_width"] * 0.99
-    }; 
+    };
     Plotly.newPlot(plot_id, currentPlotData, layout, {
         scrollZoom: false,
         displayModeBar: false

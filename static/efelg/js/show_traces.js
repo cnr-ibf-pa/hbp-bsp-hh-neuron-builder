@@ -67,7 +67,7 @@ function submitAll() {
             parameters['zero_to_nan'] = "True";
         }
         var mean_features_no_zeros = [];
-        $('input[type=checkbox][name=mean_features_no_zeros]:checked').each(function () {
+        $('input[type=checkbox][name=mean_features_no_zeros]:checked').each(function() {
             if (this.value != "all") {
                 mean_features_no_zeros.push(this.value);
             }
@@ -77,7 +77,7 @@ function submitAll() {
     }
 
     var $submitForm = $('#gonextform');
-    $submitForm.submit(function (e) {
+    $submitForm.submit(function(e) {
         var data = serializeAll();
         var parameters = getParameters();
         var form = $('#gonextform')[0];
@@ -127,7 +127,7 @@ function submitAll() {
                 for (var ii = 0; ii < crr_stim.length; ii++) {
                     sorted_stim.push(parseFloat(crr_stim[ii]));
                 }
-                sorted_stim_fin = sorted_stim.sort(function (a, b) { return a - b });
+                sorted_stim_fin = sorted_stim.sort(function(a, b) { return a - b });
                 for (var j = 0; j < sorted_stim_fin.length; j++) {
                     var stimtextnode = document.createTextNode(sorted_stim_fin[j] + "; ");
                     stim_span.appendChild(stimtextnode);
@@ -164,14 +164,14 @@ function closeUserChoiceList() {
 }
 
 //
-$(document).ready(function () {
+$(document).ready(function() {
 
     addParametersMenuListener();
     createUploadBox();
     onChangeEventsValue();
 
     var isLoadingHHFEtraces = false;
-    
+
     function checkIfElementExists(elementId, tableId) {
         childList = document.getElementById(tableId).childNodes;
         for (var i = 0; i < childList.length; i++) {
@@ -192,29 +192,29 @@ $(document).ready(function () {
         $.ajax({
             url: "/efelg/load_hhf_etraces/",
             method: "POST",
-            data: {"hhf_etraces_dir": hhf_etraces_dir, "wfid": wfid},
+            data: { "hhf_etraces_dir": hhf_etraces_dir, "wfid": wfid },
             success: async function(name_dict) {
                 console.log(name_dict)
-                
+
                 try {
                     var loaded_filenames = name_dict.all_json_names;
                     var refused_filenames = [];
-                    loaded_filenames = loaded_filenames.map(function (item) {
+                    loaded_filenames = loaded_filenames.map(function(item) {
                         var splitted = item.split('____');
                         return splitted[splitted.length - 1] + '.abf'
                     })
-                    selected_files.forEach(function (elem) {
+                    selected_files.forEach(function(elem) {
                         if (loaded_filenames.indexOf(elem) == -1)
                             refused_filenames.push(elem);
                     })
-                
+
                     all_json_names = name_dict['all_json_names'];
 
                     $("#upload_files_1").css("display", "none");
                     plotCells(all_json_names, true, 1);
-                
-                } catch(e) {
-                    
+
+                } catch (e) {
+
                     console.warn(e);
 
                     var response = JSON.parse(name_dict);
@@ -238,7 +238,7 @@ $(document).ready(function () {
         })
     }
 
-    $.getJSON('/efelg/get_list', function (data) {
+    $.getJSON('/efelg/get_list', function(data) {
         json = data;
         contrib_keys = Object.keys(json['Contributors']);
         for (var i = 0; i < contrib_keys.length; i++) {
@@ -341,8 +341,8 @@ $(document).ready(function () {
                 }
             }
         }
-    }).done(function () {
-        if (!isLoadingHHFEtraces) { 
+    }).done(function() {
+        if (!isLoadingHHFEtraces) {
             closeMessageDiv("wait-message-div", "main-e-st-div");
         }
     });
@@ -402,7 +402,7 @@ function updateDropdownMenu(selection) {
 //
 function selectAllCheckboxes(selectAll) {
     if ($(selectAll).prop("checked")) {
-        $('input[type=checkbox][name=mean_features_no_zeros]').each(function () {
+        $('input[type=checkbox][name=mean_features_no_zeros]').each(function() {
             $(this).prop("checked", true);
         });
     }
@@ -434,7 +434,7 @@ function checkEventsValue() {
 
 //
 function onChangeEventsValue() {
-    $('#events_value').on("change", function () {
+    $('#events_value').on("change", function() {
         if ($(this).val() > 5) {
             updateValue(this, value);
         }
@@ -515,7 +515,7 @@ function checkIfUploadable(id) {
     //
     function areInputTextAllFilled(id) {
         var areAllFilled = true;
-        $('#upload_files_' + id).find('input[type=text][name!=cell_name]').each(function () {
+        $('#upload_files_' + id).find('input[type=text][name!=cell_name]').each(function() {
             if ($(this).val() == "") {
                 $(this).addClass("is-invalid");
                 $(this).removeClass("is-valid");
@@ -669,19 +669,19 @@ function createUploadBox() {
     </div>';
     $("#add_cell_button").parent(".text-end").before(html_string);
 
-    $('input[type=radio][name=extension_' + i_box + ']').change(function () {
+    $('input[type=radio][name=extension_' + i_box + ']').change(function() {
         var id = this.id.split("_");
         id = id[id.length - 1];
         $('#user_files_' + id).attr("accept", $(this).val());
     });
 
-    $('#upload_files_' + i_box).find('input[type=text]').click(function () {
+    $('#upload_files_' + i_box).find('input[type=text]').click(function() {
         if ($(this).val().toLowerCase().includes("unknown")) {
             $(this).val("");
         }
     });
 
-    $("#user_files_" + i_box).change(function (e) {
+    $("#user_files_" + i_box).change(function(e) {
         selected_files = Object.values(e.target.files).map(x => x.name);
         var id = this.id.split("_");
         id = id[id.length - 1];
@@ -694,58 +694,60 @@ function createUploadBox() {
             if (ext == "json") {
                 var read = new FileReader();
                 read.readAsBinaryString(file);
-                read.onloadend = function () {
+                read.onloadend = function() {
                     var data = JSON.parse(read.result);
-                    var cell_name = $("#cell_name_" + id);
-                    var structure = $("#structure_" + id);
-                    var species = $("#species_" + id);
-                    var region = $("#region_" + id);
-                    var contributors = $("#contributors_" + id)
-                    var type = $("#type_" + id);
-                    var etype = $("#etype_" + id);
-                    if ("name" in data) {
-                        cell_name.val(data["name"].toLowerCase());
-                    } else if ("cell_id" in data) {
-                        cell_name.val(data["cell_id"].toLowerCase());
-                    }
-                    if ("area" in data) {
-                        structure.val(data["area"].toLowerCase());
-                    } else if ("brain_structure" in data) {
-                        structure.val(data["brain_structure"].toLowerCase());
-                    }
-                    if ("species" in data) {
-                        species.val(data["species"].toLowerCase());
-                    } else if ("animal_species" in data) {
-                        species.val(data["animal_species"].toLowerCase());
-                    }
-                    if ("region" in data) {
-                        region.val(data["region"].toLowerCase());
-                    } else if ("cell_soma_location" in data) {
-                        region.val(data["cell_soma_location"].toLowerCase());
-                    }
-                    if ("contributors_affiliations" in data) {
-                        contributors.val(data["contributors_affiliations"].toLowerCase());
-                    } else if ("contributors" in data) {
-                        contributors.val(data["contributors"]["name"].toLowerCase());
-                    }
-                    if ("type" in data) {
-                        type.val(data["type"].toLowerCase());
-                    }
-                    if ("etype" in data) {
-                        etype.val(data["etype"].toLowerCase());
+                    if (data != null) {
+                        var cell_name = $("#cell_name_" + id);
+                        var structure = $("#structure_" + id);
+                        var species = $("#species_" + id);
+                        var region = $("#region_" + id);
+                        var contributors = $("#contributors_" + id)
+                        var type = $("#type_" + id);
+                        var etype = $("#etype_" + id);
+                        if ("name" in data) {
+                            cell_name.val(data["name"].toLowerCase());
+                        } else if ("cell_id" in data) {
+                            cell_name.val(data["cell_id"].toLowerCase());
+                        }
+                        if ("area" in data) {
+                            structure.val(data["area"].toLowerCase());
+                        } else if ("brain_structure" in data) {
+                            structure.val(data["brain_structure"].toLowerCase());
+                        }
+                        if ("species" in data) {
+                            species.val(data["species"].toLowerCase());
+                        } else if ("animal_species" in data) {
+                            species.val(data["animal_species"].toLowerCase());
+                        }
+                        if ("region" in data) {
+                            region.val(data["region"].toLowerCase());
+                        } else if ("cell_soma_location" in data) {
+                            region.val(data["cell_soma_location"].toLowerCase());
+                        }
+                        if ("contributors_affiliations" in data) {
+                            contributors.val(data["contributors_affiliations"].toLowerCase());
+                        } else if ("contributors" in data) {
+                            contributors.val(data["contributors"]["name"].toLowerCase());
+                        }
+                        if ("type" in data) {
+                            type.val(data["type"].toLowerCase());
+                        }
+                        if ("etype" in data) {
+                            etype.val(data["etype"].toLowerCase());
+                        }
                     }
                 }
             }
         }
     });
 
-    $('#upload_files_' + i_box).find('input[type=text]').on("input click", function () {
+    $('#upload_files_' + i_box).find('input[type=text]').on("input click", function() {
         var id = this.id.split("_");
         id = id[id.length - 1];
         checkIfUploadable(id);
     });
 
-    $("form#upload_files_" + i_box).submit(function (e) {
+    $("form#upload_files_" + i_box).submit(function(e) {
         e.preventDefault();
         var id = this.id.split("_");
         id = id[id.length - 1];
@@ -765,12 +767,12 @@ function createUploadBox() {
                 type: 'POST',
                 contentType: false,
                 processData: false,
-                success: function (name_dict) {
+                success: function(name_dict) {
                     $("#upload_button_" + id).text("Upload data");
                     $("#upload_button_" + id).prop("disabled", true);
                     $("#user_files_" + id).prop("disabled", true);
                     $("#browse_label_" + id).addClass("disabled");
-                    $("#file_name_" + id).val(name_dict["all_json_names"][0]);
+                    $("#file_name_" + id).val(name_dict["all_json_names"].join(","));
                     var refused_filenames = name_dict.refused_files;
                     if (refused_filenames.length > 0) {
                         closeMessageDiv("wait-message-div", "main-e-st-div");

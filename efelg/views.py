@@ -408,8 +408,8 @@ def results(request):
         return redirect('/efelg/error_space_left/')
 
     # render final page containing the link to the result zip file if any
-        request.session["selected_features"] = \
-            request.POST.getlist('crr_feature_check_features')
+    request.session["selected_features"] = \
+        request.POST.getlist('crr_feature_check_features')
     return render(request, 'efelg/results.html')
 
 
@@ -453,8 +453,6 @@ def features_dict(request):
 @csrf_exempt
 def upload_files(request):
 
-    # TODO resolve double upload at once
-
     if request.session["is_free_space_enough"] is None or request.session["is_free_space_enough"] is False:
         return redirect('/efelg/error_space_left/')
 
@@ -471,16 +469,17 @@ def upload_files(request):
     }
 
     if request.POST["file_name"] != "":
-        old_filepath = os.path.join(user_files_dir, request.POST["file_name"])
-        with open(old_filepath, "r") as old_file:
-            data = json.load(old_file)
-        os.remove(old_filepath)
-        manage_json.update_file_name(data, request.POST)
-        new_filename = manage_json.create_file_name(data)
-        new_filepath = os.path.join(user_files_dir, new_filename)
-        with open(new_filepath, "w") as new_file:
-            json.dump(data, new_file)
-        data_name_dict['all_json_names'].append(new_filename)
+        for old_filename in request.POST["file_name"].split(","):
+            old_filepath = os.path.join(user_files_dir, old_filename)
+            with open(old_filepath, "r") as old_file:
+                data = json.load(old_file)
+            os.remove(old_filepath)
+            manage_json.update_file_name(data, request.POST)
+            new_filename = manage_json.create_file_name(data)
+            new_filepath = os.path.join(user_files_dir, new_filename)
+            with open(new_filepath, "w") as new_file:
+                json.dump(data, new_file)
+            data_name_dict['all_json_names'].append(new_filename)
 
     else:
         names_full_path = []
