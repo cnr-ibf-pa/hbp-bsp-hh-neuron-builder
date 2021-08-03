@@ -352,3 +352,7 @@ table.center-first-column tr th:nth-child(odd) {
 .mh-none {
     max-height: none !important;
 }
+
+.text-primary {
+    color: #2e5a76 !important;
+}
