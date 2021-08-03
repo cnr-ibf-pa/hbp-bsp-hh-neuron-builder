@@ -7,7 +7,9 @@
     <title>Feature extraction GUI</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css"
+        rel="stylesheet" integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl"
+        crossorigin="anonymous">
     <link rel="stylesheet" href="{% static 'assets/fontawesome/css/all.css' %}">
     <link rel="stylesheet" href="{% static 'assets/themes/efelg.css' %}">
     <link rel="icon" href="{% static 'efelg/img/favicon.ico' %}">
@@ -28,7 +30,8 @@
             <div class="col-xl-3 col-6 text-end align-self-center order-xl-last">
                 <a href="/efelg/overview/"><i class="fas fa-home text-white ms-4"></i></a>
                 <a href="/efelg/docs/" target="_blank"><i class="fas fa-info-circle text-white ms-4"></i></a>
-                <a href="https://object.cscs.ch:443/v1/AUTH_c0a333ecf7c045809321ce9d9ecdfdea/web-resources-bsp/cls-video-tutorial/NFE/NFE_video_tutorial_v01.mp4" target="_blank"><i class="fas fa-play text-white ms-4"></i>
+                <a href="https://object.cscs.ch:443/v1/AUTH_c0a333ecf7c045809321ce9d9ecdfdea/web-resources-bsp/cls-video-tutorial/NFE/NFE_video_tutorial_v01.mp4"
+                    target="_blank"><i class="fas fa-play text-white ms-4"></i>
                 </a>
             </div>
         </div>
@@ -42,27 +45,172 @@
         </nav>
     </header>
     <main class="my-4 mx-15">
-        <div class="text-justify py-3">
-            <h3>NeuroFeatureExtract</h3>
-            <h4>Overview</h4>
+        <div class="text-justify">
+            <h3><strong>NeuroFeatureExtract</strong></h3>
+            <br>
+            <h4><strong>Overview</strong></h4>
             <p>
-                The EBRAINS NeuroFeatureExtract (NFE) is a web application that allows users to extract an ensemble of electrophysiological properties from voltage traces recorded upon electrical stimulation of neuronal cells (see Fig. 1). The main outcome of the application
-                is the generation of two files - features.json and protocols.json - that can be used for later model parameter optimizations.
+                The EBRAINS NeuroFeatureExtract (NFE) is a web application that allows users to extract an ensemble of
+                electrophysiological properties from voltage traces recorded upon electrical stimulation of neuronal
+                cells (see Fig. 1). The main outcome of the application
+                is the generation of two files - <em>features.json</em> and <em>protocols.json</em> - that can be used
+                for later model
+                parameter optimizations.
+            </p>
+            <div class="my-4 text-center">
                 <img src="{% static 'efelg/img/spikes.png' %}" alt="spikes_image" />
-                <figcaption class="text-center">Fig 1. - Spike details</figcaption>
-                For data selection, there are three possible scenarios: 1) The user selects voltage traces from the provided dataset; 2) The user selects the voltage traces from uploaded data files (through the “Upload” utility of the GUI); 3) The user selects traces
+                <figcaption>Fig 1. - Spike details</figcaption>
+            </div>
+            <p>
+                For data selection, there are three possible scenarios:
+                1) The user selects voltage traces from the provided dataset;
+                2) The user selects the voltage traces from uploaded data files (through the “Upload” utility of the
+                GUI);
+                3) The user selects traces
                 from both the dataset and her/his own uploaded file(s).
-                <br> This application leverages the Electrophys Feature Extract Library (eFEL) and the BluePyEfe software packages and provides a friendly interface to select voltage traces (individually or collectively, based on the applied stimulus
+                <br> This application leverages the Electrophys Feature Extract Library (<span
+                    class="text-primary">eFEL</span>) and the
+                <a href="https://bluepyefe.readthedocs.io/en/latest/" target="_blank">
+                    BluePyEfe</a>
+                software packages and provides a friendly interfaceto select voltage traces (individually or
+                collectively,
+                based on the applied stimulus
                 current) and features to be extracted.
             </p>
-            <h4>Electrophysiological data</h4>
-            <h5>Dataset</h5>
-            <h5>User’s uploaded data</h5>
-            <h5>Feature Extraction</h5>
-            <h4>Graphical User Interface</h4>
-            <h5>Trace Selection</h5>
-            <h5>Feature selection</h5>
-            <h5>Results</h5>
+            <br>
+            <br>
+            <h4><strong>Electrophysiological data</strong></h4>
+            <p>
+                The NFE can only be used for voltage traces recorded or simulated during a step current stimulation
+                protocol. The files uploaded by the users must fulfil this requirement. Below we report a brief
+                description of the data formats currently in use.
+            </p>
+            <br>
+            <h5><strong>Dataset</strong></h5>
+            <p>
+                Publicly available data consist of electrophysiological traces provided by contributing laboratories
+                internal and external to the Human Brain Project (see Fig. 2).
+            </p>
+            <div class="my-4 text-center">
+                <img class="w-50" src="{% static 'efelg/img/efelg_selection.png' %}" alt="efel_selection" />
+                <figcaption>Fig 2. - Traces selection</figcaption>
+            </div>
+            <p>
+                Contributed raw data files are in the Axon Binary Format (<span class="text-primary">.abf</span>) or the
+                Igor Binary Format (<span class="text-primary">.ibw</span>) and have
+                been converted to .json files and stored in a dedicated CSCS Object Storage container after insertion of
+                relevant metadata (e.g. <em>cell_id</em>, <em>brain_region</em>, <em>brain_structure</em>,
+                <em>stimulus_duration</em>, …) used for data
+                processing and visualization. The data are read through the <span class="text-primary">Neo</span> and
+                <span class="text-primary">Igorpy</span> Python packages and converted
+                into value arrays before use.
+                If you would like to contribute with your own data to the NFE, please send an email to <em>support AT
+                    ebrains.eu.</em>
+            </p>
+            <br>
+            <h5><strong>User’s uploaded data</strong></h5>
+            <p>
+                Users can also upload and visualize their own data, which can be selected, for processing, independently
+                or
+                together with traces from the provided dataset.
+                <br>For detailed information on the accepted data formats, please visit the NFE Guidebook dedicated
+                <a href="https://hbp-bsp-hhnb.cineca.it/efelg/docs/file_formats/" target="_blank">
+                    page</a>.
+            </p>
+            <br>
+            <h5><strong>Feature Extraction</strong></h5>
+            <p>
+                The feature extraction process precedes the generation of the <em>features.json</em> and
+                <em>protocols.json</em>
+                files, which are used for model parameter optimization performed through the <span
+                    class="text-primary">BluePyOpt</span> software tool (please refer to the BluePyOpt <span
+                    class="text-primary"></span>documentation</span> for detailed explanation) or for statistical
+                analysis.
+                The NFE is integrated in the
+                <a href="https://hbp-bsp-hhnb.cineca.it/hh-neuron-builder/" target="_blank">
+                    Hodgkin-Huxley Neuron Builder</a> web application that provides a point-and-click user
+                friendly interface to guide the user through the entire optimization process.
+                <br>The features that the user can select for extraction are described in the eFEL <span
+                    class="text-primary">documentation</span> as well as
+                the eFEL software package
+                <a href="https://github.com/BlueBrain/eFEL" target="_blank">code</a>. See also the <span
+                    class="text-primary">Hippocampal Neurons</span> dedicated page in the
+                <a href="https://ebrains-cls-interactive.github.io/" target="_blank">EBRAINS Cellular Level
+                    Simulation Interactive Workflows and Use Cases</a> guidebook.
+                <br>Features are computed for every trace of the chosen recordings, where a trace corresponds to a given
+                stimulus current amplitude (indicated to the user when data are displayed). Once the extraction is
+                finalized,
+                the values of a feature obtained from traces belonging to an individual cell and corresponding to the
+                same
+                stimulation amplitude are averaged. The averages computed for all the cells, are averaged a second time
+                by
+                stimulus amplitude. This will generate two result files (i.e. <em>features.json</em> and
+                <em>protocols.json</em>) per cell
+                plus
+                two supplementary files with the global averages.
+            </p>
+            <br>
+            <br>
+            <h4><strong>Graphical User Interface</strong></h4>
+            <p>
+                The GUI guides the user through the feature extraction process in a friendly way. The web application
+                homepage shows a short tutorial on the usage of the interface.
+                <br>The following is a description of the Feature Extraction process.
+            </p>
+            <br>
+            <h5><strong>Trace Selection</strong></h5>
+            <p>
+                Once the trace selection page is displayed, data can be filtered by choosing the following properties of
+                the
+                cell from five menu lists: 1) Contributor; 2) Species; 3) Brain structure; 4) Region; 5) Type; 6)
+                Electrical
+                type (<span class="text-primary">eType</span>). If any of the fields is missing (e.g. the eType of the
+                cell
+                is not known), the “unknown” label
+                is displayed.
+                <br>
+                When the data are loaded, the traces contained in each file are shown and data files are grouped by cell
+                id
+                (see figure below). The user can select individual traces by clicking on the corresponding amplitude or
+                (s)he can select/deselect all traces in a single file. Additionally, all files (and then all traces)
+                referring to a single cell can be selected (see Fig. 3).
+            </p>
+            <div class="my-4 text-center">
+                <img class="w-50" src="{% static 'efelg/img/efelg_traces.png' %}" alt="efel_traces" />
+                <figcaption>Fig 3. - Voltage traces selection</figcaption>
+            </div>
+            <p>
+                Alternatively, or concurrently, users can upload their own data (see <span class="text-primary">User’s
+                    uploaded data</span>) by browsing their
+                local storage and using the upload button (see figure below). The traces will be displayed for
+                selection,
+                together with the ones selected from the HBP dataset (if any).
+            </p>
+            <br>
+            <h5><strong>Feature selection</strong></h5>
+            <p>
+                Once the trace selection approved, the feature selection page is displayed. Features are grouped by type
+                -spike event features, spike shape features, voltage features- and can be selected individually or
+                collectively through the select/deselect buttons. Given the high number of features, the three types are
+                grouped in toggle boxes (see Fig. 4). Upon selection approval, the feature extraction process takes
+                place
+            </p>
+            <div class="my-4 text-center">
+                <img class="w-50" src="{% static 'efelg/img/efelg_features.jpg' %}" alt="efel_features" />
+                <figcaption>Fig 4. - Feature selection</figcaption>
+            </div>
+            <br>
+            <h5><strong>Results</strong></h5>
+            <p>
+                Finally, a success message is displayed and results are made available to download. The application
+                output consists of a <em>features.json</em> and <em>protocols.json</em> files which are generated for
+                both individual
+                cells and the entire ensemble. These files contain the feature value averages (computed as outlined in
+                the above section “Feature Extraction”) and the protocols adopted for the experimental recordings. These
+                files are intended to be used for the data-driven optimization step of the <a
+                    href="https://hbp-bsp-hhnb.cineca.it/hh-neuron-builder/" target="_blank">
+                    Hodgkin-Huxley Neuron Builder</a> workflow.
+            </p>
         </div>
     </main>
 </body>
