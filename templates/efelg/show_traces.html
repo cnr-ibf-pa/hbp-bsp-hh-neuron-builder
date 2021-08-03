@@ -18,7 +18,7 @@
         <div class="row">
             <div class="col-xl-3 col-6 text-start align-self-center">
                 <a href="https://ebrains.eu" target="_blank">
-                    <img src="{% static 'efelg/img/ebrains_logo.png' %}" alt="ebrains_logo" style="max-width:130px"/>
+                    <img src="{% static 'efelg/img/ebrains_logo.png' %}" alt="ebrains_logo" style="max-width:130px" />
                 </a>
             </div>
             <div class="col-xl-6 align-self-center order-last">
@@ -27,8 +27,7 @@
             <div class="col-xl-3 col-6 text-end align-self-center order-xl-last">
                 <a href="/efelg/overview/"><i class="fas fa-home text-white ms-4"></i></a>
                 <a href="/efelg/docs/" target="_blank"><i class="fas fa-info-circle text-white ms-4"></i></a>
-                <a href="https://object.cscs.ch:443/v1/AUTH_c0a333ecf7c045809321ce9d9ecdfdea/web-resources-bsp/cls-video-tutorial/NFE/NFE_video_tutorial_v01.mp4"
-                        target="_blank"><i class="fas fa-play text-white ms-4"></i>
+                <a href="https://object.cscs.ch:443/v1/AUTH_c0a333ecf7c045809321ce9d9ecdfdea/web-resources-bsp/cls-video-tutorial/NFE/NFE_video_tutorial_v01.mp4" target="_blank"><i class="fas fa-play text-white ms-4"></i>
                 </a>
             </div>
         </div>
@@ -58,22 +57,19 @@
                             <label for="threshold_value" class="form-label mb-0">Threshold (mV): </label>
                         </div>
                         <div class="col-xl-3 col-lg-5 col-md-5">
-                            <input id="threshold_value" class="form-control shadow-none d-inline-block" type="number"
-                                value=-20>
+                            <input id="threshold_value" class="form-control shadow-none d-inline-block" type="number" value=-20>
                             <i class="fas fa-minus ms-4" onclick="updateValue(this, -5)"></i>
                             <i class="fas fa-plus ms-2" onclick="updateValue(this, 5)"></i>
                         </div>
                         <div class="col-xl-1 col-lg-1 col-md-1 col-sm-2 text-end order-xl-last">
-                            <i class="far fa-question-circle fa-lg"
-                                onclick="openInfoPanel('Feature Extraction Parameters info', parametersInfo)">
+                            <i class="far fa-question-circle fa-lg" onclick="openInfoPanel('Feature Extraction Parameters info', parametersInfo)">
                             </i>
                         </div>
                         <div class="col-xl-3 col-lg-6 col-md-6">
                             <label for="events_value" class="form-label mb-0">Number of printed events per feature: </label>
                         </div>
                         <div class="col-xl-3 col-lg-5 col-md-5 col-sm-10">
-                            <input id="events_value" class="form-control shadow-none d-inline-block"
-                                type="number" value=5>
+                            <input id="events_value" class="form-control shadow-none d-inline-block" type="number" value=5>
                             <i class="fas fa-minus ms-4" onclick="updateEventsValue(this, -1)"></i>
                             <i class="fas fa-plus ms-2" onclick="updateEventsValue(this, 1)"></i>
                         </div>
@@ -90,19 +86,15 @@
                         </div>
                         <div class="col-xl-7 col-lg-12 col-md-12">
                             <span>Convert zero feature values to</span>
-                            <select id="zero_value" name="value" size="1" class="small-text mx-3 px-2"
-                                onclick="updateDropdownMenu(this)">
+                            <select id="zero_value" name="value" size="1" class="small-text mx-3 px-2" onclick="updateDropdownMenu(this)">
                                 <option value="null">-</option>
                                 <option value="nan">nan</option>
                                 <option value="stim_end">stim_end</option>
                             </select>
                             <span>for features</span>
                             <div class="dropdown d-inline-block small-text mx-3 w-15">
-                                <button class="btn btn-secondary btn-sm dropdown-toggle w-100" type="button"
-                                    id="dropdownMenuButton" data-bs-flip="false" data-bs-toggle="dropdown"
-                                    aria-expanded="false" disabled></button>
-                                <ul id="mean_features_no_zeros" class="dropdown-menu w-100 bg-light"
-                                    aria-labelledby="dropdownMenuButton">
+                                <button class="btn btn-secondary btn-sm dropdown-toggle w-100" type="button" id="dropdownMenuButton" data-bs-flip="false" data-bs-toggle="dropdown" aria-expanded="false" disabled></button>
+                                <ul id="mean_features_no_zeros" class="dropdown-menu w-100 bg-light" aria-labelledby="dropdownMenuButton">
                                     <li>
                                         <label>
                                             <input type="checkbox" class="mx-2" value="all"
@@ -225,14 +217,12 @@
                 <div class="row text-center mt-3">
                     <div class="bg-light mb-4" id="citation-text"></div>
                     <div class="col-sm-6">
-                        <button type="button" class="btn btn-outline-primary w-100" id="apply"
-                            onclick='applySelection()' disabled>
+                        <button type="button" class="btn btn-outline-primary w-100" id="apply" onclick='applySelection()' disabled>
                             Apply
                         </button>
                     </div>
                     <div class="col-sm-6">
-                        <button type="button" class="btn btn-outline-primary w-100" id="reset"
-                            onclick="resetFields()">
+                        <button type="button" class="btn btn-outline-primary w-100" id="reset" onclick="resetFields()">
                             Reset
                         </button>
                     </div>
@@ -252,7 +242,16 @@
             <form id='gonextform' method='POST' action='/efelg/select_features/'> {% csrf_token %}
                 <input name='data' type='hidden'>
                 <input name='global_parameters' type='hidden'>
-                <button onclick='submitAll()' class="btn btn-lg btn-outline-primary my-5 w-100">Next</button>
+                <div class="form-check mt-5">
+                    <input class="form-check-input mt-2" type="checkbox" id="next_checkbox">
+                    <label class="form-check-label" for="next_checkbox">
+                        By continuing on this platform you accept to use the provided 
+                        data under the Terms&Conditions reported in this 
+                        <a href="https://hbp-bsp-hhnb.cineca.it/efelg/docs/dataset/" target="_blank">
+                            page</a>.
+                    </label>
+                </div>
+                <button id="next_button" onclick='submitAll()' class="btn btn-lg btn-outline-primary my-3 w-100" disabled>Next</button>
             </form>
             <div>
                 <span>
@@ -302,12 +301,10 @@
             </div>
             <br>
             <div class="text-center">
-                <button id="e-st-user-choice-accept-btn" class="btn btn-outline-primary mx-2 w-25"
-                    onclick="acceptUserChoiceList()">
+                <button id="e-st-user-choice-accept-btn" class="btn btn-outline-primary mx-2 w-25" onclick="acceptUserChoiceList()">
                     Confirm
                 </button>
-                <button id="e-st-user-choice-cancel-btn" class="btn btn-outline-primary mx-2 w-25"
-                    onclick="closeUserChoiceList()">
+                <button id="e-st-user-choice-cancel-btn" class="btn btn-outline-primary mx-2 w-25" onclick="closeUserChoiceList()">
                     Cancel
                 </button>
             </div>
@@ -321,8 +318,7 @@
             </br>
             <span id="info-text" class="text-justify"></span>
             </br>
-            <button class="btn btn-outline-primary my-2 w-50"
-                onclick="closeMessageDiv('info-div', 'main-e-st-div')">
+            <button class="btn btn-outline-primary my-2 w-50" onclick="closeMessageDiv('info-div', 'main-e-st-div')">
                 Close
             </button>
         </div>
@@ -333,8 +329,7 @@
         <div style="top:40%;" class="overlay-content">
             <span id="warning-text" class="text-danger fs-5"></span>
             <br>
-            <button class="btn btn-outline-primary mt-4 mb-2 w-50"
-                onclick="closeMessageDiv('warning-div', 'main-e-st-div')">
+            <button class="btn btn-outline-primary mt-4 mb-2 w-50" onclick="closeMessageDiv('warning-div', 'main-e-st-div')">
                 Close
             </button>
         </div>
@@ -356,4 +351,5 @@
     sessionStorage.setItem("hhf_etraces_dir", hhf_etraces_dir);
     sessionStorage.setItem("wfid", wfid);
 </script>
+
 </html>

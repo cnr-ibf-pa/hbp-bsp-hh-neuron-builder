@@ -346,6 +346,15 @@ $(document).ready(function() {
             closeMessageDiv("wait-message-div", "main-e-st-div");
         }
     });
+
+    $("#next_checkbox").on("change", () => {
+        if (($("#next_checkbox").is(':checked'))) {
+            $("#next_button").prop("disabled", false);
+        } else {
+            $("#next_button").prop("disabled", true);
+        }
+    });
+
 });
 
 
