@@ -2669,3 +2669,10 @@ def hhf_download_all(request, exc, ctx):
         shutil.make_archive(hhf_zip, 'zip', hhf_dir)
         return FileResponse(open(hhf_zip + '.zip', 'rb'), as_attachment=True)
     return HttpResponse(status=204)
+
+
+def index_docs(request):
+    """
+    Render Guidebook main page
+    """
+    return render(request, 'hhnb/docs/index.html')

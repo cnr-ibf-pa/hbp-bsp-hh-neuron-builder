@@ -1749,3 +1749,8 @@ i.disabled:hover {
     background-color: #ffffff;
     opacity: 1;
 }
+
+.px-15 {
+    padding-right: 15rem;
+    padding-left: 15rem;
+}

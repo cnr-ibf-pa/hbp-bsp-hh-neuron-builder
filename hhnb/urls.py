@@ -106,5 +106,8 @@ urlpatterns = [
     path('hhf-save-config-file/<config_file:config_file>/' + required, views.hhf_save_config_file),
     path('hhf-delete-all/' + required, views.hhf_delete_all),
     path('hhf-download-all/' + required, views.hhf_download_all),
+
+    path('docs/', views.index_docs),
+    path('docs/index/', views.index_docs),
 ]
 
