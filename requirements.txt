@@ -81,7 +81,7 @@ scoop==0.7.1.1
 sh==1.14.1
 simplejson==3.17.2
 six==1.14.0
-sqlparse==0.4.1
+sqlparse==0.4.2
 toml==0.10.2
 tornado==6.1
 traitlets==4.3.3
