@@ -78,9 +78,9 @@ def print_citations(json_file_list, conf_file, final_file):
         else:
             final_citations[crr_cit].append(i)
 
-    print('CHECKING FOR DIRECTORY:\n %s' % ''.join(final_file.split('/')[:-1]))
-    if not os.path.exists('/'.join(final_file.split('/')[:-1])):
-        os.mkdir('/'.join(final_file.split('/')[:-1]))
+    print('CHECKING FOR DIRECTORY:\n %s' % ''.join(final_file.split(os.sep)[:-1]))
+    if not os.path.exists(os.sep.join(final_file.split(os.sep)[:-1])):
+        os.mkdir(os.sep.join(final_file.split(os.sep)[:-1]))
 
     with open(final_file, 'w') as tf:
         for key, val in final_citations.items():
