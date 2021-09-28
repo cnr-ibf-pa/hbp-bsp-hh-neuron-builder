@@ -213,10 +213,16 @@ def extract_features(request):
     # get features selected by the user
     selected_features = request.session["selected_features"]
 
-    # initialize dictionary
-    cell_dict = {}
+    # initialize final cell dictionary
+    final_cell_dict = {}
 
-    # extract traces and stimulus info for the feature extraction process
+    # initialize final target values array
+    target = []
+
+    # initialize final exclude values array
+    final_exclude = []
+
+    # build data configuration dictionary for every cell
     for k in selected_traces_rest_json:
         path_to_file = os.path.join(user_files_dir, k + '.json')
         if k + '.json' not in os.listdir(user_files_dir):
@@ -224,9 +230,10 @@ def extract_features(request):
                          path_to_file)
         with open(path_to_file) as f:
             crr_file_dict = json.loads(f.read())
+
         crr_file_all_stim = list(crr_file_dict['traces'].keys())
         crr_file_sel_stim = selected_traces_rest_json[k]['stim']
-
+        
         if "stimulus_unit" in crr_file_dict:
             crr_file_amp_unit = crr_file_dict["stimulus_unit"]
         elif "amp_unit" in crr_file_dict:
@@ -255,46 +262,47 @@ def extract_features(request):
 
         crr_key = '____'.join(keys2)
 
-        cell_dict[crr_key] = {}
-        cell_dict[crr_key]['stim'] = [crr_file_sel_stim]
-        cell_dict[crr_key]['files'] = [k]
-        cell_dict[crr_key]['cell_name'] = crr_cell_name
-        cell_dict[crr_key]['all_stim'] = crr_file_all_stim
-        cell_dict[crr_key]['v_corr'] = \
-            [int(selected_traces_rest_json[k]['v_corr'])]
+        # update final target array
+        for c_stim_el in crr_file_sel_stim:
+                if float(c_stim_el) not in target:
+                    target.append(float(c_stim_el))
 
-    target = []
-    final_cell_dict = {}
-    final_exclude = []
+        # extract stimuli to be excluded
+        exc_stim_lists = []
+        for cstim in crr_file_all_stim:
+            if cstim not in crr_file_sel_stim:
+                exc_stim_lists.append(float(cstim))
 
-    # build data configuration dictionary for every cell
-    for key in cell_dict:
-        crr_el = cell_dict[key]
-        for c_stim_el in crr_el['stim']:
-            [target.append(float(i)) for i in c_stim_el
-             if float(i) not in target]
-        exc_stim_lists = [list(set(crr_el['all_stim']) - set(sublist)) for
-                          sublist in crr_el['stim']]
-        crr_exc = []
-        for crr_list in exc_stim_lists:
-            crr_stim_val = [float(i) for i in crr_list]
-            crr_exc.append(crr_stim_val)
+        if crr_cell_name not in final_cell_dict:
+            # create cell dict
+            final_cell_dict[crr_cell_name] = {}
 
-        final_cell_dict[cell_dict[key]['cell_name']] = \
-            {
-                'v_corr': crr_el['v_corr'],
-                'ljp': 0,
-                'experiments': {
-                    'step': {
-                        'location': 'soma',
-                        'files': [str(i) for i in crr_el['files']]
-                    }
-                },
-                'etype': 'etype',
-                'exclude': crr_exc,
-                'exclude_unit': [crr_file_amp_unit for i in range(len(crr_exc))]
-        }
+            # set etype and ljp (common for all files)
+            final_cell_dict[crr_cell_name]['etype'] = 'etype'
+            final_cell_dict[crr_cell_name]['ljp'] = 0
+            
+            # initialize arrays
+            final_cell_dict[crr_cell_name]['exclude'] = []
+            final_cell_dict[crr_cell_name]['exclude_unit'] = []
+            final_cell_dict[crr_cell_name]['experiments'] = \
+                {'step': {'files': [], 'location':'soma'}}
+            final_cell_dict[crr_cell_name]['v_corr'] = []
 
+        # append current file name
+        final_cell_dict[crr_cell_name]['experiments']['step']['files'].append(
+            k)
+        
+        # set list of stimuli to be excluded
+        final_cell_dict[crr_cell_name]['exclude'].append(exc_stim_lists)
+
+        # set exclude unit
+        final_cell_dict[crr_cell_name]['exclude_unit'].append(
+            crr_file_amp_unit)
+
+        # set v_corr
+        final_cell_dict[crr_cell_name]['v_corr'].append(
+            int(selected_traces_rest_json[k]['v_corr']))
+  
     # build option configuration dictionary for the feature extraction
     config = {}
     config['features'] = {'step': [str(i) for i in selected_features]}
