@@ -2394,7 +2394,9 @@ def hhf_comm(request, exc='', ctx=''):
 
 def hhf_get_files(request, exc, ctx):
 
-    hhf_dir = request.session[exc]['hhf_dir']
+    hhf_dir = request.session[exc].get('hhf_dir')
+    if not hhf_dir:
+        return HttpResponse('no content', status=404)
 
     hhf_file_list = {'morphology': [], 'mechanisms': [], 'config': [], 'model': [], 'parameters.json': '', 'opt_neuron.py': ''}
     

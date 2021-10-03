@@ -92,7 +92,7 @@ def get_list(request):
     """
 
     # if no context variable is present exit the application
-    if request.session["is_free_space_enough"] is None or request.session["is_free_space_enough"] is False:
+    if not request.session.get("is_free_space_enough") or request.session["is_free_space_enough"] is False:
         return redirect('/efelg/error_space_left/')
 
     metadata_path = os.path.join(
@@ -603,6 +603,9 @@ def load_hhf_etraces(request):
 
     # get directory where traces sent from the hippocampus hub have been sent
     hhf_etraces_dir = request.POST.get('hhf_etraces_dir', None)
+    
+    print('================== HHF_ETRACES_DIR =================== ')
+    print(hhf_entraces_dir)
     wfid = request.POST.get('wfid', None)
 
     if not hhf_etraces_dir:

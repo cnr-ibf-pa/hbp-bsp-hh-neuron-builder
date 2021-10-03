@@ -75,7 +75,7 @@ $(document).ready(function(){
             async: false,
             success: function(response) {
                 hideLoadingAnimation();
-                // closeHpcParameterDiv();
+                closeHpcParameterDiv();
                 if (response['response'] == "KO"){
                     openErrorDiv(response.message, 'error');
                     $("#username_submit").addClass("is-invalid").attr("aria-describedby", "User not valid");
@@ -84,7 +84,6 @@ $(document).ready(function(){
                 } else {
                     $("#username_submit").removeClass("is-invalid");
                     $("#password_submit").removeClass("is-invalid");
-                    closeHpcParameterDiv();
                     checkConditions();
                 } 
             },
@@ -102,7 +101,7 @@ $(document).ready(function(){
     var $uploadFileForm = $("#uploadForm");
     $uploadFileForm.submit(function(e){
         files = $("#formFile").prop("files");
-        // closeUploadDiv(false);
+        closeUploadDiv(false);
         console.log("uploadingFileForm() called.");
         showLoadingAnimation("Loading...");
         var uploadFormData = new FormData($("#uploadForm")[0]);
@@ -119,7 +118,6 @@ $(document).ready(function(){
                     openErrorDiv(resp["message"], 'error');
                 } else {
                     checkConditions();
-                    closeUploadDiv(false);
                 }
                 $("#formFile").val("");
                 hideLoadingAnimation();
@@ -138,10 +136,63 @@ $(document).ready(function(){
     // hideLoadingAnimation();
 });
 
+// serve embedded-efel-gui page
+function efelPage() {
+    window.location.href = "/hh-neuron-builder/embedded-efel-gui/" + req_pattern + "/";
+}
+
+function inSilicoPage() {
+    console.log("inSilicoPage() called");
+    showLoadingAnimation("Uploading to blue-naas...")
+    $("#run-sim-btn").prop("disabled", true);
+    $.getJSON("/hh-neuron-builder/upload-to-naas/" + req_pattern, function(uploaddata){
+        console.log(uploaddata);
+        $.getJSON("/hh-neuron-builder/model-loaded-flag/" + req_pattern, function(data){
+            console.log(data);
+            var o = data["response"];
+            if (o == "KO"){
+                window.location.href = "";
+            } else {
+                window.location.href = "/hh-neuron-builder/embedded-naas/" + req_pattern + "/";
+            }
+        });
+    });
+}
+
+// serve choose-opt-model page
+function chooseOptModel() {
+    window.location.href = "/hh-neuron-builder/choose-opt-model"; 
+}
+
 // reload current page
 function reloadCurrentPage() {
     window.location.href = "";
 }
+
+// open div for optimization run parameter settings
+function openHpcParameterDiv() {
+    console.log("openParameterDiv() called.");
+    manageOptSetInput();
+    $("#overlaywrapper").css("display", "block");
+    $("#overlayparam").css("display", "block");
+    if($(".accordion-button.hpc").hasClass("active")) {
+        $("#apply-param").prop("disabled", false);
+    }
+}
+
+$(".accordion-button.hpc").on("click", function() {
+    $("#apply-param").prop("disabled", false);
+    $(".accordion-button").removeClass("active");
+    $(this).addClass("active");
+})
+
+// close side div for optimization run parameter settings
+function closeHpcParameterDiv() {
+    $("#overlaywrapper").css("display", "none");
+    $("#overlayparam").css("display", "none");
+    $("#apply-param").prop("disabled", true);
+    $("#hpcAuthAlert").removeClass("show");
+} 
 
 function applyJobParam() {
     $("#apply-param").blur();
@@ -150,32 +201,29 @@ function applyJobParam() {
 }
 
 function manageErrorDiv(isOpen=false, isClose=false, message="", tag="") {
-    let overlayWrapper = $("#overlaywrapperinformation");
+    let overlayWrapper = $("#overlaywrapper");
     let overlayWrapperError = $("#overlaywrappererror");
     let errorDynamicText = $("#errordynamictext");
     let button = $("#ok-error-div-btn");
     if (isOpen) {
         overlayWrapper.css("display", "block");
-        // overlayWrapper.css("z-index", "100");
-        // overlayWrapper.addClass("show");
         overlayWrapperError.css("display", "block");
         errorDynamicText.html(message);
         if (tag == "error") {
-            overlayWrapperError.css("box-shadow", "0 0 1rem 1rem rgba(255, 0, 0, .8)");
+            overlayWrapperError.css("box-shadow", "0 0 1rem 0 rgba(255, 0, 0, .8)");
             overlayWrapperError.css("border-color", "red");
             button.addClass("red").removeClass("blue green");
         } else if (tag == "info") {
-            overlayWrapperError.css("box-shadow", "0 0 1rem 1rem rgba(0, 0, 255, .8)");
+            overlayWrapperError.css("box-shadow", "0 0 1rem 0 rgba(0, 0, 255, .8)");
             overlayWrapperError.css("border-color", "blue");
             button.addClass("blue").removeClass("red green");
         } else if (tag == "success") {
-            overlayWrapperError.css("box-shadow", "0 0 1rem 1rem rgba(0, 128, 0, .8)");
+            overlayWrapperError.css("box-shadow", "0 0 1rem 0 rgba(0, 255, 0, .8)");
             overlayWrapperError.css("border-color", "green");
             button.addClass("green").removeClass("red blue");
         }
     } else if (isClose) {
         overlayWrapper.css("display", "none");
-        // overlayWrapper.removeClass("show");
         overlayWrapperError.css("display", "none");
     }
 }
@@ -190,12 +238,12 @@ function closeErrorDiv() {
 }
 
 function manageExpirationDiv(isOpen=false, isClose=false, message="") {
-    let overlayWrapper = $("#overlaywrapperinformation");
+    let overlayWrapper = $("#overlaywrapper");
     let overlayWrapperExpiration = $("#overlaywrapperexpiration");
     let expirationDynamicText = $("#expirationdynamictext");
     if (isOpen) {
-        overlayWrapperExpiration.css("display", "block");
         overlayWrapper.css("display", "block");
+        overlayWrapperExpiration.css("display", "block");
         expirationDynamicText.html(message);
     } else if (isClose) {
         overlayWrapper.css("display", "none");
@@ -212,7 +260,7 @@ function closeExpirationDiv() {
 }
 
 function manageReloadDiv(isOpen=false, isClose=false, message="") {
-    let overlayWrapper = $("#overlaywrapperinformation");
+    let overlayWrapper = $("#overlaywrapper");
     let overlayWrapperReload = $("#overlaywrapperreload");
     let reloadDynamicText = $("#reloaddynamictext");
     if (isOpen) {
@@ -227,7 +275,6 @@ function manageReloadDiv(isOpen=false, isClose=false, message="") {
 
 // Open reload div
 function openReloadDiv(message="") {
-    console.log("reload div");
     manageReloadDiv(isOpen=true, isClose=false, message);
 }
 
@@ -269,9 +316,7 @@ function checkConditions(){
                 featBar.html(data['feat']['message'])
                 $("#del-feat-btn").prop("disabled", true);
                 $("#down-feat-btn").prop("disabled", true);
-                $("#efelgui-frame").attr("src", "/efelg/hhf_etraces/" + data["wf_id"]);
             } else {
-                $("#efelgui-frame").attr("src", "/efelg/?ctx=" + ctx);
                 if (data['feat']['status']){
                     let featBar = $("#feat-bar");
                     featBar.removeClass("red orange");
@@ -485,13 +530,13 @@ function displayOptSetUploadDiv() {
 }
 
 function displayOptResUploadDiv() {
-    // $("#overlayupload").addClass("upper-daint");
+    $("#overlayupload").addClass("upper-daint");
     openUploadDiv("modsim", "Upload model (\".zip\")");
 }
 
 function openUploadDiv(type, msg) {
+    $("#overlaywrapper").css("display", "block");
     $("#overlayupload").css("display", "block");
-    $("#overlaywrapper").css("z-index", "100").addClass("show");
     $("#uploadForm").attr("action", "/hh-neuron-builder/upload-files/" + type + "/" + req_pattern + "/");
     $("#uploadFormLabel").html("<strong>" + msg + "</strong>");
     $("#uploadFornButton").prop("disabled", true);
@@ -507,69 +552,18 @@ function openUploadDiv(type, msg) {
     }
 }
 
-$("#overlaywrapper")[0].addEventListener("transitionend", function(transition) {
-    if (transition.target == $(this)[0]) {
-        if (!$(this).hasClass("show")) {
-            $(this).css("z-index", "-100");
-            $(".overlay-content").css("display", "none").removeClass("show");
-        }
-    }
-});
-$("#overlaywrapper")[0].addEventListener("transitionstart", function(transition) {
-    if (transition.target == $(this)[0]) {
-        if ($(this).hasClass("show")) {
-            $(".overlay-content").addClass("show");
-        }
-    }
-});
-
-$("#overlayupload")[0].addEventListener("transitionstart", function(transition) {
-    if (transition.target == $(this)[0]) {
-        if (!$(this).hasClass("show")) {
-            $("#overlaywrapper").removeClass("show");
-        }
-    }
-});
-$("#overlayparam")[0].addEventListener("transitionstart", function(transition) {
-    if (transition.target == $(this)[0]) {
-        if (!$(this).hasClass("show")) {
-            $("#overlaywrapper").removeClass("show");
-        }
-    }
-});
-
 function closeUploadDiv(empty=true) {
-    $("#overlayupload").removeClass("show");
-    $("#overlayparam").removeClass("show");
+    $("#overlaywrapper").css("display", "none");
+    $("#overlayupload").css("display", "none");
     if (empty) {
-        $("#formFile").val();
+        $("#formFile").val("");
     }
-}
-
-$(".accordion-button.hpc").on("click", function() {
-    $("#apply-param").prop("disabled", false);
-    $(".accordion-button").removeClass("active");
-    $(this).addClass("active");
-});
-
-function openHpcParameterDiv() {
-    manageOptSetInput();
-    $("#overlayparam").css("display", "block");
-    if ($(".accordion-button.hpc").hasClass("active")) {
-        $("#apply-param").prop("disabled", false);
-    }
-    $("#overlaywrapper").css("z-index", "100").addClass("show");
-}
-
-function closeHpcParameterDiv() {
-    $("#apply-param").prop("disabled", true);
-    $("#hpcAuthAlert").removeClass("show");
-    $("#overlayparam").removeClass("show");
+    $("#overlayupload").removeClass("upper-daint");
 }
 
 function displayJobFetchDiv() {
+    $("#overlaywrapper").css("display", "block");
     $("#overlayjobs").css("display", "block");
-    $("#overlaywrapper").css("z-index", "100").addClass("show");
     $(".list-group-item.fetch-jobs").attr("aria-disabled", "false").removeClass("disabled active");
 }
 
@@ -590,23 +584,10 @@ function resetJobFetchDiv() {
 }
 
 function closeJobFetchDiv() {
-    $("#overlayjobs").removeClass("show scroll-long-content");
+    $("#overlaywrapper").css("display", "none");
+    $("#overlayjobs").css("display", "none");
+    resetJobFetchDiv();
 }
-
-$("#overlayjobs")[0].addEventListener("transitionstart", function(transition) {
-    if (transition.target == $(this)[0]) {
-        if (!$(this).hasClass("show")) {
-            $("#overlaywrapper").removeClass("show");
-        }
-    }
-})
-$("#overlayjobs")[0].addEventListener("transitionend", function(transition) {
-    if (transition.target == $(this)[0]) {
-        if (!$(this).hasClass("show")) {
-            resetJobFetchDiv();
-        }
-    }
-})
 
 function checkNsgLogin() {
     $("#checkNsgSpinnerButton").css("opacity", "1");
@@ -662,7 +643,6 @@ function displayNsgJobList(button) {
 }
 
 function refreshJobListDiv() {
-    $("#overlayjobs").removeClass("scroll-long-content");
     $("#job-list-body").empty();
     $("#tableRow").css("display", "none");
     $("#refresh-job-list-btn").prop("disabled", true);
@@ -670,8 +650,8 @@ function refreshJobListDiv() {
     displayJobList($(".list-group-item.fetch-jobs.active"));
 }
 
-async function displayJobList(button) {
-    $("#overlayjobs").removeClass("scroll-long-content");
+function displayJobList(button) {
+    
     $("#cancel-job-list-btn").prop("disabled", true);
     $("#spinnerRow").css("display", "flex");
     $(".list-group-item.fetch-jobs").addClass("disabled").attr("aria-disabled", "true");
@@ -685,14 +665,10 @@ async function displayJobList(button) {
         $("#spinnerRow").css("display", "none");
         $("#progressRow").css("display", "flex");
         
-        console.log(jobList);
-
         jobList = JSON.parse(jobList);
         console.log(jobList);
         if ($.isEmptyObject(jobList)) {
-            // closeJobFetchDiv();
-            resetJobFetchDiv();
-            // await sleep(500);
+            closeJobFetchDiv();
             openErrorDiv("You have no job on the hpc system", "info");
             checkConditions();
             return false;
@@ -703,37 +679,27 @@ async function displayJobList(button) {
         step = 100 / (Object.keys(jobList).length + 1);
         animateProgressBar(step);
 
-        var failedCounter = 0;
         $.each(jobList, function(id, job){
             $.getJSON("/hh-neuron-builder/get-job-details2/" + id + "/" + req_pattern + "/", function(jobDetails) {
 
                 jobDetails = JSON.parse(jobDetails);
                 console.log(jobDetails);
-                                
+
                 keys = Object.keys(jobDetails);
-                console.log(keys);
-                /*for (let k = 0; k < keys.length; k++) {
-                    if (keys[k] == "resp" && jobDetails[keys[k]] == "KO") {
-                        retur ;
-                        failedCounter++;
-                        console.log("failedCounter");
-                        console.log(failedCounter);
-                        console.log("jobList");
-                        console.log(jobList);
-                        if (failedCounter == Object.keys(jobList).length) {
-                            
-                            openReloadDiv("Something went wrong while fetching jobs.<br>Please realod the page.");
-                            return false;
-                        }
+                for (let k = 0; k < keys.length; k++) {
+                    if (k == "resp" && jobDetails[k] == "KO") {
+                        console.error(jobDetails.message);
+                        openReloadDiv("Something goes wrong while fetching jobs.<br>Please realod the page.");
+                        return false;
                     }
-                }*/
+                }
 
                 let downloadButton = document.createElement("button");
                 downloadButton.id = jobDetails.job_id;
                 downloadButton.innerHTML = "Download";
                 downloadButton.className = "btn workflow-btn job-download-button";
                 downloadButton.disabled = true;
-                downloadButton.setAttribute("onclick", "downloadJobButtonHandler(this)");
+                downloadButton.setAttribute("onclick", "downloadJob(this)");
 
                 let tr = document.createElement("tr");
                 let tdWf = document.createElement("td");
@@ -790,7 +756,6 @@ async function displayJobList(button) {
                 });
                 tableRows.reverse();
                 $("#job-list-body").empty();
-
                 for (let i = 0; i < tableRows.length; i++) {
                     tableBody.appendChild(tableRows[i]);
                 }
@@ -800,14 +765,6 @@ async function displayJobList(button) {
                 $("#refresh-job-list-btn").prop("disabled", false).blur();
                 $("#cancel-job-list-btn").prop("disabled", false);
                 $(".list-group-item.fetch-jobs").attr("aria-disabled", "false").removeClass("disabled clicked");
-                
-                windowHeight = $(window).height();
-                overlayJobsHeight = $("#overlayjobs").height();
-
-                if ( overlayJobsHeight > ( windowHeight - (windowHeight / 10) ) ) {
-                    $("#overlayjobs").addClass("scroll-long-content");
-                }
-
                 return true;
             }
         }
@@ -816,117 +773,51 @@ async function displayJobList(button) {
 
 function closeDownloadJob() {
     resetProgressBar();
-    // $("#overlaywrapper").css("display", "none").removeClass("show");
-    // $("#overlayjobprocessing").css("display", "none").removeClass("show");
-    $("#overlaywrapper").removeClass("show");
-    $("#overlayjobprocessing").removeClass("show").css("display", "none");
-    $("#overlayjobs").removeClass("show hide-to-left").css("display", "none");
+    $("#overlaywrapper").css("display", "none");
+    $("#overlayjobprocessing").css("display", "none");
 }
-
-$("#overlayjobs")[0].addEventListener("transitionstart", function(transition) {
-    if (transition.target == $(this)[0]) {
-        if ($(this).hasClass("hide-to-left")) {
-            $("#overlayjobprocessing").css("display", "block");
-        }
-    }
-});
-$("#overlayjobs")[0].addEventListener("transitionend", function(transition) {
-    if (transition.target == $(this)[0]) {
-        if ($(this).hasClass("hide-to-left")) {
-            $(this).css("display", "none");
-            $("#overlayjobprocessing").addClass("show");
-            closeJobFetchDiv();
-        }
-    }
-});
-
-$("#overlayjobprocessing")[0].addEventListener("transitionend", function(transition) {
-    if (transition.target == $(this)[0]) {
-        if (!$(this).hasClass("show")) {
-            
-        }
-    }
-});
-$("#overlayjobprocessing")[0].addEventListener("transitionstart", function(transition) {
-    if (transition.target == $(this)[0]) {
-        if (!$(this).hasClass("show")) {
-            $("#overlaywrapper").removeClass("show");
-            $("#overlayjobs").removeClass("hide-to-left");
-        }
-    }
-});
-
-function downloadJobButtonHandler(button) {
-    $("#overlayjobprocessing").removeClass("show");
-    $("#overlayjobs").addClass("hide-to-left");
-    setProgressBarValue(0);
-    downloadJob(button);
-} 
-
-function setJobProcessingTitle(message) {
-    console.log(message);
-    var title = $("#jobProcessingTitle");
-    
-    function eventListener(transition) {
-        if (transition.target == title[0]) {
-            if (title.hasClass("fade-text")) {
-                title.html(message);
-                title.removeClass("fade-text");
-                title[0].removeEventListener("transitionend", eventListener);
-            }
-        }
-    }
-    title[0].addEventListener("transitionend", eventListener);
-    title.addClass("fade-text");
-}
-
 
 async function downloadJob(button) {
     console.log("downloadJob() called");
     // disable all buttons
     jobId = button.id;
+    closeJobFetchDiv();
+    $("#overlaywrapper").css("display", "block");
+    $("#overlayjobprocessing").css("display", "block");
     $("#jobProcessingTitle").html("Downloading job:<br>" + jobId + "<br>");
-    await sleep(500);
-    $("#progressBarFetchJob").addClass("s40").removeClass("s4 s2");
-    setProgressBarValue(40);
+    await sleep(2000);
+    setProgressBarValue(20);
     $.getJSON("/hh-neuron-builder/download-job/" + jobId + "/" + req_pattern + "/", function(data) {
         if (data["response"] == "KO") {
             closeDownloadJob();
             openErrorDiv(data["message"], "error");
             return false;
         }
-        setJobProcessingTitle("Running Analysis<br> ");
-        setProgressBarValue(80);
-        var p = $.getJSON("/hh-neuron-builder/run-analysis/" + req_pattern, async function(modifydata) {
+        setProgressBarValue(50);
+        $("#jobProcessingTitle").html("Running Analysis<br>");
+        var p = $.getJSON("/hh-neuron-builder/run-analysis/" + req_pattern, function(modifydata) {
             var resp_flag = false;
-            console.log(modifydata);
             if (modifydata["response"] == "KO") {
                 closeDownloadJob();
                 openErrorDiv(data["message", "error"]);
                 return false;
             } else {
                 var resp_flag = true;
-                setJobProcessingTitle("Creating ZIP file<br> ");
-                // $("#jobProcessingTitle").html("Creating ZIP file<br>")
-                $("#progressBarFetchJob").addClass("s4").removeClass("s40 s2");
                 setProgressBarValue(80);
-                await sleep(4000);
+                $("#jobProcessingTitle").html("Creating ZIP file<br>")
                 $.getJSON("/hh-neuron-builder/zip-sim/" + jobId + "/" + req_pattern, async function(zip_data) {
                     if (zip_data["response"] == "KO") {
                         closeDownloadJob();
                         openErrorDiv(zip_data["message"], "error");
                         return false;
                     } else {
-                        // $("#jobProcessingTitle").html("Completing<br>");
-                        setJobProcessingTitle("Completing...<br> ");
-                        $("#progressBarFetchJob").addClass("s2").removeClass("s40 s4");
+                        $("#jobProcessingTitle").html("Completing...<br>");
                         setProgressBarValue(100);
                         await sleep(2000);
                     }
                     checkConditions();
-                    // $("#overlayjobprocessing").css("display", "none");
-                    $("#overlayjobprocessing").removeClass("show");
-                    // $("#overlaywrapper").css("display", "none");
+                    $("#overlayjobprocessing").css("display", "none");
+                    $("#overlaywrapper").css("display", "none");
                 }).fail(function (error) { 
                     console.log("failing on zip-sim");
                     console.log(error);
@@ -1088,6 +979,28 @@ function manageOptSetInput() {
         $("#nsg-runtime").val(2);
     }
 }
+
+$("#daintCollapse")[0].addEventListener('show.bs.collapse', function () {
+    $("#overlayparam").addClass("upper-daint");
+})
+
+$("#serviceAccountCollapse")[0].addEventListener('show.bs.collapse', function () {
+    $("#overlayparam").addClass("upper-sa-daint");
+})
+$("#nsgCollapse")[0].addEventListener('show.bs.collapse', function () {
+    $("#overlayparam").addClass("upper-nsg");
+})
+
+$("#daintCollapse")[0].addEventListener('hide.bs.collapse', function () {
+    $("#overlayparam").removeClass("upper-daint");
+})
+
+$("#serviceAccountCollapse")[0].addEventListener('hide.bs.collapse', function () {
+    $("#overlayparam").removeClass("upper-sa-daint");
+})
+$("#nsgCollapse")[0].addEventListener('hide.bs.collapse', function () {
+    $("#overlayparam").removeClass("upper-nsg");
+})
 
 function animateProgressBar(progress) {
     current_progress = parseFloat($(".progress-bar").attr("aria-valuenow"));
@@ -1716,7 +1629,7 @@ async function runCheckDiffWorker() {
         $("#saveFileButton").addClass("show");
     }
 }
-    
+
 
 $("#saveFileButton").mousedown(function() {
     if ($(this).hasClass("disabled")) {
@@ -1781,234 +1694,4 @@ $("#editorAlert")[0].addEventListener("transitionend", async function(){
     await sleep(2000);
     $(this).removeClass("show");
 });
-
-
-function formatDescription(meta = ""){
-    var description = meta['description']
-    var indexes = [];
-    var all_strings = [];
-    var final_string = "";
-    var final_string_meta_app = "";
-    var final_string_author_app = "";
-    var final_string_meta_title = "<span style='font-size:16px'><br>Description<br></span>";
-    var final_string_author_title = "<span style='font-size:16px'><br><br><br>Credits<br></span>";
-    var allowed_tag_meta = [
-        "brain_structure", "cell_soma_location", 
-        "cell_type", "channels", "e_type", "morphology"
-    ];
-    var allowed_tag_author = ["contributors", "email", "affiliations"]
-    var res = description.replace(/\\\_/g, "_");
-
-    var index = 0;
-    while (index > -1) {
-        index = res.indexOf('<br>');
-        if (index == 0){
-            if (res.length >=4){
-                res = res.slice(4,);
-            } else {
-                index == -1;
-            }
-        } else if (index > -1){
-            all_strings.push(res.slice(0, index));
-            res = res.slice(index + 4,);
-        }
-    }
-    for (var i = 0; i < all_strings.length; i++){
-        for (var j = 0; j < allowed_tag_meta.length; j++){
-            if (all_strings[i].indexOf(allowed_tag_meta[j]) > -1){
-                final_string_meta_app =  final_string_meta_app + "<br>" + all_strings[i];
-                break
-            }
-        }
-        for (var z = 0; z < allowed_tag_author.length; z++){
-            if (all_strings[i].indexOf(allowed_tag_author[z]) > -1){
-                final_string_author_app =  final_string_author_app + "<br>" + all_strings[i];
-                break
-            }
-        }
-    }
-    final_string_meta_app = final_string_meta_app + "<br><strong>" + "id : " + "</strong>" + meta["id"]
-    if (final_string_meta_app.length > 1){
-        final_string = final_string + final_string_meta_title + final_string_meta_app;
-    }
-    if (final_string_author_app.length > 1){
-        final_string = final_string + final_string_author_title + final_string_author_app;
-    }
-
-    return final_string
-}
-
-
-var modelsReady = false;
-// serve choose-opt-model page
-function chooseOptModel() {
-    if (modelsReady) {
-        $("#modalMC").modal("show");
-        $("#closeModalMCButton").css("display", "block").addClass("show");
-        return false;
-    }
-    showLoadingAnimation("Fetching models from Model Catalog...");
-    $.getJSON("/hh-neuron-builder/get_model_list/" + exc + "/" + ctx, function(data){
-        hideLoadingAnimation();
-        var counter = 0;
-        if (data.length == 0) {
-            openErrorDiv("Something goes wrong.<br>Please restart the application.", "error");
-            return;
-        }
-        $.each(data, function(idx, val){
-            $.each(val, function(index, e){
-                console.log(e);
-                var model_uuid = index; //e['meta']["id"];
-                var model_name = index;
-                $("#modelCatalogContainer" ).append("<div  id=" + model_uuid + " name=" +
-                        model_name + " class='main-content model-info-div' onclick='fetchModel($(this))'></div>");
-                $("#" + model_uuid).append("<div id=" + model_uuid + " class='model-info-div-title'>" + e['meta']['species'] + ' > ' + e['meta']['brain_region'] + ' > ' +  e['meta']['cell_type'] + ' > ' + model_name + "</div>");
-                $("#" + model_uuid).append("<div style='display:flex;' id=" + model_uuid + 'a' + " ></div>");
-                var img_div = document.createElement("DIV");
-                var spk_img = document.createElement("IMG");
-                var mor_img = document.createElement("IMG");
-                var mor_id = "crr_mor";
-                var spk_id = "crr_spk";
-                var spk_url = e["responses"]; 
-                var mor_url = e["morph"]; 
-                img_div.setAttribute("style", "max-width:60%;");
-                mor_img.setAttribute("id", mor_id);
-                mor_img.setAttribute("style", "max-width:50%;");
-                spk_img.setAttribute("id", spk_id);
-                spk_img.setAttribute("style", "max-width:50%;");
-                spk_img.setAttribute("src", spk_url);
-                mor_img.setAttribute("src", mor_url);
-                img_div.append(spk_img);
-                img_div.append(mor_img);
-                $("#" + model_uuid + 'a').append(img_div);
-                $('#' + model_uuid + 'a').append("<div style='max-width:40%;padding:5px;font-size:13px'>" + formatDescription(e['meta']) + "</div>");
-            });
-        });
-        $("#modalMC").modal("show");
-        $("#closeModalMCButton").css("display", "block").addClass("show");
-    });
-    modelsReady = true;
-}
-
-$("#modalMC")[0].addEventListener("transitionstart", function() {
-    if ( ! $(this).hasClass("show") ) {
-        $("#closeModalMCButton").removeClass("show");
-    };
-})
-
-function closeModalMC() {
-    $("#closeModalMCButton").removeClass("show");
-    $("#modalMC").modal("hide");
-}
-
-
-function fetchModel(modelButton) {
-    $("#closeModalMCButton").removeClass("show");
-    $("#modalMC").modal("hide");
-
-    var optimization_name = modelButton.attr("name");
-    var optimization_id = modelButton.attr("id");
-
-    showLoadingAnimation("Fetching model from the HBP Model Catalog");
-    $.get("/hh-neuron-builder/fetch-opt-set-file/" + optimization_name + "/" + optimization_id + "/" + req_pattern, function(data) {
-        hideLoadingAnimation();
-        if (data.response == "OK") {
-            checkConditions();
-        } else {
-            openErrorDiv("Some errors occurred. Please try again or restar the application", "error");
-        }
-    }) 
-}
-
-
-// serve embedded-efel-gui page
-function openNFE() {
-    $("#modalNFEContainer").css("display", "block");
-    $("#modalNFE").css("z-index", "100").addClass("show");
-}
-
-$("#modalNFE")[0].addEventListener("transitionstart", function(transition) {
-    if (transition.target == $(this)[0]) {
-        if ($(this).hasClass("show")) {
-            $("#modalNFEContainer").addClass("show");
-        }
-    }
-})
-$("#modalNFE")[0].addEventListener("transitionend", function(transition) {
-    if (transition.target == $(this)[0]) {
-        if (!$(this).hasClass("show")) {
-            $("#modalNFEContainer").css("display", "none");
-            $(this).css("z-index", "-100");
-        }
-    }
-})
-$("#modalNFEContainer")[0].addEventListener("transitionstart", function(transition) {
-    if (transition.target == $(this)[0]) {
-        if (!$(this).hasClass("show")) {
-            $("#modalNFE").removeClass("show");
-        }
-    }
-}) 
-
-function closeNFE(b) {
-    $("#modalNFEContainer").removeClass("show");
-}
-
-function inSilicoPage() {
-    showLoadingAnimation("Uploading to blue-naas...")
-    $("#run-sim-btn").prop("disabled", true);
-    $.getJSON("/hh-neuron-builder/upload-to-naas/" + req_pattern, function(data){
-        if (data.response == 'KO') {
-            hideLoadingAnimation();
-            openErrorDiv(data.message, "error");
-            return;
-        }
-        $.getJSON("/hh-neuron-builder/model-loaded-flag/" + req_pattern, function(data){
-            console.log(data);
-            var o = data["response"];
-            if (o == "KO"){
-                hideLoadingAnimation();
-                openErrorDiv("Some error occurred.", "error");
-                return;
-            }
-            setLoadingAnimationText("Loading...");
-            $("#bluenaas-frame").attr("src", "https://blue-naas-bsp-epfl.apps.hbp.eu/#/model/" + o);
-            $("#bluenaas-frame").on("load", function() {
-                hideLoadingAnimation();
-                $("#modalBlueNaasContainer").css("display", "block");
-                $("#modalBlueNaas").css("z-index", "100").addClass("show");
-            })
-        });
-    });
-    
-
-}
-
-$("#modalBlueNaas")[0].addEventListener("transitionstart", function(transition) {
-    if (transition.target == $(this)[0]) {
-        if ($(this).hasClass("show")) {
-            $("#modalBlueNaasContainer").addClass("show");
-        }
-    }
-})
-$("#modalBlueNaas")[0].addEventListener("transitionend", function(transition) {
-    if (transition.target == $(this)[0]) {
-        if (!$(this).hasClass("show")) {
-            $("#modalBlueNaasContainer").css("display", "none");
-            $(this).css("z-index", "-100");
-        }
-    }
-})
-$("#modalBlueNaasContainer")[0].addEventListener("transitionstart", function(transition) {
-    if (transition.target == $(this)[0]) { 
-        if (!$(this).hasClass("show")) {
-            $("#modalBlueNaas").removeClass("show");
-        }
-    }
-})
-
-
-function closeBlueNaasModal() {
-    $("#modalBlueNaasContainer").removeClass("show");
-}
 
