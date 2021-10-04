@@ -2333,12 +2333,15 @@ def hhf_comm(request, exc='', ctx=''):
             
             # downloading morphology 
             r = requests.get(morp['url'], verify=False)
-            with open(os.path.join(morp_dir, morp['name']), 'wb') as fd:
+            morp_name = morp['name']
+            if os.path.splitext(morp_name)[1] == '':
+                morp_name += '.asc'
+            with open(os.path.join(morp_dir, morp_name), 'wb') as fd:
                 for chunk in r.iter_content():
                     fd.write(chunk)
             
             # writing morph.json
-            morp_dict = {hhf_model_key: morp['name']}
+            morp_dict = {hhf_model_key: morp_name}
             with open(os.path.join(hhf_dir, 'config', 'morph.json'), 'w') as fd:
                 json.dump(morp_dict, fd)
         
