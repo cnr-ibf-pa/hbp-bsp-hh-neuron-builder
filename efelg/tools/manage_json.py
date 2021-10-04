@@ -186,10 +186,13 @@ def create_file_name(data):
 
 
 def update_file_name(data, metadata_dict):
-    data["cell_id"] = metadata_dict["cell_name"]
-    data["contributors_affiliations"] = metadata_dict["contributors"]
-    data["animal_species"] = metadata_dict["species"]
-    data["brain_structure"] = metadata_dict["structure"]
-    data["cell_soma_location"] = metadata_dict["region"]
-    data["cell_type"] = metadata_dict["type"]
+    metadata_keys = metadata_dict.keys()
+    data["cell_id"] = metadata_dict["cell_name"] if "cell_name" in metadata_keys else metadata_dict["cell_id"]
+    data["contributors_affiliations"] = metadata_dict["contributors"] if "contributors" in metadata_keys else metadata_dict["contributors_affiliations"]
+    data["animal_species"] = metadata_dict["species"] if "species" in metadata_keys else metadata_dict["animal_species"]
+    data["brain_structure"] = metadata_dict["structure"] if "structure" in metadata_keys else metadata_dict["brain_structure"]
+    data["cell_soma_location"] = metadata_dict["region"] if "region" in metadata_keys else metadata_dict["cell_soma_location"]
+    data["cell_type"] = metadata_dict["type"] if "type" in metadata_keys else metadata_dict["cell_type"]
+    if type(data["cell_type"]) == list and len(data["cell_type"]) == 1:
+        data["cell_type"] = data["cell_type"][0]
     data["etype"] = metadata_dict["etype"]

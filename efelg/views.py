@@ -55,8 +55,7 @@ def select_features(request):
     """
 
     # if not context variable exists exit the application
-    if (request.session["is_free_space_enough"] is None or
-            request.session["is_free_space_enough"] is False):
+    if not request.session.get("is_free_space_enough"):
         # display error page
         return redirect('/efelg/error_space_left/')
 
@@ -92,7 +91,7 @@ def get_list(request):
     """
 
     # if no context variable is present exit the application
-    if not request.session.get("is_free_space_enough") or request.session["is_free_space_enough"] is False:
+    if not request.session.get("is_free_space_enough"):
         return redirect('/efelg/error_space_left/')
 
     metadata_path = os.path.join(
@@ -120,8 +119,7 @@ def get_data(request, cellname=""):
     """
 
     # if not enough space is left display error page
-    if (request.session["is_free_space_enough"] is None or
-            request.session["is_free_space_enough"] is False):
+    if not request.session.get("is_free_space_enough"):
         # display error page
         return redirect('/efelg/error_space_left/')
 
@@ -190,8 +188,7 @@ def extract_features(request):
     """
 
     # if not enough space is left on disk display error page
-    if (request.session["is_free_space_enough"] is None or
-            request.session["is_free_space_enough"] is False):
+    if not request.session.get("is_free_space_enough"):
         # render error page
         return redirect('/efelg/error_space_left/')
 
@@ -410,8 +407,7 @@ def results(request):
     """
 
     # if not enough space is left on disk display error page
-    if (request.session["is_free_space_enough"] is None or
-            request.session["is_free_space_enough"] is False):
+    if not request.session.get("is_free_space_enough"):
         # render error page
         return redirect('/efelg/error_space_left/')
 
@@ -427,8 +423,7 @@ def download_zip(request):
     """
 
     # if not enough space is left on disk display error page
-    if (request.session["is_free_space_enough"] is None or
-            request.session["is_free_space_enough"] is False):
+    if not request.session.get("is_free_space_enough"):
         # render html page
         return redirect('/efelg/error_space_left/')
 
@@ -448,8 +443,7 @@ def features_dict(request):
     """
 
     # if not enough space is left on disk display error page
-    if (request.session["is_free_space_enough"] is None
-            or request.session["is_free_space_enough"] is False):
+    if not request.session.get("is_free_space_enough"):
         return redirect('/efelg/error_space_left/')
 
     with open(os.path.join(settings.BASE_DIR, 'static', 'efelg',
@@ -461,7 +455,7 @@ def features_dict(request):
 @csrf_exempt
 def upload_files(request):
 
-    if request.session["is_free_space_enough"] is None or request.session["is_free_space_enough"] is False:
+    if not request.session.get("is_free_space_enough"):
         return redirect('/efelg/error_space_left/')
 
     username = request.session['username']
@@ -536,8 +530,7 @@ def get_result_dir(request):
     """
 
     # if not enough space is left on disk display error page
-    if (request.session["is_free_space_enough"] is None or
-            request.session["is_free_space_enough"] is False):
+    if not request.session.get("is_free_space_enough"):
         return redirect('/efelg/error_space_left/')
 
     user_results_dir = \

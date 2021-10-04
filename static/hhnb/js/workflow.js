@@ -9,12 +9,19 @@ var from_hhf = false;
 $(window).bind("pageshow", function() {
     console.log("exc: " + exc.toString() + " cxt: " + ctx.toString());
     checkConditions();
-
+    
     if (window.location.href.includes("/hh-neuron-builder/hhf-comm?hhf_dict=") && modal_view) {
-        // $("#modalButton").trigger("click");
+        const url = new URL(window.location.href);
+        let jj = JSON.parse(url.searchParams.get('hhf_dict'))["HHF-Comm"];
+        let jj_k = Object.keys(jj);
+        if (jj_k.length == 1 && jj_k[0] == "electrophysiologies") {
+            $("#modalHHFCloseButton")[0].onclick = "";    
+        }
+        $("#modalButton").trigger("click");
         $("#modalHHF").modal("show");
         modal_view = false;
     }
+    
 });
 
 
@@ -1090,6 +1097,8 @@ function fetchHHFFileList() {
    
         $("#fileItemSpinner").css("display", "none");
         showFileList($(".folder-item.active"));
+ 
+        updateEditor();
     });
 }
 
@@ -1125,7 +1134,7 @@ $("#deleteFileButton").click(function() {
     if ($(this).hasClass("disabled")) {
         return false;
     }
-    if ($(".file-item.active").length == 0 && $("editor-item.active").length == 0) {
+    if ($(".file-item.active").length == 0 && $(".editor-item.active").length == 0) {
         return false;
     }
 
@@ -1155,6 +1164,7 @@ function deleteHHFFiles() {
             return false;
         }
         jj_ids.id.push($(".editor-item.active").attr("name"));
+        console.log(jj_ids);
     } else {
         if ($(".file-item.active").length == 0) {
             return false;
@@ -1247,7 +1257,6 @@ $("#uploadFileButton").click(function() {
                 if (counter == files) {
                     hideLoadingAnimation();
                     refreshHHFFileList();
-                    updateEditor();
                 }
             } else {
                 closeFileManager();
@@ -1494,9 +1503,13 @@ function switchMode() {
 
 function loadEditor() {
     $("#editorfilelist").empty();
+    console.log("=========== LOAD EDITOR ============");
+    console.log($(".file-group.active").children());
     $(".file-group.active").children().each(function(i, el){
-        $("#editorfilelist").append("<li name='" + el.id + "' class='list-group-item folder-item editor-item'  onclick='selectFileEditor($(this).attr(\"name\"))'>" + el.id + "</li>")
-        $(".editor-item[name='" + $(".file-item.active").attr("id")).addClass("active");
+        if (el.className != "file-item empty") { 
+            $("#editorfilelist").append("<li name='" + el.id + "' class='list-group-item folder-item editor-item'  onclick='selectFileEditor($(this).attr(\"name\"))'>" + el.id + "</li>")
+            $(".editor-item[name='" + $(".file-item.active").attr("id")).addClass("active");
+        } 
     });
 
 
@@ -1541,6 +1554,12 @@ function loadEditor() {
             $("#editor-spinner").css("display", "none");
             $("#openafilediv").css("display", "block");
         }
+    
+        console.log($("#editorfilelist"));
+        if ($("#editorfilelist").children().length == 0) {
+            $("#openafilediv").html("Upload a file");
+        }
+    
     });
 
 }
@@ -1584,7 +1603,8 @@ async function runCheckDiffWorker() {
     if (window.Worker) {
         const checkDiffWorker = new Worker("/static/hhnb/js/checkDiffText.js");
 
-        while(true) {
+        while($(".editor-item.active").length > 0) {
+            
             checkDiffWorker.postMessage([$(".file-textarea.active").val(), originalTextAreaVal]);
             checkDiffWorker.onmessage = function(e) {
                 if (e.data == "equals") {
