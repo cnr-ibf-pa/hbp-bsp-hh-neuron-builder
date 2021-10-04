@@ -77,7 +77,7 @@ def get_metadata(filename):
 
 # perform units conversions
 def perform_conversions_json(data):
-
+    print('========================= PERFORM CONVERSION =======================')
     if ("stimulus_unit" in data) and (not data["stimulus_unit"].lower() in ["na", "unknown"]):
         a_pow = 1
         stimlus_unit = data["stimulus_unit"].lower()
@@ -124,7 +124,6 @@ def perform_conversions_json(data):
 
 
 def extract_data(filepath, metadata_dict=None):
-
     if filepath.endswith(".abf"):
         sampling_rate, tonoff, traces, voltage_unit, stimulus_unit = get_traces_abf(filepath)
         data = {
@@ -174,8 +173,8 @@ def extract_data(filepath, metadata_dict=None):
     data["filename"] = filename[:filename.index(".")]
 
     if metadata_dict:
-        update_file_name(data, metadata_dict)
-    
+       update_file_name(data, metadata_dict)
+   
     return data
 
 

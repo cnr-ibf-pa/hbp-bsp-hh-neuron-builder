@@ -580,14 +580,18 @@ def dataset(request):
     return render(request, 'efelg/docs/dataset.html')
 
 
-def hhf_etraces(request, wfid):
+def hhf_etraces(request):
     """ 
     Render NFE trace selection page in case electrophysiological signals have
     been sent from the Hippocampus Hub
     """
+    
+    exc = request.GET.get('exc')
+    hhf_etraces_dir = request.session[exc].get('hhf_etraces_dir')
+    wfid = request.GET.get('wfid')
 
     r = overview(request, wfid)
-    context = {'hhf_etraces_dir': True, 'wfid': wfid}
+    context = {'hhf_etraces_dir': hhf_etraces_dir, 'wfid': wfid}
     return render(request, 'efelg/show_traces.html', context)
 
 
@@ -603,9 +607,6 @@ def load_hhf_etraces(request):
 
     # get directory where traces sent from the hippocampus hub have been sent
     hhf_etraces_dir = request.POST.get('hhf_etraces_dir', None)
-    
-    print('================== HHF_ETRACES_DIR =================== ')
-    print(hhf_entraces_dir)
     wfid = request.POST.get('wfid', None)
 
     if not hhf_etraces_dir:
@@ -650,29 +651,26 @@ def load_hhf_etraces(request):
         for f in os.listdir(hhf_etraces_dir):
             if not f.endswith('.abf'):
                 continue
-            try:
-                with open(os.path.join(hhf_etraces_dir, f[:-4] +
-                                       '_metadata.json'), 'r') as fd:
-                    metadata_dict = json.load(fd)
-                data = manage_json.extract_data(
-                    os.path.join(hhf_etraces_dir, f),
-                    metadata_dict=metadata_dict)
-                output_filename = manage_json.create_file_name(data)
-                output_filename = output_filename.replace(' ', '_')
-
-                with open(os.path.join(EfelStorage.getUserFilesDir(
-                        username, time_info), output_filename), 'w') as fd:
-                    json.dump(data, fd, indent=4)
-                if output_filename[:-5] not in data_name_dict['all_json_names']:
-                    data_name_dict['all_json_names'].append(
-                        output_filename[:-5])
-            except Exception as e:
-                print('metadata not found')
+            #try:
+            with open(os.path.join(hhf_etraces_dir, f[:-4] + '_metadata.json'), 'r') as fd:
+                metadata_dict = json.load(fd)
+            data = manage_json.extract_data(os.path.join(hhf_etraces_dir, f), metadata_dict=metadata_dict)
+            output_filename = manage_json.create_file_name(data)
+            output_filename = output_filename.replace(' ', '_')
+            with open(os.path.join(EfelStorage.getUserFilesDir(
+                    username, time_info), output_filename), 'w') as fd:
+                json.dump(data, fd, indent=4)
+            if output_filename[:-5] not in data_name_dict['all_json_names']:
+                data_name_dict['all_json_names'].append(
+                   output_filename[:-5])
+            #except Exception as e:
+            #    print('metadata not found')
 
     except FileNotFoundError:
         return HttpResponse(json.dumps({'resp': 'KO', 'message':
                                         'file not found error'}))
 
+    
     return HttpResponse(json.dumps(data_name_dict),
                         content_type="application/json")
 

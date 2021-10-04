@@ -136,34 +136,6 @@ $(document).ready(function(){
     // hideLoadingAnimation();
 });
 
-// serve embedded-efel-gui page
-function efelPage() {
-    window.location.href = "/hh-neuron-builder/embedded-efel-gui/" + req_pattern + "/";
-}
-
-function inSilicoPage() {
-    console.log("inSilicoPage() called");
-    showLoadingAnimation("Uploading to blue-naas...")
-    $("#run-sim-btn").prop("disabled", true);
-    $.getJSON("/hh-neuron-builder/upload-to-naas/" + req_pattern, function(uploaddata){
-        console.log(uploaddata);
-        $.getJSON("/hh-neuron-builder/model-loaded-flag/" + req_pattern, function(data){
-            console.log(data);
-            var o = data["response"];
-            if (o == "KO"){
-                window.location.href = "";
-            } else {
-                window.location.href = "/hh-neuron-builder/embedded-naas/" + req_pattern + "/";
-            }
-        });
-    });
-}
-
-// serve choose-opt-model page
-function chooseOptModel() {
-    window.location.href = "/hh-neuron-builder/choose-opt-model"; 
-}
-
 // reload current page
 function reloadCurrentPage() {
     window.location.href = "";
@@ -316,7 +288,9 @@ function checkConditions(){
                 featBar.html(data['feat']['message'])
                 $("#del-feat-btn").prop("disabled", true);
                 $("#down-feat-btn").prop("disabled", true);
+                $("#efelgui-frame").attr("src", "/efelg/hhf_etraces?exc=" + exc + "&wfid=" + data["wf_id"]);
             } else {
+                $("#efelgui-frame").attr("src", "/efelg/?ctx=" + ctx);
                 if (data['feat']['status']){
                     let featBar = $("#feat-bar");
                     featBar.removeClass("red orange");
@@ -1629,7 +1603,7 @@ async function runCheckDiffWorker() {
         $("#saveFileButton").addClass("show");
     }
 }
-
+    
 
 $("#saveFileButton").mousedown(function() {
     if ($(this).hasClass("disabled")) {
@@ -1694,4 +1668,223 @@ $("#editorAlert")[0].addEventListener("transitionend", async function(){
     await sleep(2000);
     $(this).removeClass("show");
 });
+
+
+function formatDescription(meta = ""){
+    var description = meta['description']
+    var indexes = [];
+    var all_strings = [];
+    var final_string = "";
+    var final_string_meta_app = "";
+    var final_string_author_app = "";
+    var final_string_meta_title = "<span style='font-size:16px'><br>Description<br></span>";
+    var final_string_author_title = "<span style='font-size:16px'><br><br><br>Credits<br></span>";
+    var allowed_tag_meta = [
+        "brain_structure", "cell_soma_location", 
+        "cell_type", "channels", "e_type", "morphology"
+    ];
+    var allowed_tag_author = ["contributors", "email", "affiliations"]
+    var res = description.replace(/\\\_/g, "_");
+
+    var index = 0;
+    while (index > -1) {
+        index = res.indexOf('<br>');
+        if (index == 0){
+            if (res.length >=4){
+                res = res.slice(4,);
+            } else {
+                index == -1;
+            }
+        } else if (index > -1){
+            all_strings.push(res.slice(0, index));
+            res = res.slice(index + 4,);
+        }
+    }
+    for (var i = 0; i < all_strings.length; i++){
+        for (var j = 0; j < allowed_tag_meta.length; j++){
+            if (all_strings[i].indexOf(allowed_tag_meta[j]) > -1){
+                final_string_meta_app =  final_string_meta_app + "<br>" + all_strings[i];
+                break
+            }
+        }
+        for (var z = 0; z < allowed_tag_author.length; z++){
+            if (all_strings[i].indexOf(allowed_tag_author[z]) > -1){
+                final_string_author_app =  final_string_author_app + "<br>" + all_strings[i];
+                break
+            }
+        }
+    }
+    final_string_meta_app = final_string_meta_app + "<br><strong>" + "id : " + "</strong>" + meta["id"]
+    if (final_string_meta_app.length > 1){
+        final_string = final_string + final_string_meta_title + final_string_meta_app;
+    }
+    if (final_string_author_app.length > 1){
+        final_string = final_string + final_string_author_title + final_string_author_app;
+    }
+
+    return final_string
+}
+
+
+var modelsReady = false;
+// serve choose-opt-model page
+function chooseOptModel() {
+    if (modelsReady) {
+        $("#modalMC").modal("show");
+        $("#closeModalMCButton").css("display", "block").addClass("show");
+        return false;
+    }
+    showLoadingAnimation("Fetching models from Model Catalog...");
+    $.getJSON("/hh-neuron-builder/get_model_list/" + exc + "/" + ctx, function(data){
+        hideLoadingAnimation();
+        var counter = 0;
+        if (data.length == 0) {
+            openErrorDiv("Something goes wrong.<br>Please restart the application.", "error");
+            return;
+        }
+        $.each(data, function(idx, val){
+            $.each(val, function(index, e){
+                console.log(e);
+                var model_uuid = index; //e['meta']["id"];
+                var model_name = index;
+                $("#modelCatalogContainer" ).append("<div  id=" + model_uuid + " name=" +
+                        model_name + " class='main-content model-info-div' onclick='fetchModel($(this))'></div>");
+                $("#" + model_uuid).append("<div id=" + model_uuid + " class='model-info-div-title'>" + e['meta']['species'] + ' > ' + e['meta']['brain_region'] + ' > ' +  e['meta']['cell_type'] + ' > ' + model_name + "</div>");
+                $("#" + model_uuid).append("<div style='display:flex;' id=" + model_uuid + 'a' + " ></div>");
+                var img_div = document.createElement("DIV");
+                var spk_img = document.createElement("IMG");
+                var mor_img = document.createElement("IMG");
+                var mor_id = "crr_mor";
+                var spk_id = "crr_spk";
+                var spk_url = e["responses"]; 
+                var mor_url = e["morph"]; 
+                img_div.setAttribute("style", "max-width:60%;");
+                mor_img.setAttribute("id", mor_id);
+                mor_img.setAttribute("style", "max-width:50%;");
+                spk_img.setAttribute("id", spk_id);
+                spk_img.setAttribute("style", "max-width:50%;");
+                spk_img.setAttribute("src", spk_url);
+                mor_img.setAttribute("src", mor_url);
+                img_div.append(spk_img);
+                img_div.append(mor_img);
+                $("#" + model_uuid + 'a').append(img_div);
+                $('#' + model_uuid + 'a').append("<div style='max-width:40%;padding:5px;font-size:13px'>" + formatDescription(e['meta']) + "</div>");
+            });
+        });
+        $("#modalMC").modal("show");
+        $("#closeModalMCButton").css("display", "block").addClass("show");
+    });
+    modelsReady = true;
+}
+
+$("#modalMC")[0].addEventListener("transitionstart", function() {
+    if ( ! $(this).hasClass("show") ) {
+        $("#closeModalMCButton").removeClass("show");
+    };
+})
+
+function closeModalMC() {
+    $("#closeModalMCButton").removeClass("show");
+    $("#modalMC").modal("hide");
+}
+
+
+function fetchModel(modelButton) {
+    $("#closeModalMCButton").removeClass("show");
+    $("#modalMC").modal("hide");
+
+    var optimization_name = modelButton.attr("name");
+    var optimization_id = modelButton.attr("id");
+
+    showLoadingAnimation("Fetching model from the HBP Model Catalog");
+    $.get("/hh-neuron-builder/fetch-opt-set-file/" + optimization_name + "/" + optimization_id + "/" + req_pattern, function(data) {
+        hideLoadingAnimation();
+        if (data.response == "OK") {
+            checkConditions();
+        } else {
+            openErrorDiv("Some errors occurred. Please try again or restar the application", "error");
+        }
+    }) 
+}
+
+
+// serve embedded-efel-gui page
+function openNFE() {
+    $("#modalNFE").css("z-index", "100").addClass("show");
+    // $("#modalNFEContainer").addClass("show");
+}
+
+$("#modalNFE")[0].addEventListener("transitionend", function(transition) {
+    if (transition.target == $("#modalNFE")[0]) {
+        if ($(this).hasClass("show")) {
+            console.log("modalNFE transition end");
+            $("#modalNFEContainer").addClass("show");
+        } else {
+            $(this).css("z-index", "-100");
+        }
+    }
+})
+$("#modalNFEContainer")[0].addEventListener("transitionend", function(transition) {
+    if (transition.target == $("#modalNFEContainer")[0]) { 
+        if (!$(this).hasClass("show")) {
+            $("#modalNFE").removeClass("show")
+        }
+    }
+})
+
+function closeNFE(b) {
+    $("#modalNFEContainer").removeClass("show");
+}
+
+function inSilicoPage() {
+    showLoadingAnimation("Uploading to blue-naas...")
+    $("#run-sim-btn").prop("disabled", true);
+    $.getJSON("/hh-neuron-builder/upload-to-naas/" + req_pattern, function(data){
+        if (data.response == 'KO') {
+            hideLoadingAnimation();
+            openErrorDiv(data.message, "error");
+            return;
+        }
+        $.getJSON("/hh-neuron-builder/model-loaded-flag/" + req_pattern, function(data){
+            console.log(data);
+            var o = data["response"];
+            if (o == "KO"){
+                hideLoadingAnimation();
+                openErrorDiv("Some error occurred.", "error");
+                return;
+            }
+            setLoadingAnimationText("Loading...");
+            $("#bluenaas-frame").attr("src", "https://blue-naas-bsp-epfl.apps.hbp.eu/#/model/" + o);
+            $("#bluenaas-frame").on("load", function() {
+                hideLoadingAnimation();
+                $("#modalBlueNaas").css("z-index", "100").addClass("show");
+            })
+        });
+    });
+    
+
+}
+
+$("#modalBlueNaas")[0].addEventListener("transitionend", function(transition) {
+    if (transition.target == $("#modalBlueNaas")[0]) {
+        if ($(this).hasClass("show")) {
+            console.log("modalBlueNaas transition end");
+            $("#modalBlueNaasContainer").addClass("show");
+        } else {
+            $(this).css("z-index", "-100");
+        }
+    }
+})
+$("#modalBlueNaasContainer")[0].addEventListener("transitionend", function(transition) {
+    if (transition.target == $("#modalBlueNaasContainer")[0]) { 
+        if (!$(this).hasClass("show")) {
+            $("#modalBlueNaas").removeClass("show")
+        }
+    }
+})
+
+
+function closeBlueNaasModal() {
+    $("#modalBlueNaasContainer").removeClass("show");
+}
 

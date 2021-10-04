@@ -420,6 +420,8 @@ def embedded_efel_gui(request, exc='', ctx=''):
     context = {}
    
     if request.session[exc].get('hhf_etraces', None):
+        print('========================= EFEL_PAGE ========================')
+        prinut('hhf_etraces %s\nhhf_etraces_dir %s' % (request.session.get('hhf_etraces'), request.session.get('hhf_etraces_dir')))
         context = {'hhf_etraces_dir': request.session[exc].get('hhf_etraces_dir', None), 'wfid': request.session[exc]['wf_id']}
     
     return render(request, 'hhnb/embedded_efel_gui.html', context)
@@ -2340,6 +2342,7 @@ def hhf_comm(request, exc='', ctx=''):
             with open(os.path.join(hhf_dir, 'config', 'morph.json'), 'w') as fd:
                 json.dump(morp_dict, fd)
         
+        
         if mod:
             mod_dir = os.path.join(hhf_dir, 'mechanisms')
             if not os.path.exists(mod_dir):
@@ -2351,9 +2354,12 @@ def hhf_comm(request, exc='', ctx=''):
                 with open(os.path.join(mod_dir, m['name']), 'wb') as fd:
                     for chunk in r.iter_content():
                         fd.write(chunk)
-
+        
+            
         hhf_etraces = False
+        etraces_dir = None
         if etraces:
+            hhf_etraces = True
             # add etraces on user_tmp dir
             etraces_dir = os.path.join(request.session[exc]['user_dir'], 'tmp', 'etraces')
             if not os.path.exists(etraces_dir):
@@ -2371,12 +2377,10 @@ def hhf_comm(request, exc='', ctx=''):
                         for chunk in r.iter_content():
                             fd.write(chunk)
 
-            hhf_etraces = True
-            request.session[exc]['hhf_etraces_dir'] = etraces_dir
-
         request.session[exc]['from_hhf'] = True
         request.session[exc]['hhf_dir'] = hhf_dir
         request.session[exc]['hhf_etraces'] = hhf_etraces
+        request.session[exc]['hhf_etraces_dir'] = etraces_dir
         request.session[exc]['hhf_model_key'] = hhf_model_key
         request.session.save()
 

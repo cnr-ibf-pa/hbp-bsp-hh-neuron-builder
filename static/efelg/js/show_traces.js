@@ -7,6 +7,10 @@ openMessageDiv("wait-message-div", "main-e-st-div");
 var hhf_etraces_dir = sessionStorage.getItem("hhf_etraces_dir", hhf_etraces_dir);
 var wfid = sessionStorage.getItem("wfid", wfid) ? sessionStorage.getItem("wfid") : "";
 
+console.log("hhf_etraces_dir & wfid")
+console.log(hhf_etraces_dir);
+console.log(wfid);
+
 var contributor = null;
 var specie = null;
 var structure = null;
@@ -189,6 +193,8 @@ $(document).ready(function() {
     if (hhf_etraces_dir) {
         isLoadingHHFEtraces = true;
         console.log(isLoadingHHFEtraces);
+        console.log("load_hhf_etraces");
+        console.log(hhf_etraces_dir);
         $.ajax({
             url: "/efelg/load_hhf_etraces/",
             method: "POST",
