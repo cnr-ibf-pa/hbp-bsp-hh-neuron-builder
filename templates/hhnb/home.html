@@ -24,14 +24,14 @@
             </div>
             <div class="col">
                 <div class="row side-button-panel">
-                    <button id="new-wf" type="button" class="btn btn-lg main-panel-btn" onclick="initNewWorkflow();">
+                    <button id="new-wf" type="button" class="btn btn-lg main-panel-btn">
                         Initiate a new workflow
                     </button>
                 </div>
                 <br><br>
                 <div class="row side-button-panel">
                     <input type="file" accept="application/zip" id="workflow-upload" style="display: none">
-                    <button id="fetch-wf-btn" type="button" class="btn btn-lg main-panel-btn" onclick="uploadWorkflow();">
+                    <button id="fetch-wf-btn" type="button" class="btn btn-lg main-panel-btn">
                         Upload workflow
                     </button>                
                 </div>
@@ -40,34 +40,11 @@
     </div>
 </div>
 
-<div id="overlaywrapper" class="overlay-wrapper">
 
-    <!-- error div -->
-    <div id="overlaywrappererror" class="overlay-content">
-        <div id="overlayerror" class="error-content">
-            <div id="errordynamictext"></div>
-            <br>
-            <button id="ok-error-div-btn" class="btn workflow-btn" onclick="closeErrorDiv()">Ok</button>
-        </div>
-    </div>
-
-    <!-- reload div -->
-    <div id="overlaywrapperreload" class="overlay-content">
-        <div id="overlayreload" class="reload-content">
-            <div id="reloaddynamictext"></div>
-            <br>
-            <button id="reload-div-btn" class="btn workflow-btn fill-background" onclick="closeReloadDiv()">Reload</button>
-        </div>
-    </div>
-
-</div>
 
 <script>
-    var exc = "{{ exc }}";
-    var ctx = "{{ ctx }}";
-    sessionStorage.setItem("exc", exc);
-    sessionStorage.setItem("ctx", ctx);
+    sessionStorage.setItem("exc", "{{ exc }}");
 </script>
 
-<script type="text/javascript" src="{% static 'hhnb/js/home.js' %}"></script>
+<script type="module" src="{% static 'hhnb/js/home.js' %}"></script>
 {% endblock %}

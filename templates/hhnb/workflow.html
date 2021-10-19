@@ -10,9 +10,9 @@
     </div>
     <div class="hhnb-navbar navbar">
         <div id="wf-title" class="workflow-id-text">Workflow id:</div>
-        <button id="wf-btn-new-wf" class="btn hhnb-navbar-btn" title="Create a new workflow" onclick="newWorkflow()">New</button>
-        <button id="wf-btn-clone-wf" class="btn hhnb-navbar-btn" title="Clone current workflow" onclick="cloneWorkflow()">Clone</button>
-        <button id="wf-btn-save" class="btn hhnb-navbar-btn" title="Download current workflow" onclick="saveWorkflow()">Save</button>
+        <button id="wf-btn-new-wf" class="btn hhnb-navbar-btn" title="Create a new workflow">New</button>
+        <button id="wf-btn-clone-wf" class="btn hhnb-navbar-btn" title="Clone current workflow">Clone</button>
+        <button id="wf-btn-save" class="btn hhnb-navbar-btn" title="Download current workflow">Save</button>
     </div>
 </div>
 
@@ -39,27 +39,25 @@
                     </div>
                     <br>
                     <div class="row">
-                        <button type="button" id="feat-efel-btn" class="btn workflow-btn" onclick="openNFE()">Extract features</button>
+                        <button type="button" id="feat-efel-btn" class="btn workflow-btn">Extract features</button>
                     </div>
                     <div class="row">
-                        <button type="button" id="feat-up-btn" class="btn workflow-btn" onclick="displayFeatUploadDiv()">Upload files</button>
+                        <button type="button" id="feat-up-btn" class="upload-btn btn workflow-btn">Upload files</button>
                     </div>
                     <div class="row">
                         <div class="col flex-center">
-                            <button id="down-feat-btn" title="Download feature files" type="button" class="btn btn-link" onclick="downloadLocalFeat()">
+                            <button id="down-feat-btn" title="Download feature files" type="button" class="download-btn btn btn-link">
                                 Download
                             </button>
                         </div>
                         <div class="col flex-center">
-                            <button id="del-feat-btn" title="Delete feature files" type="button" class="btn btn-link" onclick="deleteFeatureFiles()" disabled>
+                            <button id="del-feat-btn" title="Delete feature files" type="button" class="delete-btn btn btn-link" disabled>
                                 Delete
                             </button>
                         </div>                        
                     </div>
                 </div>
-                <div id="feat-bar" class="row status-bar status-bar-text red">
-                    "features.json" and "protocols.json" NOT present
-                </div>
+                <div id="feat-bar" class="row status-bar status-bar-text red"></div>
             </div>
             <div class="col">
                 <div class="container secondary-content">
@@ -78,28 +76,26 @@
                     </div>         
                     <br>       
                     <div class="row">
-                        <button type="button" id="opt-db-hpc-btn" class="btn workflow-btn" onclick="chooseOptModel()" title="Use optimization files from database">Choose from Model Catalog</button>
+                        <button type="button" id="opt-db-hpc-btn" class="btn workflow-btn" title="Use optimization files from database">Choose from Model Catalog</button>
                     </div>
                     <div class="row">
-                        <button type="button" id="opt-up-btn" class="btn workflow-btn" onclick="displayOptSetUploadDiv()">Upload model (.zip)</button>
+                        <button type="button" id="opt-up-btn" class="upload-btn btn workflow-btn">Upload model (.zip)</button>
                         <button type="button" id="openFileManagerButton" class="btn workflow-btn hhf-integration-component" style="display: none" onclick="openFileManager()" title="This button is only enabled when the HHNB workflow is started in the Hippocampus Hub portal. Please visit www.hippocampushub.eu portal to enable this functionality.">View/Upload model files</button>
                     </div>
                     <div class="row">
                         <div class="col flex-center">
-                            <button id="down-opt-set-btn" title="Download optimization files" type="button" class="btn btn-link" onclick="downloadLocalOptSet()">
+                            <button id="down-opt-set-btn" title="Download optimization files" type="button" class="download-btn btn btn-link">
                                 Download
                             </button>
                         </div>
                         <div class="col flex-center">
-                            <button id="del-opt" title="Delete optimization files" type="button" class="btn btn-link" onclick="deleteOptFiles()" disabled>
+                            <button id="del-opt-btn" title="Delete optimization files" type="button" class="delete-btn btn btn-link" disabled>
                                 Delete
                             </button>                        
                         </div>
                     </div>
                 </div>
-                <div id="opt-files-bar" class="row status-bar status-bar-text red">
-                    Oprimization files NOT present
-                </div>
+                <div id="opt-files-bar" class="row status-bar status-bar-text red"></div>
             </div>
             <div class="col">
                 <div class="container secondary-content">
@@ -116,7 +112,7 @@
                     </div>
                     <br>                    
                     <div class="row">
-                        <button type="button" id="opt-set-btn" class="btn workflow-btn x2" onclick="openHpcParameterDiv()">Set parameters/Choose HPC</button>
+                        <button type="button" id="opt-set-btn" class="btn workflow-btn x2">Set parameters/Choose HPC</button>
                     </div>
                     <div class="row">
                         <div class="col flex-center">
@@ -126,9 +122,7 @@
                         </div>
                     </div>
                 </div>
-                <div id="opt-param-bar" class="row status-bar status-bar-text red">
-                    Optimization parameters NOT set
-                </div>
+                <div id="opt-param-bar" class="row status-bar status-bar-text red"></div>
             </div> 
         </div>
         <div class="row">
@@ -161,22 +155,22 @@
                             <button type="button" id="opt-fetch-btn" class="btn workflow-btn lg" onclick="displayJobFetchDiv()">Fetch results</button>
                         </div>
                         <div class="col flex-center">
-                            <button type="button" id="opt-res-up-btn" class="btn workflow-btn lg" onclick="displayOptResUploadDiv()">Upload file</button>
+                            <button type="button" id="opt-res-up-btn" class="upload-btn btn workflow-btn lg">Upload file</button>
                         </div>
                     </div>
                     <div class="row" style="padding: 0 7rem">
                         <div class="col flex-center">
-                            <button id="down-opt-btn" title="Download optimization files" type="button" onclick="downloadLocalOpt()"
-                                class="btn btn-link">Download results
+                            <button id="down-opt-btn" title="Download optimization files" type="button"
+                                class="download-btn btn btn-link">Download results
                             </button>
                         </div>
                         <div class="col flex-center">
-                            <button id="down-sim-btn" title="Download model files" type="button" class="btn btn-link" onclick="downloadLocalSim()"
+                            <button id="down-sim-btn" title="Download model files" type="button" class="download-btn btn btn-link"
                                 disabled>Download model
                             </button>                        
                         </div>
                         <div class="col flex-center">
-                            <button id="del-sim-btn" title="Delete optimization files" type="button" class="btn btn-link" onclick="deleteSimFiles()"
+                            <button id="del-sim-btn" title="Delete optimization files" type="button" class="detele-btn btn btn-link" onclick="deleteSimFiles()"
                                 disabled>Delete
                             </button>                        
                         </div>
@@ -209,7 +203,7 @@
             </div>
             <div class="row">
                 <div class="col">
-                    <button type="button" id="cancelUploadFormButton" class="btn workflow-btn fill-background extends" onclick="closeUploadDiv(true)">Cancel</button>
+                    <button type="button" id="cancelUploadFormButton" class="btn workflow-btn fill-background extends">Cancel</button>
                 </div>
                 <div class="col">
                     <input type="submit" id="uploadFormButton" disabled class="btn workflow-btn fill-background extends" value="Upload"/>
@@ -455,10 +449,10 @@
                 <br>
                 <div class="row">
                     <div class="col">
-                        <button type="button" id="cancel-param-btn" class="btn workflow-btn fill-background extends" onclick="closeHpcParameterDiv()">Cancel</button>
+                        <button type="button" id="cancel-param-btn" class="btn workflow-btn fill-background extends">Cancel</button>
                     </div>
                     <div class="col">
-                        <button type="button" id="apply-param" class="btn workflow-btn fill-background extends" onclick="applyJobParam()" disabled>Apply</button>
+                        <button type="button" id="apply-param" class="btn workflow-btn fill-background extends" disabled>Apply</button>
                     </div>
                 </div>
             </div>
@@ -695,7 +689,7 @@
             </div>
             <div class="row" style="height: 10%; margin-top: 10px;">
                 <div class="col flex-center">
-                    <button type="button" class="btn main-panel-btn extends modal-btn" onclick="closeNFE()">Cancel</button>
+                    <button id="closeNFEButton" type="button" class="btn main-panel-btn extends modal-btn">Cancel</button>
                 </div>
                 <div class="col flex-center">
                     <button type="button" id="save-feature-files" class="btn main-panel-btn extends modal-btn" disabled="true">Save to workflow</button>
@@ -707,7 +701,7 @@
 
 
 <!-- Modal -->
-<button id="closeModalMCButton" type="button" class="btn main-panel-btn floating-btn mc" onclick="closeModalMC()">Cancel</button>
+<button id="closeModalMCButton" type="button" class="btn main-panel-btn floating-btn mc">Cancel</button>
 <div class="modal fade" id="modalMC" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog mc">
         <div class="modal-content mc">
@@ -747,25 +741,16 @@
 </div>
 
 <script>
-    var exc = "{{ exc }}";
-    var ctx = "{{ ctx }}";
-    if (exc != "" && ctx != "") {
-        sessionStorage.setItem("exc", exc);
-        sessionStorage.setItem("ctx", ctx);
-        console.log(sessionStorage.getItem("exc"));
-        console.log(sessionStorage.getItem("ctx"));
-    } else {
-        console.log(exc);
-        console.log(ctx);
-    }
+    sessionStorage.setItem("exc", "{{ exc }}");
 </script>
 
-<script type="text/javascript" src="{% static 'hhnb/js/workflow.js' %}"></script>
- 
+<script type="module" src="{% static 'hhnb/js/workflow.js' %}"></script>
+<script type="text/javascript" src="{% static 'hhnb/js/utils/misc.js' %}"></script>
+<!-- <script type="text/javascript" src="{% static 'hhnb/js/embedded_efel_gui.js' %}"></script> -->
+
 <!-- Highlighter library -->
 <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.1/styles/default.min.css">
 <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.1/highlight.min.js"></script>
-<script type="text/javascript" src="{% static 'hhnb/js/embedded_efel_gui.js' %}"></script>
 
 
 {% endblock %}

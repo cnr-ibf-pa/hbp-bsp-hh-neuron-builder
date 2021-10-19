@@ -134,3 +134,14 @@ class ConfigFileConverter:
 
     def to_url(self, value):
         return value
+
+
+class FileTypeConverter:
+    regex = 'features|model|analysis'
+
+    def to_python(self, value):
+        return value
+
+    def to_url(self, value):
+        return value
+        

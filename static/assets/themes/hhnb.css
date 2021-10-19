@@ -702,11 +702,9 @@ body {
     display: none;
     position: relative;
     margin: auto;
-    top: calc(30%);
+    top: calc(50%);
     width: max-content;
-    /* min-width: 50%; */
     height: max-content;
-    /* border: solid 1px black; */
     padding: 2rem;
     text-align: center;
     border-radius: 20px;
@@ -714,18 +712,7 @@ body {
     box-shadow: 0 0 1rem 0 rgb(0, 0, 0, .8); 
     z-index: 100;
     transition: all ease-out 0.3s;
-}
-.overlay-content.upper-daint {
-    /* --h: calc(((589px - 277px)/-4)); */
-    transform: translateY( -13% );
-}
-.overlay-content.upper-sa-daint {
-    /* --h: calc(((526px - 317px)/-4)); */
-    transform: translateY( -17% );
-}
-.overlay-content.upper-nsg {
-    /* --h: calc(((589px - 357px)/-4)); */
-    transform: translateY( -20% );
+    transform: translateY(-50%);
 }
 
 .overlay-content.overflow {
@@ -1702,4 +1689,11 @@ i.disabled:hover {
 
 #errordynamictext {
     max-width: 750px;
+}
+
+.fa-external-link-alt {
+    transition: all ease 0.15s; 
+}
+.fa-external-link-alt:hover {
+    transform: scale(1.5, 1.5);
 }

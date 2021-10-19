@@ -59,7 +59,7 @@ MIDDLEWARE = [
     'mozilla_django_oidc.middleware.SessionRefresh',
     'django.middleware.security.SecurityMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
+    # 'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -163,7 +163,8 @@ STATICFILES_DIRS = [
 
 MEDIA_ROOT = conf.MEDIA_ROOT
 
-HHF_TEMPLATE_DIR = os.path.join(MEDIA_ROOT, 'hhnb', 'hhf_template')
+HHF_TEMPLATE_DIR = os.path.join(MEDIA_ROOT, 'hhnb', 'hhf_template', 'hhf')
+TMP_DIR = os.path.join(MEDIA_ROOT, 'hhnb', 'tmp')
 
 
 MODEL_CATALOG_FILTER = {
