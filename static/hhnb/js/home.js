@@ -10,7 +10,7 @@ $( document ).ready(() => {
 
 $("#new-wf").on("click", () => {
     showLoadingAnimation("Initializing workflow...");
-    $.get("initialize-workflow")
+    $.get("/hh-neuron-builder/initialize-workflow")
         .done((result) => {
             Log.debug(result);
             window.location.href = "/hh-neuron-builder/workflow/" + result.exc;                        

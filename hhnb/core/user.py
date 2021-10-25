@@ -53,18 +53,12 @@ class NsgUser:
     def get_password(self):
         return self._password
 
-    @dispatch()
     def validate_credentials(self):
         r = Nsg.check_nsg_login(self._username, self._password)
+        print('NSG Credentials validation', r)
         if r['response'] == 'OK':
             return True
         return False
-
-    @dispatch(str, str)
-    def validate_credentials(self, username, password):
-        self._username = username
-        self._password = password
-        return self.validate_credentials()
 
 
 class HhnbUser:

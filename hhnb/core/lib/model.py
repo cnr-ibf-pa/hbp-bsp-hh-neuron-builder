@@ -7,12 +7,11 @@ import json
 
 class Features:
 
-    _FEATURES = False
-    _PROTOCOLS = False
-    _features = ''
-    _protocols = ''
-
     def __init__(self, features=None, protocols=None):
+        self._FEATURES = False
+        self._PROTOCOLS = False
+        self._features = None
+        self._protocols = None
         if features:
             self.set_features(features)
         if protocols:
@@ -72,25 +71,23 @@ class Features:
 
 class Morphology:
 
-    _MORPHOLOGY = False
-    _morphology = ''
-    _config = ''
-
     def __init__(self, morphology=None, config=None, conf_key=None):
+        self._MORPHOLOGY = False
+        self._morphology = None
+        self._config = None
         if morphology:
             self.set_morphology(morphology)
-            if config:
-                self.set_config(config)
+        if config:
+            self.set_config(config)
+            if conf_key:
+                self.make_config(conf_key)
             else:
-                if conf_key:
-                    self.make_config(conf_key)
-                else:
-                    self.make_config('tmp_key')
+                self.make_config('tmp_key')
 
     def __str__(self):
         print('<class Morphology:')
         print(f'\tmorphology: {self._morphology}',
-              f'\tconf_file: {self._config}',
+              f'\tconf: {self._config}',
               '>', sep='\n')
 
     @classmethod
@@ -159,12 +156,11 @@ class Morphology:
 
 class ModelBase:
 
-    _PARAMETERS = False
-    _MORPHOLOGY = False
-    _MECHANISMS = False
-    
     def __init__(self, key, **kwargs):
-        self.set_key(key)
+        self._PARAMETERS = False
+        self._MORPHOLOGY = False
+        self._MECHANISMS = False
+        self._key = key
         if 'features' in kwargs and kwargs['features']:
             self.set_features(features=kwargs['features'])
         if 'protocols' in kwargs and kwargs['protocols']:
@@ -186,17 +182,19 @@ class ModelBase:
             if type(protocols) == str:
                 self._features.set_protocols(protocols)                                    
         
-    def set_morphology(self, morphology, conf_file=None, conf_key=None):
+    def set_morphology(self, morphology, conf=None, conf_key=None):
         if type(morphology) == Morphology:
             self._morphology = morphology
         elif type(morphology) == str:
-            self._morphology = Morphology(morphology, conf_file, conf_key)
+            if not conf_key:
+                conf_key = self._key
+            self._morphology = Morphology(morphology, conf, conf_key)
         self._MORPHOLOGY = True         
 
     def set_mechanisms(self, mechansisms):
         if type(mechansisms) == str:
             mods = [os.path.join(mechansisms, m) for m in os.listdir(mechansisms)]
-        if type(mechansisms) == list:
+        elif type(mechansisms) == list:
             mods = mechansisms
         for m in mods:
             if not os.path.exists(m):
@@ -231,4 +229,4 @@ class ModelBase:
         return self._morphology
 
     def get_key(self):
-        return self.key
+        return self._key

@@ -34,6 +34,7 @@
         <div class="row mt-2">
             <h4>Trace selection</h4>
         </div>
+        <div class="row"><div id="efel-wf-id" class="flex-center">Workflow id: </div></div>
     </header>
     <main id="main-e-st-div" class="text-dark">
         <div class="mx-10 my-4">
@@ -335,6 +336,10 @@
         </div>
     </div>
 
+    <script>
+        const efel_wf_id = "{{ efel_wf_id }}";
+        document.getElementById("efel-wf-id").innerText = "Workflow id: " + efel_wf_id;
+    </script>
 </body>
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
@@ -347,9 +352,7 @@
 
 <script>
     var hhf_etraces_dir = "{{ hhf_etraces_dir }}";
-    var wfid = "{{ wfid }}"
     sessionStorage.setItem("hhf_etraces_dir", hhf_etraces_dir);
-    sessionStorage.setItem("wfid", wfid);
 </script>
 
 </html>

@@ -5,11 +5,6 @@ writeMessage("wmd-second", "Please wait...");
 openMessageDiv("wait-message-div", "main-e-st-div");
 
 var hhf_etraces_dir = sessionStorage.getItem("hhf_etraces_dir", hhf_etraces_dir);
-var wfid = sessionStorage.getItem("wfid", wfid) ? sessionStorage.getItem("wfid") : "";
-
-console.log("hhf_etraces_dir & wfid")
-console.log(hhf_etraces_dir);
-console.log(wfid);
 
 var contributor = null;
 var specie = null;
@@ -189,19 +184,13 @@ $(document).ready(function() {
     window.scrollTo(0, 0);
     $('#charts').empty();
 
-    //console.log(hhf_etraces_dir);
     if (hhf_etraces_dir) {
         isLoadingHHFEtraces = true;
-        console.log(isLoadingHHFEtraces);
-        console.log("load_hhf_etraces");
-        console.log(hhf_etraces_dir);
         $.ajax({
             url: "/efelg/load_hhf_etraces/",
             method: "POST",
-            data: { "hhf_etraces_dir": hhf_etraces_dir, "wfid": wfid },
+            data: {"hhf_etraces_dir": hhf_etraces_dir},
             success: async function(name_dict) {
-                console.log(name_dict)
-
                 try {
                     var loaded_filenames = name_dict.all_json_names;
                     var refused_filenames = [];
@@ -237,6 +226,9 @@ $(document).ready(function() {
 
             },
             error: function(error) {
+                if (error.responseText == "no space") {
+                    window.location.href = "/efelg/error_space_left";
+                } 
                 isLoadingHHFEtraces = false;
                 console.log(isLoadingHHFEtraces);
                 closeMessageDiv("wait-message-div", "main-e-st-div");

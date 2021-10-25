@@ -23,6 +23,7 @@ class HpcSettings:
     @classmethod
     def from_json(cls, decoded_json):
         s = cls()
+        
         return s
 
     @dispatch(Hpc)
@@ -66,3 +67,5 @@ class HpcSettingsUtil:
 
     @staticmethod
     def get_conf()
+
+

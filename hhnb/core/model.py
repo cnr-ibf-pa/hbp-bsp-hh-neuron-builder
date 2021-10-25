@@ -5,6 +5,7 @@ from hhnb.core.lib.model import *
 
 from hh_neuron_builder.settings import TMP_DIR
 
+from filecmp import cmp as compare_files
 from multipledispatch import dispatch
 from uuid import uuid4 as uuid
 
@@ -55,8 +56,63 @@ class Model(ModelBase):
         key = os.path.split(self._model_dir)
         if 'key' in kwargs:
             key = kwargs.pop('key')
-        print(key)
         super().__init__(key, **kwargs)
+        
+        self._ETRACES = False
+
+
+    def _check_if_file_exists(self, **kwargs):
+        if len(kwargs) > 1:
+            raise TypeError(f'{__name__} takes only 1 keyword argument')
+        
+        keyword_list = ['paramters', 'protocols', 'features', 'morphology']
+        key = list(kwargs.keys())[0]
+        
+        if key not in keyword_list:
+            raise TypeError(f'{__name__} take only 1 of the following\
+                            arguments {keyword_list}')
+
+        if key == 'features' or key == 'protocols' or key == 'parameters':
+            file_path = os.path.join(self._model_dir, 'config')
+        elif key == 'morphology':
+            file_path = os.path.join(self._model_dir, 'morphology')
+
+        try:
+            c = compare_files(kwargs[key],
+                              os.path.join(file_path, os.path.split(kwargs[key])[1]))
+        except FileNotFoundError:
+            return False
+        return c
+
+    # def set_features(self, features=None, protocols=None):
+        # f = self._features.get_features()
+        # if not self._check_if_file_exists(features=f):
+            # shutil.copy(f)
+        # super().set_features(features=features, protocols=protocols)
+
+    def set_morphology(self, morphology=None, conf=None, conf_key=None):
+        if not conf_key:
+            conf_key = self._key
+        if not morphology:
+            morphology = Morphology.from_dir(os.path.join(self._model_dir, 'morphology'),
+                                             conf_key=conf_key)
+        super().set_morphology(morphology, conf=conf, conf_key=conf_key)
+        print('MORPHOLOGY')
+        conf_file = os.path.join(self._model_dir, 'config', 'morph.json')
+        if morphology.get_morphology() and not os.path.exists(conf_file):
+            d = {conf_key: os.path.split(morphology.get_morphology())[1]}
+            with open(conf_file, 'w') as fd:
+                json.dump(d, fd, indent=4)
+
+    def set_mechanisms(self, mechansisms=None):
+        if not mechansisms:
+            mechansisms = os.path.join(self._model_dir, 'mechanisms')
+        super().set_mechanisms(mechansisms=mechansisms)
+
+    def set_parameters(self, parameters=None):
+        if not parameters:
+            parameters = os.path.join(self._model_dir, 'config', 'parameters.json')
+        super().set_parameters(parameters=parameters)
 
     @classmethod
     def from_zip(cls, zip_model):
@@ -108,7 +164,6 @@ class Model(ModelBase):
 
         return model
 
-    @dispatch(str)
     def update_optimization_files(self, model_dir):
         print('update_optimization_files() called on %s' % model_dir)
         try:
@@ -122,25 +177,22 @@ class Model(ModelBase):
                                     os.path.join(self._model_dir, 'morphology'))
                 conf_file = shutil.copy(os.path.join(model_dir, 'config', 'morph.json'),
                                         os.path.join(self._model_dir, 'config'))
-                print(morph)
-                print(conf_file)
-            self.set_morphology(morphology=morph, conf_file=conf_file)
+            self.set_morphology(morphology=morph, conf=conf_file)
             # mechanisms
             for m in os.listdir(os.path.join(model_dir, 'mechanisms')):
                 shutil.copy(os.path.join(model_dir, 'mechanisms', m),
                             os.path.join(self._model_dir, 'mechanisms'))
             self.set_mechanisms(os.path.join(self._model_dir, 'mechanisms'))
             # python's files
-
-        except FileNotFoundError():
+        except FileNotFoundError() :
+            print()
             raise FileNotFoundError()
-
 
     def get_optimization_files_raw_status(self):
         return {
             'morphology': self.get_morphology().get_raw_status(),
             'parameters': self._PARAMETERS,
-            'mechanisms': self._MECHANISMS
+            'mechanisms': self._MECHANISMS,
         }
 
     def get_optimization_files_status(self):
@@ -153,7 +205,8 @@ class Model(ModelBase):
     def get_properties(self):
         return {
             'features': self.get_features().get_status(),
-            'optimization_files': self.get_optimization_files_status()
+            'optimization_files': self.get_optimization_files_status(),
+            'model_key': self.get_key()
         }
         
     
@@ -172,6 +225,7 @@ class ModelUtil:
 
     @staticmethod
     def write_to_workflow(model, workflow_id):
+        print("==========================================================")
         if not os.path.exists(workflow_id):
             raise FileNotFoundError('%s path not found' % workflow_id)
         model_dir = os.path.join(workflow_id, 'model')
@@ -203,11 +257,11 @@ class ModelUtil:
     @dispatch(Model, str, str)
     def zip_model(model, dst_dir=None, zip_name=None):
         if not dst_dir:
-            dst_dir = os.path.join(_TMP_DIR, uuid)
+            dst_dir = os.path.join(_TMP_DIR, str(uuid()))
             while True:
                 if not os.path.exists(dst_dir):
                     break
-                dst_dir = os.path.join(_TMP_DIR, uuid)
+                dst_dir = os.path.join(_TMP_DIR, str(uuid()))
         if not zip_name:
             zip_name = os.path.split(zip_name)[1]
         zip_name = zip_name.split('.zip')[0]
@@ -218,14 +272,19 @@ class ModelUtil:
                      base_dir='model')
         return zip_path
 
-
     @staticmethod
-    def update_key(model, key):
+    def update_key(model, key=None):
+        if type(model) != Model:
+            raise TypeError('%s is not a model instance' % model)
+        if key:
+            model.set_key(key)
+        else:
+            key = model.get_key()
         config_dir = os.path.join(os.path.join(model._model_dir, 'config'))
         for config in [os.path.join(config_dir, c) for c in os.listdir(config_dir)]:
             with open(config, 'r') as fd:
                 jj = json.load(fd)
-            jj_k = jj.keys()
+            jj_k = list(jj.keys())
             if len(jj_k) != 1:
                 raise shutil.Error('Conf file key error')
             if jj_k[0] != key:
@@ -245,4 +304,3 @@ class ModelUtil:
                 lines[z] = y
         with open(opt_file, 'w') as fd:
             fd.writelines(lines)
-

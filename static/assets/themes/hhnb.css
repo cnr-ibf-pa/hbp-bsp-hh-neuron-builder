@@ -1095,8 +1095,9 @@ td {
     border: unset;
     font-size: 1.5rem;
     color: rgb(180, 180, 180);
-    margin-top: calc(25% + 160px);
     position: relative;
+    top: 50%;
+    transform: translateY(-50%);
     display: flex;
     justify-content: center;
     cursor: default;

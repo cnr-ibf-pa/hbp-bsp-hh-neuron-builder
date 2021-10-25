@@ -5,7 +5,8 @@ import { UploadFileDialog, OptimizationSettingsDialog, MessageDialog } from "./u
 Log.enabled = true;
 
 const exc = sessionStorage.getItem("exc");
-const workflow = new Workflow(exc);
+const hhf_dict = sessionStorage.getItem("hhf_dict");
+const workflow = new Workflow(exc, hhf_dict);
 
 /* 
 var is_user_authenticated = false;
@@ -29,7 +30,7 @@ $(window).bind("pageshow", function() {
 // New workflow button callback
 $("#wf-btn-new-wf").on("click", () => {
     showLoadingAnimation("Initializing workflow...");
-    $.get("/hh-neuron-builder/initialize-workflow/")
+    $.get("/hh-neuron-builder/initialize-workflow")
         .done((result) => {
             Log.debug(result)
             window.location.href = "/hh-neuron-builder/workflow/" + result.exc;
@@ -130,7 +131,12 @@ $(".delete-btn").on("click", (button) => {
     Log.debug(button);
     switch (button.target.id) {
         case "del-feat-btn":
-            workflow.deleteFeatures();
+            if (workflow.getProps().etraces && !workflow.getUIFlags().features) {
+                workflow.getProps().etraces = false;
+                workflow.updateUI();
+            } else {
+                workflow.deleteFeatures();
+            }
             break;
         
             case "del-opt-btn":
@@ -187,11 +193,11 @@ $("#apply-param").on("click", () => {
 
 $("#feat-efel-btn").on("click", () => {
     // showLoadingAnimation("Loading...");
-    // if (hhf_etraces_dir) {
-        // document.getElementById("efelgui-frame").setAttribute("src", "/efelg/hhf_etraces/" + wfid);
-    // } else {
+    if (workflow.getProps().etraces) {
+        document.getElementById("efelgui-frame").setAttribute("src", "/efelg/hhf_etraces/" + exc);
+    } else {
       document.getElementById("efelgui-frame").setAttribute("src", "/efelg/?ctx=" + exc);
-    // }
+    }
 
     $("#modalNFEContainer").css("display", "block");
     $("#modalNFE").css("z-index", "100").addClass("show");
@@ -368,3 +374,13 @@ function formatDescription(meta = ""){
 }
 
 /* *************** */
+
+$("#launch-opt-btn").on("click", () => {
+    workflow.runOptimization();
+})
+
+$("#closeFileManagerButton").on("click", () => {
+    Log.debug("CLOSING FILE MANAGER");
+    closeFileManager();
+    workflow.updateProperties();
+})

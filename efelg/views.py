@@ -12,6 +12,7 @@ from django.http.response import HttpResponse, JsonResponse
 from django.http.response import HttpResponseBadRequest
 
 from hh_neuron_builder import settings
+from hhnb.views import hhf_etraces_dir
 from efelg.tools import resources, manage_json
 from efelg.tools.manage_storage import EfelStorage
 
@@ -46,7 +47,7 @@ def overview(request, wfid=None):
 
     # update session variable dictionary
     request.session.save()
-    return render(request, 'efelg/overview.html')
+    return render(request, 'efelg/overview.html', context={'efel_wf_id': time_info})
 
 
 def select_features(request):
@@ -67,7 +68,8 @@ def select_features(request):
     request.session['global_parameters_json'] = \
         json.loads(request.POST.get('global_parameters'))
 
-    return render(request, 'efelg/select_features.html')
+    time_info = request.session["time_info"]
+    return render(request, 'efelg/select_features.html', context={'efel_wf_id': time_info})
 
 
 def show_traces(request):
@@ -82,7 +84,9 @@ def show_traces(request):
         request.session['is_free_space_enough'] = False
         return redirect('/efelg/error_space_left/')
     #
-    return render(request, 'efelg/show_traces.html')
+
+    time_info = request.session["time_info"]
+    return render(request, 'efelg/show_traces.html', context={'efel_wf_id': time_info})
 
 
 def get_list(request):
@@ -414,7 +418,9 @@ def results(request):
     # render final page containing the link to the result zip file if any
     request.session["selected_features"] = \
         request.POST.getlist('crr_feature_check_features')
-    return render(request, 'efelg/results.html')
+    
+    time_info = request.session["time_info"]
+    return render(request, 'efelg/results.html', context={"efel_wf_id": time_info})
 
 
 def download_zip(request):
@@ -573,18 +579,18 @@ def dataset(request):
     return render(request, 'efelg/docs/dataset.html')
 
 
-def hhf_etraces(request):
+def hhf_etraces(request, exc):
     """ 
     Render NFE trace selection page in case electrophysiological signals have
     been sent from the Hippocampus Hub
     """
     
-    exc = request.GET.get('exc')
-    hhf_etraces_dir = request.session[exc].get('hhf_etraces_dir')
-    wfid = request.GET.get('wfid')
-
-    r = overview(request, wfid)
-    context = {'hhf_etraces_dir': hhf_etraces_dir, 'wfid': wfid}
+    etraces_dir = json.loads(hhf_etraces_dir(request, exc).content.decode())['hhf_etraces_dir']
+    r = overview(request)
+    context = {
+        'hhf_etraces_dir': etraces_dir,
+        'efel_wf_id': request.session["time_info"]
+    }
     return render(request, 'efelg/show_traces.html', context)
 
 
@@ -596,52 +602,60 @@ def load_hhf_etraces(request):
         request.session['is_free_space_enough'] = True
     else:
         request.session['is_free_space_enough'] = False
-        return redirect('/efelg/error_space_left/')
+        return HttpResponseBadRequest('no space')
 
     # get directory where traces sent from the hippocampus hub have been sent
     hhf_etraces_dir = request.POST.get('hhf_etraces_dir', None)
-    wfid = request.POST.get('wfid', None)
 
     if not hhf_etraces_dir:
         return HttpResponseBadRequest('"hhf_etraces_dir" not found')
+    
+    print(hhf_etraces_dir)
 
-    try:
-        username = request.session['username']
-        time_info = request.session['time_info']
-    except KeyError:
-        if not wfid:
-            try:
-                wfid = request.session['wfid']
-            except KeyError:
-                return HttpResponse(json.dumps({'resp': 'KO', 'message':
-                                                'key error occurred'}))
+    # try:
+    username = request.session['username']
+    time_info = request.session['time_info']
+    # except KeyError:
+    #     if not wfid:
+    #         try:
+    #             wfid = request.session['wfid']
+    #         except KeyError:
+    #             return HttpResponse(json.dumps({'resp': 'KO', 'message':
+    #                                             'key error occurred'}))
 
-    time_info, username = wfid.split('_')
+    # time_info = hhf_etraces_dir.split('/')[-1]
+    # username = hhf_etraces_dir.split('/')[-2]
+
+    print("QUESTO è TIME_INFO")
+    print(time_info)
+    print(username)
+
     data_name_dict = {
         "all_json_names": [],
         "refused_files": []
     }
 
     try:
-        if hhf_etraces_dir == 'True':
-            for k in request.session.keys():
-                try:
-                    if ('wf_id' in request.session[k].keys() and
-                            request.session[k]['wf_id'] == wfid):
-                        try:
-                            hhf_etraces_dir = \
-                                request.session[k]['hhf_etraces_dir']
-                        except:
-                            # if exception is thrown then "hhf_etraces_dir" is
-                            # not present and an error code is returned
-                            return JsonResponse({'resp': 'KO', 'message':
-                                                 'etraces dir not present error'
-                                                 })
-                except AttributeError:
-                    continue
+        # if hhf_etraces_dir == 'True':
+        #     for k in request.session.keys():
+        #         try:
+        #             if ('wf_id' in request.session[k].keys() and
+        #                     request.session[k]['wf_id'] == wfid):
+        #                 try:
+        #                     hhf_etraces_dir = \
+        #                         request.session[k]['hhf_etraces_dir']
+        #                 except:
+        #                     # if exception is thrown then "hhf_etraces_dir" is
+        #                     # not present and an error code is returned
+        #                     return JsonResponse({'resp': 'KO', 'message':
+        #                                          'etraces dir not present error'
+        #                                          })
+        #         except AttributeError:
+        #             continue
 
         # save data files sent from the HippocampusHub in the appropriate folder
         for f in os.listdir(hhf_etraces_dir):
+            print(f)
             if not f.endswith('.abf'):
                 continue
             #try:
@@ -663,7 +677,8 @@ def load_hhf_etraces(request):
         return HttpResponse(json.dumps({'resp': 'KO', 'message':
                                         'file not found error'}))
 
-    
+    print(data_name_dict)
+
     return HttpResponse(json.dumps(data_name_dict),
                         content_type="application/json")
 
@@ -672,5 +687,5 @@ def error_space_left(request):
     """
     Render no-space-left error page
     """
-
-    return render(request, 'efelg/error_space_left.html')
+    time_info = request.session["time_info"]
+    return render(request, 'efelg/error_space_left.html', context={'efel_wf_id': time_info})

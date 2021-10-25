@@ -6,37 +6,42 @@ from json.decoder import JSONDecodeError
 from hh_neuron_builder.settings import MEDIA_ROOT, HHF_TEMPLATE_DIR, TMP_DIR
 
 from multipledispatch import dispatch
+from hhnb.core.conf.exec_files_conf import ExecFileConf
 
 from hhnb.core.lib.exception.workflow_exception import *
-from hhnb.core import model
+from hhnb.core.model import *
 
 from datetime import datetime
 import shutil
 import os
 import json
+import requests
+
+from hhnb.core.user import NsgUser
 
 
 class _WorkflowBase:
     
     def __init__(self, username, workflow_id):
         self._username = username
-        self._workflow_id = workflow_id
+        self._id = workflow_id
         self._workflow_path = os.path.join(MEDIA_ROOT, 'hhnb', 'workflows',
-                                           self._username, self._workflow_id)
+                                           self._username, self._id)
         self._result_dir = os.path.join(self._workflow_path, 'results')
         self._model_dir = os.path.join(self._workflow_path, 'model')
         self._tmp_dir = os.path.join(self._workflow_path, 'tmp')
+        self._etraces_dir = os.path.join(self._workflow_path, 'etraces')
         
         self._optimization_settings = os.path.join(self._workflow_path,
                                                    'optimization_settings.json')
         if os.path.exists(self._model_dir) and any(os.scandir(self._model_dir)):
-            self._model = model.Model.from_dir(self._model_dir, key=workflow_id)
+            self._model = Model.from_dir(self._model_dir, key=workflow_id)
         
     def get_user(self):
         return self._username
 
-    def get_workflow_id(self):
-        return self._workflow_id
+    def get_id(self):
+        return self._id
 
     def get_workflow_path(self):
         return self._workflow_path
@@ -50,8 +55,12 @@ class _WorkflowBase:
     def get_tmp_dir(self):
         return self._tmp_dir
 
+    def get_etraces_dir(self):
+        return self._etraces_dir
+
     def get_model(self):
         return self._model
+
 
     
 class Workflow(_WorkflowBase):
@@ -101,6 +110,7 @@ class Workflow(_WorkflowBase):
         shutil.copytree(HHF_TEMPLATE_DIR, self._model_dir)       
         os.mkdir(self._result_dir)
         os.mkdir(self._tmp_dir)
+        os.mkdir(self._etraces_dir)
 
     def make_dir(self, dir):
         if os.path.exists(os.path.join(self._workflow_path, dir)):
@@ -159,14 +169,32 @@ class Workflow(_WorkflowBase):
 
     def get_properties(self):
         props = {
-            'workflow_id': self._workflow_id,
+            'id': self._id,
             'model': self._model.get_properties(), 
-            'optimization_settings': os.path.exists(self._optimization_settings)
+            'optimization_settings': os.path.exists(self._optimization_settings),
+            'etraces': any(os.scandir(self._etraces_dir))
         }
         return props
 
+    def clean_tmp_dir(self):
+        if len(os.listdir(self._tmp_dir)) > 0:
+            shutil.rmtree(self._tmp_dir)
+            if not os.path.exists(self._tmp_dir):
+                os.mkdir(self._tmp_dir)
+    
 
 class WorkflowUtil:
+
+    @staticmethod
+    def set_model_key(workflow, key=None):
+
+        ModelUtil.update_key(workflow.get_model(), key)
+
+    @staticmethod
+    def set_default_parameters(workflow):
+        shutil.copy(os.path.join(HHF_TEMPLATE_DIR, '..', 'parameters.json'),
+                    os.path.join(workflow.get_model_dir(), 'config'))
+        workflow.get_model().set_parameters()
 
     @staticmethod
     def clone_workflow(workflow):
@@ -175,8 +203,22 @@ class WorkflowUtil:
         return new_workflow
 
     @staticmethod
+    def make_archive(workflow, zip_name, dir_name, file_list):
+        zip_path = os.path.join(workflow.get_tmp_dir(), zip_name)
+        if os.path.exists(zip_path):
+            os.remove(zip_path)
+        tmp_dir = os.path.join(workflow.get_tmp_dir(), dir_name)
+        os.mkdir(tmp_dir)
+        for f in file_list:
+            shutil.copy(f, tmp_dir)
+        shutil.make_archive(os.path.splitext(zip_path)[0], 'zip', tmp_dir)
+        shutil.rmtree(tmp_dir)
+        return zip_path
+        
+
+    @staticmethod
     def make_workflow_archive(workflow):
-        zip_path = os.path.join(TMP_DIR, workflow.get_workflow_id())
+        zip_path = os.path.join(TMP_DIR, workflow.get_id())
         shutil.make_archive(base_name=zip_path,
                             format='zip',
                             root_dir=workflow.get_workflow_path())
@@ -184,16 +226,25 @@ class WorkflowUtil:
 
     @staticmethod
     def make_features_archive(workflow):
-        zip_name = os.path.join(workflow.get_tmp_dir(), 'features.zip')
-        if os.path.exists(zip_name):
-            os.remove(zip_name)
-        tmp_feat_dir = os.path.join(workflow.get_tmp_dir(), 'features')
-        os.mkdir(tmp_feat_dir)
-        shutil.copy(workflow.get_model().get_features().get_features(), tmp_feat_dir)
-        shutil.copy(workflow.get_model().get_features().get_protocols(), tmp_feat_dir)
-        shutil.make_archive(zip_name.split('.zip')[0], 'zip', tmp_feat_dir)
-        shutil.rmtree(tmp_feat_dir)
-        return zip_name
+        file_list = [
+            workflow.get_model().get_features().get_features(),
+            workflow.get_model().get_features().get_protocols()
+        ]
+        return WorkflowUtil.make_archive(workflow=workflow,
+                                         zip_name='features.zip',
+                                         dir_name='feature',
+                                         file_list=file_list)
+
+        # zip_name = os.path.join(workflow.get_tmp_dir(), 'features.zip')
+        # if os.path.exists(zip_name):
+        #     os.remove(zip_name)
+        # tmp_feat_dir = os.path.join(workflow.get_tmp_dir(), 'features')
+        # os.mkdir(tmp_feat_dir)
+        # shutil.copy(workflow.get_model().get_features().get_features(), tmp_feat_dir)
+        # shutil.copy(workflow.get_model().get_features().get_protocols(), tmp_feat_dir)
+        # shutil.make_archive(zip_name.split('.zip')[0], 'zip', tmp_feat_dir)
+        # shutil.rmtree(tmp_feat_dir)
+        # return zip_name
         
     @staticmethod
     def make_model_archive(workflow):
@@ -202,12 +253,133 @@ class WorkflowUtil:
             base_name=os.path.splitext(zip_name)[0],
             format='zip',
             root_dir=workflow.get_model_dir(),
-            # base_dir=workflow.get_model_dir()
         )
         return zip_name
 
+    @staticmethod
+    def make_optimization_model(workflow):
+        
+        # fixing all model's keys
+        ModelUtil.update_key(workflow.get_model())
+        
+        tmp_model_dir = shutil.copytree(src=workflow.get_model_dir(), 
+                                        dst=os.path.join(workflow.get_tmp_dir(), 'opt_model',
+                                                         workflow.get_model().get_key()))
+
+        # craeting directories and script
+        try:
+            os.mkdir(os.path.join(tmp_model_dir, 'checkpoints'))
+            os.mkdir(os.path.join(tmp_model_dir, 'figures'))
+        except FileExistsError:
+            pass
+
+        settings = workflow.get_optimization_settings()
+        if settings['hpc'] == 'NSG':
+            ExecFileConf.write_nsg_exec(dst_dir=tmp_model_dir,
+                                        max_gen=settings['gen-max'],
+                                        offspring=settings['offspring'])
+        elif settings['hpc'] == 'DAINT-CSCS' or settings['hpc'] == 'SA-CSCS':
+            ExecFileConf.write_daint_exec(dst_dir=tmp_model_dir,
+                                          folder_name=workflow.get_model().get_key(),
+                                          offspring=settings['offspring'],
+                                          max_gen=settings['gen-max'])
+        
+        return tmp_model_dir 
+
+    @staticmethod
+    def download_from_hhf(workflow, hhf_dict):
+        WorkflowUtil.set_default_parameters(workflow)
+
+        morph = hhf_dict.get('morphology')
+        etraces = hhf_dict.get('electrophysiologies', [])
+        mechanisms = hhf_dict.get('modFiles', [])
+
+        if morph:
+            file_name = morph['name']
+            if os.path.splitext(file_name)[1] == '':
+                file_name += '.asc'
+            file_path = os.path.join(workflow.get_model_dir(),
+                                        'morphology', file_name)
+            r = requests.get(url=morph['url'], verify=False)
+            with open(file_path, 'wb') as fd:
+                for chunk in r.iter_content(chunk_size=4096):
+                    fd.write(chunk)
+            workflow.get_model().set_morphology(morphology=file_path)
+        
+        for etrace in etraces:
+            file_path = os.path.join(workflow.get_etraces_dir(), etrace['name'])
+            r = requests.get(url=etrace['url'], verify=False)
+            with open(file_path + '.abf', 'wb') as fd:
+                for chunk in r.iter_content(chunk_size=4096):
+                    fd.write(chunk)
+            r = requests.get(url=etrace['metadata'], verify=False)
+            with open(file_path + '_metadata.json', 'wb') as fd:
+                for chunk in r.iter_content(chunk_size=4096):
+                    fd.write(chunk)
+        
+        for mod in mechanisms:
+            file_path = os.path.join(workflow.get_model_dir(), 'mechanisms', mod['name'])
+            r = requests.get(url=mod['url'], verify=False)
+            with open(file_path, 'wb') as fd:
+                for chunk in r.iter_content(chunk_size=4096):
+                    fd.write(chunk)
+        workflow.get_model().set_mechanisms()
+
+    @staticmethod
+    def list_model_files(workflow):
+        model_files = {}
+        
+        for root, dirs, files in os.walk(workflow.get_model_dir()):
+            if os.path.split(root)[1] == 'config':
+                model_files.update({'config': files})
+            if os.path.split(root)[1] == 'morphology':
+                model_files.update({'morphology': files})
+            if os.path.split(root)[1] == 'mechanisms':
+                model_files.update({'model': files})
+            if root == workflow.get_model_dir():
+                model_files.update({'root': files})
+                
+        return model_files
+        
+    @staticmethod
+    def write_file_content(workflow, file_path, file_content):
+        full_path = os.path.join(workflow.get_model_dir(), file_path)
+        if os.path.splitext(file_path)[1] == '.json':
+            jj = json.loads(file_content)
+            with open(full_path, 'w') as fd:
+                json.dump(jj, fd, indent=4)
+        else:
+            with open(full_path, 'wb') as fd:
+                fd.write(file_content)
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
 
 """ 
     class (Workflow):

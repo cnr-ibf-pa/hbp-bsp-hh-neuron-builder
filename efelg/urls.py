@@ -1,9 +1,8 @@
 from django.urls import path, register_converter
-from hhnb.utils.converters import WorkflowIdConverter
+from hhnb.utils.converters import ExcConverter
 from efelg import views
 
-
-register_converter(WorkflowIdConverter, 'workflow_id')
+register_converter(ExcConverter, 'exc')
 
 
 urlpatterns = [
@@ -26,6 +25,6 @@ urlpatterns = [
     path('docs/file_formats/', views.file_formats_docs),
     path('get_result_dir/', views.get_result_dir),
     #path('hhf_etraces/<workflow_id:wfid>', views.hhf_etraces),
-    path('hhf_etraces', views.hhf_etraces),
+    path('hhf_etraces/<exc:exc>', views.hhf_etraces),
     path('load_hhf_etraces/', views.load_hhf_etraces),
 ]

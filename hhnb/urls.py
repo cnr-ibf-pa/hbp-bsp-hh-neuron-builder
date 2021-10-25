@@ -44,13 +44,11 @@ urlpatterns = [
     path('', views.home),
     path('workflow/<exc:exc>', views.workflow),
     
-    # home page apis
-    path('initialize-workflow/', views.initialize_workflow),
-    path('upload-workflow/', views.upload_workflow),
+    # workflow apis
+    path('initialize-workflow', views.initialize_workflow),
+    path('upload-workflow', views.upload_workflow),
     path('clone-workflow/<exc:exc>', views.clone_workflow),
     path('download-workflow/<exc:exc>', views.download_workflow),
-
-    # workflow apis
     path('get-workflow-properties/<exc:exc>', views.get_workflow_properties), 
 
     # files apis
@@ -67,4 +65,20 @@ urlpatterns = [
 
     # model catalog
     path('fetch-models/<exc:exc>', views.fetch_models),
+
+    # user avatar
+    path('get-user-avatar', views.get_user_avatar),
+
+    # optimization apis
+    path('run-optimization/<exc:exc>', views.run_optimization),
+
+    # hippocampus hub api
+    path('hhf-comm', views.hhf_comm),
+    path('hhf-etraces-dir', views.hhf_etraces_dir),
+    path('hhf-list-files/<exc:exc>', views.hhf_list_files),
+
+    # these functions below will be deprecated soon
+    path('hhf-get-files-content/<folder:folder>/<exc:exc>', views.hhf_get_files_content),
+    path('hhf-get-model-key/<exc:exc>', views.hhf_get_model_key),
+    path('hhf-apply-model-key/<exc:exc>', views.hhf_apply_model_key),
 ]

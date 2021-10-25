@@ -79,8 +79,11 @@
                         <button type="button" id="opt-db-hpc-btn" class="btn workflow-btn" title="Use optimization files from database">Choose from Model Catalog</button>
                     </div>
                     <div class="row">
-                        <button type="button" id="opt-up-btn" class="upload-btn btn workflow-btn">Upload model (.zip)</button>
-                        <button type="button" id="openFileManagerButton" class="btn workflow-btn hhf-integration-component" style="display: none" onclick="openFileManager()" title="This button is only enabled when the HHNB workflow is started in the Hippocampus Hub portal. Please visit www.hippocampushub.eu portal to enable this functionality.">View/Upload model files</button>
+                        <div class="btn-group" role="group" style="padding: 0; width: 80%" stylaria-label="Set model files">
+                            <button type="button" id="show-opt-files-btn" class="btn workflow-btn">View files</button>
+                            <button type="button" id="opt-up-btn" class="upload-btn btn workflow-btn">Upload zip</button>
+                        </div>
+                        <!-- <button type="button" id="openFileManagerButton" class="btn workflow-btn hhf-integration-component" style="display: none" onclick="openFileManager()" title="This button is only enabled when the HHNB workflow is started in the Hippocampus Hub portal. Please visit www.hippocampushub.eu portal to enable this functionality.">View/Upload model files</button> -->
                     </div>
                     <div class="row">
                         <div class="col flex-center">
@@ -556,39 +559,39 @@
         </div>
     </div>
 
-    <!-- error div -->
-    <div id="overlaywrappererror" class="overlay-content">
+    error div
+    <!-- <div id="overlaywrappererror" class="overlay-content">
         <div id="overlayerror" class="error-content">
             <div id="errordynamictext"></div>
             <br>
             <button id="ok-error-div-btn" class="btn workflow-btn" onclick="closeErrorDiv()">Ok</button>
         </div>
-    </div>
+    </div> -->
 
     <!-- reload div -->
-    <div id="overlaywrapperreload" class="overlay-content">
+    <!-- <div id="overlaywrapperreload" class="overlay-content">
         <div id="overlayreload" class="reload-content">
             <div id="reloaddynamictext"></div>
             <br>
             <button id="reload-div-btn" class="btn workflow-btn fill-background" onclick="closeReloadDiv()">Reload</button>
         </div>
-    </div>
+    </div> -->
 
     <!-- expired workflow div -->
-    <div id="overlaywrapperexpiration" class="overlay-content">
+    <!-- <div id="overlaywrapperexpiration" class="overlay-content">
         <div id="overlayexpiration" class="expiration-content">
             <div id="expirationdynamictext"></div>
             <br>
             <button id="home-expiration-div-btn" class="btn workflow-btn fill-background" onclick="window.location.href='/hh-neuron-builder/'">Home</button>
         </div>
-    </div>
+    </div> -->
 
     <div id="overlayfilemanager" class="overlay-content file-manager-content">
         <div id="filemanager" class="file-manager">
             <div class="container file-manager-container g-0">
                 <div class="row g-0 file-manager-ui-button">
                     <div class="col flex-start">
-                        <i id="closeFileManagerButton" class="far fa-check-circle fa-lg" title="Close window" onclick="closeFileManager()"></i>
+                        <i id="closeFileManagerButton" class="far fa-check-circle fa-lg" title="Close window"></i>
                         <i id="infoFileManagerButton" class="far fa-question-circle fa-lg" title="Info"></i>
                     </div>
                     <div class="col flex-end">
@@ -607,7 +610,6 @@
                             <li id="mechanismsFolder" class="list-group-item folder-item">Mechanisms</li>
                             <li id="configFolder" class="list-group-item folder-item">Config</li>
                             <li id="modelFolder" class="list-group-item folder-item">Model</li>
-                            <!-- <li id="parametersFolder" class="list-group-item folder-item">parameters.json</li> -->
                             <li id="optNeuronFolder" class="list-group-item folder-item">opt_neuron.py</li>
                         </ul>
                         <div class="model-key-flex-col">
@@ -742,11 +744,12 @@
 
 <script>
     sessionStorage.setItem("exc", "{{ exc }}");
+    sessionStorage.setItem("hhf_dict", "{{ hhf_dict }}");
 </script>
 
-<script type="module" src="{% static 'hhnb/js/workflow.js' %}"></script>
+<script type="module" src="{% static 'hhnb/js/app.js' %}"></script>
 <script type="text/javascript" src="{% static 'hhnb/js/utils/misc.js' %}"></script>
-<!-- <script type="text/javascript" src="{% static 'hhnb/js/embedded_efel_gui.js' %}"></script> -->
+<script type="text/javascript" src="{% static 'hhnb/js/ui/components/file_manager.js' %}"></script>
 
 <!-- Highlighter library -->
 <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.1/styles/default.min.css">

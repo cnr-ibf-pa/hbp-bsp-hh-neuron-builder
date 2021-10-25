@@ -25,27 +25,81 @@ function disable(jObj) {
 export default class Workflow {
 
     #exc = null;
+    #props = null;
+    
     #uploadFileType = null;
+
 
     #featuresBlock = false;
     #optfilesBlock = false;
     #optsettingsBlock = false;
 
-    constructor(exc) {
+    constructor(exc) { 
         this.#exc = exc;
         this.updateProperties();
     }
 
+    getProps() {
+        return this.#props;
+    }
+
+    getUIFlags() {
+        return {
+            'features': this.#featuresBlock,
+            'optimization_files': this.#optfilesBlock,
+            'optimization_settings': this.#optsettingsBlock
+        }
+    }
+
+    updateProperties() {
+        showLoadingAnimation("Loading...");
+        $.ajax({
+            url: GET_PROPS_BASE_URL + this.#exc,
+            method: "GET",
+            async: false,
+            success: (props) => {
+                this.#props = props;
+                $("#wf-title").text("Workflow id: " + this.#props.id);
+                Log.debug(this.#props);
+            },
+            error: (error) => {
+                Log.error("Status: " + error.status + " > " + error.responseText);
+                if (error.status == 404) {
+                    MessageDialog.openReloadDialog();
+                }
+            }
+        }).done(() => { this.updateUI() })
+        .fail((error) => {
+            if (error.status == 500) {
+                return MessageDialog.openReloadDialog("/hh-neuron-builder", "<b>A critical error occurred</b>.<br>Please restart the application and if the the problem persists contact us.");
+            }
+        })
+        .always(() => { hideLoadingAnimation() });
+    }
 
     #updateFeaturesUIBlock() {
-        let features = this.props.model.features.features;
-        let protocols = this.props.model.features.protocols;
+        let features = this.#props.model.features.features;
+        let protocols = this.#props.model.features.protocols;
         let bar = $("#feat-bar");
         let nfeButton = $("#feat-efel-btn");
         let uploadButton = $("#feat-up-btn");
         let downloadLink = $("#down-feat-btn");
         let deleteLink = $("#del-feat-btn");
-        
+
+        if (features != "" && protocols != "") {
+            bar.html(features + "<br>" + protocols);
+        } else if (features != "" && protocols == "") {
+            bar.text(features);
+        } else {
+            bar.text(protocols);
+        }
+        bar.removeClass("green orange").addClass("red");
+        enable(nfeButton);
+        enable(uploadButton);
+        disable(downloadLink);
+        disable(deleteLink);
+        this.#featuresBlock = false;
+
         if (features == "" && protocols == "") {
             bar.removeClass("red orange").addClass("green");
             bar.text("");
@@ -54,27 +108,20 @@ export default class Workflow {
             enable(downloadLink);
             enable(deleteLink);
             this.#featuresBlock = true
-        } else {
-            if (features != "" && protocols != "") {
-                bar.html(features + "<br>" + protocols);
-            } else if (features != "" && protocols == "") {
-                bar.text(features);
-            } else {
-                bar.text(protocols);
-            }
-            bar.removeClass("green orange").addClass("red");
-            enable(nfeButton);
-            enable(uploadButton);
+        } else if (this.#props.etraces) {
+            bar.removeClass("red green").addClass("orange");
+            bar.text("Extract features from fetched etraces");
+            disable(uploadButton);
             disable(downloadLink);
-            disable(deleteLink);
-            this.#featuresBlock = false
-        } 
+            disable(uploadButton);
+            enable(deleteLink);
+        }
     }
 
     #updateModelBlock() {
-        let morphology = this.props.model.optimization_files.morphology.morphology;
-        let mechanisms = this.props.model.optimization_files.mechanisms;
-        let parameters = this.props.model.optimization_files.parameters;
+        let morphology = this.#props.model.optimization_files.morphology.morphology;
+        let mechanisms = this.#props.model.optimization_files.mechanisms;
+        let parameters = this.#props.model.optimization_files.parameters;
         let bar = $("#opt-files-bar");
         let chooseOptModelButton = $("#opt-db-hpc-btn");
         let uploadModelButton = $("#opt-up-btn");
@@ -102,7 +149,7 @@ export default class Workflow {
 
     #updateSettingsBlock() {
         let bar = $("#opt-param-bar");
-        if (this.props.optimization_settings) {
+        if (this.#props.optimization_settings) {
             bar.addClass("green").removeClass("red");
             bar.text("");
             this.#optsettingsBlock = true;
@@ -122,34 +169,13 @@ export default class Workflow {
         }
     }
 
-    #updateUI() {
+    updateUI() {
         this.#updateFeaturesUIBlock();
         this.#updateModelBlock();
         this.#updateSettingsBlock();
         this.#updateCellOptimizationBlock();
     }
-
-    updateProperties() {
-        showLoadingAnimation("Loading...");
-        $.ajax({
-            url: GET_PROPS_BASE_URL + this.#exc,
-            method: "GET",
-            async: false,
-            success: (props) => {
-                this.props = props;
-                $("#wf-title").text("Workflow id: " + this.props["workflow_id"]);
-                Log.debug(this.props);
-            },
-            error: (error) => {
-                Log.error("Status: " + error.status + " > " + error.responseText);
-                if (error.status == 404) {
-                    MessageDialog.openReloadDialog();
-                }
-            }
-        }).done(() => { this.#updateUI() }) 
-        .always(() => { hideLoadingAnimation() });
-    }
-
+    
     #deleteFiles(jFilesList) {
         showLoadingAnimation("Deleting files...")
         Log.debug("Deleting files: " + jFilesList);
@@ -258,6 +284,10 @@ export default class Workflow {
             success: (result) => {
                 // Log.debug(result);
                 settings = result;
+                if (settings.hpc == "NSG") {
+                    $("#username_submit").removeClass("is-invalid").addClass("is-valid");
+                    $("#password_submit").removeClass("is-invalid").addClass("is-valid");
+                }
             },
             error: (error) => {
                 Log.error("Status: " + error.status + " > " + error.responseText); 
@@ -279,14 +309,39 @@ export default class Workflow {
             async: false,
             success: (result) => { 
                 Log.debug(result)
+                if (jData.hpc == "NSG") {
+                    $("#username_submit").removeClass("is-invalid").addClass("is-valid");
+                    $("#password_submit").removeClass("is-invalid").addClass("is-valid");
+                }
                 this.updateProperties();
             },
-            error: (error) => { Log.error(error) }
+            error: (error) => { 
+                Log.error("Status: " + error.status + " > " + error.responseText); 
+                MessageDialog.openErrorDialog(error.responseText);
+                if (error.responseText == "Invalid credentials") {
+                    $("#username_submit").removeClass("is-valid").addClass("is-invalid");
+                    $("#password_submit").removeClass("is-valid").addClass("is-invalid");
+                }
+            }
         }).always(() => { hideLoadingAnimation() });
     }
 
     runOptimization() {
-
+        showLoadingAnimation("Run optimization on HPC system...");
+        Log.debug("Run optimization");
+        $.ajax({
+            url: "/hh-neuron-builder/run-optimization/" + this.#exc,
+            method: "GET",
+            async: false,
+            success: (result) => {
+                Log.debug(result);
+                MessageDialog.openSuccessDialog(result.responseText);
+            },
+            error: (error) => {
+                Log.error("Status: " + error.status + " > " + error.responseText);
+                MessageDialog.openErrorDialog(error.responseText);
+            }
+        }).always(() => { hideLoadingAnimation() });
     }
 
 }

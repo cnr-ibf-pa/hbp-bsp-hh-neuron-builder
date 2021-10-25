@@ -32,6 +32,7 @@
                 </a>
             </div>
         </div>
+        <div class="row"><div id="efel-wf-id" class="flex-center">Workflow id: </div></div>
     </header>
     <main class="my-4 mx-15">
         <div class="text-center">
@@ -45,6 +46,11 @@
             </div>
         </div>
     </main>
+
+    <script>
+        const efel_wf_id = "{{ efel_wf_id }}";
+        document.getElementById("efel-wf-id").innerText = "Workflow id: " + efel_wf_id;
+    </script>
 </body>
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>

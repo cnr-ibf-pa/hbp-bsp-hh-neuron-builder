@@ -52,12 +52,16 @@ class MessageDialog{
         this.#openMessageDialog(msg);
     }
 
-    static openReloadDialog(msg=null) {
+    static openReloadDialog(href, msg) {
         this.#overlayDialog.addClass("reload-content")
             .removeClass("error-content info-content");
         this.#dialogButton.addClass("fill-background");
         this.#dialogButton.text("Reload").on("click", () => {
-            window.location.href = "/hh-neuron-builder";
+            if (href == null) {
+                window.location.href = "/hh-neuron-builder";
+            } else {
+                window.location.href = href;
+            }
         });
         if (msg == null) {
             msg = "Something goes wrong !<br>Please reload the application.";
@@ -187,8 +191,6 @@ class OptimizationSettingsDialog {
                 $("#sa-daint-core-num").val(jObj["core-num"]);
                 $("#sa-daint-runtime").val(jObj.runtime);
             } else if (jObj.hpc == "NSG") {
-                $("#username_submit").val(jObj.username_submit);
-                $("#password_submit").val(jObj.password_submit);
                 $("#nsg-gen-max").val(jObj["gen-max"]);
                 $("#nsg-offspring").val(jObj.offspring);
                 $("#nsg-node-num").val(jObj["node-num"]);

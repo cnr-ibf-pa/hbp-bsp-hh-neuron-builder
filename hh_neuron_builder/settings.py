@@ -31,6 +31,7 @@ else:
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = conf.SECRET_KEY
+FERNET_KEY = conf.FERNET_KEY
 
 DEBUG = conf.DEBUG
 
@@ -163,7 +164,8 @@ STATICFILES_DIRS = [
 
 MEDIA_ROOT = conf.MEDIA_ROOT
 
-HHF_TEMPLATE_DIR = os.path.join(MEDIA_ROOT, 'hhnb', 'hhf_template', 'hhf')
+# HHF_TEMPLATE_DIR = os.path.join(MEDIA_ROOT, 'hhnb', 'hhf_template', 'hhf')
+HHF_TEMPLATE_DIR = os.path.join(BASE_DIR, 'hh_neuron_builder', 'config', 'hhf_template', 'hhf')
 TMP_DIR = os.path.join(MEDIA_ROOT, 'hhnb', 'tmp')
 
 
@@ -212,6 +214,6 @@ LOGOUT_REDIRECT_URL = "/hh-neuron-builder"
 
 LOGIN_URL = 'oidc_authentication_init'
 
-OIDC_RENEW_ID_TOKEN_EXPIRY_SECONDS = 3600
+OIDC_RENEW_ID_TOKEN_EXPIRY_SECONDS = 600
 
 

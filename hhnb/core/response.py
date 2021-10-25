@@ -28,6 +28,10 @@ def _file_response(file_path):
 class ResponseUtil:
 
     @staticmethod
+    def raw_response(content, *args, **kwargs):
+        return HttpResponse(content, *args, **kwargs)
+
+    @staticmethod
     @dispatch()
     def ok_response():
         return _http_response(200, b'OK')
