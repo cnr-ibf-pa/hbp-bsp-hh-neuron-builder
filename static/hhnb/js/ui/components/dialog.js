@@ -1,7 +1,7 @@
 import Log from "../../utils/logger.js";
 
 
-class MessageDialog{
+class MessageDialog {
 
     static #overlayWrapper = $("#overlaywrapperdialog");
     static #overlayContent = $("#overlaycontentdialog");
@@ -9,7 +9,7 @@ class MessageDialog{
     static #dialogMessage = $("#dialogtext");
     static #dialogButton = $("#dialog-btn");
 
-    
+
     static #openMessageDialog(msg) {
         this.#overlayWrapper.css("display", "block");
         this.#overlayContent.css("display", "block");
@@ -39,7 +39,7 @@ class MessageDialog{
             .removeClass("reload-content info-content");
         this.#dialogButton.text("Ok")
             .addClass("red").removeClass("blue green fill-background")
-            .on("click", () => {this.#closeMessageDialog()});
+            .on("click", () => { this.#closeMessageDialog() });
         this.#openMessageDialog(msg);
     }
 
@@ -73,7 +73,7 @@ class MessageDialog{
 
 
 class UploadFileDialog {
-    
+
     static #open(label) {
         $("#overlayupload").css("display", "block");
         $("#overlaywrapper").css("display", "block");
@@ -82,13 +82,13 @@ class UploadFileDialog {
         $("#uploadFormLabel").html("<strong>" + label + "<strong>");
         $("#uploadFormButton").prop("disabled", true);
     }
-    
+
     static close() {
         Log.debug("Close upload box")
         $("#overlayupload").css("display", "none");
         $("#overlaywrapper").css("display", "none");
     }
-    
+
     static openFeatures() {
         Log.debug("Open features upload box");
         $("#formFile").prop("multiple", true).attr("accept", ".json");
@@ -96,15 +96,15 @@ class UploadFileDialog {
         let label = "Upload features files (\"features.json\" and \"protocols.json\")";
         this.#open(label);
     }
-    
+
     static openModel(msg) {
         Log.debug("Open model upload box");
         $("#formFile").prop("multiple", false).attr("accept", ".zip");
         $("#uploadImg").css("display", "none");
         let label = "Upload optimization settings (\".zip\")";
         this.#open(label);
-    }   
-    
+    }
+
     static openAnalysisResult() {
         Log.debug("Open analysis result upload box");
         $("#formFile").prop("multiple", false).attr("accept", ".zip");
@@ -112,24 +112,24 @@ class UploadFileDialog {
         let label = "Upload model (\".zip\")"
         this.#open(label);
     }
-    
+
 }
 
 
 // Enable apply button hpc selection
 $(".accordion-button.hpc").on("click", (button) => {
-    Log.debug("HPC set to: " + button.target.name);
+    Log.debug(button.target.className);
+    let isAlreadyOpened = $("#" + button.target.id).hasClass("active");
     $(".accordion-button.hpc").removeClass("active");
-    $("#" + button.target.id).addClass("active");
-    if (button.target.id == "accordionSADaint") {
-        Log.debug("enabling apply-param button");
+    if (!isAlreadyOpened) {
+        $("#" + button.target.id).addClass("active");
         $("#apply-param").prop("disabled", false);
     } else {
         $("#apply-param").prop("disabled", true);
     }
 })
 
-function checkField(e) {
+/* function checkField(e) {
     if (e.target.value == "") {
         $("#apply-param").prop("disabled", true);
     } else {
@@ -146,7 +146,8 @@ $("#password_submit").on("keyup", (e) => {
     if ($("#username_submit").val() != "") {
         checkField(e);
     }
-});
+}); */
+
 
 class OptimizationSettingsDialog {
 
@@ -154,12 +155,12 @@ class OptimizationSettingsDialog {
         Log.debug("setting deafault values");
         $("#daint_project_id").val("");
         $("#daint-gen-max").val(2)
-        $("#daint-offspring").val(10) 
+        $("#daint-offspring").val(10)
         $("#daint-node-num").val(6);
         $("#daint-core-num").val(24);
         $("#daint-runtime").val("120m");
         $("#sa-daint-gen-max").val(2)
-        $("#sa-daint-offspring").val(10) 
+        $("#sa-daint-offspring").val(10)
         $("#sa-daint-node-num").val(6);
         $("#sa-daint-core-num").val(24);
         $("#sa-daint-runtime").val(2);
@@ -180,13 +181,13 @@ class OptimizationSettingsDialog {
             if (jObj.hpc == "DAINT-CSCS") {
                 $("#daint_project_id").val(jObj.project);
                 $("#daint-gen-max").val(jObj["gen-max"]);
-                $("#daint-offspring").val(jObj.offspring); 
+                $("#daint-offspring").val(jObj.offspring);
                 $("#daint-node-num").val(jObj["node-num"]);
                 $("#daint-core-num").val(jObj["core-num"]);
                 $("#daint-runtime").val(jObj.runtime);
             } else if (jObj.hpc == "SA-CSCS") {
                 $("#sa-daint-gen-max").val(jObj["gen-max"]);
-                $("#sa-daint-offspring").val(jObj.offspring); 
+                $("#sa-daint-offspring").val(jObj.offspring);
                 $("#sa-daint-node-num").val(jObj["node-num"]);
                 $("#sa-daint-core-num").val(jObj["core-num"]);
                 $("#sa-daint-runtime").val(jObj.runtime);
@@ -205,6 +206,11 @@ class OptimizationSettingsDialog {
         let hpc = $(".accordion-button.active").attr("name");
         data["hpc"] = hpc;
         if (hpc == "DAINT-CSCS") {
+            if ($("#daint_project_id").val() == "") {
+                $("#daint_project_id").removeClass("is-valid").addClass("is-invalid");
+                alert('Please fill "Project ID" to apply settings');
+                throw "daint_project empty";
+            }
             data["gen-max"] = $("#daint-gen-max").val();
             data["offspring"] = $("#daint-offspring").val();
             data["node-num"] = $("#daint-node-num").val();
@@ -220,13 +226,19 @@ class OptimizationSettingsDialog {
             data["runtime"] = $("#sa-daint-gen-max").val();
         }
         if (hpc == "NSG") {
+            if ($("#username_submit").val() == "" || $("#password_submit").val() == "") {
+                $("#username_submit").removeClass("is-valid").addClass("is-invalid");
+                $("#password_submit").removeClass("is-valid").addClass("is-invalid");
+                alert("Please fill \"username\" and \"password\" to apply settings");
+                throw "credentials empty";
+            }
             data["gen-max"] = $("#nsg-gen-max").val();
             data["offspring"] = $("#nsg-offspring").val();
             data["node-num"] = $("#nsg-node-num").val();
             data["core-num"] = $("#nsg-core-num").val();
             data["runtime"] = $("#nsg-gen-max").val();
             data["username_submit"] = $("#username_submit").val();
-            data["password_submit"] = $("#password_submit").val();    
+            data["password_submit"] = $("#password_submit").val();
         }
         return data;
     }
@@ -242,7 +254,7 @@ class OptimizationSettingsDialog {
         //     $("#hpcAuthAlert").addClass("show");
         //     return false;
         // }
-        
+
 
         if (hpc == "DAINT-CSCS") {
             formData.append("gen-max", $("#daint-gen-max").val());
@@ -266,7 +278,7 @@ class OptimizationSettingsDialog {
             formData.append("core-num", $("#nsg-core-num").val());
             formData.append("runtime", $("#nsg-gen-max").val());
             formData.append("username_submit", $("#username_submit").val());
-            formData.append("password_submit", $("#password_submit").val());    
+            formData.append("password_submit", $("#password_submit").val());
         }
 
         if (Log.enabled) {
@@ -282,13 +294,16 @@ class OptimizationSettingsDialog {
         $("#overlayparam").css("display", "block");
         // $("#overlaywrapper").css("z-index", "100").addClass("show");
         $("#overlaywrapper").css("display", "block");
+        $("#username_submit").removeClass("is-invalid");
+        $("#password_submit").removeClass("is-invalid");
+        $("#daint_project_id").removeClass("is-invalid");
     }
 
     static close() {
         Log.debug("close");
         $("#overlayparam").css("display", "none");
         $("#overlaywrapper").css("display", "none");
-        $("#apply-param").prop("disabled", true);
+        // $("#apply-param").prop("disabled", true);
         $("#hpcAuthAlert").removeClass("show");
         // $("#overlayparam").removeClass("show");
     }
