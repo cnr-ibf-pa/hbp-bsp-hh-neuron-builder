@@ -141,6 +141,11 @@ def fetch_models(request, exc):
 
     mc_filter = MODEL_CATALOG_FILTER['hippocampus_models']
 
+    if MODEL_CATALOG_CREDENTIALS == ('username', 'password'):
+        raise Exception('Invalid ModelCatalog credentials.\
+                         Set them into your configuration \
+                         file under\ "hh_neuron_builder/conf/"')
+
     try:
         mc_username, mc_password = MODEL_CATALOG_CREDENTIALS
         mc = ModelCatalog(username=mc_username, password=mc_password)

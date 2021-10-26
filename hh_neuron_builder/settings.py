@@ -16,8 +16,6 @@ from socket import gethostname
 from shutil import copy as shutilcopy
 import os
 
-from hh_neuron_builder.config.dev_conf import MODEL_CATALOG_CREDENTIALS
-
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -29,8 +27,6 @@ else:
     if not os.path.exists(os.path.join(conf_dir, 'dev_conf.py')):
         shutilcopy(os.path.join(conf_dir, 'dev_conf.py.example'), os.path.join(conf_dir, 'dev_conf.py'))
     import hh_neuron_builder.config.dev_conf as conf
-
-
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = conf.SECRET_KEY

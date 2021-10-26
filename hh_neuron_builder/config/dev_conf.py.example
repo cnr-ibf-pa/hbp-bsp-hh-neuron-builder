@@ -16,8 +16,10 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__fil
 
 DEBUG = True
 SECRET_KEY = '_u+88i_t*h=#bzd1g!3xx1w*89j2a&h!2^up0-^3u9-s1_zi7&'
-#FERNET_KEY = b'PxpeGmKziBktkbhyud43DGsK12lYrWidUA6x6oBl4sI='
 FERNET_KEY = Fernet.generate_key()
+
+# set username and password 
+MODEL_CATALOG_CREDENTIALS = ('username', 'password')
 
 DATABASES = {
     'default': {
