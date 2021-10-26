@@ -4,7 +4,7 @@ from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 
 from hbp_validation_framework import ModelCatalog, ResponseError
-from hh_neuron_builder.settings import MODEL_CATALOG_FILTER, TMP_DIR
+from hh_neuron_builder.settings import MODEL_CATALOG_CREDENTIALS, MODEL_CATALOG_FILTER, TMP_DIR
 from hhnb.core.lib.exception.workflow_exception import WorkflowExists
 
 from hhnb.core.response import ResponseUtil
@@ -142,9 +142,7 @@ def fetch_models(request, exc):
     mc_filter = MODEL_CATALOG_FILTER['hippocampus_models']
 
     try:
-        # mc_username, mc_password = MODEL_CATALOG_CREDENTIALS
-        mc_username = 'lbologna001'
-        mc_password = 'Us*ZdV%CHP-Q[2ghX)Jv2[t{T!gp9Uck'
+        mc_username, mc_password = MODEL_CATALOG_CREDENTIALS
         mc = ModelCatalog(username=mc_username, password=mc_password)
 
         if request.GET.get('model') == 'all':    
