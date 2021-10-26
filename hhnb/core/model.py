@@ -90,29 +90,29 @@ class Model(ModelBase):
             # shutil.copy(f)
         # super().set_features(features=features, protocols=protocols)
 
-    def set_morphology(self, morphology=None, conf=None, conf_key=None):
-        if not conf_key:
-            conf_key = self._key
-        if not morphology:
-            morphology = Morphology.from_dir(os.path.join(self._model_dir, 'morphology'),
-                                             conf_key=conf_key)
-        super().set_morphology(morphology, conf=conf, conf_key=conf_key)
-        print('MORPHOLOGY')
-        conf_file = os.path.join(self._model_dir, 'config', 'morph.json')
-        if morphology.get_morphology() and not os.path.exists(conf_file):
-            d = {conf_key: os.path.split(morphology.get_morphology())[1]}
-            with open(conf_file, 'w') as fd:
-                json.dump(d, fd, indent=4)
+    # def set_features(self, features=None, protocols=None):
+    #     if not features and not protocols:
+    #         if os 
 
-    def set_mechanisms(self, mechansisms=None):
-        if not mechansisms:
-            mechansisms = os.path.join(self._model_dir, 'mechanisms')
-        super().set_mechanisms(mechansisms=mechansisms)
+    # def set_morphology(self, morphology=None):
+    #     if not morphology:
+    #         morphology = os.path.join(
+    #             self._model_dir, 
+    #             os.listdir(os.path.join(self._model_dir, 'morphology'))[0]
+    #         )
 
-    def set_parameters(self, parameters=None):
-        if not parameters:
-            parameters = os.path.join(self._model_dir, 'config', 'parameters.json')
-        super().set_parameters(parameters=parameters)
+    #     super().set_morphology(morphology)
+
+    # def set_mechanisms(self, mechansisms=None):
+    #     if not mechansisms:
+    #         mechansisms = os.path.join(self._model_dir, 'mechanisms')
+    #     super().set_mechanisms(mechansisms=mechansisms)
+
+    # def set_parameters(self, parameters=None):
+    #     if not parameters:
+    #         parameters = os.path.join(self._model_dir, 'config', 'parameters.json')
+    #     super().set_parameters(parameters=parameters)
+
 
     @classmethod
     def from_zip(cls, zip_model):
@@ -140,19 +140,25 @@ class Model(ModelBase):
         
         # check for features
         try:
-            model.set_features(Features.from_dir(config_dir))
+            features = Features(os.path.join(config_dir, 'features.json'),
+                                os.path.join(config_dir, 'protocols.json'))
+            model.set_features(features)
         except FileNotFoundError:
             pass
 
         # check for parameters
         try:
-            model.set_parameters(os.path.join(config_dir, 'parameters.json'))
+            parameters = os.path.join(config_dir, 'parameters.json')
+            model.set_parameters(parameters)
         except FileNotFoundError:
             pass
 
         # check for morphology
         try:
-            model.set_morphology(Morphology.from_dir(morph_dir))
+            morphs = os.listdir(morph_dir)
+            if len(morphs) == 1:                
+                morphology = Morphology(os.path.join(morph_dir, morphs[0]))
+                model.set_morphology(morphology)
         except FileNotFoundError:
             pass
 
@@ -165,7 +171,6 @@ class Model(ModelBase):
         return model
 
     def update_optimization_files(self, model_dir):
-        print('update_optimization_files() called on %s' % model_dir)
         try:
             # parameters
             parameters = shutil.copy(os.path.join(model_dir, 'config', 'parameters.json'),
@@ -177,16 +182,16 @@ class Model(ModelBase):
                                     os.path.join(self._model_dir, 'morphology'))
                 conf_file = shutil.copy(os.path.join(model_dir, 'config', 'morph.json'),
                                         os.path.join(self._model_dir, 'config'))
-            self.set_morphology(morphology=morph, conf=conf_file)
+            self.set_morphology(morphology=morph)
             # mechanisms
             for m in os.listdir(os.path.join(model_dir, 'mechanisms')):
                 shutil.copy(os.path.join(model_dir, 'mechanisms', m),
                             os.path.join(self._model_dir, 'mechanisms'))
             self.set_mechanisms(os.path.join(self._model_dir, 'mechanisms'))
             # python's files
-        except FileNotFoundError() :
-            print()
-            raise FileNotFoundError()
+        except FileNotFoundError as e:
+            print(str(e))
+            raise FileNotFoundError
 
     def get_optimization_files_raw_status(self):
         return {
@@ -208,7 +213,6 @@ class Model(ModelBase):
             'optimization_files': self.get_optimization_files_status(),
             'model_key': self.get_key()
         }
-        
     
 
 class ModelUtil:

@@ -23,17 +23,6 @@ class Features:
               f'\tprotocols: {(self._PROTOCOLS), (self._protocols)}',
               '>', sep='\n')
 
-    @classmethod
-    def from_dir(cls, directory):
-        f = cls()
-        for fd in os.listdir(directory):
-            if fd == 'features.json':
-                f.set_features(os.path.join(directory, fd))
-            if fd == 'protocols.json':
-                f.set_protocols(os.path.join(directory, fd))
-        return f
-
-
     def set_features(self, features):
         if not os.path.exists(features):
             raise FileNotFoundError('%s not found' % features)
@@ -71,18 +60,12 @@ class Features:
 
 class Morphology:
 
-    def __init__(self, morphology=None, config=None, conf_key=None):
+    def __init__(self, morphology=None, key=None):
         self._MORPHOLOGY = False
         self._morphology = None
         self._config = None
         if morphology:
             self.set_morphology(morphology)
-        if config:
-            self.set_config(config)
-            if conf_key:
-                self.make_config(conf_key)
-            else:
-                self.make_config('tmp_key')
 
     def __str__(self):
         print('<class Morphology:')
@@ -90,48 +73,20 @@ class Morphology:
               f'\tconf: {self._config}',
               '>', sep='\n')
 
-    @classmethod
-    def from_dir(cls, morph_dir, conf_key=None):
-        if not os.path.exists(morph_dir):
-            raise FileNotFoundError('%s not found' % morph_dir)
-        if not os.path.isdir(morph_dir):
-            raise NotADirectoryError('%s is not a directory' % morph_dir)
-        if len(os.listdir(morph_dir)) != 1:
-            return cls()
-            # raise InvalidMorphologyDirectory('%d morphology directory must \
-            #                                  contain a single morphology file')
-        morph = os.path.join(morph_dir, os.listdir(morph_dir)[0])
-        return cls(morph, conf_key=conf_key)
-
-
-    def set_morphology(self, morphology):
+    def set_morphology(self, morphology, key=None):
         if not os.path.exists(morphology):
             raise FileNotFoundError('%s not found' % morphology)
         if not os.path.isfile(morphology):
             raise IsADirectoryError('%s is a directory' % morphology)
         self._morphology = morphology
-        self.make_config('tmp_key')
         self._MORPHOLOGY = True
-
-    def set_config(self, config):
-        if not os.path.exists(config):
-            raise FileNotFoundError('%s file not found' % config)
-        if not os.path.split(config)[1] == 'morph.json':
-            raise NoMorphologyConfig('%s is not a valid configuration' % config)
-        with open(config, 'r') as fd:
-            jj = json.load(fd)
-        jj_key = jj.keys()
-        if len(jj_key) != 1:
-            raise MorphologyConfigError('%s config is wrong' % config)
-        if jj[list(jj_key)[0]] != os.path.split(self._morphology)[1]:
-            raise MorphologyConfigError('%s contain wrong morphology value' % config)
-        self._config = config
-
-    def make_config(self, conf_key):
-        self._config = {
-            conf_key: os.path.split(self._morphology)[1]
-        }
-
+        if not key:
+            key = 'tmp_key'
+        self._config = {key: os.path.split(morphology)[1]}
+    
+    def set_config(self, conf):
+        self._config = conf
+        
     def get_morphology(self):
         return self._morphology
 
@@ -158,52 +113,57 @@ class ModelBase:
 
     def __init__(self, key, **kwargs):
         self._PARAMETERS = False
-        self._MORPHOLOGY = False
         self._MECHANISMS = False
+        self._mechanisms = None
+        self._parameters = None
+        self._features = None
+        self._morphology = None 
         self._key = key
+        self.set_features(Features())
+        self.set_morphology(Morphology())
         if 'features' in kwargs and kwargs['features']:
             self.set_features(features=kwargs['features'])
+        if 'morphology' in kwargs and kwargs['morphology']:
+            self.set_morphology(kwargs['morphology'])
         if 'protocols' in kwargs and kwargs['protocols']:
             self.set_protocols(protocols=kwargs['protocols'])
         if 'parameters' in kwargs and kwargs['parameters']:
             self.set_parameters(kwargs['parameters'])
-        if 'morphology' in kwargs and kwargs['morphology']:
-            self.set_morphology(kwargs['morphology'])
         if 'mechanisms' in kwargs and kwargs['mechanisms']:
             self.set_mechanisms(kwargs['mechanisms'])
 
-    def set_features(self, features=None, protocols=None):
-        if features:
-            if type(features) == Features:
-                self._features = features
-            elif type(features) == str:
-                self._features.set_features(features)
-        if protocols:
-            if type(protocols) == str:
-                self._features.set_protocols(protocols)                                    
-        
-    def set_morphology(self, morphology, conf=None, conf_key=None):
+    @dispatch(Features)
+    def set_features(self, features):
+        self._features = features
+
+    @dispatch(str, str)
+    def set_features(self, features, protocols):
+        self._features.set_features(features)
+        self._protocols.set_protocols(protocols)
+
+    def set_morphology(self, morphology):
         if type(morphology) == Morphology:
             self._morphology = morphology
-        elif type(morphology) == str:
-            if not conf_key:
-                conf_key = self._key
-            self._morphology = Morphology(morphology, conf, conf_key)
-        self._MORPHOLOGY = True         
+        else:
+            self._morphology = Morphology(morphology)
 
-    def set_mechanisms(self, mechansisms):
-        if type(mechansisms) == str:
-            mods = [os.path.join(mechansisms, m) for m in os.listdir(mechansisms)]
-        elif type(mechansisms) == list:
-            mods = mechansisms
-        for m in mods:
+    def set_mechanisms(self, mechanisms):
+        if type(mechanisms) == list:
+            self._mechanisms = mechanisms
+        if type(mechanisms) == str:
+            if os.path.isdir(mechanisms):
+                self._mechanisms = [
+                    os.path.join(mechanisms, m) for m in os.listdir(mechanisms)
+                ]
+            else:
+                self._mechanisms = mechanisms
+        for m in self._mechanisms:
             if not os.path.exists(m):
                 raise FileNotFoundError('%s not found' % m)
             if not os.path.isfile(m):
                 raise IsADirectoryError('%s is a directory' % m)
-        self._mechansisms = mods
-        if not self._mechansisms:
-            self._mechansisms = False
+        if not self._mechanisms:
+            self._MECHANISMS = False
         else:
             self._MECHANISMS = True
 

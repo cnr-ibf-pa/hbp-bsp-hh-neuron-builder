@@ -202,14 +202,14 @@ function deleteHHFFiles() {
         dataType: "json",
         contentType: "application/json",
         data: JSON.stringify(data),
-        success: (result) => { 
-            refreshHHFFileList();
-        },
         error: (error) => { 
             console.error("Status: " + error.status + " > " + error.responseText); 
             // MessageDialog.openErrorDialog(error.responseText);
         },
-    }).always(() => { hideLoadingAnimation() });
+    }).always(() => { 
+        hideLoadingAnimation();
+        refreshHHFFileList()
+    });
 }
 
 

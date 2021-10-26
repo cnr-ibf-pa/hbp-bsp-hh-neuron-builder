@@ -201,7 +201,7 @@ export default class Workflow {
     }
     
     uploadFile(formFileData) {
-        showLoadingAnimation("Uploading file/s");
+        showLoadingAnimation("Uploading file/s...");
         Log.debug("Uploading files");
         $.ajax({
             url: "/hh-neuron-builder/upload-" + this.#uploadFileType + "/" + this.#exc,

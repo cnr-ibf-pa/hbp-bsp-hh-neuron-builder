@@ -138,6 +138,7 @@ class Workflow(_WorkflowBase):
             unzipped_tmp_model_dir = os.path.join(unzipped_tmp_model_dir,   
                                                   os.listdir(unzipped_tmp_model_dir)[0])
         self._model.update_optimization_files(unzipped_tmp_model_dir)
+        ModelUtil.update_key(model=self._model)
 
     def get_optimization_settings(self):
         try:
