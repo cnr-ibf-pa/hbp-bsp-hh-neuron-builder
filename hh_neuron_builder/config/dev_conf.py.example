@@ -9,13 +9,15 @@
 # from django.core.management import utils
 # SECRET_KEY = utils.get_random_secret_key()
 
+from cryptography.fernet import Fernet
 import os
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
 DEBUG = True
 SECRET_KEY = '_u+88i_t*h=#bzd1g!3xx1w*89j2a&h!2^up0-^3u9-s1_zi7&'
-FERNET_KEY = b'PxpeGmKziBktkbhyud43DGsK12lYrWidUA6x6oBl4sI='
+#FERNET_KEY = b'PxpeGmKziBktkbhyud43DGsK12lYrWidUA6x6oBl4sI='
+FERNET_KEY = Fernet.generate_key()
 
 DATABASES = {
     'default': {
