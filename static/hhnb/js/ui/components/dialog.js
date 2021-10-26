@@ -48,7 +48,9 @@ class MessageDialog {
             .css("border-color", "blue");
         this.#overlayDialog.addClass("info-content")
             .removeClass("error-content reload-content");
-        this.#dialogButton.addClass("fill-background");
+        this.#dialogButton.text("Ok")
+            .addClass("blue").removeClass("red green fill-background")
+            .on("click", () => { this.#closeMessageDialog() });
         this.#openMessageDialog(msg);
     }
 

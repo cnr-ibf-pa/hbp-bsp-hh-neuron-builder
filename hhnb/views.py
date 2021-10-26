@@ -163,7 +163,7 @@ def fetch_models(request, exc):
             if model:
                 try:
                     model_path = mc.download_model_instance(instance_id=model['instances'][-1]['id'],
-                                                        local_directory=TMP_DIR, overwrite=False)    
+                                                            local_directory=TMP_DIR, overwrite=False)    
                     model_path = model_path.decode()
                     if not model_path:
                         return ResponseUtil.ko_response('ModelCatalog temporarily not accessible')

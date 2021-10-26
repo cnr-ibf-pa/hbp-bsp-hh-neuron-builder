@@ -251,7 +251,6 @@ function chooseOptModel() {
     }
     showLoadingAnimation("Fetching models from Model Catalog...");
     $.getJSON("/hh-neuron-builder/fetch-models/" + exc, {'model': 'all'}, function(data){
-        hideLoadingAnimation();
         var counter = 0;
         if (data.length == 0) {
             openErrorDiv("Something goes wrong.<br>Please restart the application.", "error");
@@ -269,8 +268,6 @@ function chooseOptModel() {
                 $("#" + model_uuid).append(
                     "<div id=" + model_uuid + " class='row model-info-div-title'><div class='col'></div><div id=" + model_uuid + " class='col flex-grow-4 flex-center'>" + e['species'] + ' > ' + e['brain_region'] + ' > ' +  e['cell_type'] + ' > ' + model_name + "</div><div class='col flex-grow-1 flex-end'><i id='" + model_uuid + "' class='fas fa-external-link-alt fa-lg' title='Open in ModelCatalog'></i></div></div>"
                 );
-               // $("#" + model_uuid).append(
-               //     "<div id=" + model_uuid + " class='model-info-div-title'>" + e['species'] + ' > ' + e['brain_region'] + ' > ' +  e['cell_type'] + ' > ' + model_name + "<i class='fas fa-external-link-alt'></i></div>");
                 $("#" + model_uuid).append("<div style='display:flex;' id=" + model_uuid + 'a' + " ></div>");
                 var img_div = document.createElement("DIV");
                 var spk_img = document.createElement("IMG");
@@ -314,8 +311,12 @@ function chooseOptModel() {
                     Log.error(error);
                 }).always(() => { hideLoadingAnimation() })
         });
-    });
-    modelsReady = true;
+    }).done(() => {
+        modelsReady = true;
+    }).fail((error) => {
+        Log.error(error);
+        MessageDialog.openInfoDialog(error.responseText);
+    }).always(() => { hideLoadingAnimation() });
 }
 
 function formatDescription(meta = ""){

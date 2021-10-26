@@ -732,6 +732,15 @@ body {
     padding: 1rem;
 }
 
+/* .info-content > button {
+    border-color: blue;
+    color: bl;
+}
+.info-content > button:hover {
+    background-color: blue;
+    color: white;
+} */
+
 #overlayupload {
     width: 520px;
 }
