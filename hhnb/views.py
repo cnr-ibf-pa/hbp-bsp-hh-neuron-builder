@@ -240,7 +240,10 @@ def upload_model(request, exc):
             else:
                 fd.write(uploaded_file.read())
 
-    workflow.load_model_zip(os.path.join(workflow.get_tmp_dir(), uploaded_file.name))
+    try:
+        workflow.load_model_zip(os.path.join(workflow.get_tmp_dir(), uploaded_file.name))
+    except FileNotFoundError as e:
+        return ResponseUtil.ko_response('Invalid model archive')
 
     return ResponseUtil.ok_response()
 

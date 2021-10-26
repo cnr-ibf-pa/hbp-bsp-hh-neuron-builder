@@ -190,8 +190,7 @@ class Model(ModelBase):
             self.set_mechanisms(os.path.join(self._model_dir, 'mechanisms'))
             # python's files
         except FileNotFoundError as e:
-            print(str(e))
-            raise FileNotFoundError
+            raise FileNotFoundError(e)
 
     def get_optimization_files_raw_status(self):
         return {
