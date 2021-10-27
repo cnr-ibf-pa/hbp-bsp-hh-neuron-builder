@@ -12,6 +12,7 @@ from hhnb.core.workflow import Workflow, WorkflowUtil
 from hhnb.core.user import * 
 
 from hhnb.tools import hpc_job_manager
+import pyunicore.client as unicore_client
 import requests
 import datetime
 import os
@@ -42,13 +43,25 @@ def get_workflow_and_user(request, exc):
     return workflow, hhnb_user
 
 
-def home(request):
+def home_page(request):
+
+    hhnb_user = HhnbUser.get_user_from_request(request)
+
+    if 'old_workflow_path' in request.session.keys():
+        workflow = Workflow.generate_user_workflow_from_path(hhnb_user.get_username(),
+                                                request.session['old_workflow_path'])
+        exc = generate_exc_code(request)
+        request.session[exc]['workflow_id'] = workflow.get_id()
+        request.session.pop('old_workflow_path')
+        request.session.save()
+        return workflow_page(request, exc)
+
     return render(request, 'hhnb/home.html')
 
 
-def workflow(request, exc):
+def workflow_page(request, exc):
     if not exc in request.session.keys():
-        return home(request)
+        return home_page(request)
 
     return render(request, 'hhnb/workflow.html', context={'exc': exc})
 
@@ -67,6 +80,18 @@ def initialize_workflow(request):
     request.session[exc]['workflow_id'] = workflow.get_id()
     request.session.save()
     return ResponseUtil.ok_json_response({'exc': exc})
+
+
+def store_workflow_in_session(request, exc):
+    if not exc in request.session.keys():
+        return ResponseUtil.no_exc_code_response()
+
+    workflow, _ = get_workflow_and_user(request, exc)
+
+    request.session['old_workflow_path'] =  workflow.get_workflow_path()
+    request.session.save()
+
+    return ResponseUtil.ok_response()
 
 
 @csrf_exempt
@@ -358,14 +383,38 @@ def run_optimization(request, exc):
     opt_zip_path = os.path.join(workflow.get_tmp_dir(), os.path.split(opt_model_dir)[1])
     shutil.make_archive(opt_zip_path, 'zip', os.path.split(opt_model_dir)[0])
 
-    # hpc = workflow.get_optimization_settings()['hpc']
-    # if hpc == 'NSG':
-    #     optimization_settings = workflow.get_optimization_settings()
-    #     plain_username = Cypher.decrypt(optimization_settings['username_submit'])
-    #     plain_password = Cypher.decrypt(optimization_settings['password_submit'])
+    optimization_settings = workflow.get_optimization_settings()
+ 
+    if optimization_settings['hpc'] == 'NSG':
+        plain_username = Cypher.decrypt(optimization_settings['username_submit'])
+        plain_password = Cypher.decrypt(optimization_settings['password_submit'])
+        # run on NSG
 
+    elif optimization_settings['hpc'] == "DAINT-CSCS":
+        # print(hhnb_user.get_token())
+        basename = os.path.split(opt_zip_path)[1]
+        job = {
+            "Executable": "unzip " + basename + ".zip" + "; cd " + basename\
+                + "; chmod +rx *.sbatch; ./ipyparallel.sbatch",
+            "Name": workflow.get_id(),
+            "Resources": {
+                "Nodes": optimization_settings['node-num'],
+                "CPUsPerNode": optimization_settings['core-num'],
+                "Runtime": optimization_settings['runtime'],
+                "NodeConstraints": "mc",
+                "Project": optimization_settings['project']
+            },
+            "Tags": [
+                "hhnb",
+            ]
+        }
+        transport = unicore_client.Transport(hhnb_user.get_token())
+        client = unicore_client.Client(transport, 'https://brissago.cscs.ch:8080/DAINT-CSCS/rest/core')
 
-    # return ResponseUtil.ok_response()
+        # job = client.new_job(job_description=job, inputs=[opt_zip_path + '.zip'])
+        # print(json.dumps(job.properties, indent=4))
+
+        return ResponseUtil.ok_response('Job submitted correctly on DAINT-CSCS')
 
     return ResponseUtil.ko_response('Some errors occurred on job submission')
 
@@ -400,7 +449,7 @@ def hhf_comm(request):
     hhf_comm = json.loads(request.GET.get('hhf_dict')).get('HHF-Comm')
     if not hhf_comm:
         # if hhf_dict is not found redirect to home 
-        return home(request)
+        return home_page(request)
     
     print('initializing')
     r = initialize_workflow(request)

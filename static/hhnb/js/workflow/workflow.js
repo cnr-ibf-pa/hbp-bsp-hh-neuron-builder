@@ -6,12 +6,10 @@ const GET_PROPS_BASE_URL = "/hh-neuron-builder/get-workflow-properties/";
 const UPLOAD_FILES_BASE_URL = "/hh-neuron-builder/upload-files/";
 
 
-const featuresFiles = JSON.stringify({
-        "file_list": [
-            "config/features.json", 
-            "config/protocols.json"
-        ]
-});
+function recursiveChild(parent) {
+    
+}
+
 
 function enable(jObj) {
     jObj.prop("disabled", false);
@@ -335,13 +333,29 @@ export default class Workflow {
             async: false,
             success: (result) => {
                 Log.debug(result);
-                MessageDialog.openSuccessDialog(result.responseText);
+                MessageDialog.openSuccessDialog(result);
+                this.#disableCellOptimizationBlock();
             },
             error: (error) => {
                 Log.error("Status: " + error.status + " > " + error.responseText);
                 MessageDialog.openErrorDialog(error.responseText);
             }
         }).always(() => { hideLoadingAnimation() });
+    }
+
+    #disableCellOptimizationBlock() {
+        const cellOptimizationBlock = $("#cellOptimizationBlock");
+        cellOptimizationBlock.addClass("disabledBlock");
+        for (var child of cellOptimizationBlock.children()) {
+            child.classList.add("disabledBlock");
+            for (var child2 of child.childNodes) {
+                // child2.classList.add("disabledBlock");
+                // child.addClass("disabledBlock");
+            }
+            // child.addClass("disabledBlock");
+
+        }
+        // var height = cellOptimizationBlock.css("height");
     }
 
 }

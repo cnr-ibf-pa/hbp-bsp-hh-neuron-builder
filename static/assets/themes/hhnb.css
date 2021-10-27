@@ -252,6 +252,7 @@ body {
     min-width: 980px;
     /* margin: auto; */
     padding: 0 2.5rem;
+    transition: all ease .3s;
 }
 .main-content.home {
     padding: 5%;
@@ -1706,4 +1707,19 @@ i.disabled:hover {
 }
 .fa-external-link-alt:hover {
     transform: scale(1.5, 1.5);
+}
+
+#dialogtext {
+    min-width: 300px;
+    font-weight: bold;
+}
+
+.workflow-content.disabled {
+    transform: translateY(6px);
+    box-shadow: unset;
+}
+.disabledBlock {
+    background-color: #55555555;
+    box-shadow: unset;
+    /* border-color: black; */
 }

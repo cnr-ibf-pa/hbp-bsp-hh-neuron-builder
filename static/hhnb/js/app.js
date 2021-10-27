@@ -24,7 +24,7 @@ $(window).bind("pageshow", function() {
     }
 });
 
- */
+*/
 
 
 // New workflow button callback
@@ -74,6 +74,18 @@ $("#wf-btn-save").on("click", () => {
             Log.error(error);
         }).always(() => {hideLoadingAnimation() });
 })
+
+
+$("#loginButton").on("click", () => {
+    showLoadingAnimation("Logging in...");
+    $.get("/hh-neuron-builder/store-workflow-in-session/" + exc)
+        .done(() => { window.location.href = "/oidc/authenticate" })
+        .fail((error) => {
+            Log.error(error);
+            MessageDialog.openInfoDialog("Please, manually download first and then reupload the current workflow once you're logged in.");
+        }).always(() => { hideLoadingAnimation() });
+    return false;
+}) 
 
 
 // File upload form submission
@@ -184,8 +196,8 @@ $("#cancel-param-btn").on("click", () => {
 $("#apply-param").on("click", () => {
     Log.debug("Uploading optimization settings");
     let formData = OptimizationSettingsDialog.getJsonData();
-    workflow.uploadOptimizationSettings(formData);
     OptimizationSettingsDialog.close();
+    workflow.uploadOptimizationSettings(formData);
 })
 
 
@@ -378,6 +390,7 @@ function formatDescription(meta = ""){
 
 $("#launch-opt-btn").on("click", () => {
     workflow.runOptimization();
+    
 })
 
 $("#closeFileManagerButton").on("click", () => {

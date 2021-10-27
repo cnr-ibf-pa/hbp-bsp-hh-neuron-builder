@@ -72,7 +72,7 @@ nrnivmodl mechanisms
 
 export USEIPYP=1
 export IPYTHONDIR="`pwd`/.ipython"
-export IPYTHON_PROFILE=ipyparallel.$ {SLURM_JOBID}
+export IPYTHON_PROFILE=ipyparallel.${SLURM_JOBID}
 ipcontroller --init --sqlitedb --ip='*' --profile=${IPYTHON_PROFILE} &
 sleep 30
 srun ipengine --profile=${IPYTHON_PROFILE} &

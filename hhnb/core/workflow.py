@@ -80,6 +80,19 @@ class Workflow(_WorkflowBase):
         shutil.unpack_archive(zip_file, wf.get_workflow_path())
         return wf 
 
+    @classmethod
+    def generate_user_workflow_from_path(cls, username, path_to_clone):
+        print("PATH TO CLONE ")
+        print(path_to_clone)
+        old_wf_id = os.path.split(path_to_clone)[1]
+        user_dir = os.path.join(MEDIA_ROOT, 'hhnb', 'workflows', username) 
+        wf = cls(username, old_wf_id)
+        if not os.path.exists(user_dir):
+            os.mkdir(user_dir)
+        shutil.copytree(path_to_clone, os.path.join(user_dir, old_wf_id))
+        print(wf.get_workflow_path())
+        print(os.listdir(wf.get_workflow_path()))
+        return wf
 
     @classmethod
     def get_user_workflow_by_id(cls, username, workflow_id):
@@ -151,6 +164,7 @@ class Workflow(_WorkflowBase):
             raise FileNotFoundError("%s not found" % self._optimization_settings)
 
     def set_optimization_settings(self, optimization_settings):
+        optimization_settings.update({'job_submitted': False})
         with open(self._optimization_settings, 'w') as fd:
             json.dump(optimization_settings, fd, indent=4)
 

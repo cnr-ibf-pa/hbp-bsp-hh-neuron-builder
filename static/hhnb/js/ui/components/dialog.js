@@ -24,19 +24,19 @@ class MessageDialog {
     static openSuccessDialog(msg) {
         this.#overlayContent.css("box-shadow", "0 0 1rem 1rem rgba(0, 128, 0, .8)")
             .css("border-color", "green");
-        this.#overlayDialog.addClass("error-content")
-            .removeClass("reload-content info-content");
-        this.#dialogButton.removeClass("fill-background");
+/*         this.#overlayDialog.addClass("error-content")
+            .removeClass("reload-content info-content"); */
         this.#dialogButton.text("Ok")
-            .addClass("red").removeClass("blue red fill-background");
+            .addClass("green").removeClass("blue red fill-background")
+            .on("click", () => { this.#closeMessageDialog() });
         this.#openMessageDialog(msg);
     }
 
     static openErrorDialog(msg) {
         this.#overlayContent.css("box-shadow", "0 0 1rem 1rem rgba(255, 0, 0, .8)")
             .css("border-color", "red");
-        this.#overlayDialog.addClass("error-content")
-            .removeClass("reload-content info-content");
+/*         this.#overlayDialog.addClass("error-content")
+            .removeClass("reload-content info-content"); */
         this.#dialogButton.text("Ok")
             .addClass("red").removeClass("blue green fill-background")
             .on("click", () => { this.#closeMessageDialog() });
@@ -46,8 +46,8 @@ class MessageDialog {
     static openInfoDialog(msg) {
         this.#overlayContent.css("box-shadow", "0 0 1rem 1rem rgba(0, 0, 255, .8)")
             .css("border-color", "blue");
-        this.#overlayDialog.addClass("info-content")
-            .removeClass("error-content reload-content");
+/*         this.#overlayDialog.addClass("error-content")
+            .removeClass("error-content reload-content"); */
         this.#dialogButton.text("Ok")
             .addClass("blue").removeClass("red green fill-background")
             .on("click", () => { this.#closeMessageDialog() });

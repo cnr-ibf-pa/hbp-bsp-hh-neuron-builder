@@ -41,12 +41,13 @@ register_converter(converters.FileTypeConverter, 'file_type')
 urlpatterns = [
     
     # pages
-    path('', views.home),
-    path('workflow/<exc:exc>', views.workflow),
+    path('', views.home_page),
+    path('workflow/<exc:exc>', views.workflow_page),
     
     # workflow apis
     path('initialize-workflow', views.initialize_workflow),
     path('upload-workflow', views.upload_workflow),
+    path('store-workflow-in-session/<exc:exc>', views.store_workflow_in_session),
     path('clone-workflow/<exc:exc>', views.clone_workflow),
     path('download-workflow/<exc:exc>', views.download_workflow),
     path('get-workflow-properties/<exc:exc>', views.get_workflow_properties), 
