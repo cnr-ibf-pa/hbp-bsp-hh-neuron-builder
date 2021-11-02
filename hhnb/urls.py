@@ -69,9 +69,13 @@ urlpatterns = [
 
     # user avatar
     path('get-user-avatar', views.get_user_avatar),
+    path('get-authentication', views.get_authentication),
 
-    # optimization apis
+    # jobs apis
     path('run-optimization/<exc:exc>', views.run_optimization),
+    path('fetch-jobs/list/<exc:exc>', views.fetch_jobs),
+    path('fetch-jobs/details/<exc:exc>', views.fetch_jobs),
+    path('fetch-job-result/<exc:exc>', views.fetch_job_results),
 
     # hippocampus hub api
     path('hhf-comm', views.hhf_comm),

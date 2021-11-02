@@ -26,6 +26,17 @@ $(window).bind("pageshow", function() {
 
 */
 
+$(document).ready(() => {
+    /* $.get("/hh-neuron-builder/get-authentication")
+        .done(() => {
+            Log.debug("User is authenticated");
+            sessionStorage.setItem("isUserAuthenticated", true);
+        }).fail(() => {
+            Log.debug("User is NOT authenticated");
+            sessionStorage.setItem("isUserAuthenticated", false)
+        }) */
+})
+
 
 // New workflow button callback
 $("#wf-btn-new-wf").on("click", () => {
@@ -45,7 +56,7 @@ $("#wf-btn-clone-wf").on("click", () => {
     showLoadingAnimation("Cloning current workflow...");
     let new_exc = null;
     $.ajax({
-        url: "/hh-neuron-builder/clone-workflow/"+ exc,
+        url: "/hh-neuron-builder/clone-workflow/" + exc,
         method: "GET",
         async: false,
         success: (result) => {
@@ -69,10 +80,10 @@ $("#wf-btn-save").on("click", () => {
     $.get("/hh-neuron-builder/download-workflow/" + exc)
         .done((result) => {
             Log.debug(result);
-            window.location.href = "/hh-neuron-builder/download-workflow/" + exc + "?zip_path=" + result.zip_path;  
+            window.location.href = "/hh-neuron-builder/download-workflow/" + exc + "?zip_path=" + result.zip_path;
         }).fail((error) => {
             Log.error(error);
-        }).always(() => {hideLoadingAnimation() });
+        }).always(() => { hideLoadingAnimation() });
 })
 
 
@@ -85,21 +96,21 @@ $("#loginButton").on("click", () => {
             MessageDialog.openInfoDialog("Please, manually download first and then reupload the current workflow once you're logged in.");
         }).always(() => { hideLoadingAnimation() });
     return false;
-}) 
+})
 
 
 // File upload form submission
-$("#uploadForm").submit(function(e) {
+$("#uploadForm").submit(function (e) {
     e.preventDefault();
 
     let formFileData = new FormData($("#uploadForm")[0]);
     UploadFileDialog.close();
-    
+
     Log.debug("Uploading data: ");
     for (let v of formFileData.values()) {
         Log.debug(v);
     }
-    
+
     workflow.uploadFile(formFileData);
 });
 
@@ -150,15 +161,15 @@ $(".delete-btn").on("click", (button) => {
                 workflow.deleteFeatures();
             }
             break;
-        
-            case "del-opt-btn":
+
+        case "del-opt-btn":
             workflow.deleteModel();
             break;
-        
-            case "del-sim-btn":
-            workflow.deleteAnalysis();
+
+        case "del-sim-btn":
+            workflow.deleteSimulationRun();
             break;
-        
+
         default:
     }
 })
@@ -169,9 +180,17 @@ $(".download-btn").on("click", (button) => {
         case "down-feat-btn":
             workflow.downloadFeatures();
             break;
-        
+
         case "down-opt-set-btn":
             workflow.downloadModel();
+            break;
+
+        case "down-opt-btn":
+            workflow.downloadJobResults();
+            break;
+
+        case "down-sim-btn":
+            workflow.downloadAnalysis();
             break;
 
         default:
@@ -208,7 +227,7 @@ $("#feat-efel-btn").on("click", () => {
     if (workflow.getProps().etraces) {
         document.getElementById("efelgui-frame").setAttribute("src", "/efelg/hhf_etraces/" + exc);
     } else {
-      document.getElementById("efelgui-frame").setAttribute("src", "/efelg/?ctx=" + exc);
+        document.getElementById("efelgui-frame").setAttribute("src", "/efelg/?ctx=" + exc);
     }
 
     $("#modalNFEContainer").css("display", "block");
@@ -225,19 +244,19 @@ $("#closeNFEButton").on("click", () => {
 })
 
 $("#save-feature-files").on("click", () => {
-    var innerDiv = document.getElementById("efelgui-frame").contentDocument || 
-    getElementById("efelgui-frame").contentWindow.document;
+    var innerDiv = document.getElementById("efelgui-frame").contentDocument ||
+        getElementById("efelgui-frame").contentWindow.document;
     var folderName = innerDiv.getElementById("hiddendiv").classList[0];
 
     showLoadingAnimation("Saving features...");
 
-    $.post("/hh-neuron-builder/upload-features/" + exc, {"folder": folderName})
+    $.post("/hh-neuron-builder/upload-features/" + exc, { "folder": folderName })
         .done((result) => {
             console.log(result);
             $("#modalNFEContainer").removeClass("show");
             workflow.updateProperties();
         }).fail((error) => {
-            alert("Something goes wrong. Please download the Features files and upload them manually."); 
+            alert("Something goes wrong. Please download the Features files and upload them manually.");
         }).always(() => { hideLoadingAnimation() });
 });
 
@@ -262,23 +281,23 @@ function chooseOptModel() {
         return false;
     }
     showLoadingAnimation("Fetching models from Model Catalog...");
-    $.getJSON("/hh-neuron-builder/fetch-models/" + exc, {'model': 'all'}, function(data){
+    $.getJSON("/hh-neuron-builder/fetch-models/" + exc, { 'model': 'all' }, function (data) {
         var counter = 0;
         if (data.length == 0) {
             openErrorDiv("Something goes wrong.<br>Please restart the application.", "error");
             return;
         }
-        $.each(data, function(idx, val){
-            $.each(val, function(index, e){
+        $.each(data, function (idx, val) {
+            $.each(val, function (index, e) {
                 Log.debug(e);
                 var model_uuid = e.id;
                 var model_name = e.name;
                 Log.debug(model_uuid);
                 Log.debug(model_name);
-                $("#modelCatalogContainer" ).append("<div  id=" + model_uuid + " name=" +
-                        model_name + " class='mc-model main-content model-info-div'></div>");
+                $("#modelCatalogContainer").append("<div  id=" + model_uuid + " name=" +
+                    model_name + " class='mc-model main-content model-info-div'></div>");
                 $("#" + model_uuid).append(
-                    "<div id=" + model_uuid + " class='row model-info-div-title'><div class='col'></div><div id=" + model_uuid + " class='col flex-grow-4 flex-center'>" + e['species'] + ' > ' + e['brain_region'] + ' > ' +  e['cell_type'] + ' > ' + model_name + "</div><div class='col flex-grow-1 flex-end'><i id='" + model_uuid + "' class='fas fa-external-link-alt fa-lg' title='Open in ModelCatalog'></i></div></div>"
+                    "<div id=" + model_uuid + " class='row model-info-div-title'><div class='col'></div><div id=" + model_uuid + " class='col flex-grow-4 flex-center'>" + e['species'] + ' > ' + e['brain_region'] + ' > ' + e['cell_type'] + ' > ' + model_name + "</div><div class='col flex-grow-1 flex-end'><i id='" + model_uuid + "' class='fas fa-external-link-alt fa-lg' title='Open in ModelCatalog'></i></div></div>"
                 );
                 $("#" + model_uuid).append("<div style='display:flex;' id=" + model_uuid + 'a' + " ></div>");
                 var img_div = document.createElement("DIV");
@@ -286,8 +305,8 @@ function chooseOptModel() {
                 var mor_img = document.createElement("IMG");
                 var mor_id = "crr_mor";
                 var spk_id = "crr_spk";
-                var spk_url = e.images[1].url; 
-                var mor_url = e.images[0].url; 
+                var spk_url = e.images[1].url;
+                var mor_url = e.images[0].url;
                 img_div.setAttribute("style", "max-width:60%;");
                 mor_img.setAttribute("id", mor_id);
                 mor_img.setAttribute("style", "max-width:50%;");
@@ -315,7 +334,7 @@ function chooseOptModel() {
 
             showLoadingAnimation("Fetching model from the HBP Model Catalog");
 
-            $.get("/hh-neuron-builder/fetch-models/" + exc, {"model": optimization_id})
+            $.get("/hh-neuron-builder/fetch-models/" + exc, { "model": optimization_id })
                 .done((result) => {
                     Log.debug(result);
                     workflow.updateProperties();
@@ -331,7 +350,7 @@ function chooseOptModel() {
     }).always(() => { hideLoadingAnimation() });
 }
 
-function formatDescription(meta = ""){
+function formatDescription(meta = "") {
     var description = meta['description']
     var indexes = [];
     var all_strings = [];
@@ -341,7 +360,7 @@ function formatDescription(meta = ""){
     var final_string_meta_title = "<span style='font-size:16px'><br>Description<br></span>";
     var final_string_author_title = "<span style='font-size:16px'><br><br><br>Credits<br></span>";
     var allowed_tag_meta = [
-        "brain_structure", "cell_soma_location", 
+        "brain_structure", "cell_soma_location",
         "cell_type", "channels", "e_type", "morphology"
     ];
     var allowed_tag_author = ["contributors", "email", "affiliations"]
@@ -350,36 +369,36 @@ function formatDescription(meta = ""){
     var index = 0;
     while (index > -1) {
         index = res.indexOf('<br>');
-        if (index == 0){
-            if (res.length >=4){
+        if (index == 0) {
+            if (res.length >= 4) {
                 res = res.slice(4,);
             } else {
                 index == -1;
             }
-        } else if (index > -1){
+        } else if (index > -1) {
             all_strings.push(res.slice(0, index));
             res = res.slice(index + 4,);
         }
     }
-    for (var i = 0; i < all_strings.length; i++){
-        for (var j = 0; j < allowed_tag_meta.length; j++){
-            if (all_strings[i].indexOf(allowed_tag_meta[j]) > -1){
-                final_string_meta_app =  final_string_meta_app + "<br>" + all_strings[i];
+    for (var i = 0; i < all_strings.length; i++) {
+        for (var j = 0; j < allowed_tag_meta.length; j++) {
+            if (all_strings[i].indexOf(allowed_tag_meta[j]) > -1) {
+                final_string_meta_app = final_string_meta_app + "<br>" + all_strings[i];
                 break
             }
         }
-        for (var z = 0; z < allowed_tag_author.length; z++){
-            if (all_strings[i].indexOf(allowed_tag_author[z]) > -1){
-                final_string_author_app =  final_string_author_app + "<br>" + all_strings[i];
+        for (var z = 0; z < allowed_tag_author.length; z++) {
+            if (all_strings[i].indexOf(allowed_tag_author[z]) > -1) {
+                final_string_author_app = final_string_author_app + "<br>" + all_strings[i];
                 break
             }
         }
     }
     final_string_meta_app = final_string_meta_app + "<br><strong>" + "id : " + "</strong>" + meta["id"]
-    if (final_string_meta_app.length > 1){
+    if (final_string_meta_app.length > 1) {
         final_string = final_string + final_string_meta_title + final_string_meta_app;
     }
-    if (final_string_author_app.length > 1){
+    if (final_string_author_app.length > 1) {
         final_string = final_string + final_string_author_title + final_string_author_app;
     }
 
@@ -390,7 +409,7 @@ function formatDescription(meta = ""){
 
 $("#launch-opt-btn").on("click", () => {
     workflow.runOptimization();
-    
+
 })
 
 $("#closeFileManagerButton").on("click", () => {
@@ -398,3 +417,14 @@ $("#closeFileManagerButton").on("click", () => {
     closeFileManager();
     workflow.updateProperties();
 })
+
+/* 
+$("#opt-fetch-btn").on("click", () => {
+    Log.debug('Fetch job');
+    displayJobFetchDiv();
+});
+
+$("#cancel-job-list-btn").on("click", () => {
+    Log.debug('Close job fetch');
+    closeJobFetchDiv();
+}) */

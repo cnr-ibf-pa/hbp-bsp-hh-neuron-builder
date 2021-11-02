@@ -569,7 +569,8 @@ function closeHpcParameterDiv() {
 
 function displayJobFetchDiv() {
     $("#overlayjobs").css("display", "block");
-    $("#overlaywrapper").css("z-index", "100").addClass("show");
+    // $("#overlaywrapper").css("z-index", "100").addClass("show");
+    $("#overlaywrapper").css("display", "block");
     $(".list-group-item.fetch-jobs").attr("aria-disabled", "false").removeClass("disabled active");
 }
 

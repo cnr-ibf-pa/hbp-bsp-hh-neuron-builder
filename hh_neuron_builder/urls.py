@@ -13,6 +13,7 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+from django.shortcuts import redirect
 from django.urls import path, include, register_converter
 from django.conf import settings
 from django.conf.urls.static import static
@@ -22,7 +23,9 @@ urlpatterns = [
 
     path('oidc/', include('mozilla_django_oidc.urls')),
 
-    path('efelg/', include('efelg.urls')),
+    path('', lambda request: redirect('hh-neuron-builder/', permanent=True)),
     path('hh-neuron-builder/', include('hhnb.urls')),
+    
+    path('efelg/', include('efelg.urls')),
 
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

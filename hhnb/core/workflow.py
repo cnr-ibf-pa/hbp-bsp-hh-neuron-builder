@@ -9,15 +9,16 @@ from multipledispatch import dispatch
 from hhnb.core.conf.exec_files_conf import ExecFileConf
 
 from hhnb.core.lib.exception.workflow_exception import *
+from hhnb.core.user import NsgUser
 from hhnb.core.model import *
 
+from pyunicore.client import PathFile
 from datetime import datetime
 import shutil
 import os
 import json
 import requests
 
-from hhnb.core.user import NsgUser
 
 
 class _WorkflowBase:
@@ -27,7 +28,8 @@ class _WorkflowBase:
         self._id = workflow_id
         self._workflow_path = os.path.join(MEDIA_ROOT, 'hhnb', 'workflows',
                                            self._username, self._id)
-        self._result_dir = os.path.join(self._workflow_path, 'results')
+        self._results_dir = os.path.join(self._workflow_path, 'results')
+        self._analysis_dir = os.path.join(self._workflow_path, 'analysis')
         self._model_dir = os.path.join(self._workflow_path, 'model')
         self._tmp_dir = os.path.join(self._workflow_path, 'tmp')
         self._etraces_dir = os.path.join(self._workflow_path, 'etraces')
@@ -46,8 +48,11 @@ class _WorkflowBase:
     def get_workflow_path(self):
         return self._workflow_path
 
-    def get_result_dir(self):
-        return self._result_dir
+    def get_results_dir(self):
+        return self._results_dir
+
+    def get_analysis_dir(self):
+        return self._analysis_dir
 
     def get_model_dir(self):
         return self._model_dir
@@ -82,16 +87,12 @@ class Workflow(_WorkflowBase):
 
     @classmethod
     def generate_user_workflow_from_path(cls, username, path_to_clone):
-        print("PATH TO CLONE ")
-        print(path_to_clone)
         old_wf_id = os.path.split(path_to_clone)[1]
         user_dir = os.path.join(MEDIA_ROOT, 'hhnb', 'workflows', username) 
         wf = cls(username, old_wf_id)
         if not os.path.exists(user_dir):
             os.mkdir(user_dir)
         shutil.copytree(path_to_clone, os.path.join(user_dir, old_wf_id))
-        print(wf.get_workflow_path())
-        print(os.listdir(wf.get_workflow_path()))
         return wf
 
     @classmethod
@@ -121,7 +122,8 @@ class Workflow(_WorkflowBase):
             raise WorkflowExists('The workspace already exists. Use another path.')
         os.makedirs(self._workflow_path)
         shutil.copytree(HHF_TEMPLATE_DIR, self._model_dir)       
-        os.mkdir(self._result_dir)
+        os.mkdir(self._results_dir)
+        os.mkdir(self._analysis_dir)
         os.mkdir(self._tmp_dir)
         os.mkdir(self._etraces_dir)
 
@@ -163,18 +165,24 @@ class Workflow(_WorkflowBase):
         except FileNotFoundError:
             raise FileNotFoundError("%s not found" % self._optimization_settings)
 
-    def set_optimization_settings(self, optimization_settings):
-        optimization_settings.update({'job_submitted': False})
+    def set_optimization_settings(self, optimization_settings, job_submitted_flag=False):
+        optimization_settings.update({'job_submitted': job_submitted_flag})
         with open(self._optimization_settings, 'w') as fd:
             json.dump(optimization_settings, fd, indent=4)
 
-
     def remove_file(self, file_path):
         directory, filename = os.path.split(file_path)
-        if not os.path.exists(os.path.join(self._model_dir, directory)):
+
+        target_dir = os.path.abspath(os.path.join(self._model_dir, directory))
+
+        if os.path.commonpath([os.path.abspath(self._workflow_path), target_dir]) != \
+            os.path.abspath(self._workflow_path):
+            raise PermissionError('Can\'t delete files on %s' % target_dir)
+            
+        if not os.path.exists(target_dir):
             raise FileNotFoundError('%s directory not exists' % directory)
         if filename == '*':
-            for f in os.listdir(os.path.join(self._model_dir, directory)):
+            for f in os.listdir(target_dir):
                 os.remove(os.path.join(self._model_dir, directory, f))
         else:
             full_file_path = os.path.join(self._model_dir, file_path) 
@@ -183,11 +191,18 @@ class Workflow(_WorkflowBase):
             os.remove(full_file_path)
 
     def get_properties(self):
+        try:
+            job_submitted = self.get_optimization_settings()['job_submitted']
+        except FileNotFoundError:
+            job_submitted = False
         props = {
             'id': self._id,
             'model': self._model.get_properties(), 
             'optimization_settings': os.path.exists(self._optimization_settings),
-            'etraces': any(os.scandir(self._etraces_dir))
+            'etraces': any(os.scandir(self._etraces_dir)),
+            'job_submitted': job_submitted,
+            'results': any(os.scandir(self._results_dir)),
+            'analysis': any(os.scandir(self._analysis_dir))
         }
         return props
 
@@ -268,6 +283,16 @@ class WorkflowUtil:
             base_name=os.path.splitext(zip_name)[0],
             format='zip',
             root_dir=workflow.get_model_dir(),
+        )
+        return zip_name
+
+    @staticmethod
+    def make_results_archive(workflow):
+        zip_name = os.path.join(workflow.get_tmp_dir(), 'results.zip')
+        shutil.make_archive(
+            base_name=os.path.splitext(zip_name)[0],
+            format='zip',
+            root_dir=workflow.get_results_dir()
         )
         return zip_name
 
@@ -366,112 +391,12 @@ class WorkflowUtil:
         else:
             with open(full_path, 'wb') as fd:
                 fd.write(file_content)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-
-""" 
-    class (Workflow):
-    
-    def check_features(self):
-        feats = os.path.exists(os.path.join(self.model_dir, 'config', 'features.json')) 
-        prots = os.path.exists(os.path.join(self.model_dir, 'config', 'protocols.json'))
-        if feats and prots:
-            return True, 'OK'
-        elif feats and not prots:
-            return False, '"protocols.json" not found'
-        elif not feats and prots:
-            return False, '"features.json" not found'
-        else:
-            return False, '"features.json" and "protocols.json" not found'
-
-    def check_parameters(self):
-        params = os.path.exists(os.path.join(self.model_dir, 'config', 'parameters.json'))
-        if params: 
-            return True, 'OK'
-        return False, '"parameters.json" not found'
-
-    def check_morphology(self):
-        morph = len(os.listdir(os.path.join(self.model_dir, 'morphology'))) == 1
-        jmorph = os.path.exists(os.path.join(self.model_dir, 'config', 'morph.json'))  
-        if morph and jmorph:
-            return True, 'OK'
-        elif morph and not jmorph:
-            return False, '"morph.json" not found'
-        elif not morph and jmorph:
-            return False, 'Morphology file not found'
-        else:
-            return False, 'Morphology file and "morph.json" not found'
-
-    def check_mechanisms(self):
-        if len(os.listdir(os.path.join(self.model_dir, 'mechanisms'))) > 0:
-            return True, 'OK'
-        return False, 'Mechanisms files not found'
-
-    def check_model(self):
-        feats = self.check_features()
-        params = self.check_parameters()
-        morphs = self.check_morphology()
-        mechans = self.check_mechanisms()
-        return feats, params, morphs, mechans
-
-    def check_settings(self):
-        msett = os.path.join()
-
-    def check_tmp_dir(self):
-        self.workflow_path   """
-
-""" 
-def _is_model_obj(obj):
-    if type(obj) != Model:
-        return False
-    return True
-
-
-class WorkflowUtil:
-
+                
     @staticmethod
-    def check_features(model):
-        if not _is_model_obj(model):
-            raise TypeError('%s is not a Model object' % model)
-        return model.get_features().get_status()
-        
-    @staticmethod
-    def check_for_model(model):
-        pass
-
-
-    @staticmethod
-    def run_optimization(model, *args):
-        pass
-
-
-    @staticmethod
-    def run_analysis(model, *args):
-        pass """
+    def download_job_result_files(workflow, file_list):
+        print('download job result files')
+        print(type(file_list))
+        for f in file_list.keys():
+            if type(file_list[f]) == PathFile:
+                dst = os.path.join(workflow.get_results_dir(), f)
+                file_list[f].download(dst) 

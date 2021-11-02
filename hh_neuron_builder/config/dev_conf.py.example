@@ -18,8 +18,11 @@ DEBUG = True
 SECRET_KEY = '_u+88i_t*h=#bzd1g!3xx1w*89j2a&h!2^up0-^3u9-s1_zi7&'
 FERNET_KEY = Fernet.generate_key()
 
-# set username and password 
+# set username and password for ModelCatalog 
 MODEL_CATALOG_CREDENTIALS = ('username', 'password')
+
+# set NSG cipres-appkey
+NSG_KEY = ''
 
 DATABASES = {
     'default': {

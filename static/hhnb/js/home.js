@@ -3,8 +3,12 @@ import Log from "./utils/logger.js";
 
 Log.enabled = true;
 
+const exc = sessionStorage.getItem("exc", null);
 
 $( document ).ready(() => {
+    if (exc !== "") {
+        window.location.href = "/hh-neuron-builder/workflow/" + exc; 
+    } 
     hideLoadingAnimation();
 })
 

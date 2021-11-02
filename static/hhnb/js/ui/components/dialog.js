@@ -271,7 +271,7 @@ class OptimizationSettingsDialog {
             formData.append("offspring", $("#sa-daint-offspring").val());
             formData.append("node-num", $("#sa-daint-node-num").val());
             formData.append("core-num", $("#sa-daint-core-num").val());
-            formData.append("runtime", $("#sa-daint-gen-max").val());
+            formData.append("runtime", $("#sa-daint-runtime").val());
         }
         if (hpc == "NSG") {
             formData.append("gen-max", $("#nsg-gen-max").val());
@@ -285,7 +285,7 @@ class OptimizationSettingsDialog {
 
         if (Log.enabled) {
             for (let v of formData.values()) {
-                Log.debug(v);
+                Log.debug(v); 
             }
         }
         return formData;

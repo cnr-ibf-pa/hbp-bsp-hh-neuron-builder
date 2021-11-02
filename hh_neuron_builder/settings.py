@@ -16,6 +16,8 @@ from socket import gethostname
 from shutil import copy as shutilcopy
 import os
 
+from hh_neuron_builder.config.dev_conf import NSG_KEY
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -33,6 +35,7 @@ SECRET_KEY = conf.SECRET_KEY
 FERNET_KEY = conf.FERNET_KEY
 
 MODEL_CATALOG_CREDENTIALS = conf.MODEL_CATALOG_CREDENTIALS
+NSG_KEY = conf.NSG_KEY
 
 DEBUG = conf.DEBUG
 

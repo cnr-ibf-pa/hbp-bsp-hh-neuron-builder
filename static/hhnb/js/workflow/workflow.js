@@ -31,6 +31,7 @@ export default class Workflow {
     #featuresBlock = false;
     #optfilesBlock = false;
     #optsettingsBlock = false;
+    #simulationBlock = false;
 
     constructor(exc) { 
         this.#exc = exc;
@@ -45,7 +46,8 @@ export default class Workflow {
         return {
             'features': this.#featuresBlock,
             'optimization_files': this.#optfilesBlock,
-            'optimization_settings': this.#optsettingsBlock
+            'optimization_settings': this.#optsettingsBlock,
+            'simulation': this.#simulationBlock
         }
     }
 
@@ -167,11 +169,51 @@ export default class Workflow {
         }
     }
 
+    #updateSimulationBlock() {
+        let bar = $("#opt-res-bar");
+        let fetchButton = $("#opt-fetch-btn");
+        let uploadButton = $("#opt-res-up-btn");
+        let downloadResultLink = $("#down-opt-btn");
+        let downloadAnalysisLink = $("#down-sim-btn");
+        let deleteLink = $("#del-sim-btn");
+        this.#simulationBlock = false;
+        
+        if (this.#props.analysis) {
+            bar.addClass("green").removeClass("red");
+            bar.text("");
+            disable(fetchButton);
+            disable(uploadButton);
+            enable(downloadResultLink);
+            enable(downloadModelLink);
+            enable(deleteLink);
+            this.#simulationBlock = true
+        } else {
+            bar.addClass("red").removeClass("green");
+            if (this.#props.results) {
+                bar.text("Something goes wrong. Download job results to check the error");
+                disable(fetchButton);
+                disable(uploadButton);
+                enable(downloadResultLink);
+                disable(downloadAnalysisLink);
+                enable(deleteLink);
+            } else {
+                bar.text("Fetch job results to run analysis or upload it");
+                enable(fetchButton);
+                enable(uploadButton);
+                disable(downloadResultLink);
+                disable(downloadAnalysisLink);
+                disable(deleteLink);
+            }
+        }
+    
+    }
+
     updateUI() {
         this.#updateFeaturesUIBlock();
         this.#updateModelBlock();
         this.#updateSettingsBlock();
         this.#updateCellOptimizationBlock();
+        this.#updateSimulationBlock();
     }
     
     #deleteFiles(jFilesList) {
@@ -241,8 +283,14 @@ export default class Workflow {
         this.#deleteFiles(file_list);
     }
 
-    deleteAnalysis() {
-
+    deleteSimulationRun() {
+        let file_list = JSON.stringify({
+            "file_list": [
+                "../results/*",
+                "../analysis/*"
+            ]
+        });
+        this.#deleteFiles(file_list);
     }
 
     downloadFiles(jFilesList) {
@@ -269,6 +317,11 @@ export default class Workflow {
 
     downloadAnalysis() {
 
+    }
+
+    downloadJobResults() {
+        let file_list = "pack=results";
+        this.downloadFiles(file_list);
     }
 
     getOptimizationSettings() {
@@ -334,7 +387,7 @@ export default class Workflow {
             success: (result) => {
                 Log.debug(result);
                 MessageDialog.openSuccessDialog(result);
-                this.#disableCellOptimizationBlock();
+                this.updateProperties();
             },
             error: (error) => {
                 Log.error("Status: " + error.status + " > " + error.responseText);
@@ -343,7 +396,7 @@ export default class Workflow {
         }).always(() => { hideLoadingAnimation() });
     }
 
-    #disableCellOptimizationBlock() {
+    /*#disableCellOptimizationBlock() {
         const cellOptimizationBlock = $("#cellOptimizationBlock");
         cellOptimizationBlock.addClass("disabledBlock");
         for (var child of cellOptimizationBlock.children()) {
@@ -356,6 +409,6 @@ export default class Workflow {
 
         }
         // var height = cellOptimizationBlock.css("height");
-    }
+    }*/
 
 }

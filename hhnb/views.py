@@ -3,25 +3,21 @@
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 
-from hbp_validation_framework import ModelCatalog, ResponseError
 from hh_neuron_builder.settings import MODEL_CATALOG_CREDENTIALS, MODEL_CATALOG_FILTER, TMP_DIR
-from hhnb.core.lib.exception.workflow_exception import WorkflowExists
 
+from hhnb.core.lib.exception.workflow_exception import WorkflowExists
 from hhnb.core.response import ResponseUtil
 from hhnb.core.workflow import Workflow, WorkflowUtil
 from hhnb.core.user import * 
+from hhnb.utils.misc import Cypher, JobHandler
 
-from hhnb.tools import hpc_job_manager
-import pyunicore.client as unicore_client
+from hbp_validation_framework import ModelCatalog, ResponseError
+
 import requests
 import datetime
 import os
 import json
 import shutil
-import ebrains_drive
-import base64
-
-from hhnb.utils.misc import Cypher
 
 
 def status(request):
@@ -47,6 +43,8 @@ def home_page(request):
 
     hhnb_user = HhnbUser.get_user_from_request(request)
 
+    context = {}
+
     if 'old_workflow_path' in request.session.keys():
         workflow = Workflow.generate_user_workflow_from_path(hhnb_user.get_username(),
                                                 request.session['old_workflow_path'])
@@ -54,9 +52,9 @@ def home_page(request):
         request.session[exc]['workflow_id'] = workflow.get_id()
         request.session.pop('old_workflow_path')
         request.session.save()
-        return workflow_page(request, exc)
+        context = {'exc': exc}
 
-    return render(request, 'hhnb/home.html')
+    return render(request, 'hhnb/home.html', context)
 
 
 def workflow_page(request, exc):
@@ -311,6 +309,8 @@ def download_files(request, exc):
             zip_file = WorkflowUtil.make_model_archive(workflow)
         elif pack == 'analysis':
             zip_file = WorkflowUtil.make_analysis_archive(workflow)
+        elif pack == 'results':
+            zip_file = WorkflowUtil.make_results_archive(workflow)
     elif file_list:
         path_list = json.loads(file_list).get('path')
         files = [os.path.join(workflow.get_model_dir(), f) for f in path_list]
@@ -338,7 +338,10 @@ def delete_files(request, exc):
         try:
             workflow.remove_file(f)
         except FileNotFoundError as e:
-            return ResponseUtil.ko_json_response(str(e))
+            return ResponseUtil.ko_response(str(e))
+        except PermissionError:
+            return ResponseUtil.ko_response('Critical error !<br>If the problem persists, \
+                                             please contact the support.')
     
     return ResponseUtil.ok_json_response()
 
@@ -380,51 +383,65 @@ def run_optimization(request, exc):
 
     workflow, hhnb_user = get_workflow_and_user(request, exc)
     opt_model_dir = WorkflowUtil.make_optimization_model(workflow)
-    opt_zip_path = os.path.join(workflow.get_tmp_dir(), os.path.split(opt_model_dir)[1])
-    shutil.make_archive(opt_zip_path, 'zip', os.path.split(opt_model_dir)[0])
+    zip_dst_dir = os.path.join(workflow.get_tmp_dir(), 
+                               os.path.split(opt_model_dir)[1])
+    zip_file = shutil.make_archive(base_name=zip_dst_dir,
+                                   format='zip',
+                                   root_dir=os.path.split(opt_model_dir)[0])
 
     optimization_settings = workflow.get_optimization_settings()
- 
-    if optimization_settings['hpc'] == 'NSG':
-        plain_username = Cypher.decrypt(optimization_settings['username_submit'])
-        plain_password = Cypher.decrypt(optimization_settings['password_submit'])
-        # run on NSG
-
-    elif optimization_settings['hpc'] == "DAINT-CSCS":
-        # print(hhnb_user.get_token())
-        basename = os.path.split(opt_zip_path)[1]
-        job = {
-            "Executable": "unzip " + basename + ".zip" + "; cd " + basename\
-                + "; chmod +rx *.sbatch; ./ipyparallel.sbatch",
-            "Name": workflow.get_id(),
-            "Resources": {
-                "Nodes": optimization_settings['node-num'],
-                "CPUsPerNode": optimization_settings['core-num'],
-                "Runtime": optimization_settings['runtime'],
-                "NodeConstraints": "mc",
-                "Project": optimization_settings['project']
-            },
-            "Tags": [
-                "hhnb",
-            ]
-        }
-        transport = unicore_client.Transport(hhnb_user.get_token())
-        client = unicore_client.Client(transport, 'https://brissago.cscs.ch:8080/DAINT-CSCS/rest/core')
-
-        # job = client.new_job(job_description=job, inputs=[opt_zip_path + '.zip'])
-        # print(json.dumps(job.properties, indent=4))
-
-        return ResponseUtil.ok_response('Job submitted correctly on DAINT-CSCS')
-
-    return ResponseUtil.ko_response('Some errors occurred on job submission')
+    response = JobHandler.submit_job(hhnb_user, zip_file, optimization_settings)
+    if response.status_code == 200:
+        workflow.set_optimization_settings(optimization_settings, job_submitted_flag=True)
+    return response
 
 
 def fetch_jobs(request, exc):
-    pass
+    if exc not in request.session.keys():
+        return ResponseUtil.no_exc_code_response()
+
+    hpc = request.GET.get('hpc')
+
+    task = request.path.split('/')[3]
+    print(task)
+
+    if not hpc:
+        return ResponseUtil.ko_response('No HPC selected')
+
+    _, hhnb_user = get_workflow_and_user(request, exc)
+
+    try:
+        if task == 'list':
+            data = JobHandler.fetch_jobs_list(hpc, hhnb_user)
+        elif task == 'details':
+            data = JobHandler.fetch_jobs_details(hpc, hhnb_user)
+            print(data)
+        return ResponseUtil.ok_json_response(data)
+    except Exception as e:
+        print(e)
+    
+    return ResponseUtil.ko_response('No jobs found')
 
 
-def download_job_results(request, exc, job_id):
-    pass
+
+def fetch_job_results(request, exc):
+    if exc not in request.session.keys():
+        return ResponseUtil.no_exc_code_response()
+
+    hpc = request.GET.get('hpc')
+    job_id = request.GET.get('job_id')
+
+    workflow, hhnb_user = get_workflow_and_user(request, exc)
+
+    try:
+        file_list = JobHandler.fetch_job_files(hpc, job_id, hhnb_user)
+        WorkflowUtil.download_job_result_files(workflow, file_list)
+
+        return ResponseUtil.ok_response()
+    except Exception as e:
+        print(e)
+
+    return ResponseUtil.ko_response('Error while fetching job results')
 
 
 def get_job_results(request, exc, job_id):
@@ -442,6 +459,12 @@ def get_user_avatar(request):
     return ResponseUtil.raw_response(content=r.content,
                                      content_type='image/png;',
                                      charset='UTF-8')
+
+
+def get_authentication(request):
+    if request.user.is_authenticated:
+        return ResponseUtil.ok_response()
+    return ResponseUtil.ko_response('user not autheticated')
 
 
 def hhf_comm(request):

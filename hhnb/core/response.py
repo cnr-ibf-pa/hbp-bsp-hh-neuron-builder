@@ -73,6 +73,11 @@ class ResponseUtil:
         return _json_response(200, data)
 
     @staticmethod
+    @dispatch(dict, bool)
+    def ok_json_response(data, safe):
+        return _json_response(200, data, safe)
+
+    @staticmethod
     @dispatch(str)
     def ko_json_response(data):
         return _json_response(400, data)
