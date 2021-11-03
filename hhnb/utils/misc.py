@@ -1,7 +1,8 @@
+from requests.api import head
 from hh_neuron_builder.settings import FERNET_KEY, NSG_KEY
 from hhnb.core.response import ResponseUtil
 from cryptography.fernet import Fernet
-from typing import OrderedDict
+from collections import OrderedDict
 
 import pyunicore.client as unicore_client
 import xml.etree.ElementTree
@@ -183,7 +184,7 @@ class JobHandler:
         job_url = client.links['jobs'] + '/' + job_id
         job = unicore_client.Job(client.transport, job_url)
         storage = job.working_dir
-        return storage.listdir()
+        return {'root_url': 'unicore', 'file_list': storage.listdir()}
 
     def _get_service_account_payload(self, command, node_num, core_num, runtime, title):
         return {
@@ -197,9 +198,9 @@ class JobHandler:
     def _get_service_account_headers(self, token, zip_name=None, payload=None):
         headers = {'Authorization': 'Bearer ' + token}
         if zip_name:
-            payload.update({'Content-Disposition': 'attachment;filename=' + zip_name + '.zip'})
+            headers.update({'Content-Disposition': 'attachment;filename=' + zip_name + '.zip'})
         if payload:
-            payload.update({'payload': json.dumps(payload)})
+            headers.update({'payload': json.dumps(payload)})
         return headers
 
     def _submit_on_service_account(self, token, zip_file, settings):
@@ -211,13 +212,13 @@ class JobHandler:
             runtime=settings['runtime'],
             title=zip_name.split('.')[0]
         )
-        
         headers = self._get_service_account_headers(token, zip_name, payload)
         job_file = {'file': open(zip_file, 'rb')}
 
         r = requests.post(url=self._SA_DAINT_JOB_URL, headers=headers, files=job_file)
         if r.status_code == 400:
-            return ResponseUtil.ko_response(r.content)
+            
+            return ResponseUtil.ko_response(r.text)
         
         return ResponseUtil.ok_response('Job submitted correctly on SA-CSCS')
 
@@ -230,13 +231,12 @@ class JobHandler:
 
     def _get_job_results_on_service_account(self, token, job_id):
         headers = self._get_service_account_headers(token)
-        url = self._SA_DAINT_FILES_URL + job_id + '/'
-        r = requests.get(url, headers=headers)
+        r = requests.get(url=self._SA_DAINT_FILES_URL + job_id + '/', headers=headers)
         if r.status_code == 404:
             raise self.JobsFilesNotFound('Job "%s" has expired and no one files is present' % job_id)
         if r.status_code != 200:
             raise self.ServiceAccountException(r.content, r.status_code)
-        return {'root_url': url, 'file_list': r.json()}
+        return {'root_url': self._SA_DAINT_FILES_URL + job_id, 'file_list': r.json()}
           
 
     @classmethod

@@ -16,8 +16,6 @@ from socket import gethostname
 from shutil import copy as shutilcopy
 import os
 
-from hh_neuron_builder.config.dev_conf import NSG_KEY
-
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 

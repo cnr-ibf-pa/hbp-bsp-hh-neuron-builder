@@ -391,24 +391,21 @@ class WorkflowUtil:
         else:
             with open(full_path, 'wb') as fd:
                 fd.write(file_content)
-                
+
     @staticmethod
     def download_job_result_files(workflow, file_list, token):
-        result = {}
-        for f in file_list.keys():
-            if type(file_list[f]) == PathFile:
+        if file_list['root_url'] == 'unicore':
+            for f in file_list['file_list'].keys():
+                if type(file_list['file_list'][f]) == PathFile:
+                    dst = os.path.join(workflow.get_results_dir(), f)
+                    file_list['file_list'][f].download(dst)
+        elif file_list['root_url'].startswith('https://bspsa.cineca.it'):
+            for f in file_list['file_list']:
+                r = requests.get(url=file_list['root_url'] + f,
+                                 headers={'Authorization': 'Bearer ' + token})
+                if r.status_code != 200:      
+                    continue
                 dst = os.path.join(workflow.get_results_dir(), f)
-                file_list[f].download(dst) 
-            if type(file_list) == dict:
-                for f in file_list['file_list']:
-                    f_name = f
-                    r = requests.get(url=file_list['root_url'] + f,
-                                     headers={'Authorization': 'Bearer ' + token})
-                    if r.status_code != 200:      
-                        continue
-                    if f.startswith('/'):
-                        f_name = f.split('/')[1]
-                    dst = os.path.join(workflow.get_results_dir(), f_name)
-                    with open(dst, 'wb') as fd:
-                        for chunk in r.iter_content(chunk_size=4096):
-                            fd.write(chunk)
+                with open(dst, 'wb') as fd:
+                    for chunk in r.iter_content(chunk_size=4096):
+                        fd.write(chunk)

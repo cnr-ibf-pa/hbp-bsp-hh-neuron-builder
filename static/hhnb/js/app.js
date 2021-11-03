@@ -252,7 +252,6 @@ $("#save-feature-files").on("click", () => {
 
     $.post("/hh-neuron-builder/upload-features/" + exc, { "folder": folderName })
         .done((result) => {
-            console.log(result);
             $("#modalNFEContainer").removeClass("show");
             workflow.updateProperties();
         }).fail((error) => {
@@ -567,8 +566,8 @@ function animateProgressBar(progress) {
     let current_progress = parseFloat($(".progress-bar").attr("aria-valuenow"));
     let next_progress = current_progress + progress;
     $(".progress-bar").css("width", next_progress + "%").attr("aria-valuenow", next_progress);
-    console.log($(".progress-bar").css("width"));
-    console.log($(".progress-bar").attr("aria-valuenow"));
+    // console.log($(".progress-bar").css("width"));
+    // console.log($(".progress-bar").attr("aria-valuenow"));
 }
 
 function setProgressBarValue(value) {
@@ -661,6 +660,9 @@ async function downloadJob(jobId) {
             Log.error("Status: " + downloadError.status + " > " + downloadError.responseText);
             MessageDialog.openErrorDialog(downloadError.responseText)
         }).always(() => {
+            closeJobProcessingDiv();
+            closeJobFetchDiv();
+            resetJobFetchDiv();
             workflow.updateProperties();
         });
 }

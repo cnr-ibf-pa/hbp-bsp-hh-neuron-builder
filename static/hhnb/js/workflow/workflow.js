@@ -7,7 +7,7 @@ const UPLOAD_FILES_BASE_URL = "/hh-neuron-builder/upload-files/";
 
 
 function recursiveChild(parent) {
-    
+
 }
 
 
@@ -24,7 +24,7 @@ export default class Workflow {
 
     #exc = null;
     #props = null;
-    
+
     #uploadFileType = null;
 
 
@@ -33,7 +33,7 @@ export default class Workflow {
     #optsettingsBlock = false;
     #simulationBlock = false;
 
-    constructor(exc) { 
+    constructor(exc) {
         this.#exc = exc;
         this.updateProperties();
     }
@@ -69,12 +69,12 @@ export default class Workflow {
                 }
             }
         }).done(() => { this.updateUI() })
-        .fail((error) => {
-            if (error.status == 500) {
-                return MessageDialog.openReloadDialog("/hh-neuron-builder", "<b>A critical error occurred</b>.<br>Please restart the application and if the the problem persists contact us.");
-            }
-        })
-        .always(() => { hideLoadingAnimation() });
+            .fail((error) => {
+                if (error.status == 500) {
+                    return MessageDialog.openReloadDialog("/hh-neuron-builder", "<b>A critical error occurred</b>.<br>Please restart the application and if the the problem persists contact us.");
+                }
+            })
+            .always(() => { hideLoadingAnimation() });
     }
 
     #updateFeaturesUIBlock() {
@@ -162,10 +162,16 @@ export default class Workflow {
 
     #updateCellOptimizationBlock() {
         let runOptimizationButton = $("#launch-opt-btn");
-        if (this.#featuresBlock && this.#optfilesBlock && this.#optsettingsBlock) {
-            enable(runOptimizationButton);
+        disable(runOptimizationButton);
+        if (!this.#props.job_submitted) {
+            if (this.#featuresBlock && this.#optfilesBlock && this.#optsettingsBlock) {
+                enable(runOptimizationButton);
+            }
         } else {
-            disable(runOptimizationButton);
+            disable($("#del-feat-btn"));
+            disable($("#del-opt-btn"));
+            disable($("#show-opt-files-btn"));
+            disable($("#opt-set-btn"));
         }
     }
 
@@ -177,7 +183,7 @@ export default class Workflow {
         let downloadAnalysisLink = $("#down-sim-btn");
         let deleteLink = $("#del-sim-btn");
         this.#simulationBlock = false;
-        
+
         if (this.#props.analysis) {
             bar.addClass("green").removeClass("red");
             bar.text("");
@@ -205,7 +211,7 @@ export default class Workflow {
                 disable(deleteLink);
             }
         }
-    
+
     }
 
     updateUI() {
@@ -215,22 +221,22 @@ export default class Workflow {
         this.#updateCellOptimizationBlock();
         this.#updateSimulationBlock();
     }
-    
+
     #deleteFiles(jFilesList) {
         showLoadingAnimation("Deleting files...")
         Log.debug("Deleting files: " + jFilesList);
         $.ajax({
             url: "/hh-neuron-builder/delete-files/" + this.#exc,
-            method: "POST",           
+            method: "POST",
             dataType: "json",
             contentType: "application/json",
             data: jFilesList,
-            success: (result) => { 
+            success: (result) => {
                 Log.debug(result);
                 this.updateProperties();
             },
-            error: (error) => { 
-                Log.error("Status: " + error.status + " > " + error.responseText); 
+            error: (error) => {
+                Log.error("Status: " + error.status + " > " + error.responseText);
                 MessageDialog.openErrorDialog(error.responseText);
             },
         }).always(() => { hideLoadingAnimation() });
@@ -239,7 +245,7 @@ export default class Workflow {
     setUploadFileType(fileType) {
         this.#uploadFileType = fileType;
     }
-    
+
     uploadFile(formFileData) {
         showLoadingAnimation("Uploading file/s...");
         Log.debug("Uploading files");
@@ -250,24 +256,24 @@ export default class Workflow {
             contentType: false, // need to upload files correctly
             processData: false,
             async: false,
-            success: (result) => { 
+            success: (result) => {
                 Log.debug(result);
                 this.updateProperties();
             },
-            error: (error) => { 
-                Log.error("Status: " + error.status + " > " + error.responseText); 
+            error: (error) => {
+                Log.error("Status: " + error.status + " > " + error.responseText);
                 MessageDialog.openErrorDialog(error.responseText);
             },
-        }).always(() => { hideLoadingAnimation();});
+        }).always(() => { hideLoadingAnimation(); });
     }
 
     deleteFeatures() {
         let file_list = JSON.stringify({
-                "file_list": [
-                    "config/features.json", 
-                    "config/protocols.json"
-                ]
-            });
+            "file_list": [
+                "config/features.json",
+                "config/protocols.json"
+            ]
+        });
         this.#deleteFiles(file_list);
     }
 
@@ -300,10 +306,10 @@ export default class Workflow {
                 Log.debug("Files downloaded correctly");
                 window.location.href = "/hh-neuron-builder/download-files/" + this.#exc + "?" + jFilesList;
             }).fail((error) => {
-                Log.error("Status: " + error.status + " > " + error.responseText); 
+                Log.error("Status: " + error.status + " > " + error.responseText);
                 MessageDialog.openErrorDialog(error.responseText);
             }).always(() => { hideLoadingAnimation() });
-    } 
+    }
 
     downloadFeatures() {
         let file_list = "pack=features";
@@ -331,7 +337,7 @@ export default class Workflow {
             url: "/hh-neuron-builder/optimization-settings/" + this.#exc,
             method: "GET",
             async: false,
-            headers: {"Accept": "application/json"},
+            headers: { "Accept": "application/json" },
             success: (result) => {
                 // Log.debug(result);
                 settings = result;
@@ -341,7 +347,7 @@ export default class Workflow {
                 }
             },
             error: (error) => {
-                Log.error("Status: " + error.status + " > " + error.responseText); 
+                Log.error("Status: " + error.status + " > " + error.responseText);
                 MessageDialog.openErrorDialog(error.responseText);
             }
         }).always(() => { hideLoadingAnimation() });
@@ -358,7 +364,7 @@ export default class Workflow {
             processData: false,
             contentType: false,
             async: false,
-            success: (result) => { 
+            success: (result) => {
                 Log.debug(result)
                 if (jData.hpc == "NSG") {
                     $("#username_submit").removeClass("is-invalid").addClass("is-valid");
@@ -366,8 +372,8 @@ export default class Workflow {
                 }
                 this.updateProperties();
             },
-            error: (error) => { 
-                Log.error("Status: " + error.status + " > " + error.responseText); 
+            error: (error) => {
+                Log.error("Status: " + error.status + " > " + error.responseText);
                 MessageDialog.openErrorDialog(error.responseText);
                 if (error.responseText == "Invalid credentials") {
                     $("#username_submit").removeClass("is-valid").addClass("is-invalid");
@@ -396,7 +402,7 @@ export default class Workflow {
         }).always(() => { hideLoadingAnimation() });
     }
 
-    /*#disableCellOptimizationBlock() {
+    /* #disableCellOptimizationBlock() {
         const cellOptimizationBlock = $("#cellOptimizationBlock");
         cellOptimizationBlock.addClass("disabledBlock");
         for (var child of cellOptimizationBlock.children()) {
@@ -409,6 +415,6 @@ export default class Workflow {
 
         }
         // var height = cellOptimizationBlock.css("height");
-    }*/
+    } */
 
 }
