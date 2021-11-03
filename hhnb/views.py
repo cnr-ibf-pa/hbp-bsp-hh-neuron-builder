@@ -401,27 +401,27 @@ def fetch_jobs(request, exc):
         return ResponseUtil.no_exc_code_response()
 
     hpc = request.GET.get('hpc')
-
-    task = request.path.split('/')[3]
-    print(task)
-
     if not hpc:
         return ResponseUtil.ko_response('No HPC selected')
 
     _, hhnb_user = get_workflow_and_user(request, exc)
 
     try:
-        if task == 'list':
-            data = JobHandler.fetch_jobs_list(hpc, hhnb_user)
-        elif task == 'details':
-            data = JobHandler.fetch_jobs_details(hpc, hhnb_user)
-            print(data)
+        data = JobHandler.fetch_jobs_list(hpc, hhnb_user)
         return ResponseUtil.ok_json_response(data)
+    except JobHandler.ServiceAccountException as e:
+        print(e)
+        return ResponseUtil.ko_response('Some error occurred while fetching jobs on \
+                                         Service Account.<br>If the problem persists \
+                                         contact the support.')
+    except JobHandler.UnicoreClientException as e:
+        print(e)
+        return ResponseUtil.ko_response('Some error occurred while fetching jobs on \
+                                         Daint-CSCS.<br>If the problem persists \
+                                         contact the support.')
     except Exception as e:
         print(e)
-    
-    return ResponseUtil.ko_response('No jobs found')
-
+        return ResponseUtil.ko_response('Critical Error!')
 
 
 def fetch_job_results(request, exc):
@@ -435,21 +435,40 @@ def fetch_job_results(request, exc):
 
     try:
         file_list = JobHandler.fetch_job_files(hpc, job_id, hhnb_user)
-        WorkflowUtil.download_job_result_files(workflow, file_list)
+        WorkflowUtil.download_job_result_files(workflow, file_list, hhnb_user.get_token())
 
         return ResponseUtil.ok_response()
+
+    except JobHandler.JobsFilesNotFound as e:
+        return ResponseUtil.ko_response(str(e))
+
     except Exception as e:
         print(e)
 
     return ResponseUtil.ko_response('Error while fetching job results')
 
 
-def get_job_results(request, exc, job_id):
-    pass
-
-
 def run_analysis(request, exc):
-    pass
+    if not exc in request.session.keys():
+        return ResponseUtil.no_exc_code_response()
+
+    workflow, _ = get_workflow_and_user(request, exc)
+
+    # try:
+        
+
+
+    # except Exception as e:
+    #     print(e)
+    
+    return ResponseUtil.ko_response('Some error occurred')
+
+
+def zip_simulation(request, exc):
+    if not exc in request.session.keys():
+        return ResponseUtil.no_exc_code_response()
+    
+    return ResponseUtil.ko_response('Some error occurred')
 
 
 def get_user_avatar(request):
@@ -462,8 +481,15 @@ def get_user_avatar(request):
 
 
 def get_authentication(request):
-    if request.user.is_authenticated:
-        return ResponseUtil.ok_response()
+    if request.method == 'GET':
+        if request.user.is_authenticated:
+            return ResponseUtil.ok_response()
+    elif request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        user = HhnbUser(nsg_user=NsgUser(username, password))
+        if user.validate_nsg_login():
+            return ResponseUtil.ok_response()
     return ResponseUtil.ko_response('user not autheticated')
 
 

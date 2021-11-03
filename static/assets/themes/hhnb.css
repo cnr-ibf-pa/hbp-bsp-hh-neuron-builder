@@ -623,6 +623,25 @@ body {
 }
 
 
+.progress-bar-animated {
+    animation-duration: .5s;
+}
+#progressBarFetchJob.s40 {
+    transition: width 40s linear;
+}
+#progressBarFetchJob.s4 {
+    transition: width 4s linear;
+}
+#progressBarFetchJob.s2 {
+    transition: width 2s linear;
+}
+
+.fade-text {
+    opacity: 0;
+}
+
+
+
 /* login section fixed css */
 
 .user-img > img{

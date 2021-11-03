@@ -80,7 +80,7 @@
                     </div>
                     <div class="row">
                         <div class="btn-group" role="group" style="padding: 0; width: 80%" stylaria-label="Set model files">
-                            <button type="button" id="show-opt-files-btn" class="btn workflow-btn">View files</button>
+                            <button type="button" id="show-opt-files-btn" class="btn workflow-btn">Manage files</button>
                             <button type="button" id="opt-up-btn" class="upload-btn btn workflow-btn">Upload zip</button>
                         </div>
                         <!-- <button type="button" id="openFileManagerButton" class="btn workflow-btn hhf-integration-component" style="display: none" onclick="openFileManager()" title="This button is only enabled when the HHNB workflow is started in the Hippocampus Hub portal. Please visit www.hippocampushub.eu portal to enable this functionality.">View/Upload model files</button> -->
@@ -155,7 +155,7 @@
                     <br>
                     <div class="row" style="padding: 0 7rem">
                         <div class="col flex-center">
-                            <button type="button" id="opt-fetch-btn" class="btn workflow-btn lg" onclick="displayJobFetchDiv()">Fetch results</button>
+                            <button type="button" id="opt-fetch-btn" class="btn workflow-btn lg">Fetch results</button>
                         </div>
                         <div class="col flex-center">
                             <button type="button" id="opt-res-up-btn" class="upload-btn btn workflow-btn lg">Upload file</button>
@@ -467,9 +467,9 @@
         <div class="container">
             <div class="row">
                 <div id="hpcSource" class="list-group list-group-horizontal">
-                    <button type="button" id="jobsDaint" name="DAINT-CSCS" class="list-group-item fetch-jobs list-group-item-action" onclick="displayCSCSJobList($(this));">CSCS-DAINT</button>
-                    <button type="button" id="jobsSADaint" name="SA-CSCS" class="list-group-item fetch-jobs list-group-item-action" onclick="displayCSCSJobList($(this));">CSCS-DAINT<br>Service Account</button>
-                    <button type="button" id="jobsNSG" name="NSG" class="list-group-item fetch-jobs list-group-item-action" onclick="displayNsgJobList($(this));">NSG<br>NeuroScience Gateway</button>
+                    <button type="button" id="jobsDaint" name="DAINT-CSCS" class="jobs-unicore list-group-item fetch-jobs list-group-item-action">CSCS-DAINT</button>
+                    <button type="button" id="jobsSADaint" name="SA-CSCS" class="jobs-unicore list-group-item fetch-jobs list-group-item-action">CSCS-DAINT<br>Service Account</button>
+                    <button type="button" id="jobsNSG" name="NSG" class="list-group-item fetch-jobs list-group-item-action">NSG<br>NeuroScience Gateway</button>
                 </div>
             </div>
             <div class="row-separator"></div>
@@ -491,7 +491,7 @@
                             <!-- <input type="button" class="btn" onclick="checkNsgLogin()" value="Check"> -->
                         </div>
                         <br>
-                        <button id="checkNsgLoginButton" class="btn workflow-btn" type="button" onclick="checkNsgLogin()">
+                        <button id="checkNsgLoginButton" class="btn workflow-btn" type="button">
                             <span id="checkNsgSpinnerButton" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
                             Check
                           </button>
@@ -525,10 +525,10 @@
             </div>
             <div class="row">
                 <div class="col">
-                    <button type="button" id="cancel-job-list-btn" class="btn workflow-btn fill-background extends" onclick="closeJobFetchDiv()">Cancel</button>
+                    <button type="button" id="cancel-job-list-btn" class="btn workflow-btn fill-background extends">Cancel</button>
                 </div>
                 <div class="col">
-                    <button type="button" id="refresh-job-list-btn" class="btn workflow-btn fill-background extends" onclick="refreshJobListDiv()" disabled>Refresh</button>
+                    <button type="button" id="refresh-job-list-btn" class="btn workflow-btn fill-background extends" disabled>Refresh</button>
                 </div>
             </div>
         </div>
@@ -750,7 +750,7 @@
 <script type="module" src="{% static 'hhnb/js/app.js' %}"></script>
 <script type="text/javascript" src="{% static 'hhnb/js/utils/misc.js' %}"></script>
 <script type="text/javascript" src="{% static 'hhnb/js/ui/components/file_manager.js' %}"></script>
-<script type="text/javascript" src="{% static 'hhnb/js/ui/components/job_fetch.js' %}"></script>
+<!-- <script type="text/javascript" src="{% static 'hhnb/js/ui/components/job_fetch.js' %}"></script> -->
 
 <!-- Highlighter library -->
 <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.1/styles/default.min.css">

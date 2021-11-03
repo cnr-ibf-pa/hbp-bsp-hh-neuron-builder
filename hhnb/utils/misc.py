@@ -1,12 +1,31 @@
 from hh_neuron_builder.settings import FERNET_KEY, NSG_KEY
 from hhnb.core.response import ResponseUtil
 from cryptography.fernet import Fernet
+from typing import OrderedDict
 
 import pyunicore.client as unicore_client
 import xml.etree.ElementTree
 import requests
 import os
 import json
+import re
+import datetime
+
+
+def str_to_datetime(datetime_string, format=None):
+
+    date_re = '\d{4}(-\d{2}){2}'
+    time_re = '(\d{2}:){2}\d{2}'
+    
+    match = re.match(date_re + 'T' + time_re + '\+\d{4}', datetime_string)
+    if match and match.end() == len(datetime_string):
+        format = '%Y-%m-%dT%H:%M:%S%z'
+    
+    match = re.match(date_re + 'T' + time_re + 'Z', datetime_string)
+    if match and match.end() == len(datetime_string):
+        format = '%Y-%m-%dT%H:%M:%SZ'
+    
+    return datetime.datetime.strptime(datetime_string, format).replace(tzinfo=None)
 
 
 class Cypher:
@@ -40,9 +59,16 @@ class JobHandler:
     class UnicoreClientException(Exception):
         pass
 
+    class ServiceAccountException(Exception):
+        pass
+
+    class JobsFilesNotFound(Exception):
+        pass
+
 
     def __init__(self):
-        self._SA_DAINT_URL = 'https://bspsa.cineca.it/jobs/pizdaint/hhnb_daint_cscs/'
+        self._SA_DAINT_JOB_URL = 'https://bspsa.cineca.it/jobs/pizdaint/hhnb_daint_cscs/'
+        self._SA_DAINT_FILES_URL = 'https://bspsa.cineca.it/files/pizdaint/hhnb_daint_cscs/'
         self._NSG_URL = 'https://nsgr.sdsc.edu:8443/cipresrest/v1'
         
         self._DAINT_CSCS = 'DAINT-CSCS'
@@ -76,7 +102,7 @@ class JobHandler:
 
         headers = self._get_nsg_headers()
 
-        files = {'input.infile_': open(zip_file + '.zip', 'rb')}
+        files = {'input.infile_': open(zip_file, 'rb')}
         r = requests.post(url=f'{self._NSG_URL}/job/{username}', 
                           auth=(username, password),
                           data=payload,
@@ -101,9 +127,8 @@ class JobHandler:
         return ResponseUtil.ko_response(r.text)
 
     def _get_nsg_job_list(self, nsg_user, username, password):
-        r_all = requests.get(url=f)
-
-        
+        # r_all = requests.get(url=f)
+        pass
 
     def _get_unicore_command(self, zip_name):
         command = 'unzip ' + zip_name + '; cd ' + zip_name.split('.zip')[0] \
@@ -122,9 +147,7 @@ class JobHandler:
                 'NodeConstraints': 'mc',
                 'Project': project
             },
-            'Tags': [
-                self._JOB_TAG,
-            ]
+            'Tags': self._TAGS
         }
 
     def _initialize_unicore_client(self, hpc, token):
@@ -140,43 +163,24 @@ class JobHandler:
         zip_name = os.path.split(zip_file)[1]
         job_description = self._get_unicore_job_description(
             command=self._get_unicore_command(zip_name),
-            job_name=zip_name,
+            job_name=zip_name.split('.')[0],
             node_num=settings['node-num'],
             core_num=settings['core-num'],
             runtime=settings['runtime'],
             project=settings['project']
         )
 
-        client = self._initialize_unicore_client()        
+        client = self._initialize_unicore_client(hpc, token)        
         job = client.new_job(job_description=job_description, inputs=[zip_file])
-        print(job)
-
         return ResponseUtil.ok_response('Job submitted correctly on DAINT-CSCS')
 
     def _get_jobs_on_unicore(self, hpc, token):
         client = self._initialize_unicore_client(hpc, token)
-        jobs_url = client.links['jobs'] + '?tags=hhnb' 
-        jobs = client.transport.get(url=jobs_url)['jobs']
-        return jobs
-
-    def _get_jobs_properties_on_unicore(self, hpc, token):
-        client = self._initialize_unicore_client(hpc, token)
-        jobs = client.get_jobs(tags=self._TAGS)
-        details = {}
-        for job in jobs:
-            props = job.properties
-            details.update({job.job_id: {
-                'status': props['status'],
-                'name': props['name'],
-                'submissionTime': props['submissionTime'],
-                'terminationTime': props['terminationTime']
-            }})
-        return details
+        return client.get_jobs(tags=self._TAGS)
 
     def _get_job_results_on_unicore(self, hpc, token, job_id):
         client = self._initialize_unicore_client(hpc, token)
         job_url = client.links['jobs'] + '/' + job_id
-        print(job_url)
         job = unicore_client.Job(client.transport, job_url)
         storage = job.working_dir
         return storage.listdir()
@@ -190,33 +194,50 @@ class JobHandler:
             'title': title,
         }
 
-    def _get_service_account_headers(self, token, zip_name, payload):
-        return {
-            'Authorization': 'Bearer ' + token,
-            'Content-Disposition': 'attachment;filename=' + zip_name + '.zip',
-            'payload': json.dumps(payload)
-        }
+    def _get_service_account_headers(self, token, zip_name=None, payload=None):
+        headers = {'Authorization': 'Bearer ' + token}
+        if zip_name:
+            payload.update({'Content-Disposition': 'attachment;filename=' + zip_name + '.zip'})
+        if payload:
+            payload.update({'payload': json.dumps(payload)})
+        return headers
 
     def _submit_on_service_account(self, token, zip_file, settings):
-        
         zip_name = os.path.split(zip_file)[1]
         payload = self._get_service_account_payload(
             command=self._get_unicore_command(zip_name),
             node_num=settings['node-num'],
             core_num=settings['core-num'],
             runtime=settings['runtime'],
-            title=zip_name
+            title=zip_name.split('.')[0]
         )
         
         headers = self._get_service_account_headers(token, zip_name, payload)
-        job_file = {'file': open(zip_file)}
+        job_file = {'file': open(zip_file, 'rb')}
 
-        r = requests.post(url=self.SA_DAINT_URL, headers=headers, files=job_file)
-        
+        r = requests.post(url=self._SA_DAINT_JOB_URL, headers=headers, files=job_file)
         if r.status_code == 400:
-            return ResponseUtil.ko_response(r.text)
+            return ResponseUtil.ko_response(r.content)
         
         return ResponseUtil.ok_response('Job submitted correctly on SA-CSCS')
+
+    def _get_jobs_on_service_account(self, token):
+        headers = self._get_service_account_headers(token)
+        r = requests.get(url=self._SA_DAINT_JOB_URL, headers=headers)
+        if r.status_code != 200:
+            raise self.ServiceAccountException(r.content, r.status_code)
+        return r.json()
+
+    def _get_job_results_on_service_account(self, token, job_id):
+        headers = self._get_service_account_headers(token)
+        url = self._SA_DAINT_FILES_URL + job_id + '/'
+        r = requests.get(url, headers=headers)
+        if r.status_code == 404:
+            raise self.JobsFilesNotFound('Job "%s" has expired and no one files is present' % job_id)
+        if r.status_code != 200:
+            raise self.ServiceAccountException(r.content, r.status_code)
+        return {'root_url': url, 'file_list': r.json()}
+          
 
     @classmethod
     def submit_job(cls, user, zip_file, settings):
@@ -236,30 +257,50 @@ class JobHandler:
     def fetch_jobs_list(cls, hpc, user):
 
         job_handler = cls()
-        if hpc == job_handler._DAINT_CSCS:
+        jobs = {}
 
-            jobs = job_handler._get_jobs_on_unicore(hpc, user.get_token())
+        if hpc == job_handler._NSG:
+            pass
 
-        return {'jobs': jobs}
+        elif hpc == job_handler._DAINT_CSCS:
+            raw_jobs = job_handler._get_jobs_on_unicore(hpc, user.get_token())
+            for raw_job in raw_jobs:
+                props = raw_job.properties
+                job = { raw_job.job_id: {
+                        'workflow_id': props['name'],
+                        'status': props['status'],
+                        'date': str_to_datetime(props['submissionTime'])
+                    }
+                }
+                jobs.update(job)
 
-    @classmethod
-    def fetch_jobs_details(cls, hpc, user):
+        elif hpc == job_handler._SA_CSCS:
+            raw_jobs = job_handler._get_jobs_on_service_account(user.get_token())
+            for raw_job in raw_jobs:
+                job = {raw_job['job_id']: {
+                    'workflow_id': raw_job['title'],
+                    'status': raw_job['stage'],
+                    'date': str_to_datetime(raw_job['init_date'])
+                }}
+                jobs.update(job)
 
-        job_handler = cls()
-        if hpc == job_handler._DAINT_CSCS:
+        # sort jobs from last to first
+        ordered_jobs = OrderedDict(sorted(jobs.items(),
+                                          key=lambda x: x[1]['date'],
+                                          reverse=True))
+        return {'jobs': ordered_jobs}
 
-            details = job_handler._get_jobs_properties_on_unicore(hpc, user.get_token())
-            
-
-
-        return {'jobs': details}
 
     @classmethod
     def fetch_job_files(cls, hpc, job_id, user):
 
         job_handler = cls()
         if hpc == job_handler._DAINT_CSCS:
-
-            file_list = job_handler._get_job_results_on_unicore(hpc, user.get_token(), job_id)
+            file_list = job_handler._get_job_results_on_unicore(hpc=hpc, 
+                                                                token=user.get_token(),
+                                                                job_id=job_id)
+        if hpc == job_handler._SA_CSCS:
+            file_list = job_handler._get_job_results_on_service_account(token=user.get_token(),
+                                                                        job_id=job_id)
 
         return file_list

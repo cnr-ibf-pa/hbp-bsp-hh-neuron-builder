@@ -36,7 +36,7 @@ function uploadWorkflow() {
     // This will upload the file after having read it
     const upload = (file) => {
         showLoadingAnimation("Uploading workflow...");
-        fetch("/hh-neuron-builder/upload-workflow/", { // Your POST endpoint
+        fetch("/hh-neuron-builder/upload-workflow", { // Your POST endpoint
             method: "POST",
             headers: {
                 "Content-Type": "application/zip",

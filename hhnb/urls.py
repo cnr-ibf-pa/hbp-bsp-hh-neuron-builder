@@ -73,9 +73,12 @@ urlpatterns = [
 
     # jobs apis
     path('run-optimization/<exc:exc>', views.run_optimization),
-    path('fetch-jobs/list/<exc:exc>', views.fetch_jobs),
-    path('fetch-jobs/details/<exc:exc>', views.fetch_jobs),
+    path('fetch-jobs/<exc:exc>', views.fetch_jobs),
     path('fetch-job-result/<exc:exc>', views.fetch_job_results),
+
+    # analysis apis
+    path('run-analysis/<exc:exc>', views.run_analysis),
+    path('zip-simulation/<exc:exc>', views.zip_simulation),
 
     # hippocampus hub api
     path('hhf-comm', views.hhf_comm),
