@@ -133,7 +133,7 @@ class JobHandler:
 
     def _get_unicore_command(self, zip_name):
         command = 'unzip ' + zip_name + '; cd ' + zip_name.split('.zip')[0] \
-                + ' chmod +rx *.sbatch; ./ipyparallel.sbatch'
+                + '; chmod +rx *.sbatch; ./ipyparallel.sbatch'
         return command
 
     def _get_unicore_job_description(self, command, job_name, node_num, 
