@@ -64,9 +64,10 @@ export PMI_MMAP_SYNC_WAIT_TIME=300
 set -e
 set -x
 
-module load daint-mc cray-python/3.8.2.1 PyExtensions/python3-CrayGNU-20.08
-module use /apps/hbp/ich002/hbp-spack-deployments/softwares/15-09-2020/install/modules/tcl/cray-cnl7-haswell
-module load neuron/7.8.0c
+module load daint-mc cray-python/3.8.2.1 PyExtensions/python3-CrayGNU-20.11
+module load intel/19.0.1.144
+module use /apps/hbp/ich002/hbp-spack-deployments/softwares/27-10-2020/install/modules/tcl/cray-cnl7-haswell
+module load neuron/8.0a
 module load py-bluepyopt
 nrnivmodl mechanisms
 
@@ -77,7 +78,7 @@ ipcontroller --init --sqlitedb --ip='*' --profile=${IPYTHON_PROFILE} &
 sleep 30
 srun ipengine --profile=${IPYTHON_PROFILE} &
 CHECKPOINTS_DIR="checkpoints"
-python opt_neuron.py --offspring_size={ str(offspring) } --max_ngen={ str(max_gen) } --start --checkpoint "${CHECKPOINTS_DIR}/checkpoint.pkl"
+python opt_neuron.py --offspring_size=10 --max_ngen=2 --start --checkpoint "${CHECKPOINTS_DIR}/checkpoint.pkl"
 python zipfolder.py
 """
         try:

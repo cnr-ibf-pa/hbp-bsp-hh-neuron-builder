@@ -1,5 +1,6 @@
 # Model class
 
+import datetime
 from hhnb.core.lib.exception.model_exception import *
 from hhnb.core.lib.model import *
 
@@ -56,8 +57,9 @@ class Model(ModelBase):
         key = os.path.split(self._model_dir)
         if 'key' in kwargs:
             key = kwargs.pop('key')
+        if key[0] in [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]:
+            key = 'K' + key
         super().__init__(key, **kwargs)
-        
         self._ETRACES = False
 
 
@@ -114,11 +116,14 @@ class Model(ModelBase):
     #     super().set_parameters(parameters=parameters)
 
 
-    @classmethod
-    def from_zip(cls, zip_model):
-        m = cls()
-        # TODO: to be complete
-        return m
+    # @classmethod
+    # def from_zip(cls, zip_model):
+    #     model = cls()
+    #     # TODO: to be complete
+    #     tmp_unzip_model = os.path.join(TMP_DIR, datetime.datetime.now())
+    #     shutil.unpack_archive(zip_model, tmp_unzip_model)
+    #     pass
+
 
     @classmethod
     def from_dir(cls, model_dir, key):

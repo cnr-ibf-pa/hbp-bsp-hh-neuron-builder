@@ -617,7 +617,7 @@ async function downloadJob(jobId) {
     // disable all buttons
     let data = {"job_id": jobId, "hpc": $("button.fetch-jobs.active").attr("name")}
 
-    $("#jobProcessingTitle").html("Downloading job:<br>" + jobId + "<br>");
+    $("#jobProcessingTitle").html("Downloading job:<br>" + jobId.toUpperCase() + "<br>");
     
     closeJobFetchDiv();
     openJobProcessingDiv();

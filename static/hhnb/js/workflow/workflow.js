@@ -59,7 +59,7 @@ export default class Workflow {
             async: false,
             success: (props) => {
                 this.#props = props;
-                $("#wf-title").text("Workflow id: " + this.#props.id);
+                $("#wf-title").html("Workflow ID: <b>" + this.#props.id + "</b>");
                 Log.debug(this.#props);
             },
             error: (error) => {
@@ -384,7 +384,7 @@ export default class Workflow {
     }
 
     runOptimization() {
-        showLoadingAnimation("Run optimization on HPC system...");
+        showLoadingAnimation("Run optimization on HPC system<br>Could take a while, please wait...");
         Log.debug("Run optimization");
         $.ajax({
             url: "/hh-neuron-builder/run-optimization/" + this.#exc,

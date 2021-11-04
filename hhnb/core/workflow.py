@@ -25,6 +25,8 @@ class _WorkflowBase:
     
     def __init__(self, username, workflow_id):
         self._username = username
+        if workflow_id[0] in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']:
+            workflow_id = 'W_' + workflow_id 
         self._id = workflow_id
         self._workflow_path = os.path.join(MEDIA_ROOT, 'hhnb', 'workflows',
                                            self._username, self._id)
@@ -121,7 +123,14 @@ class Workflow(_WorkflowBase):
         if os.path.exists(self._workflow_path):
             raise WorkflowExists('The workspace already exists. Use another path.')
         os.makedirs(self._workflow_path)
-        shutil.copytree(HHF_TEMPLATE_DIR, self._model_dir)       
+        shutil.copytree(HHF_TEMPLATE_DIR, self._model_dir) 
+
+        #  force empty dir to be created in model directory
+        sub_dir = ['config', 'mechanisms', 'model', 'morphology']
+        for sub_path in [os.path.join(self._model_dir, f) for f in sub_dir]:
+            if not os.path.exists(sub_path):
+                os.mkdir(sub_path)
+      
         os.mkdir(self._results_dir)
         os.mkdir(self._analysis_dir)
         os.mkdir(self._tmp_dir)
