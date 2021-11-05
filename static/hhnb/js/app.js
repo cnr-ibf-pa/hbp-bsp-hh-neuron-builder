@@ -147,55 +147,77 @@ $(".upload-btn").on("click", (button) => {
 
         default:
     }
-})
+});
+
 
 // delete features
 $(".delete-btn").on("click", (button) => {
     Log.debug(button);
+    let file_list = ""
     switch (button.target.id) {
         case "del-feat-btn":
             if (workflow.getProps().etraces && !workflow.getUIFlags().features) {
                 workflow.getProps().etraces = false;
                 workflow.updateUI();
             } else {
-                workflow.deleteFeatures();
+                file_list = JSON.stringify({
+                    "file_list": [
+                        "config/features.json",
+                        "config/protocols.json"
+                    ]
+                });            
             }
             break;
 
         case "del-opt-btn":
-            workflow.deleteModel();
+            file_list = JSON.stringify({
+                "file_list": [
+                    "config/parameters.json",
+                    "config/morph.json",
+                    "morphology/*",
+                    "mechanisms/*"
+                ]
+            });
             break;
 
         case "del-sim-btn":
-            workflow.deleteSimulationRun();
+            file_list = JSON.stringify({
+                "file_list": [
+                    "../results/*",
+                    "../analysis/*"
+                ]
+            });
             break;
-
         default:
     }
-})
+    workflow.deleteFiles(file_list);
+});
+
 
 $(".download-btn").on("click", (button) => {
     Log.debug(button);
+    let file_list = "";
     switch (button.target.id) {
         case "down-feat-btn":
-            workflow.downloadFeatures();
+            file_list = "pack=features";
             break;
 
         case "down-opt-set-btn":
-            workflow.downloadModel();
+            file_list = "pack=model";
             break;
 
         case "down-opt-btn":
-            workflow.downloadJobResults();
+            file_list = "pack=results";
             break;
 
         case "down-sim-btn":
-            workflow.downloadAnalysis();
+            file_list = "pack=analysis";
             break;
 
         default:
     }
-})
+    workflow.downloadFiles(file_list)
+});
 
 
 // display and close settings dialog
@@ -626,18 +648,19 @@ async function downloadJob(jobId) {
     $("#progressBarFetchJob").addClass("s40").removeClass("s4 s2");
     setProgressBarValue(40);
     
-    $.get("/hh-neuron-builder/fetch-job-result/" + exc, data)
+    /* $.get("/hh-neuron-builder/fetch-job-result/" + exc, data)
         .done((downloadResult) => {
             Log.debug(downloadResult);
             setJobProcessingTitle("Running Analysis<br>");
-            setProgressBarValue(80);
+            setProgressBarValue(80); */
             $.get("/hh-neuron-builder/run-analysis/" + exc)
                 .done(async (analysisResult) => {
-                    setJobProcessingTitle("Creating ZIP file<br>");
+                    setJobProcessingTitle("Completing...<br>");
                     $("#progressBarFetchJob").addClass("s4").removeClass("s40 s2");
-                    setProgressBarValue(90);
+                    setProgressBarValue(100);
                     await sleep(4000);
-                    $.get("/hh-neuron-builder/zip-simulation/" + exc)
+                    closeJobProcessingDiv();
+                    /* $.get("/hh-neuron-builder/zip-simulation/" + exc)
                         .done(async (zipResult) => {
                             setJobProcessingTitle("Completing...<br>");
                             $("#progressBarFetchJob").addClass("s2").removeClass("s40 s4");
@@ -649,22 +672,19 @@ async function downloadJob(jobId) {
                             Log.error("Status: " + zipError.status + " > " + zipError.responseText);
                             closeJobFetchDiv();
                             MessageDialog.openErrorDialog(zipError.responseText)
-                        })
+                        }) */
                 }).fail((analysisError) => {
                     Log.error("Status: " + analysisError.status + " > " + analysisError.responseText);
-                    closeJobFetchDiv();
+                    closeJobProcessingDiv();
                     MessageDialog.openErrorDialog(analysisError.responseText)
                 })
-        }).fail((downloadError) => {
+        /* }).fail((downloadError) => {
             closeJobProcessingDiv();
             Log.error("Status: " + downloadError.status + " > " + downloadError.responseText);
             MessageDialog.openErrorDialog(downloadError.responseText)
         }).always(() => {
-            closeJobProcessingDiv();
-            closeJobFetchDiv();
-            resetJobFetchDiv();
             workflow.updateProperties();
-        });
+        }); */
 }
 
 $("#checkNsgLoginButton").on("click", () => {
@@ -690,3 +710,52 @@ $("#checkNsgLoginButton").on("click", () => {
 
 
 /* ****************************** */
+
+$("#run-sim-btn").on("click", () => {
+    showLoadingAnimation("Uploading to BlueNaas...");
+    $("#run-sim-btn").prop("disable", true);
+    $.get("/hh-neuron-builder/upload-to-naas/" + exc)
+        .done((data) => {
+            Log.debug("Filename uploaded " + data);
+            $("#bluenaas-frame").attr("src", "https://blue-naas-bsp-epfl.apps.hbp.eu/#/model/" + data);
+            $("#bluenaas-frame").on("load", function() {
+                hideLoadingAnimation();
+                $("#modalBlueNaasContainer").css("display", "block");
+                $("#modalBlueNaas").css("z-index", "100").addClass("show");
+            })
+        }).fail((error) => {
+            Log.error("Status: " + downloadError.status + " > " + downloadError.responseText);
+            MessageDialog.openErrorDialog(downloadError.responseText);
+            hideLoadingAnimation();
+        }).always(() => {
+            $("#run-sim-btn").prop("disable", false);
+        })
+})
+
+
+$("#modalBlueNaas")[0].addEventListener("transitionstart", function(transition) {
+    if (transition.target == $(this)[0]) {
+        if ($(this).hasClass("show")) {
+            $("#modalBlueNaasContainer").addClass("show");
+        }
+    }
+})
+$("#modalBlueNaas")[0].addEventListener("transitionend", function(transition) {
+    if (transition.target == $(this)[0]) {
+        if (!$(this).hasClass("show")) {
+            $("#modalBlueNaasContainer").css("display", "none");
+            $(this).css("z-index", "-100");
+        }
+    }
+})
+$("#modalBlueNaasContainer")[0].addEventListener("transitionstart", function(transition) {
+    if (transition.target == $(this)[0]) { 
+        if (!$(this).hasClass("show")) {
+            $("#modalBlueNaas").removeClass("show");
+        }
+    }
+})
+
+$("#back-to-wf-btn").on("click", () => {
+    $("#modalBlueNaasContainer").removeClass("show");
+});

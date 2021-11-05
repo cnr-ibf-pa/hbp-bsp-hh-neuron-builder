@@ -2,7 +2,6 @@
 Workspace utils classes
 """
 
-from json.decoder import JSONDecodeError
 from hh_neuron_builder.settings import MEDIA_ROOT, HHF_TEMPLATE_DIR, TMP_DIR
 
 from multipledispatch import dispatch
@@ -12,8 +11,11 @@ from hhnb.core.lib.exception.workflow_exception import *
 from hhnb.core.user import NsgUser
 from hhnb.core.model import *
 
+from json.decoder import JSONDecodeError
 from pyunicore.client import PathFile
 from datetime import datetime
+from subprocess import call as os_call
+from sys import prefix as env_prefix
 import shutil
 import os
 import json
@@ -28,8 +30,8 @@ class _WorkflowBase:
         if workflow_id[0] in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']:
             workflow_id = 'W_' + workflow_id 
         self._id = workflow_id
-        self._workflow_path = os.path.join(MEDIA_ROOT, 'hhnb', 'workflows',
-                                           self._username, self._id)
+        self._workflow_path = os.path.abspath(os.path.join(MEDIA_ROOT, 'hhnb', 'workflows',
+                                                           self._username, self._id))
         self._results_dir = os.path.join(self._workflow_path, 'results')
         self._analysis_dir = os.path.join(self._workflow_path, 'analysis')
         self._model_dir = os.path.join(self._workflow_path, 'model')
@@ -191,8 +193,8 @@ class Workflow(_WorkflowBase):
         if not os.path.exists(target_dir):
             raise FileNotFoundError('%s directory not exists' % directory)
         if filename == '*':
-            for f in os.listdir(target_dir):
-                os.remove(os.path.join(self._model_dir, directory, f))
+            shutil.rmtree(target_dir)
+            os.mkdir(target_dir)
         else:
             full_file_path = os.path.join(self._model_dir, file_path) 
             if not os.path.exists(full_file_path):
@@ -302,6 +304,16 @@ class WorkflowUtil:
             base_name=os.path.splitext(zip_name)[0],
             format='zip',
             root_dir=workflow.get_results_dir()
+        )
+        return zip_name
+
+    @staticmethod
+    def make_analysis_archive(workflow):
+        zip_name = os.path.join(workflow.get_tmp_dir(), 'analysis.zip')
+        shutil.make_archive(
+            base_name=os.path.splitext(zip_name)[0],
+            format='zip',
+            root_dir=workflow.get_analysis_dir()
         )
         return zip_name
 
@@ -418,3 +430,87 @@ class WorkflowUtil:
                 with open(dst, 'wb') as fd:
                     for chunk in r.iter_content(chunk_size=4096):
                         fd.write(chunk)
+
+    @staticmethod
+    def run_analysis(workflow, job_output):
+        shutil.unpack_archive(job_output, workflow.get_analysis_dir())
+        output_dir = os.path.join(workflow.get_analysis_dir(),
+                                  os.listdir(workflow.get_analysis_dir())[0])
+
+        analysis_file = os.path.join(output_dir, 'model', 'analysis.py')
+        if not os.path.exists(analysis_file):
+            raise FileNotFoundError('"analysis.py" not found')
+
+        evaluator_file = os.path.join(output_dir, 'model', 'evaluator.py')
+        if not os.path.exists(evaluator_file):
+            raise FileNotFoundError('"evaluator.py" not found')
+
+        figures_dir = os.path.join(output_dir, 'figures')
+        if os.path.exists(figures_dir):
+            shutil.rmtree(figures_dir)
+        os.mkdir(figures_dir)
+
+        checkpoint_dir = os.path.join(output_dir, 'checkpoints')
+        if os.path.exists(checkpoint_dir):
+            checkpoint_dir_content = os.listdir(checkpoint_dir)
+            if not 'checkpoint.pkl' in checkpoint_dir_content:
+                for f in checkpoint_dir_content:
+                    if f.endswith('.pkl'):
+                        os.rename(os.path.join(checkpoint_dir, f),
+                                  os.path.join(checkpoint_dir, 'checkpoint.pkl'))
+        
+        opt_neuron_file = os.path.join(output_dir, 'opt_neuron.py')
+        with open(opt_neuron_file, 'r') as fd:
+            buffer = fd.readlines()
+        buffer = ['import matplotlib\n', 'matplotlib.use(\'Agg\')\n'] + buffer
+        with open(opt_neuron_file, 'w') as fd:
+            fd.writelines(buffer)
+
+        r_0_dir = os.path.join(output_dir, 'r_0')
+        if os.path.exists(r_0_dir):
+            shutil.rmtree(r_0_dir)
+        os.mkdir(r_0_dir)
+
+        curr_dir = os.getcwd()
+        os.chdir(output_dir)
+        os_call('nrnivmodl mechanisms', shell=True)
+        os_call('python ./opt_neuron.py --analyse --checkpoint ./checkpoints > /dev/null 2>&1', shell=True)        
+        os.chdir(curr_dir)
+
+
+    @staticmethod
+    def make_naas_archive(workflow):
+
+        analysis_dir_name = os.listdir(workflow.get_analysis_dir())[0]
+        src_dir = os.path.join(workflow.get_analysis_dir(), analysis_dir_name)
+        dst_dir = os.path.join(workflow.get_tmp_dir(), analysis_dir_name)
+        tmp_analysis_dir = shutil.copytree(src_dir, dst_dir)
+
+        for f in os.listdir(tmp_analysis_dir):
+            f_path = os.path.join(tmp_analysis_dir, f)
+            if f != 'mechanisms' and f != 'morphology' and f != 'checkpoints':
+                if os.path.isdir(os.path.join(f_path)):
+                    shutil.rmtree(f_path)
+                else:
+                    os.remove(f_path)            
+
+        # rename .hoc file
+        checkpoints_dir = os.path.join(tmp_analysis_dir, 'checkpoints')
+        for f in os.listdir(checkpoints_dir):
+            if f.endswith('.hoc'):
+                hoc_file = f
+        os.rename(
+            src=os.path.join(checkpoints_dir, hoc_file),
+            dst=os.path.join(checkpoints_dir, 'cell.hoc')
+        )
+
+        # create naas archive on root wf path
+        naas_archive = shutil.make_archive(
+            base_name=os.path.join(workflow.get_workflow_path(),
+                                   analysis_dir_name),
+            format='zip',
+            root_dir=workflow.get_tmp_dir()
+        )
+
+        # moving naas archive to tmp dir
+        return shutil.move(naas_archive, workflow.get_tmp_dir())

@@ -175,7 +175,7 @@ export default class Workflow {
         }
     }
 
-    #updateSimulationBlock() {
+    #updateSimulationSettingsBlock() {
         let bar = $("#opt-res-bar");
         let fetchButton = $("#opt-fetch-btn");
         let uploadButton = $("#opt-res-up-btn");
@@ -190,7 +190,7 @@ export default class Workflow {
             disable(fetchButton);
             disable(uploadButton);
             enable(downloadResultLink);
-            enable(downloadModelLink);
+            enable(downloadAnalysisLink);
             enable(deleteLink);
             this.#simulationBlock = true
         } else {
@@ -212,6 +212,12 @@ export default class Workflow {
             }
         }
 
+        let runSimulationButton = $("#run-sim-btn");
+        if (this.#simulationBlock) {
+            enable(runSimulationButton);
+        } else {
+            disable(runSimulationButton);
+        }
     }
 
     updateUI() {
@@ -219,10 +225,22 @@ export default class Workflow {
         this.#updateModelBlock();
         this.#updateSettingsBlock();
         this.#updateCellOptimizationBlock();
-        this.#updateSimulationBlock();
+        this.#updateSimulationSettingsBlock();
     }
 
-    #deleteFiles(jFilesList) {
+    downloadFiles(jFilesList) {
+        showLoadingAnimation("Generating download package...");
+        $.get("/hh-neuron-builder/download-files/" + this.#exc + "?" + jFilesList)
+            .done((result) => {
+                Log.debug("Files downloaded correctly");
+                window.location.href = "/hh-neuron-builder/download-files/" + this.#exc + "?" + jFilesList;
+            }).fail((error) => {
+                Log.error("Status: " + error.status + " > " + error.responseText);
+                MessageDialog.openErrorDialog(error.responseText);
+            }).always(() => { hideLoadingAnimation() });
+    }
+
+    deleteFiles(jFilesList) {
         showLoadingAnimation("Deleting files...")
         Log.debug("Deleting files: " + jFilesList);
         $.ajax({
@@ -267,68 +285,6 @@ export default class Workflow {
         }).always(() => { hideLoadingAnimation(); });
     }
 
-    deleteFeatures() {
-        let file_list = JSON.stringify({
-            "file_list": [
-                "config/features.json",
-                "config/protocols.json"
-            ]
-        });
-        this.#deleteFiles(file_list);
-    }
-
-    deleteModel() {
-        let file_list = JSON.stringify({
-            "file_list": [
-                "config/parameters.json",
-                "config/morph.json",
-                "morphology/*",
-                "mechanisms/*"
-            ]
-        });
-        this.#deleteFiles(file_list);
-    }
-
-    deleteSimulationRun() {
-        let file_list = JSON.stringify({
-            "file_list": [
-                "../results/*",
-                "../analysis/*"
-            ]
-        });
-        this.#deleteFiles(file_list);
-    }
-
-    downloadFiles(jFilesList) {
-        showLoadingAnimation("Generating download package...");
-        $.get("/hh-neuron-builder/download-files/" + this.#exc + "?" + jFilesList)
-            .done((result) => {
-                Log.debug("Files downloaded correctly");
-                window.location.href = "/hh-neuron-builder/download-files/" + this.#exc + "?" + jFilesList;
-            }).fail((error) => {
-                Log.error("Status: " + error.status + " > " + error.responseText);
-                MessageDialog.openErrorDialog(error.responseText);
-            }).always(() => { hideLoadingAnimation() });
-    }
-
-    downloadFeatures() {
-        let file_list = "pack=features";
-        this.downloadFiles(file_list);
-    }
-
-    downloadModel() {
-        let file_list = "pack=model";
-        this.downloadFiles(file_list);
-    }
-
-    downloadAnalysis() {
-
-    }
-
-    downloadJobResults() {
-        let file_list = "pack=results";
-        this.downloadFiles(file_list);
-    }
 
     getOptimizationSettings() {
         let settings = null;

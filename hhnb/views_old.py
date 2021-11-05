@@ -2459,7 +2459,6 @@ def hhf_get_files_content(request, folder, exc, ctx):
 
 
 def hhf_download_files(request, folder, exc, ctx):
-    hhf_download_files(request, folder, exc, ctx):
     try:
         file_ids = json.loads(request.GET.get('file_list', None))
         hhf_dir = request.session[exc]['hhf_dir']

@@ -1,7 +1,9 @@
 """ Views """
 
+import tarfile
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
+from requests.models import Response
 
 from hh_neuron_builder.settings import MODEL_CATALOG_CREDENTIALS, MODEL_CATALOG_FILTER, TMP_DIR
 
@@ -18,6 +20,8 @@ import datetime
 import os
 import json
 import shutil
+
+from hhnb.views_old import workflow
 
 
 def status(request):
@@ -264,16 +268,54 @@ def upload_model(request, exc):
                 fd.write(uploaded_file.read())
 
     try:
-        workflow.load_model_zip(os.path.join(workflow.get_tmp_dir(), uploaded_file.name))
+        workflow.load_model_zip(os.path.join(workflow.get_tmp_dir(),
+                                             uploaded_file.name))
     except FileNotFoundError as e:
         return ResponseUtil.ko_response('Invalid model archive')
 
     return ResponseUtil.ok_response()
 
 
-def upload_analysis(request, exc=None):
-    pass
+def upload_analysis(request, exc):
+    if request.method != 'POST':
+        return ResponseUtil.method_not_allowed('POST') 
+    if not exc in request.session.keys():
+        return ResponseUtil.no_exc_code_response()
 
+    uploaded_files = request.FILES.getlist('formFile')
+    if len(uploaded_files) == 0:
+        return ResponseUtil.ok_response('No files uploaded')
+    if len(uploaded_files) != 1:
+        return ResponseUtil.ko_response('Must upload only ".zip" file.')
+
+    workflow, _ = get_workflow_and_user(request, exc)
+
+    for uploaded_file in uploaded_files: 
+        uploaded_file_path = os.path.join(workflow.get_tmp_dir(), 
+                                          uploaded_file.name)
+        with open(uploaded_file_path, 'wb') as fd:
+            if uploaded_file.multiple_chunks(chunk_size=4096):
+                for chunk in uploaded_file.chunks(chunk_size=4096):
+                    fd.write(chunk)
+            else:
+                fd.write(uploaded_file.read())
+    try:
+        shutil.unpack_archive(uploaded_file_path, workflow.get_tmp_dir())
+        tmp_dir_list = os.listdir(workflow.get_tmp_dir())
+        tmp_dir_list.remove(uploaded_file.name) # remove zip file from list 
+        if len(tmp_dir_list) == 1:
+            unzip_dir_path = os.path.join(workflow.get_tmp_dir(), tmp_dir_list[0])
+            if 'x86_64' in os.listdir(unzip_dir_path):
+                shutil.move(unzip_dir_path, workflow.get_analysis_dir())
+        else:
+            for f in tmp_dir_list:
+                shutil.move(os.path.join(workflow.get_tmp_dir(), f),
+                            workflow.get_results_dir())
+        return ResponseUtil.ok_response('')
+    except Exception as e:
+        print(str(e))
+
+    return ResponseUtil.ko_response('Error! Malformed zip file.')
 
 def upload_files(request, exc):
     if not exc in request.session.keys():
@@ -307,12 +349,15 @@ def download_files(request, exc):
             zip_file = WorkflowUtil.make_features_archive(workflow)
         elif pack == 'model':
             zip_file = WorkflowUtil.make_model_archive(workflow)
-        elif pack == 'analysis':
-            zip_file = WorkflowUtil.make_analysis_archive(workflow)
         elif pack == 'results':
             zip_file = WorkflowUtil.make_results_archive(workflow)
+        elif pack == 'analysis':
+            zip_file = WorkflowUtil.make_analysis_archive(workflow)
     elif file_list:
         path_list = json.loads(file_list).get('path')
+
+        # TODO: add Permission controller
+
         files = [os.path.join(workflow.get_model_dir(), f) for f in path_list]
         zip_file = WorkflowUtil.make_archive(workflow, 'files.zip', 'files', files)
 
@@ -454,21 +499,34 @@ def run_analysis(request, exc):
 
     workflow, _ = get_workflow_and_user(request, exc)
 
-    # try:
-        
+    try:
+        for f in os.listdir(workflow.get_results_dir()):
+            if f.split('.')[0] == 'output':
+                job_output = os.path.join(workflow.get_results_dir(), f)
 
+        WorkflowUtil.run_analysis(workflow, job_output)
+        return ResponseUtil.ok_response('')
 
-    # except Exception as e:
-    #     print(e)
-    
+    except FileNotFoundError as e:
+        return ResponseUtil.ko_response(404, str(e))       
+     
+    except Exception as e:
+        print(e)
     return ResponseUtil.ko_response('Some error occurred')
 
 
-def zip_simulation(request, exc):
+def upload_to_naas(request, exc):
     if not exc in request.session.keys():
         return ResponseUtil.no_exc_code_response()
-    
-    return ResponseUtil.ko_response('Some error occurred')
+
+    workflow, _ = get_workflow_and_user(request, exc)
+
+    naas_archive = WorkflowUtil.make_naas_archive(workflow)
+    r = requests.post(url='https://blue-naas-svc-bsp-epfl.apps.hbp.eu/upload',
+                      files={'file': open(naas_archive, 'rb')}, verify=False)
+    if r.status_code == 200:
+        return ResponseUtil.ok_response(os.path.split(naas_archive)[1].split('.zip')[0])
+    return ResponseUtil.ko_response(r.status_code, r.content)
 
 
 def get_user_avatar(request):

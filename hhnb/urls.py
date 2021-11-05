@@ -78,7 +78,9 @@ urlpatterns = [
 
     # analysis apis
     path('run-analysis/<exc:exc>', views.run_analysis),
-    path('zip-simulation/<exc:exc>', views.zip_simulation),
+
+    # blue-naas apis
+    path('upload-to-naas/<exc:exc>', views.upload_to_naas),
 
     # hippocampus hub api
     path('hhf-comm', views.hhf_comm),
