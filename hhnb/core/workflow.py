@@ -195,14 +195,14 @@ class Workflow(_WorkflowBase):
             
         if not os.path.exists(target_dir):
             raise FileNotFoundError('%s directory not exists' % directory)
+
         if filename == '*':
             shutil.rmtree(target_dir)
             os.mkdir(target_dir)
         else:
             full_file_path = os.path.join(self._model_dir, file_path) 
-            if not os.path.exists(full_file_path):
-                raise FileNotFoundError('%s not found' % file_path)
-            os.remove(full_file_path)
+            if os.path.exists(full_file_path):
+                os.remove(full_file_path)
 
     def get_properties(self):
         try:

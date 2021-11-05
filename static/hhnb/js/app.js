@@ -138,6 +138,7 @@ $(".delete-btn").on("click", (button) => {
             if (workflow.getProps().etraces && !workflow.getUIFlags().features) {
                 workflow.getProps().etraces = false;
                 workflow.updateUI();
+                break;
             } else {
                 file_list = JSON.stringify({
                     "file_list": [
@@ -167,9 +168,12 @@ $(".delete-btn").on("click", (button) => {
                 ]
             });
             break;
+
         default:
     }
-    workflow.deleteFiles(file_list);
+    if (file_list != "") {
+        workflow.deleteFiles(file_list);
+    }
 });
 
 

@@ -387,8 +387,6 @@ def delete_files(request, exc):
     for f in file_list:
         try:
             workflow.remove_file(f)
-        except FileNotFoundError as e:
-            return ResponseUtil.ko_response(str(e))
         except PermissionError:
             return ResponseUtil.ko_response('Critical error !<br>If the problem persists, \
                                              please contact the support.')
