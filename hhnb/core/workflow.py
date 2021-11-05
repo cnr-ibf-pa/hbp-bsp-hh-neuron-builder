@@ -42,7 +42,7 @@ class _WorkflowBase:
                                                    'optimization_settings.json')
         if os.path.exists(self._model_dir) and any(os.scandir(self._model_dir)):
             self._model = Model.from_dir(self._model_dir, key=workflow_id)
-        
+
     def get_user(self):
         return self._username
 
@@ -70,9 +70,12 @@ class _WorkflowBase:
     def get_model(self):
         return self._model
 
-
     
 class Workflow(_WorkflowBase):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._hhf_flag = False
 
     @classmethod
     def generate_user_workflow(cls, username, make_files=True):
@@ -213,7 +216,7 @@ class Workflow(_WorkflowBase):
             'etraces': any(os.scandir(self._etraces_dir)),
             'job_submitted': job_submitted,
             'results': any(os.scandir(self._results_dir)),
-            'analysis': any(os.scandir(self._analysis_dir))
+            'analysis': any(os.scandir(self._analysis_dir)),
         }
         return props
 
@@ -222,7 +225,7 @@ class Workflow(_WorkflowBase):
             shutil.rmtree(self._tmp_dir)
             if not os.path.exists(self._tmp_dir):
                 os.mkdir(self._tmp_dir)
-    
+
 
 class WorkflowUtil:
 
@@ -233,9 +236,10 @@ class WorkflowUtil:
 
     @staticmethod
     def set_default_parameters(workflow):
-        shutil.copy(os.path.join(HHF_TEMPLATE_DIR, '..', 'parameters.json'),
-                    os.path.join(workflow.get_model_dir(), 'config'))
-        workflow.get_model().set_parameters()
+        src_params = os.path.join(HHF_TEMPLATE_DIR, '..', 'parameters.json') 
+        dst_params = os.path.join(workflow.get_model_dir(), 'config')
+        shutil.copy(src_params, dst_params)
+        workflow.get_model().set_parameters(dst_params)
 
     @staticmethod
     def clone_workflow(workflow):
@@ -378,13 +382,14 @@ class WorkflowUtil:
                 for chunk in r.iter_content(chunk_size=4096):
                     fd.write(chunk)
         
+        mechanisms_dir = os.path.join(workflow.get_model_dir(), 'mechanisms')
         for mod in mechanisms:
-            file_path = os.path.join(workflow.get_model_dir(), 'mechanisms', mod['name'])
+            file_path = os.path.join(mechanisms_dir, mod['name'])
             r = requests.get(url=mod['url'], verify=False)
             with open(file_path, 'wb') as fd:
                 for chunk in r.iter_content(chunk_size=4096):
                     fd.write(chunk)
-        workflow.get_model().set_mechanisms()
+        workflow.get_model().set_mechanisms(mechanisms_dir)
 
     @staticmethod
     def list_model_files(workflow):

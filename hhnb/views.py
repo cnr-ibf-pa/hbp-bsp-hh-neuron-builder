@@ -1,9 +1,7 @@
 """ Views """
 
-import tarfile
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
-from requests.models import Response
 
 from hh_neuron_builder.settings import MODEL_CATALOG_CREDENTIALS, MODEL_CATALOG_FILTER, TMP_DIR
 
@@ -20,8 +18,6 @@ import datetime
 import os
 import json
 import shutil
-
-from hhnb.views_old import workflow
 
 
 def status(request):
@@ -159,7 +155,12 @@ def get_workflow_properties(request, exc):
         request.session[exc]['hhf_already_downloaded'] = True
         request.session.save()
 
-    return ResponseUtil.ok_json_response(workflow.get_properties())
+    props = workflow.get_properties()
+
+    # hhf flag needs to handle the modal dialog 
+    hhf = True if 'hhf_dict' in request.session[exc].keys() else False
+    props.update({'hhf_flag': hhf}) 
+    return ResponseUtil.ok_json_response(props)
 
 
 def fetch_models(request, exc):
@@ -311,7 +312,11 @@ def upload_analysis(request, exc):
             for f in tmp_dir_list:
                 shutil.move(os.path.join(workflow.get_tmp_dir(), f),
                             workflow.get_results_dir())
+            # run analisys
+            return run_analysis(request, exc)
+        
         return ResponseUtil.ok_response('')
+    
     except Exception as e:
         print(str(e))
 
@@ -558,14 +563,13 @@ def hhf_comm(request):
         # if hhf_dict is not found redirect to home 
         return home_page(request)
     
-    print('initializing')
     r = initialize_workflow(request)
     exc = json.loads(r.content)['exc']
 
     request.session[exc]['hhf_dict'] = hhf_comm
     request.session[exc]['hhf_already_downloaded'] = False
     request.session.save()
-    # return workflow(request, exc)
+    #
     return render(request, 'hhnb/hhf_comm.html', context={'exc': exc})
 
 def hhf_etraces_dir(request, exc):
