@@ -6,8 +6,16 @@ const GET_PROPS_BASE_URL = "/hh-neuron-builder/get-workflow-properties/";
 const UPLOAD_FILES_BASE_URL = "/hh-neuron-builder/upload-files/";
 
 
-function recursiveChild(parent) {
-
+function checkRefreshSession(response) {
+    console.log(response);
+    if (response.status === 403 && response.responseJSON.refresh_url) {
+        $.post("/hh-neuron-builder/session-refresh/" + exc, response.responseJSON )
+            .done((result) => {
+                document.location.href = "/hh-neuron-builder/workflow/" + exc;
+            }).fail((error) => {
+                alert("Can't refresh session automatically, please refresh page");
+            })
+    } 
 }
 
 
@@ -63,6 +71,7 @@ export default class Workflow {
                 Log.debug(this.#props);
             },
             error: (error) => {
+                checkRefreshSession(error);
                 Log.error("Status: " + error.status + " > " + error.responseText);
                 if (error.status == 404) {
                     MessageDialog.openReloadDialog();
@@ -235,6 +244,7 @@ export default class Workflow {
                 Log.debug("Files downloaded correctly");
                 window.location.href = "/hh-neuron-builder/download-files/" + this.#exc + "?" + jFilesList;
             }).fail((error) => {
+                checkRefreshSession(error);
                 Log.error("Status: " + error.status + " > " + error.responseText);
                 MessageDialog.openErrorDialog(error.responseText);
             }).always(() => { hideLoadingAnimation() });
@@ -303,6 +313,7 @@ export default class Workflow {
                 }
             },
             error: (error) => {
+                checkRefreshSession(error);
                 Log.error("Status: " + error.status + " > " + error.responseText);
                 MessageDialog.openErrorDialog(error.responseText);
             }

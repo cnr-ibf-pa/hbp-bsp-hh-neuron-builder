@@ -251,13 +251,6 @@ class OptimizationSettingsDialog {
         formData.append("csrfmiddlewaretoken", $("input[name=csrfmiddlewaretoken]").val());
         formData.append("hpc", hpc);
 
-        // if (hpc == "DAINT-CSCS" || hpc == "SA-CSCS") {
-        //     // if (!is_user_authenticated) {
-        //     $("#hpcAuthAlert").addClass("show");
-        //     return false;
-        // }
-
-
         if (hpc == "DAINT-CSCS") {
             formData.append("gen-max", $("#daint-gen-max").val());
             formData.append("offspring", $("#daint-offspring").val());

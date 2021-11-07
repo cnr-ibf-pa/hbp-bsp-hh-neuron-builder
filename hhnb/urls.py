@@ -39,6 +39,8 @@ register_converter(converters.FileTypeConverter, 'file_type')
 
 
 urlpatterns = [
+    # session refresh
+    path('session-refresh/<exc:exc>', views.session_refresh),
     
     # pages
     path('', views.home_page),

@@ -42,3 +42,33 @@ function checkLastPage(iframe){
 };
 
 
+
+$("#modalBlueNaas")[0].addEventListener("transitionstart", function (transition) {
+    if (transition.target == $(this)[0]) {
+        if ($(this).hasClass("show")) {
+            $("#modalBlueNaasContainer").addClass("show");
+        }
+    }
+})
+
+$("#modalBlueNaas")[0].addEventListener("transitionend", function (transition) {
+    if (transition.target == $(this)[0]) {
+        if (!$(this).hasClass("show")) {
+            $("#modalBlueNaasContainer").css("display", "none");
+            $(this).css("z-index", "-100");
+        }
+    }
+})
+
+$("#modalBlueNaasContainer")[0].addEventListener("transitionstart", function (transition) {
+    if (transition.target == $(this)[0]) {
+        if (!$(this).hasClass("show")) {
+            $("#modalBlueNaas").removeClass("show");
+        }
+    }
+})
+
+
+function dismissAlert(el) {
+    console.log($(el).parent().removeClass("show"));
+}

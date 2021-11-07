@@ -23,6 +23,15 @@ import shutil
 def status(request):
     return ResponseUtil.ok_json_response({'hh-neuron-builder-status': 1})
 
+def session_refresh(request, exc):
+    if request.method == 'POST':
+        refresh_url = request.POST.get('refresh_url')
+        r = requests.get(url=refresh_url, verify=False)
+        if r.status_code == 200:
+            return ResponseUtil.ok_response('')
+        
+    return ResponseUtil.ko_response()
+
 
 def generate_exc_code(request):
     exc = 'tab_' + datetime.datetime.now().strftime('%Y%m%d%H%M%S')

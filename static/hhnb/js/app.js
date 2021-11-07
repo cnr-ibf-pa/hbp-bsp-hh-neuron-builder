@@ -8,7 +8,22 @@ const exc = sessionStorage.getItem("exc");
 const hhf_dict = sessionStorage.getItem("hhf_dict");
 const workflow = new Workflow(exc, hhf_dict);
 
+
 Log.debug(hhf_dict)
+
+
+function checkRefreshSession(response) {
+    console.log(response);
+    if (response.status === 403 && response.responseJSON.refresh_url) {
+        $.post("/hh-neuron-builder/session-refresh/" + exc, response.responseJSON )
+            .done((result) => {
+                document.location.href = "/hh-neuron-builder/workflow/" + exc;
+            }).fail((error) => {
+                alert("Can't refresh session automatically, please refresh page");
+            })
+    } 
+}
+
 
 $(document).ready(() => {
     if (workflow.getProps().hhf_flag) {
@@ -25,6 +40,7 @@ $("#wf-btn-new-wf").on("click", () => {
             Log.debug(result)
             window.location.href = "/hh-neuron-builder/workflow/" + result.exc;
         }).fail((error) => {
+            checkRefreshSession(error);
             Log.error("Status: " + error.status + " > " + error.responseText);
             MessageDialog.openErrorDialog(error.responseText);
         }).always(() => { hideLoadingAnimation() });
@@ -43,6 +59,7 @@ $("#wf-btn-clone-wf").on("click", () => {
             win.focus();
         },
         error: (error) => {
+            checkRefreshSession(error);
             Log.error("Status: " + error.status + " > " + error.responseText);
             let message = error.responseText;
             if (error.status == 404) {
@@ -61,6 +78,7 @@ $("#wf-btn-save").on("click", () => {
             Log.debug(result);
             window.location.href = "/hh-neuron-builder/download-workflow/" + exc + "?zip_path=" + result.zip_path;
         }).fail((error) => {
+            checkRefreshSession(error);
             Log.error(error);
         }).always(() => { hideLoadingAnimation() });
 })
@@ -71,6 +89,7 @@ $("#loginButton").on("click", () => {
     $.get("/hh-neuron-builder/store-workflow-in-session/" + exc)
         .done(() => { window.location.href = "/oidc/authenticate" })
         .fail((error) => {
+            checkRefreshSession(error);
             Log.error(error);
             MessageDialog.openInfoDialog("Please, manually download first and then reupload the current workflow once you're logged in.");
         }).always(() => { hideLoadingAnimation() });
@@ -220,8 +239,20 @@ $("#cancel-param-btn").on("click", () => {
 $("#apply-param").on("click", () => {
     Log.debug("Uploading optimization settings");
     let formData = OptimizationSettingsDialog.getJsonData();
-    OptimizationSettingsDialog.close();
-    workflow.uploadOptimizationSettings(formData);
+    if (formData.hpc == "DAINT-CSCS" || formData.hpc == "SA-CSCS") {
+        showLoadingAnimation("Checking login...");
+        $.get("/hh-neuron-builder/get-authentication")
+            .done(() => {
+                OptimizationSettingsDialog.close();
+                workflow.uploadOptimizationSettings(formData);
+            }).fail(() => {
+                checkRefreshSession(error);
+                $("#hpcAuthAlert").addClass("show");        
+            }).always(() => { hideLoadingAnimation() });
+    } else {
+        OptimizationSettingsDialog.close();
+        workflow.uploadOptimizationSettings(formData);
+    }    
 })
 
 
@@ -343,12 +374,14 @@ function chooseOptModel() {
                     Log.debug(result);
                     workflow.updateProperties();
                 }).fail((error) => {
+                    checkRefreshSession(error);
                     Log.error(error);
                 }).always(() => { hideLoadingAnimation() })
         });
     }).done(() => {
         modelsReady = true;
     }).fail((error) => {
+        checkRefreshSession(error);
         Log.error(error);
         MessageDialog.openInfoDialog(error.responseText);
     }).always(() => { hideLoadingAnimation() });
@@ -492,7 +525,10 @@ $(".jobs-unicore").on("click", (button) => {
             jButton.addClass("clicked");
             displayJobList(jButton);
         })
-        .fail(() => { $("#jobsAuthAlert").addClass("show") });
+        .fail(() => { 
+            checkRefreshSession(error);
+            $("#jobsAuthAlert").addClass("show");
+        });
 });
 
 $("#jobsNSG").on("click", (button) => {
@@ -562,6 +598,7 @@ function displayJobList(button) {
                 $("#overlayjobs").addClass("scroll-long-content");
             }
         }).fail((error) => {
+            checkRefreshSession(error);
             Log.error("Status: " + error.status + " > " + error.responseText);
             MessageDialog.openErrorDialog(error.responseText);
         });
@@ -648,12 +685,14 @@ async function downloadJob(jobId) {
                     closeJobProcessingDiv(); 
                     workflow.updateProperties();
                 }).fail((analysisError) => {
+                    checkRefreshSession(error);
                     Log.error("Status: " + analysisError.status + " > " + analysisError.responseText);
                     closeJobProcessingDiv();
                     MessageDialog.openErrorDialog(analysisError.responseText);
                     workflow.updateProperties();
                 })
         }).fail((downloadError) => {
+            checkRefreshSession(error);
             closeJobProcessingDiv();
             Log.error("Status: " + downloadError.status + " > " + downloadError.responseText);
             MessageDialog.openErrorDialog(downloadError.responseText)
@@ -698,6 +737,7 @@ $("#run-sim-btn").on("click", () => {
                 $("#modalBlueNaas").css("z-index", "100").addClass("show");
             })
         }).fail((error) => {
+            checkRefreshSession(error);
             Log.error("Status: " + downloadError.status + " > " + downloadError.responseText);
             MessageDialog.openErrorDialog(downloadError.responseText);
             hideLoadingAnimation();
@@ -706,31 +746,6 @@ $("#run-sim-btn").on("click", () => {
         })
 })
 
-
-$("#modalBlueNaas")[0].addEventListener("transitionstart", function (transition) {
-    if (transition.target == $(this)[0]) {
-        if ($(this).hasClass("show")) {
-            $("#modalBlueNaasContainer").addClass("show");
-        }
-    }
-})
-
-$("#modalBlueNaas")[0].addEventListener("transitionend", function (transition) {
-    if (transition.target == $(this)[0]) {
-        if (!$(this).hasClass("show")) {
-            $("#modalBlueNaasContainer").css("display", "none");
-            $(this).css("z-index", "-100");
-        }
-    }
-})
-
-$("#modalBlueNaasContainer")[0].addEventListener("transitionstart", function (transition) {
-    if (transition.target == $(this)[0]) {
-        if (!$(this).hasClass("show")) {
-            $("#modalBlueNaas").removeClass("show");
-        }
-    }
-})
 
 $("#back-to-wf-btn").on("click", () => {
     $("#modalBlueNaasContainer").removeClass("show");
