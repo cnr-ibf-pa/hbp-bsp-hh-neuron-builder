@@ -1,5 +1,6 @@
 """ Views """
 
+from posix import listdir
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 
@@ -312,10 +313,11 @@ def upload_analysis(request, exc):
     try:
         shutil.unpack_archive(uploaded_file_path, workflow.get_tmp_dir())
         tmp_dir_list = os.listdir(workflow.get_tmp_dir())
-        tmp_dir_list.remove(uploaded_file.name) # remove zip file from list 
+        tmp_dir_list.remove(uploaded_file.name) # remove zip file from list
         if len(tmp_dir_list) == 1:
             unzip_dir_path = os.path.join(workflow.get_tmp_dir(), tmp_dir_list[0])
-            if 'x86_64' in os.listdir(unzip_dir_path):
+            if all([True if dir in os.listdir(unzip_dir_path) else False\
+                    for dir in ['mechanisms', 'morphology', 'checkpoints']]):
                 shutil.move(unzip_dir_path, workflow.get_analysis_dir())
         else:
             for f in tmp_dir_list:

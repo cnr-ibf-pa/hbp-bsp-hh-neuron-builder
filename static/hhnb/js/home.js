@@ -5,6 +5,20 @@ Log.enabled = true;
 
 const exc = sessionStorage.getItem("exc", null);
 
+
+function checkRefreshSession(response) {
+    console.log(response);
+    if (response.status === 403 && response.responseJSON.refresh_url) {
+        $.post("/hh-neuron-builder/session-refresh/" + exc, response.responseJSON )
+            .done((result) => {
+                document.location.href = "/hh-neuron-builder/workflow/" + exc;
+            }).fail((error) => {
+                alert("Can't refresh session automatically, please refresh page");
+            })
+    } 
+}
+
+
 $( document ).ready(() => {
     if (exc !== "") {
         window.location.href = "/hh-neuron-builder/workflow/" + exc; 
@@ -19,9 +33,11 @@ $("#new-wf").on("click", () => {
             Log.debug(result);
             window.location.href = "/hh-neuron-builder/workflow/" + result.exc;                        
         }).fail((error) => {
+            hideLoadingAnimation();
+            checkRefreshSession(error);
             Log.error("Status: " + error.status + " > " + error.responseText);
             MessageDialog.openErrorDialog(error.responseText);
-        }).always(() => { hideLoadingAnimation() });
+        });
 });
 
 $("#fetch-wf-btn").on("click", uploadWorkflow);
@@ -43,8 +59,20 @@ function uploadWorkflow() {
                 "Content-Disposition": "attachment; filename=\"" + file.name + "\""
             },
             body: file
-        }).then( response => response.json()
+        }).then( response => { 
+            if (response.status === 403 && response.headers.get("refresh_url")) {
+                $.post("/hh-neuron-builder/session-refresh/" + exc, response.responseJSON )
+                    .done((result) => {
+                        document.location.href = "/hh-neuron-builder/workflow/" + exc;
+                    }).fail((error) => {
+                        alert("Can't refresh session automatically, please refresh page");
+                    })
+            } else {
+                response.json() 
+            }
+        }
         ).then(
+            
             data => {
                 console.log(data);
                 if (data.response == "OK") {

@@ -1,6 +1,20 @@
 const exc = sessionStorage.getItem("exc");
 const req_pattern = exc;
 
+
+function checkRefreshSession(response) {
+    console.log(response);
+    if (response.status === 403 && response.responseJSON.refresh_url) {
+        $.post("/hh-neuron-builder/session-refresh/" + exc, response.responseJSON )
+            .done((result) => {
+                document.location.href = "/hh-neuron-builder/workflow/" + exc;
+            }).fail((error) => {
+                alert("Can't refresh session automatically, please refresh page");
+            })
+    } 
+}
+
+
 $("#show-opt-files-btn").on("click", openFileManager);
 
 
@@ -23,7 +37,8 @@ function openFileManager(showConfig=false) {
         method: "GET",
         success: function(response) {
             $("#modelKeyInput").val(response.model_key);
-        }
+        },
+        error: (error) => { checkRefreshSession(error) }
     });
 }
 
@@ -86,7 +101,8 @@ function fetchHHFFileList() {
     
             $("#fileItemSpinner").css("display", "none");
             showFileList($(".folder-item.active"));
-        }
+        },
+        error: (error) => { checkRefreshSession(error) }
     });
 }
 
@@ -191,6 +207,7 @@ $("#downloadFileButton").click(function() {
             showLoadingAnimation("Downloading files...");
             $.get("/hh-neuron-builder/download-files/" + req_pattern + "?file_list=" + encodeURIComponent(JSON.stringify(jj_ids)))
             .done(() => { window.location.href = "/hh-neuron-builder/download-files/" + req_pattern + "?file_list=" + encodeURIComponent(JSON.stringify(jj_ids)) })
+            .fail((error) => { checkRefreshSession(error) })
             .always(() => { hideLoadingAnimation() })
         } 
         if ($(".file-item.active").length == 0) {
@@ -212,6 +229,7 @@ $("#downloadFileButton").click(function() {
 
     $.get("/hh-neuron-builder/download-files/" + req_pattern + "?file_list=" + encodeURIComponent(JSON.stringify(jj_ids)))
         .done(() => { window.location.href = "/hh-neuron-builder/download-files/" + req_pattern + "?file_list=" + encodeURIComponent(JSON.stringify(jj_ids)) })
+        .fail((error) => { checkRefreshSession(error) })
         .always(() => { hideLoadingAnimation() })
 });
 
@@ -548,7 +566,7 @@ function loadEditor() {
                 $("#openafilediv").text("Open a file");
             }
         }
-    });
+    }).fail((error) => { checkRefreshSession(error) });
 
 }
 

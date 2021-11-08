@@ -474,7 +474,8 @@ $("#cancel-job-list-btn").on("click", closeJobFetchDiv);
 
 function closeJobFetchDiv() {
     Log.debug('Close job fetch');
-    // $("#overlayjobs").removeClass("show scroll-long-content");
+    resetJobFetchDiv();
+    $("#overlayjobs").removeClass("show scroll-long-content");
     $("#overlayjobs").css("display", "none");
     $("#overlaywrapper").css("display", "none");
 }
@@ -525,7 +526,7 @@ $(".jobs-unicore").on("click", (button) => {
             jButton.addClass("clicked");
             displayJobList(jButton);
         })
-        .fail(() => { 
+        .fail((error) => { 
             checkRefreshSession(error);
             $("#jobsAuthAlert").addClass("show");
         });
@@ -592,6 +593,7 @@ function displayJobList(button) {
             $("#refresh-job-list-btn").prop("disabled", false).blur();
             $("#cancel-job-list-btn").prop("disabled", false);
             $(".list-group-item.fetch-jobs").attr("aria-disabled", "false").removeClass("disabled clicked");
+            
             let windowHeight = $(window).height();
             let overlayJobsHeight = $("#overlayjobs").height();
             if (overlayJobsHeight > (windowHeight - (windowHeight / 10))) {
