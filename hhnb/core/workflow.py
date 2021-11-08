@@ -275,10 +275,12 @@ class WorkflowUtil:
             workflow.get_model().get_features().get_features(),
             workflow.get_model().get_features().get_protocols()
         ]
-        return WorkflowUtil.make_archive(workflow=workflow,
-                                         zip_name='features.zip',
-                                         dir_name='feature',
-                                         file_list=file_list)
+        return WorkflowUtil.make_archive(
+            workflow=workflow,
+            zip_name=workflow.get_id() + '_features.zip',
+            dir_name='feature',
+            file_list=file_list
+        )
 
         # zip_name = os.path.join(workflow.get_tmp_dir(), 'features.zip')
         # if os.path.exists(zip_name):
@@ -293,7 +295,8 @@ class WorkflowUtil:
         
     @staticmethod
     def make_model_archive(workflow):
-        zip_name = os.path.join(workflow.get_tmp_dir(), 'model.zip')
+        zip_name = os.path.join(workflow.get_tmp_dir(), 
+                                workflow.get_id() + '_orig_model.zip')
         shutil.make_archive(
             base_name=os.path.splitext(zip_name)[0],
             format='zip',
@@ -303,7 +306,8 @@ class WorkflowUtil:
 
     @staticmethod
     def make_results_archive(workflow):
-        zip_name = os.path.join(workflow.get_tmp_dir(), 'results.zip')
+        zip_name = os.path.join(workflow.get_tmp_dir(),
+                                workflow.get_id() + '_results.zip')
         shutil.make_archive(
             base_name=os.path.splitext(zip_name)[0],
             format='zip',
@@ -313,7 +317,8 @@ class WorkflowUtil:
 
     @staticmethod
     def make_analysis_archive(workflow):
-        zip_name = os.path.join(workflow.get_tmp_dir(), 'analysis.zip')
+        zip_name = os.path.join(workflow.get_tmp_dir(),
+                                workflow.get_id() + '_analysis.zip')
         shutil.make_archive(
             base_name=os.path.splitext(zip_name)[0],
             format='zip',

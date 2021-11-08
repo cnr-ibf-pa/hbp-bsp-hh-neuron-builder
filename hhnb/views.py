@@ -373,7 +373,8 @@ def download_files(request, exc):
         # TODO: add Permission controller
 
         files = [os.path.join(workflow.get_model_dir(), f) for f in path_list]
-        zip_file = WorkflowUtil.make_archive(workflow, 'files.zip', 'files', files)
+        zip_name = workflow.get_id() + '_model_files.zip'
+        zip_file = WorkflowUtil.make_archive(workflow, zip_name, 'files', files)
 
     if zip_file:
         return ResponseUtil.file_response(zip_file)
@@ -676,3 +677,30 @@ def hhf_apply_model_key(request, exc):
     workflow, _ = get_workflow_and_user(request, exc)
     WorkflowUtil.set_model_key(workflow, key=request.POST.get('model_key'))
     return ResponseUtil.ok_response()
+
+
+@csrf_exempt
+def hhf_save_config_file(request, folder, config_file, exc):
+    if not exc in request.session.keys():
+        return ResponseUtil.no_exc_code_response()
+    
+    workflow, _ = get_workflow_and_user(request, exc)
+
+    try:
+        file_content = json.loads(request.POST.get(config_file))
+        file_path = os.path.join(workflow.get_model_dir(), 
+                                 folder.split('Folder')[0],
+                                 config_file)
+        with open(file_path, 'w') as fd:
+            json.dump(file_content, fd, indent=4)
+        return ResponseUtil.ok_response('')
+    except json.JSONDecodeError:
+        print('Malformed json')
+        return ResponseUtil.ko_response('Error!<br>Malformed "' \
+                                        + config_file + '.json" file.') 
+    except FileNotFoundError:
+        print('File not found')
+        return ResponseUtil.ko_response(404, 'Critical error !')
+    except Exception as e:
+        print(str(e))
+        return ResponseUtil.ko_response(400, 'Some error occurred!')

@@ -11,12 +11,10 @@ function sleep(ms) {
 
 function openFileManager(showConfig=false) {
     refreshHHFFileList();
-    console.log("openFileManager() called with showConfi=" + showConfig.toString())
     if (showConfig) {
         showFileList($("#configFolder"));
     }
 
-    console.log("fetchHHFFileList() on openFileManager()");
     $("#overlaywrapper").css("display", "block");
     $("#overlayfilemanager").css("display", "block");
     $("#overlayfilemanager").addClass("open");
@@ -24,96 +22,71 @@ function openFileManager(showConfig=false) {
         url: "/hh-neuron-builder/hhf-get-model-key/" + req_pattern,
         method: "GET",
         success: function(response) {
-            console.log(response);
             $("#modelKeyInput").val(response.model_key);
         }
     });
 }
-/* 
+
+
 function fetchHHFFileList() {
-    const folderList = $("#folderselector > .folder-group");
-    const fileList = $("#fileselector");
-    $.getJSON("/hh-neuron-builder/hhf-list-files/" + exc, (file_list) => {
-        folderList.empty();
-        fileList.empty();
-        $.each(file_list, (dir) => {
-            let elementName = dir[0].toUpperCase() + dir.substring(1); // Upper first char
-            if (dir != "root") {
-                folderList.append("<li id='" + dir + "Folder" + "' class='list-group-item filder-item'>" + elementName + "</li>");
-                fileList.append("<ul id='" + dir + "FileList" + "' class='list-group file-manager-group file-group' style='display:none'></ul");
-            } else {
-                for (let file of file_list[dir]) {
-                    console.log(file);
-                    let id = file.split(".")[0];
-                    let lang = file.split(".")[1] == "py" ? "python" : "unknown";                
-                    folderList.append("<div id='" + id +"' class='file-code' style='display:none'><pre><code id='" + id + "Code" + "' class='" + lang + "'></code></pre></div>");
-                    // folderList.append("<div id='" + dir.split(".")[0] ")
+    $.ajax({
+        url: "/hh-neuron-builder/hhf-list-files/" + exc,
+        method: "GET",
+        async: false,
+        success: (data) => { 
+
+            if (data.morphology && data.morphology.length > 0) {
+                for (let i = 0; i < data.morphology.length; i++) {
+                    let name = data.morphology[i]
+                    $("#morphologyFileList").append("<li id='" + name + "' class='list-group-item file-item'  onclick='selectFileItem(this)'>" + name + "</li>");
+                    $("#morphologyFileList").removeClass("empty-list");
                 }
+            } else {
+                $("#morphologyFileList").addClass("empty-list");
+                $("#morphologyFileList").append("<div class='file-item empty'>Empty</div>");
             }
-            $("#" + dir + "FileList").addClass("empty-list");
-            for (let file of file_list[dir]) {
-            }
-        })
-    })
-} */
 
-
-function fetchHHFFileList() {
-    $.getJSON("/hh-neuron-builder/hhf-list-files/" + exc, function(data) {
-        
-        if (data.morphology && data.morphology.length > 0) {
-            for (let i = 0; i < data.morphology.length; i++) {
-                let name = data.morphology[i]
-                $("#morphologyFileList").append("<li id='" + name + "' class='list-group-item file-item'  onclick='selectFileItem(this)'>" + name + "</li>");
-                $("#morphologyFileList").removeClass("empty-list");
+            if (data.mechanisms && data.mechanisms.length > 0) {
+                for (let i = 0; i < data.mechanisms.length; i++) {
+                    let name = data.mechanisms[i]
+                    $("#mechanismsFileList").append("<li id='" + name + "' class='list-group-item file-item' onclick='selectFileItem(this)'>" + name + "</li>");
+                    $("#mechanismsFileList").removeClass("empty-list");
+                }
+            } else {
+                $("#mechanismsFileList").append("<div class='file-item empty'>Empty</div>");
+                $("#mechanismsFileList").addClass("empty-list");
             }
-        } else {
-            console.log("append Empty on morpFileList");
-            $("#morphologyFileList").addClass("empty-list");
-            $("#morphologyFileList").append("<div class='file-item empty'>Empty</div>");
-        }
-
-        if (data.mechanisms && data.mechanisms.length > 0) {
-            for (let i = 0; i < data.mechanisms.length; i++) {
-                let name = data.mechanisms[i]
-                $("#mechanismsFileList").append("<li id='" + name + "' class='list-group-item file-item' onclick='selectFileItem(this)'>" + name + "</li>");
-                $("#mechanismsFileList").removeClass("empty-list");
+            
+            if (data.config && data.config.length > 0) {
+                for (let i = 0; i < data.config.length; i++) {
+                    let name = data.config[i];
+                    $("#configFileList").append("<li id='" + name + "' class='list-group-item file-item'  onclick='selectFileItem(this)'>" + name + "</li>");
+                    $("#configFileList").removeClass("empty-list");
+                }
+            } else {
+                $("#configFileList").append("<div class='file-item empty'>Empty</div>");
+                $("#configFileList").addClass("empty-list");
             }
-        } else {
-            console.log("append Empty on modFileList");
-            $("#mechanismsFileList").append("<div class='file-item empty'>Empty</div>");
-            $("#mechanismsFileList").addClass("empty-list");
-        }
-        
-        if (data.config && data.config.length > 0) {
-            for (let i = 0; i < data.config.length; i++) {
-                let name = data.config[i];
-                $("#configFileList").append("<li id='" + name + "' class='list-group-item file-item'  onclick='selectFileItem(this)'>" + name + "</li>");
-                $("#configFileList").removeClass("empty-list");
-            }
-        } else {
-            $("#configFileList").append("<div class='file-item empty'>Empty</div>");
-            $("#configFileList").addClass("empty-list");
-        }
 
-        if (data.model && data.model.length > 0) {
-            for (let i = 0; i < data.model.length; i++) {
-                let name = data.model[i];
-                $("#modelFileList").append("<li id='" + name + "' class='list-group-item file-item'  onclick='selectFileItem(this)'>" + name + "</li>")
-                $("#modelFileList").removeClass("empty-list");
+            if (data.model && data.model.length > 0) {
+                for (let i = 0; i < data.model.length; i++) {
+                    let name = data.model[i];
+                    $("#modelFileList").append("<li id='" + name + "' class='list-group-item file-item'  onclick='selectFileItem(this)'>" + name + "</li>")
+                    $("#modelFileList").removeClass("empty-list");
+                }
+            } else {
+                $("#modelFileList").append("<div class='file-item empty'>Empty</div>");
+                $("#modelFileList").addClass("empty-list");
             }
-        } else {
-            $("#modelFileList").append("<div class='file-item empty'>Empty</div>");
-            $("#modelFileList").addClass("empty-list");
-        }
 
-        if (data["opt_neuron.py"]) {
-            $("#optNeuronCode").html(data["opt_neuron.py"]);
+            if (data["opt_neuron.py"]) {
+                $("#optNeuronCode").html(data["opt_neuron.py"]);
+            }
+            hljs.highlightAll();
+    
+            $("#fileItemSpinner").css("display", "none");
+            showFileList($(".folder-item.active"));
         }
-        hljs.highlightAll();
-   
-        $("#fileItemSpinner").css("display", "none");
-        showFileList($(".folder-item.active"));
     });
 }
 
@@ -126,7 +99,6 @@ function refreshHHFFileList() {
     $("code").html();
     $("#fileItemSpinner").css("display", "flex");
     fetchHHFFileList();
-    console.log("fetchHHFFileList() on refreshHHFFileList()");
 }
 
 
@@ -153,12 +125,12 @@ $("#deleteFileButton").click(function() {
     }
 
     if ($(".file-item.active").length > 1) {
-        $("#confirmationDialogModalTitle").html("Are you sure to delete these files ?");
+        $("#confirmationDialogModalTitle").text("Are you sure to delete these files ?");
     } else {
-        $("#confirmationDialogModalTitle").html("Are you sure to delete this file ?");
+        $("#confirmationDialogModalTitle").text("Are you sure to delete this file ?");
     }
-    $("#confirmationDialogModalCancelButton").html("Cancel");
-    $("#confirmationDialogModalOkButton").html("Yes").attr("onclick", "deleteHHFFiles()");
+    $("#confirmationDialogModalCancelButton").text("Cancel");
+    $("#confirmationDialogModalOkButton").text("Yes").attr("onclick", "deleteHHFFiles()");
     $("#confirmationDialogModal").modal("show");
 });
 
@@ -173,8 +145,6 @@ function deleteHHFFiles() {
     
     var data = {"file_list": []};
     var directory = $(".folder-item.active").attr("id").split("Folder")[0];
-
-    console.log(directory);
 
     if (editorMode) {
         if ($(".editor-item.active").length == 0) {
@@ -194,8 +164,6 @@ function deleteHHFFiles() {
         data.file_list.push("config/morph.json");
     }
 
-    console.log(data);
-
     $.ajax({
         url: "/hh-neuron-builder/delete-files/" + exc,
         method: "POST",           
@@ -203,12 +171,12 @@ function deleteHHFFiles() {
         contentType: "application/json",
         data: JSON.stringify(data),
         error: (error) => { 
-            console.error("Status: " + error.status + " > " + error.responseText); 
             // MessageDialog.openErrorDialog(error.responseText);
         },
     }).always(() => { 
         hideLoadingAnimation();
-        refreshHHFFileList()
+        refreshHHFFileList();
+        updateEditor();
     });
 }
 
@@ -229,7 +197,6 @@ $("#downloadFileButton").click(function() {
             return false;
         } else {
             $(".file-item.active").each(function(i) {
-                console.log($(".folder-item.active"));
                 jj_ids.path.push($(".folder-item.active").attr("id").split("Folder")[0] + "/" + $(this).attr("id"));
 
             });
@@ -266,7 +233,6 @@ $("#uploadFileButton").click(function() {
     var files = 0
 
     var filePath = $(".folder-item.active").attr("id").split("Folder")[0] + "/";
-    console.log(filePath);
 
     const upload = (file) => {
         
@@ -279,7 +245,6 @@ $("#uploadFileButton").click(function() {
             body: file
         })
         .then((result) => {
-            console.log(result);
             if (result.statusText == "OK") {
                 counter += 1;
                 if (counter == files) {
@@ -336,7 +301,6 @@ function showFileList(folder) {
     $(".ui-button").removeClass("disabled");
     
     hideFloatingOpenFileButton();
-
 
     folder.addClass("active").attr("aria-current", true);
 
@@ -423,7 +387,7 @@ $("#editFileButton").mouseup(function() {
     $(this).removeClass("clicked")
     if (editorMode && $("#saveFileButton").hasClass("show")) {
         $("#confirmationDialogModalTitle").html("Discards changes ?");
-        $("#confirmationDialogModalCancelButton").html("No");
+        $("#confirmationDialogModalCancelButton").html("Cancel");
         $("#confirmationDialogModalOkButton").html("Yes").attr("onclick", "discardTextAreaChanges(true)");
         $("#confirmationDialogModal").modal("show");
     } else {
@@ -452,6 +416,9 @@ function resetEditorMode() {
 
 
 function switchMode() {
+    console.log("CIAONE SWITCH")
+
+
     let folderSelector = $("#folderselector");
     let editorSelector = $("#editorselector");
     let fileSelector = $("#fileselector");
@@ -491,7 +458,6 @@ function switchMode() {
         }
     })
     editFileButtonImage[0].addEventListener("transitionend", function() {
-        console.log(navigator.userAgent.toString().match("Chrome"));
         if (editorMode) {
             editFileButtonImage.addClass("back-arrow")
             if (!navigator.userAgent.toString().match("Chrome")) {
@@ -525,6 +491,7 @@ function switchMode() {
 
 
 function loadEditor() {
+
     $("#editorfilelist").empty();
     $(".file-group.active").children().each(function(i, el){
         if (el.className == "file-item empty") {
@@ -548,7 +515,6 @@ function loadEditor() {
         let files = Object.keys(jj);
 
         for (let i = 0; i < files.length; i++) {
-            console.log(files[i]);
             if (currFolder == "modelFolder") {
                 $("#fileeditor").append("<div name='" + files[i] + "' class='file-code' style='display:none'><pre><code name='" + files[i] + "' class='editor python'></code></pre></div>");
                 $(".editor.python[name='" + files[i] + "']").html(jj[files[i]]);
@@ -599,11 +565,29 @@ var originalTextAreaVal = null;
 
 
 function selectFileEditor(filename) {
+    if ($("#saveFileButton").hasClass("show")) {
+        let currentTextAreaVal = $(".file-textarea.active").val();
+        $("#confirmationDialogModalTitle").text("Discard changes ?");
+        $("#confirmationDialogModalCancelButton").text("Cancel").on("click", () => {
+            return false;
+        });
+        $("#confirmationDialogModalOkButton").text("Yes").on("click", () => {
+            $(".file-textarea.active").val(originalTextAreaVal);
+            changeFileEditor(filename);
+        });
+        $("#confirmationDialogModal").modal("show");
+    } else {
+        console.log("CIAONE ");
+        changeFileEditor(filename);
+    }
+}
+
+function changeFileEditor(filename) {
+    
     if ($("#editor-spinner").css("display") == "block") {
         return false;
     }
 
-    console.log("selectFileEditor() called for file: " + filename.toString());
     $("#openafilediv").css("display", "none");
     $(".editor-item").removeClass("active");
     $(".editor-item[name='" + filename + "']").addClass("active");
@@ -613,13 +597,13 @@ function selectFileEditor(filename) {
 
     if ($(".folder-item.active").attr("id") == "configFolder") {
         $(".file-textarea[name='" + filename + "']").css("display", "block").addClass("active");
-        console.log("set display:block on textarea of " + filename.toString());
         originalTextAreaVal = $(".file-textarea.active").val();
         runCheckDiffWorker();
     } else {
         $(".file-code[name='" + filename + "']").css("display", "block").addClass("active");
     }
 }
+
 
 
 async function runCheckDiffWorker() {
@@ -677,16 +661,16 @@ function discardTextAreaChanges(switchmode=false) {
 }
 
 function saveCurrentTextAreaVal() {
+    var currFolder = $(".folder-item.active").attr("id");
     var currFile = $(".file-textarea.active").attr("name");
     var currValue = $(".file-textarea.active").val();
     var jj = {};
     jj[currFile] = currValue;
     $.ajax({
-        url: "/hh-neuron-builder/hhf-save-config-file/" + currFile + "/" + req_pattern,
+        url: "/hh-neuron-builder/hhf-save-config-file/" + currFolder + "/" + currFile + "/" + req_pattern,
         method: "POST",
         data: jj,
         success: function(data) {
-            console.log(data);
             originalTextAreaVal = currValue;
             $("#saveFileButton").removeClass("show disabled");
             $("#saveFileButtonSpinner").css("display", "none");
@@ -695,11 +679,10 @@ function saveCurrentTextAreaVal() {
             $("#editorAlert").addClass("show");
         },
         error: function(error) {
-            console.error(error);
             $("#saveFileButton").removeClass("disabled");
             $("#saveFileButtonSpinner").css("display", "none");
             $("#saveFileButtonImage").css("display", "inline");
-            $("#editorAlertText").removeClass("info").addClass("error").html(JSON.parse(error.responseText).message);
+            $("#editorAlertText").removeClass("info").addClass("error").html(error.responseText);
             $("#editorAlert").addClass("show");
         }
     })
