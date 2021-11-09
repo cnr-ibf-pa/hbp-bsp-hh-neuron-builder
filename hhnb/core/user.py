@@ -1,9 +1,6 @@
 # User class
 
-from multipledispatch.core import dispatch
-from requests.sessions import Request
-from hhnb.tools.hpc_job_manager import Nsg
-
+from hh_neuron_builder.settings import NSG_KEY
 import requests
 
 
@@ -54,9 +51,9 @@ class NsgUser:
         return self._password
 
     def validate_credentials(self):
-        r = Nsg.check_nsg_login(self._username, self._password)
-        print('NSG Credentials validation', r)
-        if r['response'] == 'OK':
+        r = requests.get(url='https://nsgr.sdsc.edu:8443/cipresrest/v1/job/' + self._username,
+                         auth=(self._username, self._password), headers={'cipres-appkey': NSG_KEY})
+        if r.status_code == 200:
             return True
         return False
 
