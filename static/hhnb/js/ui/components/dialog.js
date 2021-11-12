@@ -306,4 +306,18 @@ class OptimizationSettingsDialog {
 }
 
 
-export { MessageDialog, UploadFileDialog, OptimizationSettingsDialog }
+class ModelRegistrationDialog {
+
+    static open() {
+        $("#overlaywrapper").css("display", "block");
+        $("#overlaywrapmodreg").css("display", "block"); 
+    }
+
+    static close() {
+        $("#overlaywrapper").css("display", "none");
+        $("#overlaywrapmodreg").css("display", "none");
+    }
+}
+
+
+export { MessageDialog, UploadFileDialog, OptimizationSettingsDialog, ModelRegistrationDialog }

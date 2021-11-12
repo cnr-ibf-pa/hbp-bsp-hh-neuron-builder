@@ -544,6 +544,29 @@ def upload_to_naas(request, exc):
     return ResponseUtil.ko_response(r.status_code, r.content)
 
 
+def get_model_data(request, exc):
+    if request.method != 'GET':
+        return ResponseUtil.method_not_allowed('GET')
+    if not exc in request.session.keys():
+        return ResponseUtil.no_exc_code_response()
+    
+    workflow, hhnb_user = get_workflow_and_user(request, exc)
+
+    # STILL USING THE DEFAULT CREDENTIAL
+
+
+
+def register_model(request, exc):
+    if not exc in request.session.keys():
+        return ResponseUtil.no_exc_code_response()
+
+    workflow, _ = get_workflow_and_user(request, exc)
+
+    form_data = request.POST
+
+
+
+
 def get_user_avatar(request):
     url = 'https://wiki.ebrains.eu/bin/download/XWiki/' + request.user.username \
         + '/avatar.png?width=36&height=36&keepAspectRatio=true'

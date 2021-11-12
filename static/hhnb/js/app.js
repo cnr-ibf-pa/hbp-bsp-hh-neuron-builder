@@ -1,6 +1,6 @@
 import Log from "./utils/logger.js";
 import Workflow from "./workflow/workflow.js";
-import { UploadFileDialog, OptimizationSettingsDialog, MessageDialog } from "./ui/components/dialog.js";
+import { UploadFileDialog, OptimizationSettingsDialog, MessageDialog, ModelRegistrationDialog } from "./ui/components/dialog.js";
 
 Log.enabled = true;
 
@@ -85,14 +85,15 @@ $("#wf-btn-save").on("click", () => {
 
 
 $("#loginButton").on("click", () => {
-    showLoadingAnimation("Logging in...");
+    showLoadingAnimation("Loading...");
     $.get("/hh-neuron-builder/store-workflow-in-session/" + exc)
         .done(() => { window.location.href = "/oidc/authenticate" })
         .fail((error) => {
+            hideLoadingAnimation();
             checkRefreshSession(error);
             Log.error(error);
             MessageDialog.openInfoDialog("Please, manually download first and then reupload the current workflow once you're logged in.");
-        }).always(() => { hideLoadingAnimation() });
+        });
     return false;
 })
 
@@ -245,7 +246,7 @@ $("#apply-param").on("click", () => {
             .done(() => {
                 OptimizationSettingsDialog.close();
                 workflow.uploadOptimizationSettings(formData);
-            }).fail(() => {
+            }).fail((error) => {
                 checkRefreshSession(error);
                 $("#hpcAuthAlert").addClass("show");        
             }).always(() => { hideLoadingAnimation() });
@@ -727,7 +728,7 @@ $("#checkNsgLoginButton").on("click", () => {
 /* ****************************** */
 
 $("#run-sim-btn").on("click", () => {
-    showLoadingAnimation("Uploading to BlueNaas...");
+    /* showLoadingAnimation("Uploading to BlueNaas...");
     $("#run-sim-btn").prop("disable", true);
     $.get("/hh-neuron-builder/upload-to-naas/" + exc)
         .done((data) => {
@@ -745,10 +746,26 @@ $("#run-sim-btn").on("click", () => {
             hideLoadingAnimation();
         }).always(() => {
             $("#run-sim-btn").prop("disable", false);
-        })
+        }) */
+    
+    ModelRegistrationDialog.open();
 })
 
 
 $("#back-to-wf-btn").on("click", () => {
     $("#modalBlueNaasContainer").removeClass("show");
 });
+
+
+/*          Registration Model           */
+
+$("#reg-mod-mail-btn").on("click", () => {
+    ModelRegistrationDialog.open();
+})
+
+$("#cancel-model-register-btn").on("click", () => {
+    ModelRegistrationDialog.close();
+})
+
+
+/* ************************************* */

@@ -777,10 +777,6 @@ body {
     top: calc(100vh - height/2);
 }
 
-#overlaywrapmodreg {
-    top: 13%;
-}
-
 .list-group-item {
     cursor: pointer;
     border: solid 1px #78909c;

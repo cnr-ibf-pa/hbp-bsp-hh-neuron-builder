@@ -559,33 +559,6 @@
         </div>
     </div>
 
-    error div
-    <!-- <div id="overlaywrappererror" class="overlay-content">
-        <div id="overlayerror" class="error-content">
-            <div id="errordynamictext"></div>
-            <br>
-            <button id="ok-error-div-btn" class="btn workflow-btn" onclick="closeErrorDiv()">Ok</button>
-        </div>
-    </div> -->
-
-    <!-- reload div -->
-    <!-- <div id="overlaywrapperreload" class="overlay-content">
-        <div id="overlayreload" class="reload-content">
-            <div id="reloaddynamictext"></div>
-            <br>
-            <button id="reload-div-btn" class="btn workflow-btn fill-background" onclick="closeReloadDiv()">Reload</button>
-        </div>
-    </div> -->
-
-    <!-- expired workflow div -->
-    <!-- <div id="overlaywrapperexpiration" class="overlay-content">
-        <div id="overlayexpiration" class="expiration-content">
-            <div id="expirationdynamictext"></div>
-            <br>
-            <button id="home-expiration-div-btn" class="btn workflow-btn fill-background" onclick="window.location.href='/hh-neuron-builder/'">Home</button>
-        </div>
-    </div> -->
-
     <div id="overlayfilemanager" class="overlay-content file-manager-content">
         <div id="filemanager" class="file-manager">
             <div class="container file-manager-container g-0">
@@ -644,6 +617,169 @@
             <div id="editorAlert" class="editor-alert"><div id="editorAlertText">Some text blablablabla</div></div>
         </div>
     </div>
+
+    <div id="overlaywrapmodreg" class="overlay-content ">
+        <div class="container reg-model-content">
+            <form id="modelRegisterForm" method="POST">{% csrf_token %}   
+                    <div class="card">
+                        <div class="card-header"><b>Register Model in Model Catalog</b></div>
+                        <div class="card-body">
+                                <div class="row">
+                                    <div class="input-group">
+                                        <span class="input-group-text" id="modelNameLabel">Model Name</span>
+                                        <input type="text" id="modelName" name="modelName" class="form-control text-end" readonly value="">
+                                        <input type="text" id="modelSuffix" name="modelSuffix" placeholder="complete (if needed)" class="form-control">
+                                    </div>
+                                </div>
+                                <div class="row-separator"></div>
+                                <div class="row">
+                                    <div class="col">
+                                        <div class="input-group">
+                                            <span class="input-group-text" id="authorFirstNameLabel">Author FirstName</span>
+                                            <input type="text" class="form-control" id="authorFirstName" name="authorFirstName" aria-label="Author First name" aria-labelledby="authorFirstNameLabel" required>
+                                        </div>
+                                    </div>
+                                    <div class="col">
+                                        <div class="input-group">
+                                            <span class="input-group-text" id="authorLastNameLabel">Author LastName</span>
+                                            <input type="text" class="form-control" id="authorLastName" name="authorLastName" aria-label="Author Last name" aria-labelledby="authorLastNameLabel" required>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row-separator"></div>
+                                <div class="row">
+                                    <div class="col">
+                                        <div class="input-group">
+                                            <span class="input-group-text" id="ownerFirstNameLabel">Owner FirstName</span>
+                                            <input type="text" class="form-control" id="ownerFirstName" name="ownerFirstName" aria-label="Owner First name" aria-labelledby="ownerFirstNameLabel" required>
+                                        </div>
+                                    </div>
+                                    <div class="col">
+                                        <div class="input-group">
+                                            <span class="input-group-text" id="ownerLastNameLabel">Owner LastName</span>
+                                            <input type="text" class="form-control" id="ownerLastName" name="ownerLastName" aria-label="Owner Last name" aria-labelledby="ownerLastNameLabel" required>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row-separator"></div>
+                                <div class="row">
+                                    <div class="col-3">
+                                        <div class="row g-0">
+                                            <div class="card">
+                                                <div class="card-header input-card-header">Model License</div>
+                                                <div class="card-body">
+                                                    <div class="row">
+                                                    <div class="col">
+                                                        <select class="form-select" id="modelLicense" name="modelLicense">
+                                                            <option selected>CC BY</option>
+                                                            <option>CC BY-SA</option>
+                                                            <option>CC BY-ND</option>
+                                                            <option>CC BY-NC</option>
+                                                            <option>CC BY-NC-SA</option>
+                                                            <option>CC BY-NC-ND</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col" style="align-self: end">
+                                                        <a href="https://appukuttan-shailesh.github.io/testData/image.png" target="_blank">
+                                                            <span class="info-icon" title="Licences description"></span>
+                                                        </a>
+                                                    </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row-separator"></div>
+                                        <div class="row g-0">
+                                            <div class="card">
+                                                <div class="card-header input-card-header">Private Model</div>
+                                                <div class="card-body">
+                                                    <div>
+                                                        <div class="form-check form-switch">
+                                                            <input class="form-check-input" type="checkbox" id="modelPrivate" checked="false" style="margin-left: auto; width: 2.8em; height: 1.2em;">
+                                                            <label class="form-check-label" for="modelPrivate" id="modelPrivateValue">Public</label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-9">
+                                        <div class="card">
+                                            <div class="card-header input-card-header">About Cell</div>
+                                            <div class="card-body">
+                                                <div class="row">
+                                                    <div class="col">
+                                                        <div class="input-group">
+                                                            <span class="input-group-text" id="modelOrganizationLabel">Organization</span>
+                                                            <input type="text" class="form-control" id="modelOrganization" name="modelOrganization" aria-label="Model Organization" aria-labelledby="modelOrganizationLabel" required>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col">
+                                                        <div class="input-group">
+                                                            <span class="input-group-text" id="modelSpeciesLabel">Species</span>
+                                                            <input type="text" class="form-control" id="modelSpecies" name="modelSpecies" aria-label="Model species" aria-labelledby="modelSpeciesLabel" required>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="row-separator"></div>
+                                                <div class="row">
+                                                    <div class="col">
+                                                        <div class="input-group">
+                                                            <span class="input-group-text" id="modelBrainRegionLabel">Brain Region</span>
+                                                            <input type="text" class="form-control" id="modelBrainRegion" name="modelBrainRegion" aria-label="Model brain region" aria-labelledby="modelBrainRegionLabel" required>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col">
+                                                        <div class="input-group">
+                                                            <span class="input-group-text" id="modelCellTypeLabel">Cell Type</span>
+                                                            <input type="text" class="form-control" id="modelCellType" name="modelCellType" aria-label="Model cell type" aria-labelledby="modelCellTypeLabel" required>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="row-separator"></div>
+                                                <div class="row">
+                                                    <div class="col">
+                                                        <div class="input-group">
+                                                            <span class="input-group-text" id="modelScopeLabel">Model Scope</span>
+                                                            <input type="text" class="form-control" id="modelScope" name="modelScope" aria-label="Model scope" aria-labelledby="modelScopeLabel" required>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col">
+                                                        <div class="input-group">
+                                                            <span class="input-group-text" id="modelAbstractionLabel">Abstraction Level</span>
+                                                            <input type="text" class="form-control" id="modelAbstraction" name="modelAbstraction" aria-label="Model abstraction level" aria-labelledby="modelAbstractionLabel" required>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row-separator"></div>
+                                <div class="row g-0">
+                                    <div class="card">
+                                        <div class="card-header input-card-header">Model Description</div>
+                                        <div class="card-body" style="padding: 0px;">
+                                            <textarea id="modelDescription" name="modelDescription" style="padding: 4px; width: 100%; height: 100%; border: 0px;" placeholder="Insert model description here (if any)"></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                        </div>
+                    </div>
+            </form>
+            <br>
+            <div class="row">
+                <div class="col">
+                    <button id="cancel-model-register-btn" type="button" class="btn workflow-btn">Cancel</button>
+                </div>
+                <div class="col">
+                    <button type="button" name="register_mc_form" id="register-model-btn" class="btn workflow-btn">Register</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
 </div>
     
 <!-- Modal -->
@@ -729,7 +865,7 @@
                     <button type="button" id="back-to-wf-btn" class="btn main-panel-btn extends modal-btn" onclick="closeBlueNaasModal()">Cancel</button>
                 </div>
                 <div class="col flex-center">
-                    <button type="button" id="reg-mod-main-btn" class="btn main-panel-btn extends modal-btn disable" title="Temporarily unavailable">
+                    <button type="button" id="reg-mod-main-btn" class="btn main-panel-btn extends modal-btn">
                     Register in Model Catalog    
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bug-fill" viewBox="0 0 16 16">
                         <path d="M4.978.855a.5.5 0 1 0-.956.29l.41 1.352A4.985 4.985 0 0 0 3 6h10a4.985 4.985 0 0 0-1.432-3.503l.41-1.352a.5.5 0 1 0-.956-.29l-.291.956A4.978 4.978 0 0 0 8 1a4.979 4.979 0 0 0-2.731.811l-.29-.956z"/>

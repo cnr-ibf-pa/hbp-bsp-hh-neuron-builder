@@ -68,6 +68,8 @@ urlpatterns = [
 
     # model catalog
     path('fetch-models/<exc:exc>', views.fetch_models),
+    path('get-model-data/<exc:exc>', views.get_model_data),
+    path('register-model/<exc:exc>', views.register_model),
 
     # user avatar
     path('get-user-avatar', views.get_user_avatar),
