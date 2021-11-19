@@ -311,11 +311,23 @@ class ModelRegistrationDialog {
     static open() {
         $("#overlaywrapper").css("display", "block");
         $("#overlaywrapmodreg").css("display", "block"); 
+        
+        let modelName = $("#wf-title").text().split("Workflow ID: ")[1];
+        Log.debug("modelName " + modelName);
+        $("#modelName").val(modelName)
     }
 
     static close() {
         $("#overlaywrapper").css("display", "none");
         $("#overlaywrapmodreg").css("display", "none");
+    }
+
+    static getFormData() {
+        const formData = new FormData($("#modelRegisterForm")[0]);
+        for (let value of formData.values()) {
+            Log.debug(value);
+        }
+        return formData;
     }
 }
 

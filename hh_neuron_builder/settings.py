@@ -193,6 +193,9 @@ MODEL_CATALOG_FILTER = {
         }
 }
 
+MODEL_CATALOG_COLLAB_URL = 'https://wiki.ebrains.eu/bin/view/Collabs/hhnb-registeredmodels/'
+MODEL_CATALOG_COLLAB_DIR = 'hhnb_wf_model'
+
 # OIDC PARAMETERS
 OIDC_RP_CLIENT_ID = os.environ['OIDC_RP_CLIENT_ID']
 OIDC_RP_CLIENT_SECRET = os.environ['OIDC_RP_CLIENT_SECRET']

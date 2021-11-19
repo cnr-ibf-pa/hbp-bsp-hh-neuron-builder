@@ -117,12 +117,14 @@ class Workflow(_WorkflowBase):
         if file_name in dst_path and safe:
             raise FileExistsError('%s exists yet on %s. Try with safe=False flag.' 
                                   % (file_name, dst_path))
-        with open(os.path.join(dst_path, file_name), mode) as fd_dst:
+        file_path = os.path.join(dst_path, file_name)
+        with open(file_path, mode) as fd_dst:
             if fd.multiple_chunks(chunk_size=4096):
                 for chunk in fd.chunks(chunk_size=4096):
                     fd_dst.write(chunk)
             else:
                 fd_dst.write(fd.read())
+        return file_path
 
     def make_workflow_dirs(self):
         if os.path.exists(self._workflow_path):
@@ -150,12 +152,14 @@ class Workflow(_WorkflowBase):
         self._copy_file(src_file, os.path.join(self._model_dir, 'config'), safe)
 
     def write_features(self, fd, mode='wb', safe=True):
-        self._write_file(fd, 'features.json', 
-                         os.path.join(self._model_dir, 'config',), mode, safe)
+        dir_path = os.path.join(self._model_dir, 'config')
+        file_path = self._write_file(fd, 'features.json', dir_path, mode, safe) 
+        self.get_model().set_features(features=file_path)
     
     def write_protocols(self, fd, mode='wb', safe=True):
-        self._write_file(fd, 'protocols.json',
-                         os.path.join(self._model_dir, 'config'), mode, safe)
+        dir_path = os.path.join(self._model_dir, 'config')
+        file_path = self._write_file(fd, 'protocols.json', dir_path, mode, safe)
+        self.get_model().set_features(protocols=file_path)
 
     def load_model_zip(self, model_zip):
         unzipped_tmp_model_dir = os.path.join(self._tmp_dir, 'model')
@@ -205,10 +209,20 @@ class Workflow(_WorkflowBase):
                 os.remove(full_file_path)
 
     def get_properties(self):
+        
         try:
             job_submitted = self.get_optimization_settings()['job_submitted']
         except FileNotFoundError:
             job_submitted = False
+
+        analysis_flag = False
+        if len(os.listdir(self._analysis_dir)) == 1:
+            analysis_model_dir = os.path.join(self._analysis_dir,
+                                              os.listdir(self._analysis_dir)[0])
+            if os.path.isdir(analysis_model_dir) != \
+                ['mechanisms', 'morphology', 'checkpoints']:
+                analysis_flag = True
+
         props = {
             'id': self._id,
             'model': self._model.get_properties(), 
@@ -216,7 +230,8 @@ class Workflow(_WorkflowBase):
             'etraces': any(os.scandir(self._etraces_dir)),
             'job_submitted': job_submitted,
             'results': any(os.scandir(self._results_dir)),
-            'analysis': any(os.scandir(self._analysis_dir)),
+            # 'analysis': any(os.scandir(self._analysis_dir)),
+            'analysis': analysis_flag
         }
         return props
 

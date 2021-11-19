@@ -583,8 +583,8 @@ function displayJobList(button) {
             }
 
             $(".job-download-button").on("click", (button) => {
-                closeJobFetchDiv();
-                openJobProcessingDiv();
+                // closeJobFetchDiv();
+                // openJobProcessingDiv();
                 downloadJob(button.target.id);
             });
 
@@ -663,7 +663,7 @@ function closeJobProcessingDiv() {
 async function downloadJob(jobId) {
     Log.debug("Downloading " + jobId);
     // disable all buttons
-    let data = { "job_id": jobId, "hpc": $("button.fetch-jobs.active").attr("name") }
+    const data = { "job_id": jobId, "hpc": $("button.fetch-jobs.active").attr("name") }
 
     $("#jobProcessingTitle").html("Downloading job:<br>" + jobId.toUpperCase() + "<br>");
 
@@ -677,7 +677,7 @@ async function downloadJob(jobId) {
     $.get("/hh-neuron-builder/fetch-job-result/" + exc, data)
         .done((downloadResult) => {
             Log.debug(downloadResult);
-            setJobProcessingTitle("Running Analysis<br>");
+            setJobProcessingTitle("Running Analysis...<br>");
             setProgressBarValue(80);
             $.get("/hh-neuron-builder/run-analysis/" + exc)
                 .done(async (analysisResult) => {
@@ -688,14 +688,14 @@ async function downloadJob(jobId) {
                     closeJobProcessingDiv(); 
                     workflow.updateProperties();
                 }).fail((analysisError) => {
-                    checkRefreshSession(error);
+                    checkRefreshSession(analysisError);
                     Log.error("Status: " + analysisError.status + " > " + analysisError.responseText);
                     closeJobProcessingDiv();
                     MessageDialog.openErrorDialog(analysisError.responseText);
                     workflow.updateProperties();
                 })
         }).fail((downloadError) => {
-            checkRefreshSession(error);
+            checkRefreshSession(downloadError);
             closeJobProcessingDiv();
             Log.error("Status: " + downloadError.status + " > " + downloadError.responseText);
             MessageDialog.openErrorDialog(downloadError.responseText)
@@ -741,13 +741,12 @@ $("#run-sim-btn").on("click", () => {
             })
         }).fail((error) => {
             checkRefreshSession(error);
-            Log.error("Status: " + downloadError.status + " > " + downloadError.responseText);
-            MessageDialog.openErrorDialog(downloadError.responseText);
+            Log.error("Status: " + error.status + " > " + error.responseText);
+            MessageDialog.openErrorDialog(error.responseText);
             hideLoadingAnimation();
         }).always(() => {
             $("#run-sim-btn").prop("disable", false);
         }) */
-    
     ModelRegistrationDialog.open();
 })
 
@@ -759,12 +758,17 @@ $("#back-to-wf-btn").on("click", () => {
 
 /*          Registration Model           */
 
-$("#reg-mod-mail-btn").on("click", () => {
+$("#reg-mod-main-btn").on("click", () => {
     ModelRegistrationDialog.open();
 })
 
 $("#cancel-model-register-btn").on("click", () => {
     ModelRegistrationDialog.close();
+})
+
+$("#register-model-btn").on("click", () => {
+    let formData = ModelRegistrationDialog.getFormData();
+    workflow.registerModel(formData);
 })
 
 

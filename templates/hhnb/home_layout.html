@@ -71,7 +71,7 @@
                         <i class="fas fa-sign-out-alt fa-lg white" title="Log-out"></i>
                         <!-- <strong>Log-out</strong> -->
                     </a>
-                    <a class="user-img" href="/hh-neuron-builder/get-user-page">
+                    <a class="user-img" style="margin-right: 0; padding-right:12px;" href="/hh-neuron-builder/get-user-page">
                         <img src="/hh-neuron-builder/get-user-avatar" alt="user" onerror=this.src="{% static '/assets/img/user-circle-solid.svg' %}">
                     </a>
                     <form style="display: none" id="logout-form" action="{% url 'oidc_logout' %}" method="post">
@@ -79,7 +79,7 @@
                         <input id="logout-submit-input-button" type="submit" value="logout">
                     </form>
                     {% else %}
-                    <a id="loginButton" class="login" href="{% url 'oidc_authentication_init' %}">
+                    <a id="loginButton" style="margin-right: 0; padding-right:12px;" class="login" href="{% url 'oidc_authentication_init' %}">
                         <i class="fas fa-sign-in-alt fa-lg white" title="Log-in"></i>
                         <!-- <strong>Log-in</strong> -->
                     </a>

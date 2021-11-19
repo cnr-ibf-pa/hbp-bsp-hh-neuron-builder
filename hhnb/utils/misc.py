@@ -1,7 +1,5 @@
-from requests.api import head
-from hh_neuron_builder.settings import FERNET_KEY, NSG_KEY
+from hh_neuron_builder.settings import NSG_KEY
 from hhnb.core.response import ResponseUtil
-from cryptography.fernet import Fernet
 from collections import OrderedDict
 
 import pyunicore.client as unicore_client
@@ -29,30 +27,9 @@ def str_to_datetime(datetime_string, format=None):
     return datetime.datetime.strptime(datetime_string, format).replace(tzinfo=None)
 
 
-class Cypher:
+def verify_uploaded_archive(arch_file):
+    print(arch_file) 
 
-    @staticmethod
-    def encrypt(plain_text, at_time=None):
-        if type(plain_text) == str:
-            data = bytes(plain_text, 'utf-8')
-        f = Fernet(FERNET_KEY)
-        if at_time:
-            token = f.encrypt_at_time(data, at_time)
-        else:
-            token = f.encrypt(data)
-        cipher_text = token.decode('utf-8')
-        return cipher_text
-
-    @staticmethod
-    def decrypt(cipher_text, at_time=None):
-        if type(cipher_text) == str:
-            token = bytes(cipher_text, 'utf-8')
-        f = Fernet(FERNET_KEY)
-        if at_time:
-            plaint_text = f.decrypt_at_time(token, at_time)
-        else:
-            plaint_text = f.decrypt(token)
-        return plaint_text
 
 
 class JobHandler:
@@ -181,6 +158,7 @@ class JobHandler:
 
     def _get_job_results_on_unicore(self, hpc, token, job_id):
         client = self._initialize_unicore_client(hpc, token)
+        print(client.access_info())
         job_url = client.links['jobs'] + '/' + job_id
         job = unicore_client.Job(client.transport, job_url)
         storage = job.working_dir
@@ -302,5 +280,4 @@ class JobHandler:
         if hpc == job_handler._SA_CSCS:
             file_list = job_handler._get_job_results_on_service_account(token=user.get_token(),
                                                                         job_id=job_id)
-
         return file_list

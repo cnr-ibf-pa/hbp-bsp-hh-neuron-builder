@@ -1,3 +1,4 @@
+from typing import Type
 from .exception.model_exception import *
 from multipledispatch import dispatch
 
@@ -132,14 +133,23 @@ class ModelBase:
         if 'mechanisms' in kwargs and kwargs['mechanisms']:
             self.set_mechanisms(kwargs['mechanisms'])
 
-    @dispatch(Features)
-    def set_features(self, features):
-        self._features = features
-
-    @dispatch(str, str)
-    def set_features(self, features, protocols):
-        self._features.set_features(features)
-        self._protocols.set_protocols(protocols)
+    def set_features(self, *args, **kwargs):
+        if len(args) == 1:
+            if type(args[0]) == Features:
+                self._features = args[0]
+            else:
+                raise TypeError('set_features() takes Features object.')
+        elif len(args) == 0:
+            for k in kwargs.keys():
+                if k != 'features' and k != 'protocols':
+                    raise TypeError('set_features() got an unexpected\
+                                     keyword argoument %s' % k)
+            if 'features' in kwargs.keys():
+                self._features.set_features(kwargs['features'])
+            if 'protocols' in kwargs.keys():
+                self._features.set_protocols(kwargs['protocols'])
+        else:
+            raise TypeError('set_features() takes 1 position arguments')
 
     def set_morphology(self, morphology):
         if type(morphology) == Morphology:

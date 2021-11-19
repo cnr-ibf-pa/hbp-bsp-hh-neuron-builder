@@ -1,4 +1,4 @@
-import { MessageDialog, OptimizationSettingsDialog } from "../ui/components/dialog.js";
+import { MessageDialog, ModelRegistrationDialog, OptimizationSettingsDialog } from "../ui/components/dialog.js";
 import Log from "../utils/logger.js";
 
 
@@ -367,6 +367,29 @@ export default class Workflow {
                 MessageDialog.openErrorDialog(error.responseText);
             }
         }).always(() => { hideLoadingAnimation() });
+    }
+
+    registerModel(formData) {
+        showLoadingAnimation("Registering model on Model Catalog...");
+        $.ajax({
+            url: "/hh-neuron-builder/register-model/" + this.#exc,
+            method: "POST",
+            async: false,
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: (result) => {
+                ModelRegistrationDialog.close();
+                MessageDialog.openSuccessDialog(result);
+            },
+            error: (error) => {
+                Log.error("Status: " + error.status + " > " + error.responseText);
+                if (error.status == 500) {
+                    ModelRegistrationDialog.close();
+                }
+                MessageDialog.openErrorDialog(error.responseText);
+            }
+        }).always(() => hideLoadingAnimation() );
     }
 
     /* #disableCellOptimizationBlock() {

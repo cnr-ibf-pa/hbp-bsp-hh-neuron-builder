@@ -145,8 +145,13 @@ class Model(ModelBase):
         
         # check for features
         try:
-            features = Features(os.path.join(config_dir, 'features.json'),
-                                os.path.join(config_dir, 'protocols.json'))
+            feat = os.path.join(config_dir, 'features.json')
+            prot = os.path.join(config_dir, 'protocols.json')
+            features = Features()
+            if os.path.exists(feat):
+                features.set_features(feat)
+            if os.path.exists(prot):
+                features.set_protocols(prot)
             model.set_features(features)
         except FileNotFoundError:
             pass

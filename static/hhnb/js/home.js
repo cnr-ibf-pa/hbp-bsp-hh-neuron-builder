@@ -22,8 +22,9 @@ function checkRefreshSession(response) {
 $( document ).ready(() => {
     if (exc !== "") {
         window.location.href = "/hh-neuron-builder/workflow/" + exc; 
-    } 
-    hideLoadingAnimation();
+    } else {
+        hideLoadingAnimation();
+    }
 })
 
 $("#new-wf").on("click", () => {

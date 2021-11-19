@@ -4,21 +4,26 @@ from posix import listdir
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 
-from hh_neuron_builder.settings import MODEL_CATALOG_CREDENTIALS, MODEL_CATALOG_FILTER, TMP_DIR
+from hh_neuron_builder.settings import MODEL_CATALOG_COLLAB_DIR, MODEL_CATALOG_COLLAB_URL, MODEL_CATALOG_CREDENTIALS, MODEL_CATALOG_FILTER, TMP_DIR
 
 from hhnb.core.lib.exception.workflow_exception import WorkflowExists
 from hhnb.core.response import ResponseUtil
 from hhnb.core.workflow import Workflow, WorkflowUtil
 from hhnb.core.user import * 
-from hhnb.utils.misc import Cypher, JobHandler
+from hhnb.core.security import *
+from hhnb.utils.misc import JobHandler
 
 from hbp_validation_framework import ModelCatalog, ResponseError
+
+from ebrains_drive.exceptions import ClientHttpError as EbrainsDriveClientError
+import ebrains_drive
 
 import requests
 import datetime
 import os
 import json
 import shutil
+import zipfile
 
 
 def status(request):
@@ -82,6 +87,9 @@ def initialize_workflow(request):
         workflow = Workflow.generate_user_workflow(hhnb_user.get_username())
     except WorkflowExists as e:
         return ResponseUtil.ko_response(500, str(e))
+    except PermissionError as e:
+        print(e)
+        return ResponseUtil.ko_response(500, 'Critical error !<br>Please contact the support.')
 
     exc = generate_exc_code(request)
 
@@ -179,12 +187,12 @@ def fetch_models(request, exc):
 
     mc_filter = MODEL_CATALOG_FILTER['hippocampus_models']
 
-    if MODEL_CATALOG_CREDENTIALS == ('username', 'password'):
-        raise Exception('Invalid ModelCatalog credentials.\
-                         Set them into your configuration \
-                         file under\ "hh_neuron_builder/conf/"')
-
     try:
+        if MODEL_CATALOG_CREDENTIALS == ('username', 'password'):
+            raise EnvironmentError('Invalid ModelCatalog credentials.\
+                                    Set them into your configuration \
+                                    file under\ "hh_neuron_builder/conf/"')
+
         mc_username, mc_password = MODEL_CATALOG_CREDENTIALS
         mc = ModelCatalog(username=mc_username, password=mc_password)
 
@@ -209,12 +217,13 @@ def fetch_models(request, exc):
                     model_path = os.path.join(TMP_DIR, model['name'] + '.zip')
                 workflow, _ = get_workflow_and_user(request, exc)
                 workflow.load_model_zip(model_path)
-
-    # except NameError:
-        # return ResponseUtil.ko_response('Credentials not founds !')
+                
     except ResponseError as e:
         print(e)
         return ResponseUtil.ko_response('ModelCatalog termporarily not accessible')
+    except EnvironmentError as e:
+        print(e)
+        return ResponseUtil.ko_response('Invalid credentials')
 
     # handle model 
     return ResponseUtil.ok_response()
@@ -354,7 +363,7 @@ def download_files(request, exc):
     if not exc in request.session.keys():
         return ResponseUtil.no_exc_code_response()
     
-    workflow, _ = get_workflow_and_user(request, exc)
+    workflow, user = get_workflow_and_user(request, exc)
     WorkflowUtil.set_model_key(workflow)
 
     pack = request.GET.get('pack')
@@ -362,24 +371,42 @@ def download_files(request, exc):
 
     if pack:
         if pack == 'features':
-            zip_file = WorkflowUtil.make_features_archive(workflow)
+            arch_file = WorkflowUtil.make_features_archive(workflow)
         elif pack == 'model':
-            zip_file = WorkflowUtil.make_model_archive(workflow)
+            arch_file = WorkflowUtil.make_model_archive(workflow)
         elif pack == 'results':
-            zip_file = WorkflowUtil.make_results_archive(workflow)
+            arch_file = WorkflowUtil.make_results_archive(workflow)
         elif pack == 'analysis':
-            zip_file = WorkflowUtil.make_analysis_archive(workflow)
+            arch_file = WorkflowUtil.make_analysis_archive(workflow)
     elif file_list:
         path_list = json.loads(file_list).get('path')
 
         # TODO: add Permission controller
 
         files = [os.path.join(workflow.get_model_dir(), f) for f in path_list]
-        zip_name = workflow.get_id() + '_model_files.zip'
-        zip_file = WorkflowUtil.make_archive(workflow, zip_name, 'files', files)
+        arch_name = workflow.get_id() + '_model_files.zip'
+        arch_file = WorkflowUtil.make_archive(workflow, arch_name, 'files', files)
 
-    if zip_file:
-        return ResponseUtil.file_response(zip_file)
+    if arch_file:
+
+        tmp_dir = os.path.join(TMP_DIR, user.get_username() + '_' + workflow.get_id())
+        if os.path.exists(tmp_dir):
+            shutil.rmtree(tmp_dir)
+        os.mkdir(tmp_dir)
+
+        root_dir, zip_name = os.path.split(arch_file)
+        arch_sign = os.path.join(root_dir, 'sign.txt')
+        with open(arch_sign, 'w') as sign_fd:
+            with open(arch_file, 'rb') as arch_fd:
+                sign_fd.write(Sign.get_data_sign(arch_fd.read()))
+
+        final_zip_file = shutil.make_archive(
+            base_name=os.path.join(tmp_dir, zip_name.split('.zip')[0]),
+            format='zip',
+            root_dir=root_dir
+        )  
+        return ResponseUtil.file_response(final_zip_file)
+    
     return ResponseUtil.ko_response('No files selected to download')
 
 
@@ -491,10 +518,16 @@ def fetch_job_results(request, exc):
     hpc = request.GET.get('hpc')
     job_id = request.GET.get('job_id')
 
+    if not hpc:
+        return ResponseUtil.ko_response('No HPC selected')
+    if not job_id:
+        return ResponseUtil.ko_response('No Job selected')
+
     workflow, hhnb_user = get_workflow_and_user(request, exc)
 
     try:
         file_list = JobHandler.fetch_job_files(hpc, job_id, hhnb_user)
+        print(file_list)
         WorkflowUtil.download_job_result_files(workflow, file_list, hhnb_user.get_token())
 
         return ResponseUtil.ok_response()
@@ -537,10 +570,17 @@ def upload_to_naas(request, exc):
     workflow, _ = get_workflow_and_user(request, exc)
 
     naas_archive = WorkflowUtil.make_naas_archive(workflow)
-    r = requests.post(url='https://blue-naas-svc-bsp-epfl.apps.hbp.eu/upload',
-                      files={'file': open(naas_archive, 'rb')}, verify=False)
-    if r.status_code == 200:
-        return ResponseUtil.ok_response(os.path.split(naas_archive)[1].split('.zip')[0])
+   
+    try:
+        r = requests.post(url='https://blue-naas-svc-bsp-epfl.apps.hbp.eu/upload',
+                          files={'file': open(naas_archive, 'rb')}, verify=False)
+        if r.status_code == 200:
+            return ResponseUtil.ok_response(os.path.split(naas_archive)[1].split('.zip')[0])
+    except requests.exceptions.ConnectionError as e:
+        print(e)
+        return ResponseUtil.ko_response(500, 'BlueNaas temporarily not available.\
+                                              <br>Please, try again later.')
+
     return ResponseUtil.ko_response(r.status_code, r.content)
 
 
@@ -557,14 +597,75 @@ def get_model_data(request, exc):
 
 
 def register_model(request, exc):
+    if request.method != 'POST':
+        return ResponseUtil.method_not_allowed('POST')
     if not exc in request.session.keys():
         return ResponseUtil.no_exc_code_response()
 
-    workflow, _ = get_workflow_and_user(request, exc)
-
     form_data = request.POST
+    workflow, hhnb_user = get_workflow_and_user(request, exc)
+    
+    if not workflow.get_properties()['analysis']:
+        return ResponseUtil.ko_response('No model detected')
 
+    model_zip = WorkflowUtil.make_analysis_archive(workflow)
+    model_zip_path, model_zip_name = os.path.split(model_zip)
 
+    try:
+        if MODEL_CATALOG_CREDENTIALS == ('username', 'password'):
+            raise EnvironmentError('Invalid ModelCatalog credentials.\
+                                    Set them into your configuration \
+                                    file under\ "hh_neuron_builder/conf/"')
+
+        mc_username, mc_password = MODEL_CATALOG_CREDENTIALS
+        mc = ModelCatalog(username=mc_username, password=mc_password)
+
+        # client = ebrains_drive.connect(token=mc.auth.token)
+        client = ebrains_drive.connect(username=mc_username, password=mc_password)
+        repo = client.repos.get_repo_by_url(MODEL_CATALOG_COLLAB_URL)
+        seafdir = repo.get_dir('/' + MODEL_CATALOG_COLLAB_DIR)
+        mc_zip_uploaded = seafdir.upload_local_file(model_zip)
+
+        reg_mod_url = f'https://wiki.ebrains.eu/lib/{ repo.id }/file/\
+                      { MODEL_CATALOG_COLLAB_DIR }/{ model_zip_name }?dl=1'
+
+        auth_family_name = form_data.get('authorLastName')
+        auth_given_name = form_data.get('authorFirstName')
+        organization = form_data.get('modelOrganization')
+        cell_type = form_data.get('modelCellType')
+        model_scope = form_data.get('modelScope')
+        abstraction_level = form_data.get('modelAbstraction')
+        brain_region = form_data.get('modelBrainRegion')
+        species = form_data.get('modelSpecies')
+        own_family_name = form_data.get('ownerLastName')
+        own_given_name = form_data.get('ownerFirstName')
+        license = form_data.get('modelLicense')
+        description = form_data.get('modelDescription')
+        private = form_data.get('modelPrivate')
+    
+        invalid_field = {}
+        for k in form_data.keys():
+            invalid_field.update({k, 'is invalid'})
+
+        return ResponseUtil.ko_json_response(invalid_field)
+
+        return ResponseUtil.ok_response('Model registered successfully')
+
+    except EbrainsDriveClientError as e:
+        if e.code == 403:
+            code = 500
+            message = 'Ebrains drive is temporarily not accessible!' \
+                    + '<br>Please, try again later.'
+        else:
+            code = e.code
+            message = e.message
+        return ResponseUtil.ko_response(code, message)
+
+    except EnvironmentError as e:
+        print(e)
+        return ResponseUtil.ko_response('Invalid credentials')
+
+    return ResponseUtil.ko_response('Some error occurred.')
 
 
 def get_user_avatar(request):
@@ -604,6 +705,7 @@ def hhf_comm(request):
     request.session.save()
     #
     return render(request, 'hhnb/hhf_comm.html', context={'exc': exc})
+
 
 def hhf_etraces_dir(request, exc):
     if not exc in request.session.keys():
