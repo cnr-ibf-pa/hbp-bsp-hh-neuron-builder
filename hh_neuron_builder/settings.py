@@ -118,7 +118,7 @@ WSGI_APPLICATION = 'hh_neuron_builder.wsgi.application'
 
 
 DATABASES = conf.DATABASES
-
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 # Password validation

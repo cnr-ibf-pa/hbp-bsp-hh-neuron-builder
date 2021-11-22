@@ -4,6 +4,10 @@ from cryptography.fernet import Fernet
 from hashlib import blake2b
 
 
+class InvalidSign(Exception):
+    pass
+
+
 class Cypher:
 
     @staticmethod
@@ -53,4 +57,6 @@ class Sign:
     @classmethod
     def verify_data_sign(cls, sign, data):
         s = cls()
-        return s._get_hash(data) == sign
+        if s._get_hash(data) == sign:
+            return True
+        raise InvalidSign('Invalid signature.')

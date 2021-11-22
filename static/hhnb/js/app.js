@@ -677,7 +677,7 @@ async function downloadJob(jobId) {
     $.get("/hh-neuron-builder/fetch-job-result/" + exc, data)
         .done((downloadResult) => {
             Log.debug(downloadResult);
-            setJobProcessingTitle("Running Analysis...<br>");
+            setJobProcessingTitle("Running Analysis...<br> ");
             setProgressBarValue(80);
             $.get("/hh-neuron-builder/run-analysis/" + exc)
                 .done(async (analysisResult) => {
@@ -719,7 +719,7 @@ $("#checkNsgLoginButton").on("click", () => {
             displayJobList($("#jobsNSG"));
         }).fail(() => {
             $("#checkNsgSpinnerButton").css("opacity", "0");
-            $("#usernameNsg").addClass("is-invalid").attr("aria-describedby", "User not valid");
+            $("#usernameNsg").addClass("is-invalid").attr("aria-describedbya", "User not valid");
             $("#passwordNsg").addClass("is-invalid").attr("aria-describedby", "Password not valid");
         })
 });
@@ -748,6 +748,7 @@ $("#run-sim-btn").on("click", () => {
             $("#run-sim-btn").prop("disable", false);
         }) */
     ModelRegistrationDialog.open();
+
 })
 
 

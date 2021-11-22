@@ -277,15 +277,33 @@ def upload_model(request, exc):
     if len(uploaded_files) != 1:
         return ResponseUtil.ko_response('Must upload only "model.zip" file.')
 
-    workflow, _ = get_workflow_and_user(request, exc)
+    workflow, user = get_workflow_and_user(request, exc)
 
     for uploaded_file in uploaded_files: 
-        with open(os.path.join(workflow.get_tmp_dir(), uploaded_file.name), 'wb') as fd:
+        uploaded_file_path = os.path.join(workflow.get_tmp_dir(), uploaded_file.name)
+        with open(uploaded_file_path, 'wb') as fd:
             if uploaded_file.multiple_chunks(chunk_size=4096):
                 for chunk in uploaded_file.chunks(chunk_size=4096):
                     fd.write(chunk)
             else:
                 fd.write(uploaded_file.read())
+
+    # check signature
+    tmp_dir = os.path.join(TMP_DIR, user.get_username() + '_' + workflow.get_id())
+    if os.path.exists(tmp_dir):
+        shutil.rmtree(tmp_dir)
+    os.mkdir(tmp_dir)
+    shutil.unpack_archive(uploaded_file_path, tmp_dir)
+    if os.listdir(tmp_dir) != [uploaded_file.name, 'sign.txt']:
+        return ResponseUtil.ko_response('<b>Invalid file!</b><br><br>\
+                                         Upload a correct archive.')
+    try:
+        with open(os.path.join(tmp_dir, uploaded_file.name), 'rb') as arch_fd:
+            with open(os.path.join(tmp_dir, 'sign.txt'), 'r') as sign_fd:
+                Sign.verify_data_sign(sign_fd.read(), arch_fd.read())
+    except InvalidSign:
+        return ResponseUtil.ko_response('<b>Invalid signature!</b><br><br>\
+                                         Uploaded file is corrupted or modified.')
 
     try:
         workflow.load_model_zip(os.path.join(workflow.get_tmp_dir(),
@@ -308,7 +326,7 @@ def upload_analysis(request, exc):
     if len(uploaded_files) != 1:
         return ResponseUtil.ko_response('Must upload only ".zip" file.')
 
-    workflow, _ = get_workflow_and_user(request, exc)
+    workflow, user = get_workflow_and_user(request, exc)
 
     for uploaded_file in uploaded_files: 
         uploaded_file_path = os.path.join(workflow.get_tmp_dir(), 
@@ -319,8 +337,27 @@ def upload_analysis(request, exc):
                     fd.write(chunk)
             else:
                 fd.write(uploaded_file.read())
+
+    # check signature
+    tmp_dir = os.path.join(TMP_DIR, user.get_username() + '_' + workflow.get_id())
+    if os.path.exists(tmp_dir):
+        shutil.rmtree(tmp_dir)
+    os.mkdir(tmp_dir)
+    shutil.unpack_archive(uploaded_file_path, tmp_dir)
+    if os.listdir(tmp_dir) != [uploaded_file.name, 'sign.txt']:
+                return ResponseUtil.ko_response('<b>Invalid file!</b><br><br>\
+                                         Upload a correct archive.')
     try:
-        shutil.unpack_archive(uploaded_file_path, workflow.get_tmp_dir())
+        with open(os.path.join(tmp_dir, uploaded_file.name), 'rb') as arch_fd:
+            with open(os.path.join(tmp_dir, 'sign.txt'), 'r') as sign_fd:
+                Sign.verify_data_sign(sign_fd.read(), arch_fd.read())
+    except InvalidSign:
+        return ResponseUtil.ko_response('<b>Invalid signature!</b><br><br>\
+                                         Uploaded file is corrupted or modified.')
+
+    try:
+        shutil.unpack_archive(os.path.join(tmp_dir, uploaded_file.name),
+                              workflow.get_tmp_dir())
         tmp_dir_list = os.listdir(workflow.get_tmp_dir())
         tmp_dir_list.remove(uploaded_file.name) # remove zip file from list
         if len(tmp_dir_list) == 1:
@@ -622,8 +659,12 @@ def register_model(request, exc):
 
         # client = ebrains_drive.connect(token=mc.auth.token)
         client = ebrains_drive.connect(username=mc_username, password=mc_password)
+        # client = ebrains_drive.connect(username='rsmiriglia', password='5Xsx/Zw"GknN/R>~c^fx:}vl.7a|@NkG')
         repo = client.repos.get_repo_by_url(MODEL_CATALOG_COLLAB_URL)
+        # repo = client.repos.get_repo_by_url('https://wiki.ebrains.eu/bin/view/Collabs/rsmir-test/')
         seafdir = repo.get_dir('/' + MODEL_CATALOG_COLLAB_DIR)
+        # seafdir = repo.get_dir('/')
+        # seafdir = repo.get_dir('/test')
         mc_zip_uploaded = seafdir.upload_local_file(model_zip)
 
         reg_mod_url = f'https://wiki.ebrains.eu/lib/{ repo.id }/file/\
@@ -652,13 +693,8 @@ def register_model(request, exc):
         return ResponseUtil.ok_response('Model registered successfully')
 
     except EbrainsDriveClientError as e:
-        if e.code == 403:
-            code = 500
-            message = 'Ebrains drive is temporarily not accessible!' \
-                    + '<br>Please, try again later.'
-        else:
-            code = e.code
-            message = e.message
+        code = e.code
+        message = e.message
         return ResponseUtil.ko_response(code, message)
 
     except EnvironmentError as e:
