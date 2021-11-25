@@ -23,8 +23,7 @@ import datetime
 import os
 import json
 import shutil
-import zipfile
-
+import time
 
 def status(request):
     return ResponseUtil.ok_json_response({'hh-neuron-builder-status': 1})
@@ -482,18 +481,17 @@ def optimization_settings(request, exc=None):
     elif request.method == 'POST':
         optimization_settings = json.loads(request.body)
         if optimization_settings['hpc'] == 'NSG':
-            nsg_user = NsgUser(username=optimization_settings['username_submit'],
-                               password=optimization_settings['password_submit'])
-            if not nsg_user.validate_credentials():
-                return ResponseUtil.ko_response('Invalid credentials')
+            nsg_username = optimization_settings.get('username_submit')
+            nsg_password = optimization_settings.get('password_submit')
 
-            plain_username = optimization_settings['username_submit']
-            plain_password = optimization_settings['password_submit']
-            cipher_username = Cypher.encrypt(plain_username)
-            cipher_password = Cypher.encrypt(plain_password)
+            if nsg_username and nsg_password:
+                nsg_user = NsgUser(nsg_username, nsg_password)
+                if not nsg_user.validate_credentials():
+                    return ResponseUtil.ko_response('Invalid credentials')
 
-            optimization_settings.update({'username_submit': cipher_username,
-                                          'password_submit': cipher_password})
+                request.session['nsg_username'] = nsg_username
+                request.session['nsg_password'] = nsg_password
+                request.session.save()
 
         workflow.set_optimization_settings(optimization_settings)
         return ResponseUtil.ok_json_response()
@@ -514,6 +512,12 @@ def run_optimization(request, exc):
                                    root_dir=os.path.split(opt_model_dir)[0])
 
     optimization_settings = workflow.get_optimization_settings()
+
+    optimization_settings.update({
+        'nsg_username': request.session.get('nsg_username'),
+        'nsg_password': request.session.get('nsg_password'),
+    })
+
     response = JobHandler.submit_job(hhnb_user, zip_file, optimization_settings)
     if response.status_code == 200:
         workflow.set_optimization_settings(optimization_settings, job_submitted_flag=True)
@@ -718,10 +722,12 @@ def get_authentication(request):
         if request.user.is_authenticated:
             return ResponseUtil.ok_response()
     elif request.method == 'POST':
-        username = request.POST.get('username')
-        password = request.POST.get('password')
-        user = HhnbUser(nsg_user=NsgUser(username, password))
-        if user.validate_nsg_login():
+        request.session['nsg_username'] = request.POST.get('username')
+        request.session['nsg_password'] = request.POST.get('password')
+        
+        hhnb_user = HhnbUser.get_user_from_request(request)
+
+        if hhnb_user.validate_nsg_login():
             return ResponseUtil.ok_response()
     return ResponseUtil.ko_response('user not autheticated')
 

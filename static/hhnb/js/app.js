@@ -557,6 +557,12 @@ function displayJobList(button) {
     $.getJSON("/hh-neuron-builder/fetch-jobs/" + exc, { hpc })
         .done((results) => {
             let jobs = results.jobs;
+            Log.debug(jobs);
+            if ($.isEmptyObject(jobs)) {
+                MessageDialog.openInfoDialog("No jobs on this HPC system");
+                resetJobFetchDiv();
+                return false;
+            }
             for (let job_id of Object.keys(jobs)) {
                 let job = jobs[job_id];
                 let statusColor = "";
@@ -708,7 +714,7 @@ $("#checkNsgLoginButton").on("click", () => {
 
     let data = {
         "username": $("#usernameNsg").val(),
-        "password": pass$("#passwordNsg").val()
+        "password": $("#passwordNsg").val()
     };
     $.post("/hh-neuron-builder/get-authentication", data)
         .done(() => {

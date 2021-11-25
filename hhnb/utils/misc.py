@@ -2,6 +2,8 @@ from hh_neuron_builder.settings import NSG_KEY
 from hhnb.core.response import ResponseUtil
 from collections import OrderedDict
 
+from hhnb.core.security import Cypher
+
 import pyunicore.client as unicore_client
 import xml.etree.ElementTree
 import requests
@@ -61,7 +63,7 @@ class JobHandler:
 
     def _get_nsg_payload(self, core_num, node_num, runtime):
         return {
-            'tool': 'BLUEPYOPT_TG',
+            'tool': 'BLUEPYOPT_EXPANSE',
             'metadata.statusEmail': 'false',
             'vparam.number_cores_': core_num,
             'vparam.number_nodes_': node_num,
@@ -69,11 +71,7 @@ class JobHandler:
             'vparam.filename_': 'init.py'
         } 
 
-    def _submit_on_nsg(self, zip_file, settings):
-
-        username = Cypher.decrypt(settings['username_submit'])
-        password = Cypher.decrypt(settings['password_submit'])
-                
+    def _submit_on_nsg(self, user, zip_file, settings):
         payload = self._get_nsg_payload(core_num=settings['core-num'],
                                         node_num=settings['node-num'],
                                         runtime=settings['runtime'])
@@ -81,11 +79,14 @@ class JobHandler:
         headers = self._get_nsg_headers()
 
         files = {'input.infile_': open(zip_file, 'rb')}
-        r = requests.post(url=f'{self._NSG_URL}/job/{username}', 
-                          auth=(username, password),
+        r = requests.post(url=f'{self._NSG_URL}/job/{user.get_username()}', 
+                          auth=(user.get_username(), user.get_password()),
                           data=payload,
                           headers=headers,
-                          files=files)
+                          files=files,
+                          verify=False)
+        
+        print(r.status_code, r.content)
         
         if r.status_code == 200:
             root = xml.etree.ElementTree.fromstring(r.text)
@@ -104,9 +105,21 @@ class JobHandler:
 
         return ResponseUtil.ko_response(r.text)
 
-    def _get_nsg_job_list(self, nsg_user, username, password):
-        # r_all = requests.get(url=f)
-        pass
+    def _get_nsg_job_list(self, user):
+        r = requests.get(url=f'{self._NSG_URL}/job/{user.get_username()}',
+                         auth=(user.get_username(), user.get_password()),
+                         headers=self._get_nsg_headers())
+        print(r.status_code, r.text)
+        jobs = {}
+        if r.status_code == 200:
+            root = xml.etree.ElementTree.fromstring(r.text)
+            job_list = root.find('jobs')
+            
+            for job in job_list.findall('jobstatus'):
+                job_title = job.find('selfUri').find('title').text
+                job_url = job.find('selfUri').find('url').text
+
+        return None        
 
     def _get_unicore_command(self, zip_name):
         command = 'unzip ' + zip_name + '; cd ' + zip_name.split('.zip')[0] \
@@ -222,7 +235,7 @@ class JobHandler:
         
         job_handler = cls()
         if settings['hpc'] == job_handler._NSG:
-            return job_handler._submit_on_nsg(zip_file, settings)
+            return job_handler._submit_on_nsg(user.get_nsg_user(), zip_file, settings)
         elif settings['hpc'] == job_handler._DAINT_CSCS:
             return job_handler._submit_on_unicore(job_handler._DAINT_CSCS, user.get_token(),
                                                   zip_file, settings)
@@ -238,7 +251,7 @@ class JobHandler:
         jobs = {}
 
         if hpc == job_handler._NSG:
-            pass
+            raw_jobs = job_handler._get_nsg_job_list(user.get_nsg_user())
 
         elif hpc == job_handler._DAINT_CSCS:
             raw_jobs = job_handler._get_jobs_on_unicore(hpc, user.get_token())

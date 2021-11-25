@@ -228,19 +228,32 @@ class OptimizationSettingsDialog {
             data["runtime"] = $("#sa-daint-gen-max").val();
         }
         if (hpc == "NSG") {
-            if ($("#username_submit").val() == "" || $("#password_submit").val() == "") {
-                $("#username_submit").removeClass("is-valid").addClass("is-invalid");
-                $("#password_submit").removeClass("is-valid").addClass("is-invalid");
-                alert("Please fill \"username\" and \"password\" to apply settings");
-                throw "credentials empty";
-            }
             data["gen-max"] = $("#nsg-gen-max").val();
             data["offspring"] = $("#nsg-offspring").val();
             data["node-num"] = $("#nsg-node-num").val();
             data["core-num"] = $("#nsg-core-num").val();
             data["runtime"] = $("#nsg-gen-max").val();
-            data["username_submit"] = $("#username_submit").val();
-            data["password_submit"] = $("#password_submit").val();
+
+            let nsgUser = $("#username_submit");
+            let nsgPass = $("#password_submit");
+            if (nsgUser.val() == "" && nsgPass.val() == "") {
+                if (!nsgUser.hasClass("is-valid") && !nsgPass.hasClass("is-valid")) {
+                    alert("Please fill \"username\" and \"password\" to apply settings");
+                    throw "credentials empty";            
+                }
+            } else {
+                data["username_submit"] = nsgUser.val();
+                data["password_submit"] = nsgPass.val();
+            } 
+            
+          /*   if ($("#username_submit").val() == "" || $("#password_submit").val() == "") {
+                $("#username_submit").removeClass("is-valid").addClass("is-invalid");
+                $("#password_submit").removeClass("is-valid").addClass("is-invalid");
+                alert("Please fill \"username\" and \"password\" to apply settings");
+                throw "credentials empty";
+            } else {
+                
+            } */
         }
         return data;
     }
@@ -272,8 +285,12 @@ class OptimizationSettingsDialog {
             formData.append("node-num", $("#nsg-node-num").val());
             formData.append("core-num", $("#nsg-core-num").val());
             formData.append("runtime", $("#nsg-gen-max").val());
-            formData.append("username_submit", $("#username_submit").val());
-            formData.append("password_submit", $("#password_submit").val());
+            if (!$("#username_submit").hasClass("is-valid")) {
+                formData.append("username_submit", $("#username_submit").val());
+            }
+            if (!$("#password_submit").hasClass("is-valid")) {
+                formData.append("password_submit", $("#password_submit").val());
+            }
         }
 
         if (Log.enabled) {

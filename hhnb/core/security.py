@@ -12,11 +12,12 @@ class Cypher:
 
     @staticmethod
     def encrypt(plain_text, at_time=None):
+        print(plain_text)
         if type(plain_text) == str:
             data = bytes(plain_text, 'utf-8')
         f = Fernet(FERNET_KEY)
         if at_time:
-            token = f.encrypt_at_time(data, at_time)
+            token = f.encrypt_at_time(data, int(at_time))
         else:
             token = f.encrypt(data)
         cipher_text = token.decode('utf-8')
@@ -28,9 +29,10 @@ class Cypher:
             token = bytes(cipher_text, 'utf-8')
         f = Fernet(FERNET_KEY)
         if at_time:
-            plaint_text = f.decrypt_at_time(token, at_time)
+            plaint_text = f.decrypt_at_time(token, 10, int(at_time))
         else:
-            plaint_text = f.decrypt(token)
+            plaint_text = f.decrypt(token, 10).decode('utf-8')
+        print(plaint_text)
         return plaint_text
 
 

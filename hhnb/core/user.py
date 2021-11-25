@@ -32,7 +32,7 @@ class EbrainsUser:
         raise AvatarNotFound('Avatar not found')
 
     def get_token(self):
-        return self._token;
+        return self._token
 
     def get_bearer_token(self):
         return 'Bearer ' + self._token
@@ -45,14 +45,17 @@ class NsgUser:
         self._password = password
 
     def get_username(self):
-        return self._usename
+        return self._username
 
     def get_password(self):
         return self._password
 
     def validate_credentials(self):
-        r = requests.get(url='https://nsgr.sdsc.edu:8443/cipresrest/v1/job/' + self._username,
-                         auth=(self._username, self._password), headers={'cipres-appkey': NSG_KEY})
+        r = requests.get(url='https://nsgr.sdsc.edu:8443/cipresrest/v1/job',
+                         auth=(self._username, self._password), 
+                         headers={'cipres-appkey': NSG_KEY},
+                         verify=False)
+        print(r.status_code, r.content)
         if r.status_code == 200:
             return True
         return False
@@ -102,8 +105,16 @@ class HhnbUser:
         ebrains_user = EbrainsUser(username=request.user.username 
                                    if request.user.is_authenticated 
                                    else 'anonymous')
-        
         if 'oidc_access_token' in request.session.keys():
             ebrains_user.set_token(request.session['oidc_access_token'])
+        
         hhnb_user.set_ebrains_user(ebrains_user)
+        
+        if request.session.get('nsg_username')\
+            and request.session.get('nsg_password'):
+            nsg_user = NsgUser(request.session.get('nsg_username'),
+                               request.session.get('nsg_password'))
+
+            hhnb_user.set_nsg_user(nsg_user)    
+        
         return hhnb_user
