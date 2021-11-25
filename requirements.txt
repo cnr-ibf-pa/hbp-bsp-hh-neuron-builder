@@ -21,7 +21,7 @@ distro==1.6.0
 Django==3.2.9
 django-sslserver==0.22
 djangorestframework==3.12.4
-ebrains-drive==0.2.0
+ebrains-drive==0.3.0
 efel==4.0.4
 entrypoints==0.3
 future==0.18.2
