@@ -67,6 +67,7 @@ urlpatterns = [
     path('optimization-settings/<exc:exc>', views.optimization_settings),
 
     # model catalog
+    path('get-model-catalog-attribute-options', views.get_model_catalog_attribute_options),
     path('fetch-models/<exc:exc>', views.fetch_models),
     path('get-model-data/<exc:exc>', views.get_model_data),
     path('register-model/<exc:exc>', views.register_model),

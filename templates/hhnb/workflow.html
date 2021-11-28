@@ -381,7 +381,7 @@
                                             <!-- </div> -->
                                             <input type="text" class="form-control username" id="username_submit" name="username_submit" placeholder="NSG Username" style="border-top-right-radius: .25rem; border-bottom-right-radius: .25rem;" required>
                                             <!-- <div class="input-group-prepend"> -->
-                                                <span class="input-group-text password" title="NSG Password">Password</span>
+                                                <span class="input-group-text password" title="NSG Password" style="border-top-left-radius: .25rem; border-bottom-left-radius: .25rem;">Password</span>
                                             <!-- </div> -->
                                             <input type="password" class="form-control" id="password_submit" name="password_submit" placeholder="NSG Password" required>
                                         </div>
@@ -485,7 +485,7 @@
                             <!-- </div> -->
                             <input type="text" class="form-control username" id="usernameNsg" name="username_submit" placeholder="NSG Username" style="border-top-right-radius: .25rem; border-bottom-right-radius: .25rem;" required>
                             <!-- <div class="input-group-prepend"> -->
-                                <span class="input-group-text password" title="NSG Password">Password</span>
+                                <span class="input-group-text password" title="NSG Password" style="border-top-left-radius: .25rem; border-bottom-left-radius: .25rem;">Password</span>
                             <!-- </div> -->
                             <input type="password" class="form-control" id="passwordNsg" name="password_submit" placeholder="NSG Password" required>
                             <!-- <input type="button" class="btn" onclick="checkNsgLogin()" value="Check"> -->
@@ -626,7 +626,7 @@
                         <div class="card-body">
                                 <div class="row">
                                     <div class="input-group">
-                                        <span class="input-group-text" id="modelNameLabel">Model Name</span>
+                                        <span class="input-group-text lg" id="modelNameLabel">Model Name</span>
                                         <input type="text" id="modelName" name="modelName" class="form-control text-end" readonly value="">
                                         <input type="text" id="modelSuffix" name="modelSuffix" placeholder="complete (if needed)" class="form-control">
                                     </div>
@@ -635,13 +635,13 @@
                                 <div class="row">
                                     <div class="col">
                                         <div class="input-group">
-                                            <span class="input-group-text" id="authorFirstNameLabel">Author FirstName</span>
+                                            <span class="input-group-text lg" id="authorFirstNameLabel">Author FirstName</span>
                                             <input type="text" class="form-control" id="authorFirstName" name="authorFirstName" aria-label="Author First name" aria-labelledby="authorFirstNameLabel" required>
                                         </div>
                                     </div>
                                     <div class="col">
                                         <div class="input-group">
-                                            <span class="input-group-text" id="authorLastNameLabel">Author LastName</span>
+                                            <span class="input-group-text lg" id="authorLastNameLabel">Author LastName</span>
                                             <input type="text" class="form-control" id="authorLastName" name="authorLastName" aria-label="Author Last name" aria-labelledby="authorLastNameLabel" required>
                                         </div>
                                     </div>
@@ -650,13 +650,13 @@
                                 <div class="row">
                                     <div class="col">
                                         <div class="input-group">
-                                            <span class="input-group-text" id="ownerFirstNameLabel">Owner FirstName</span>
+                                            <span class="input-group-text lg" id="ownerFirstNameLabel">Owner FirstName</span>
                                             <input type="text" class="form-control" id="ownerFirstName" name="ownerFirstName" aria-label="Owner First name" aria-labelledby="ownerFirstNameLabel" required>
                                         </div>
                                     </div>
                                     <div class="col">
                                         <div class="input-group">
-                                            <span class="input-group-text" id="ownerLastNameLabel">Owner LastName</span>
+                                            <span class="input-group-text lg" id="ownerLastNameLabel">Owner LastName</span>
                                             <input type="text" class="form-control" id="ownerLastName" name="ownerLastName" aria-label="Owner Last name" aria-labelledby="ownerLastNameLabel" required>
                                         </div>
                                     </div>
@@ -669,21 +669,21 @@
                                                 <div class="card-header input-card-header">Model License</div>
                                                 <div class="card-body">
                                                     <div class="row">
-                                                    <div class="col">
-                                                        <select class="form-select" id="modelLicense" name="modelLicense">
-                                                            <option selected>CC BY</option>
-                                                            <option>CC BY-SA</option>
-                                                            <option>CC BY-ND</option>
-                                                            <option>CC BY-NC</option>
-                                                            <option>CC BY-NC-SA</option>
-                                                            <option>CC BY-NC-ND</option>
-                                                        </select>
-                                                    </div>
-                                                    <div class="col" style="align-self: end">
-                                                        <a href="https://appukuttan-shailesh.github.io/testData/image.png" target="_blank">
-                                                            <span class="info-icon" title="Licences description"></span>
-                                                        </a>
-                                                    </div>
+                                                        <div class="col flex-grow-4">
+                                                            <select class="form-select" id="modelLicense" name="modelLicense">
+                                                                <option selected>CC BY</option>
+                                                                <option>CC BY-SA</option>
+                                                                <option>CC BY-ND</option>
+                                                                <option>CC BY-NC</option>
+                                                                <option>CC BY-NC-SA</option>
+                                                                <option>CC BY-NC-ND</option>
+                                                            </select>
+                                                        </div>
+                                                        <div class="col flex-grow-1" style="align-self: end">
+                                                            <a href="https://appukuttan-shailesh.github.io/testData/image.png" target="_blank">
+                                                                <span class="info-icon" title="Licences description"></span>
+                                                            </a>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -694,10 +694,12 @@
                                                 <div class="card-header input-card-header">Private Model</div>
                                                 <div class="card-body">
                                                     <div>
-                                                        <div class="form-check form-switch">
-                                                            <input class="form-check-input" type="checkbox" id="modelPrivate" checked="false" style="margin-left: auto; width: 2.8em; height: 1.2em;">
-                                                            <label class="form-check-label" for="modelPrivate" id="modelPrivateValue">Public</label>
-                                                        </div>
+                                                        <div class="row">
+                                                            <div class="form-check form-switch">
+                                                                <input class="form-check-input" type="checkbox" id="modelPrivate" checked="true" style="margin-left: auto; width: 2.8em; height: 1.2em;">
+                                                                <label class="form-check-label" for="modelPrivate" id="modelPrivateValue">Private</label>
+                                                            </div>
+                                                        </div>  
                                                     </div>
                                                 </div>
                                             </div>
@@ -715,7 +717,7 @@
                                                         </div>
                                                     </div>
                                                     <div class="col">
-                                                        <div class="input-group">
+                                                        <div id="modelSpeciesInputGroup" class="input-group">
                                                             <span class="input-group-text" id="modelSpeciesLabel">Species</span>
                                                             <input type="text" class="form-control" id="modelSpecies" name="modelSpecies" aria-label="Model species" aria-labelledby="modelSpeciesLabel" required>
                                                         </div>
@@ -724,13 +726,13 @@
                                                 <div class="row-separator"></div>
                                                 <div class="row">
                                                     <div class="col">
-                                                        <div class="input-group">
+                                                        <div id="modelBrainRegionInputGroup" class="input-group">
                                                             <span class="input-group-text" id="modelBrainRegionLabel">Brain Region</span>
                                                             <input type="text" class="form-control" id="modelBrainRegion" name="modelBrainRegion" aria-label="Model brain region" aria-labelledby="modelBrainRegionLabel" required>
                                                         </div>
                                                     </div>
                                                     <div class="col">
-                                                        <div class="input-group">
+                                                        <div id="modelCellTypeInputGroup" class="input-group">
                                                             <span class="input-group-text" id="modelCellTypeLabel">Cell Type</span>
                                                             <input type="text" class="form-control" id="modelCellType" name="modelCellType" aria-label="Model cell type" aria-labelledby="modelCellTypeLabel" required>
                                                         </div>
@@ -739,13 +741,13 @@
                                                 <div class="row-separator"></div>
                                                 <div class="row">
                                                     <div class="col">
-                                                        <div class="input-group">
+                                                        <div id="modelScopeInputGroup" class="input-group">
                                                             <span class="input-group-text" id="modelScopeLabel">Model Scope</span>
                                                             <input type="text" class="form-control" id="modelScope" name="modelScope" aria-label="Model scope" aria-labelledby="modelScopeLabel" required>
                                                         </div>
                                                     </div>
                                                     <div class="col">
-                                                        <div class="input-group">
+                                                        <div id="modelAbstractionInputGroup" class="input-group">
                                                             <span class="input-group-text" id="modelAbstractionLabel">Abstraction Level</span>
                                                             <input type="text" class="form-control" id="modelAbstraction" name="modelAbstraction" aria-label="Model abstraction level" aria-labelledby="modelAbstractionLabel" required>
                                                         </div>

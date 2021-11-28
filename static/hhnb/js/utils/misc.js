@@ -72,3 +72,12 @@ $("#modalBlueNaasContainer")[0].addEventListener("transitionstart", function (tr
 function dismissAlert(el) {
     console.log($(el).parent().removeClass("show"));
 }
+
+$("#modelPrivate").on("click", (button) => {
+    console.log(button.target.checked); 
+    if (button.target.checked) {
+        $("#modelPrivateValue").text("Private");
+    } else {
+        $("#modelPrivateValue").text("Public");
+    }
+});

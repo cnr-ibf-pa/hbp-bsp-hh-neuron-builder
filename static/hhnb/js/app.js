@@ -608,6 +608,7 @@ function displayJobList(button) {
             }
         }).fail((error) => {
             checkRefreshSession(error);
+            closeJobFetchDiv();
             Log.error("Status: " + error.status + " > " + error.responseText);
             MessageDialog.openErrorDialog(error.responseText);
         });
@@ -734,7 +735,7 @@ $("#checkNsgLoginButton").on("click", () => {
 /* ****************************** */
 
 $("#run-sim-btn").on("click", () => {
-    /* showLoadingAnimation("Uploading to BlueNaas...");
+    showLoadingAnimation("Uploading to BlueNaas...");
     $("#run-sim-btn").prop("disable", true);
     $.get("/hh-neuron-builder/upload-to-naas/" + exc)
         .done((data) => {
@@ -752,9 +753,7 @@ $("#run-sim-btn").on("click", () => {
             hideLoadingAnimation();
         }).always(() => {
             $("#run-sim-btn").prop("disable", false);
-        }) */
-    ModelRegistrationDialog.open();
-
+        })
 })
 
 
@@ -766,11 +765,14 @@ $("#back-to-wf-btn").on("click", () => {
 /*          Registration Model           */
 
 $("#reg-mod-main-btn").on("click", () => {
+    $("#modalBlueNaasContainer").removeClass("show");
     ModelRegistrationDialog.open();
 })
 
 $("#cancel-model-register-btn").on("click", () => {
     ModelRegistrationDialog.close();
+    $("#modalBlueNaasContainer").css("display", "block");
+    $("#modalBlueNaas").css("z-index", "100").addClass("show");
 })
 
 $("#register-model-btn").on("click", () => {

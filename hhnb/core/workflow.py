@@ -440,8 +440,19 @@ class WorkflowUtil:
                 fd.write(file_content)
 
     @staticmethod
-    def download_job_result_files(workflow, file_list, token):
-        if file_list['root_url'] == 'unicore':
+    def download_job_result_files(workflow, file_list):
+        if file_list['root_url'] == 'nsg':
+            for f in file_list['file_list'].keys():
+                r = requests.get(url=file_list['file_list'][f],
+                                 headers=file_list['headers'],
+                                 auth=(file_list['username'], file_list['password']))
+                if r.status_code != 200:
+                    continue
+                dst = os.path.join(workflow.get_results_dir(), f)
+                with open(dst, 'wb') as fd:
+                    for chunk in r.iter_content(chunk_size=4096):
+                        fd.write(chunk)   
+        elif file_list['root_url'] == 'unicore':
             for f in file_list['file_list'].keys():
                 if type(file_list['file_list'][f]) == PathFile:
                     dst = os.path.join(workflow.get_results_dir(), f)
@@ -449,7 +460,7 @@ class WorkflowUtil:
         elif file_list['root_url'].startswith('https://bspsa.cineca.it'):
             for f in file_list['file_list']:
                 r = requests.get(url=file_list['root_url'] + f,
-                                 headers={'Authorization': 'Bearer ' + token})
+                                 headers=file_list['headers'])
                 if r.status_code != 200:      
                     continue
                 dst = os.path.join(workflow.get_results_dir(), f)
@@ -459,9 +470,14 @@ class WorkflowUtil:
 
     @staticmethod
     def run_analysis(workflow, job_output):
-        shutil.unpack_archive(job_output, workflow.get_analysis_dir())
-        output_dir = os.path.join(workflow.get_analysis_dir(),
-                                  os.listdir(workflow.get_analysis_dir())[0])
+        analysis_dir = workflow.get_analysis_dir()
+        shutil.unpack_archive(job_output, analysis_dir)
+        
+        for f in [os.path.join(analysis_dir, f) for f in os.listdir(analysis_dir)]:
+            if os.path.isdir(f):
+                output_dir = f
+            else:
+                os.remove(f)
 
         analysis_file = os.path.join(output_dir, 'model', 'analysis.py')
         if not os.path.exists(analysis_file):

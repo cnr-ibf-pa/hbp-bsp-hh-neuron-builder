@@ -385,26 +385,10 @@ export default class Workflow {
             error: (error) => {
                 Log.error("Status: " + error.status + " > " + error.responseText);
                 if (error.status == 500) {
-                    ModelRegistrationDialog.close();
+                    // ModelRegistrationDialog.close();
                 }
                 MessageDialog.openErrorDialog(error.responseText);
             }
         }).always(() => hideLoadingAnimation() );
     }
-
-    /* #disableCellOptimizationBlock() {
-        const cellOptimizationBlock = $("#cellOptimizationBlock");
-        cellOptimizationBlock.addClass("disabledBlock");
-        for (var child of cellOptimizationBlock.children()) {
-            child.classList.add("disabledBlock");
-            for (var child2 of child.childNodes) {
-                // child2.classList.add("disabledBlock");
-                // child.addClass("disabledBlock");
-            }
-            // child.addClass("disabledBlock");
-
-        }
-        // var height = cellOptimizationBlock.css("height");
-    } */
-
 }

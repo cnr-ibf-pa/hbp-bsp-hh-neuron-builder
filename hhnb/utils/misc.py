@@ -1,3 +1,4 @@
+from requests.models import HTTPBasicAuth, HTTPError
 from hh_neuron_builder.settings import NSG_KEY
 from hhnb.core.response import ResponseUtil
 from collections import OrderedDict
@@ -25,13 +26,10 @@ def str_to_datetime(datetime_string, format=None):
     match = re.match(date_re + 'T' + time_re + 'Z', datetime_string)
     if match and match.end() == len(datetime_string):
         format = '%Y-%m-%dT%H:%M:%SZ'
+
+
     
     return datetime.datetime.strptime(datetime_string, format).replace(tzinfo=None)
-
-
-def verify_uploaded_archive(arch_file):
-    print(arch_file) 
-
 
 
 class JobHandler:
@@ -45,6 +43,8 @@ class JobHandler:
     class JobsFilesNotFound(Exception):
         pass
 
+    class HPCException(Exception):
+        pass
 
     def __init__(self):
         self._SA_DAINT_JOB_URL = 'https://bspsa.cineca.it/jobs/pizdaint/hhnb_daint_cscs/'
@@ -61,32 +61,33 @@ class JobHandler:
             'cipres-appkey': NSG_KEY
         }
 
-    def _get_nsg_payload(self, core_num, node_num, runtime):
+    def _get_nsg_payload(self, job_name, core_num, node_num, runtime):
         return {
             'tool': 'BLUEPYOPT_EXPANSE',
             'metadata.statusEmail': 'false',
+            'metadata.clientJobId': job_name,
             'vparam.number_cores_': core_num,
             'vparam.number_nodes_': node_num,
             'vparam.runtime_': runtime,
             'vparam.filename_': 'init.py'
         } 
 
-    def _submit_on_nsg(self, user, zip_file, settings):
-        payload = self._get_nsg_payload(core_num=settings['core-num'],
+    def _submit_on_nsg(self, username, password, zip_file, settings):
+        zip_name = os.path.split(zip_file)[1]
+        payload = self._get_nsg_payload(job_name=zip_name.split('.')[0],
+                                        core_num=settings['core-num'],
                                         node_num=settings['node-num'],
                                         runtime=settings['runtime'])
 
         headers = self._get_nsg_headers()
 
         files = {'input.infile_': open(zip_file, 'rb')}
-        r = requests.post(url=f'{self._NSG_URL}/job/{user.get_username()}', 
-                          auth=(user.get_username(), user.get_password()),
+        r = requests.post(url=f'{self._NSG_URL}/job/{username}', 
+                          auth=(username, password),
                           data=payload,
                           headers=headers,
                           files=files,
                           verify=False)
-        
-        print(r.status_code, r.content)
         
         if r.status_code == 200:
             root = xml.etree.ElementTree.fromstring(r.text)
@@ -96,7 +97,9 @@ class JobHandler:
             selfuri = root.find('selfUri').find('url').text
 
             # extract job handle
-            r = requests.get(selfuri, auth=(username, password), headers=headers)
+            r = requests.get(url=selfuri,
+                             auth=(username, password),
+                             headers=headers)
             root = xml.etree.ElementTree.fromstring(r.text)
             if not r.status_code == 200:
                 return ResponseUtil.ko_response(r.text)
@@ -105,21 +108,84 @@ class JobHandler:
 
         return ResponseUtil.ko_response(r.text)
 
-    def _get_nsg_job_list(self, user):
-        r = requests.get(url=f'{self._NSG_URL}/job/{user.get_username()}',
-                         auth=(user.get_username(), user.get_password()),
+    def _get_nsg_jobs(self, username, password):
+        r = requests.get(url=f'{self._NSG_URL}/job/{username}',
+                         auth=(username, password),
                          headers=self._get_nsg_headers())
-        print(r.status_code, r.text)
-        jobs = {}
-        if r.status_code == 200:
-            root = xml.etree.ElementTree.fromstring(r.text)
-            job_list = root.find('jobs')
-            
-            for job in job_list.findall('jobstatus'):
-                job_title = job.find('selfUri').find('title').text
-                job_url = job.find('selfUri').find('url').text
 
-        return None        
+        if r.status_code != 200:
+            root = xml.etree.ElementTree.fromstring(r.text)
+            message = '<b>' + root.find('displayMessage').text + '</b><br><br>'\
+                    + root.find('message').text
+            raise self.HPCException(message)
+        
+        jobs = {}
+        root = xml.etree.ElementTree.fromstring(r.text)
+        job_list = root.find('jobs')
+
+        for job in job_list.findall('jobstatus'):
+            job_title = job.find('selfUri').find('title').text
+            job_url = job.find('selfUri').find('url').text
+
+            r_job = requests.get(url=job_url,
+                                 auth=(username, password),
+                                 headers=self._get_nsg_headers())
+            if r_job.status_code != 200:
+                raise self.HPCException('Error while fetching jobs !')
+
+            root_job = xml.etree.ElementTree.fromstring(r_job.text)
+            
+            job_date_submitted = ''
+            job_stage = ''
+            job_terminal_stage = ''
+            job_failed = ''
+            job_client_id = ''
+
+            for child in root_job:
+                if child.tag == 'dateSubmitted':
+                    job_date_submitted = child.text
+                if child.tag == 'jobStage':
+                    job_stage = child.text
+                if child.tag == 'terminalStage':
+                    job_terminal_stage = True if child.text == 'true' else False
+                if child.tag == 'failed':
+                    job_failed = True if child.text == 'true' else False
+                if child.tag == 'metadata':
+                    for entry in child.findall('entry'):
+                        if entry.find('key').text == 'clientJobId':
+                            job_client_id = entry.find('value').text
+            
+            if job_terminal_stage and job_failed:
+                job_stage = 'FAILED'
+
+            jobs.update({
+                job_title: {
+                    'workflow_id': job_client_id,
+                    'status': job_stage,
+                    'title': job_client_id,
+                    'date': job_date_submitted
+                }
+            })
+            
+        return jobs
+
+    def _get_nsg_job_results(self, username, password, job_id):
+        r = requests.get(url=f'{self._NSG_URL}/job/{username}/{job_id}/output',
+                         auth=(username, password),
+                         headers=self._get_nsg_headers())
+
+        if r.status_code != 200:
+            raise self.HPCException('Unable to fetch job results !')
+        
+        file_list = {}
+        root = xml.etree.ElementTree.fromstring(r.text)
+        for child in root.find('jobfiles').findall('jobfile'):
+            job_file = child.find('downloadUri')
+            file_list.update({
+                job_file.find('title').text: job_file.find('url').text
+            })
+
+        return file_list
 
     def _get_unicore_command(self, zip_name):
         command = 'unzip ' + zip_name + '; cd ' + zip_name.split('.zip')[0] \
@@ -165,17 +231,17 @@ class JobHandler:
         job = client.new_job(job_description=job_description, inputs=[zip_file])
         return ResponseUtil.ok_response('Job submitted correctly on DAINT-CSCS')
 
-    def _get_jobs_on_unicore(self, hpc, token):
+    def _get_unicore_jobs(self, hpc, token):
         client = self._initialize_unicore_client(hpc, token)
         return client.get_jobs(tags=self._TAGS)
 
-    def _get_job_results_on_unicore(self, hpc, token, job_id):
+    def _get_unicore_job_results(self, hpc, token, job_id):
         client = self._initialize_unicore_client(hpc, token)
         print(client.access_info())
         job_url = client.links['jobs'] + '/' + job_id
         job = unicore_client.Job(client.transport, job_url)
         storage = job.working_dir
-        return {'root_url': 'unicore', 'file_list': storage.listdir()}
+        return storage.listdir()
 
     def _get_service_account_payload(self, command, node_num, core_num, runtime, title):
         return {
@@ -213,21 +279,21 @@ class JobHandler:
         
         return ResponseUtil.ok_response('Job submitted correctly on SA-CSCS')
 
-    def _get_jobs_on_service_account(self, token):
+    def _get_service_account_jobs(self, token):
         headers = self._get_service_account_headers(token)
         r = requests.get(url=self._SA_DAINT_JOB_URL, headers=headers)
         if r.status_code != 200:
             raise self.ServiceAccountException(r.content, r.status_code)
         return r.json()
 
-    def _get_job_results_on_service_account(self, token, job_id):
+    def _get_service_account_job_results(self, token, job_id):
         headers = self._get_service_account_headers(token)
         r = requests.get(url=self._SA_DAINT_FILES_URL + job_id + '/', headers=headers)
         if r.status_code == 404:
             raise self.JobsFilesNotFound('Job "%s" has expired and no one files is present' % job_id)
         if r.status_code != 200:
             raise self.ServiceAccountException(r.content, r.status_code)
-        return {'root_url': self._SA_DAINT_FILES_URL + job_id, 'file_list': r.json()}
+        return r.json()
           
 
     @classmethod
@@ -235,7 +301,9 @@ class JobHandler:
         
         job_handler = cls()
         if settings['hpc'] == job_handler._NSG:
-            return job_handler._submit_on_nsg(user.get_nsg_user(), zip_file, settings)
+            return job_handler._submit_on_nsg(user.get_nsg_user().get_username(),
+                                              user.get_nsg_user().get_password(),
+                                              zip_file, settings)
         elif settings['hpc'] == job_handler._DAINT_CSCS:
             return job_handler._submit_on_unicore(job_handler._DAINT_CSCS, user.get_token(),
                                                   zip_file, settings)
@@ -251,10 +319,11 @@ class JobHandler:
         jobs = {}
 
         if hpc == job_handler._NSG:
-            raw_jobs = job_handler._get_nsg_job_list(user.get_nsg_user())
+            jobs = job_handler._get_nsg_jobs(user.get_nsg_user().get_username(),
+                                             user.get_nsg_user().get_password())
 
         elif hpc == job_handler._DAINT_CSCS:
-            raw_jobs = job_handler._get_jobs_on_unicore(hpc, user.get_token())
+            raw_jobs = job_handler._get_unicore_jobs(hpc, user.get_token())
             for raw_job in raw_jobs:
                 props = raw_job.properties
                 job = { raw_job.job_id: {
@@ -266,7 +335,7 @@ class JobHandler:
                 jobs.update(job)
 
         elif hpc == job_handler._SA_CSCS:
-            raw_jobs = job_handler._get_jobs_on_service_account(user.get_token())
+            raw_jobs = job_handler._get_service_account_jobs(user.get_token())
             for raw_job in raw_jobs:
                 job = {raw_job['job_id']: {
                     'workflow_id': raw_job['title'],
@@ -286,11 +355,28 @@ class JobHandler:
     def fetch_job_files(cls, hpc, job_id, user):
 
         job_handler = cls()
+        if hpc == job_handler._NSG:
+            raw_file_list = job_handler._get_nsg_job_results(user.get_nsg_user().get_username(),
+                                                             user.get_nsg_user().get_password(),
+                                                             job_id)
+            file_list = {
+                'root_url': 'nsg', 
+                'file_list': raw_file_list,
+                'headers': job_handler._get_nsg_headers(),
+                'username': user.get_nsg_user().get_username(),
+                'password': user.get_nsg_user().get_password()
+            }
         if hpc == job_handler._DAINT_CSCS:
-            file_list = job_handler._get_job_results_on_unicore(hpc=hpc, 
-                                                                token=user.get_token(),
-                                                                job_id=job_id)
+            raw_file_list = job_handler._get_unicore_job_results(hpc, user.get_token(), job_id)
+            file_list = {
+                'root_url': 'unicore', 
+                'file_list': raw_file_list
+            }
         if hpc == job_handler._SA_CSCS:
-            file_list = job_handler._get_job_results_on_service_account(token=user.get_token(),
-                                                                        job_id=job_id)
+            raw_file_list = job_handler._get_service_account_job_results(user.get_token(), job_id)
+            file_list = {
+                'root_url': cls._SA_DAINT_FILES_URL + job_id, 
+                'file_list': raw_file_list,
+                'headers': {'Authorization': 'Bearer ' + user.get_token()}
+            }
         return file_list

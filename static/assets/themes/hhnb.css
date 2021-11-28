@@ -737,12 +737,12 @@ body {
 .overlay-content.overflow {
     overflow-y: auto;
 }
-
+/* 
 .reg-model-content {
     /* transform: translateY( -20% ); */
-    width: 850px;
+    /* width: 850px; */
 }
-
+ */
 .error-content {
     /* max-width: 800px; */
     font-size: 1rem;
@@ -803,7 +803,10 @@ body {
 .input-group-text {
     border-top-right-radius: 0px;
     border-bottom-right-radius: 0px;
-    min-width: 100px;
+    min-width: 150px;
+}
+.input-group-text.lg {
+    min-width: 170px;
 }
 
 
@@ -901,8 +904,8 @@ body {
 }
 
 td {
-    align-self: center;
     line-height: 2;
+    vertical-align: middle;
 }
 
 .job-download-button {
@@ -1727,7 +1730,8 @@ i.disabled:hover {
 
 #dialogtext {
     min-width: 300px;
-    font-weight: bold;
+    /* font-weight: bold; */
+    padding: 1rem;
 }
 
 .workflow-content.disabled {
@@ -1743,4 +1747,24 @@ i.disabled:hover {
 
 #overlayjobs {
     transition: unset;
+}
+
+#overlaycontentdialog {
+    max-width: 800px;
+}
+
+#modelName {
+    padding-right: 0px;
+}
+
+#modelSuffix {
+    padding-left: 0px;
+}
+
+.form-select {
+    width: 100%;
+}
+
+.form-control {
+    border: 1px solid lightgray;
 }

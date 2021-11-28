@@ -313,6 +313,7 @@ def upload_model(request, exc):
     return ResponseUtil.ok_response()
 
 
+# TODO: fix this function 
 def upload_analysis(request, exc):
     if request.method != 'POST':
         return ResponseUtil.method_not_allowed('POST') 
@@ -343,8 +344,16 @@ def upload_analysis(request, exc):
         shutil.rmtree(tmp_dir)
     os.mkdir(tmp_dir)
     shutil.unpack_archive(uploaded_file_path, tmp_dir)
+
+    if os.listdir(tmp_dir) == [uploaded_file.name.split('.')[0]]:
+        unzip_dir_path = os.path.join(tmp_dir, uploaded_file.name.split('.')[0])
+        if all([True if dir in os.listdir(unzip_dir_path) else False\
+                for dir in ['mechanisms', 'morphology', 'checkpoints']]):
+            shutil.move(unzip_dir_path, workflow.get_analysis_dir())
+            return ResponseUtil.ok_response('')
+
     if os.listdir(tmp_dir) != [uploaded_file.name, 'sign.txt']:
-                return ResponseUtil.ko_response('<b>Invalid file!</b><br><br>\
+        return ResponseUtil.ko_response('<b>Invalid file!</b><br><br>\
                                          Upload a correct archive.')
     try:
         with open(os.path.join(tmp_dir, uploaded_file.name), 'rb') as arch_fd:
@@ -366,13 +375,13 @@ def upload_analysis(request, exc):
                 shutil.move(unzip_dir_path, workflow.get_analysis_dir())
         else:
             for f in tmp_dir_list:
-                shutil.move(os.path.join(workflow.get_tmp_dir(), f),
-                            workflow.get_results_dir())
+               shutil.move(os.path.join(workflow.get_tmp_dir(), f),
+                          workflow.get_results_dir())
             # run analisys
             return run_analysis(request, exc)
         
         return ResponseUtil.ok_response('')
-    
+
     except Exception as e:
         print(str(e))
 
@@ -547,9 +556,13 @@ def fetch_jobs(request, exc):
         return ResponseUtil.ko_response('Some error occurred while fetching jobs on \
                                          Daint-CSCS.<br>If the problem persists \
                                          contact the support.')
+    except JobHandler.HPCException as e:
+        print(e)
+        return ResponseUtil.ko_response(str(f'<b>{e}</b>'))
+
     except Exception as e:
         print(e)
-        return ResponseUtil.ko_response('Critical Error!')
+        return ResponseUtil.ko_response('<b>Critical Error !</b>')
 
 
 def fetch_job_results(request, exc):
@@ -568,8 +581,7 @@ def fetch_job_results(request, exc):
 
     try:
         file_list = JobHandler.fetch_job_files(hpc, job_id, hhnb_user)
-        print(file_list)
-        WorkflowUtil.download_job_result_files(workflow, file_list, hhnb_user.get_token())
+        WorkflowUtil.download_job_result_files(workflow, file_list)
 
         return ResponseUtil.ok_response()
 
@@ -610,8 +622,14 @@ def upload_to_naas(request, exc):
 
     workflow, _ = get_workflow_and_user(request, exc)
 
-    naas_archive = WorkflowUtil.make_naas_archive(workflow)
-   
+    try:
+        naas_archive = WorkflowUtil.make_naas_archive(workflow)
+    except Exception:
+        return ResponseUtil.ko_response('<b>Error !</b><br><br>Somethig goes wrong \
+                                         with the analysis process.<br>Please try again \
+                                         later and if the error persists contact the \
+                                         Ebrains support.')
+
     try:
         r = requests.post(url='https://blue-naas-svc-bsp-epfl.apps.hbp.eu/upload',
                           files={'file': open(naas_archive, 'rb')}, verify=False)
@@ -636,6 +654,18 @@ def get_model_data(request, exc):
     # STILL USING THE DEFAULT CREDENTIAL
 
 
+def get_model_catalog_attribute_options(request):
+    if request.method != 'GET':
+        return ResponseUtil.method_not_allowed('GET')
+    mc_username, mc_password = MODEL_CATALOG_CREDENTIALS
+    try:
+        mc = ModelCatalog(username=mc_username, password=mc_password)
+        options = mc.get_attribute_options()
+        return ResponseUtil.ok_json_response(options)
+    except Exception as e:
+        print(e)
+        return ResponseUtil.ko_response('Error')
+
 
 def register_model(request, exc):
     if request.method != 'POST':
@@ -644,13 +674,18 @@ def register_model(request, exc):
         return ResponseUtil.no_exc_code_response()
 
     form_data = request.POST
+
     workflow, hhnb_user = get_workflow_and_user(request, exc)
     
     if not workflow.get_properties()['analysis']:
         return ResponseUtil.ko_response('No model detected')
 
     model_zip = WorkflowUtil.make_analysis_archive(workflow)
-    model_zip_path, model_zip_name = os.path.split(model_zip)
+    model_zip_path, old_model_zip_name = os.path.split(model_zip)
+    model_zip_name = old_model_zip_name.split('_analysis.zip')[0] \
+                   + form_data.get('modelSuffix', '') + '.zip'
+    os.rename(src=model_zip, dst=os.path.join(model_zip_path, model_zip_name))
+    model_zip = os.path.join(model_zip_path, model_zip_name)
 
     try:
         if MODEL_CATALOG_CREDENTIALS == ('username', 'password'):
@@ -661,18 +696,13 @@ def register_model(request, exc):
         mc_username, mc_password = MODEL_CATALOG_CREDENTIALS
         mc = ModelCatalog(username=mc_username, password=mc_password)
 
-        # client = ebrains_drive.connect(token=mc.auth.token)
         client = ebrains_drive.connect(username=mc_username, password=mc_password)
-        # client = ebrains_drive.connect(username='rsmiriglia', password='5Xsx/Zw"GknN/R>~c^fx:}vl.7a|@NkG')
         repo = client.repos.get_repo_by_url(MODEL_CATALOG_COLLAB_URL)
-        # repo = client.repos.get_repo_by_url('https://wiki.ebrains.eu/bin/view/Collabs/rsmir-test/')
         seafdir = repo.get_dir('/' + MODEL_CATALOG_COLLAB_DIR)
-        # seafdir = repo.get_dir('/')
-        # seafdir = repo.get_dir('/test')
-        mc_zip_uploaded = seafdir.upload_local_file(model_zip)
+        uploaded_model = seafdir.upload_local_file(model_zip)
 
-        reg_mod_url = f'https://wiki.ebrains.eu/lib/{ repo.id }/file/\
-                      { MODEL_CATALOG_COLLAB_DIR }/{ model_zip_name }?dl=1'
+        reg_mod_url = f'https://wiki.ebrains.eu/lib/{ repo.id }/file/'\
+                    + f'{ MODEL_CATALOG_COLLAB_DIR }/{ model_zip_name }?dl=1'
 
         auth_family_name = form_data.get('authorLastName')
         auth_given_name = form_data.get('authorFirstName')
@@ -686,24 +716,60 @@ def register_model(request, exc):
         own_given_name = form_data.get('ownerFirstName')
         license = form_data.get('modelLicense')
         description = form_data.get('modelDescription')
-        private = form_data.get('modelPrivate')
-    
-        invalid_field = {}
-        for k in form_data.keys():
-            invalid_field.update({k, 'is invalid'})
+        private_flag = True if form_data.get('modelPrivate') == 'true' else False     
 
-        return ResponseUtil.ko_json_response(invalid_field)
+        registered_model = mc.register_model(
+            collab_id='hhnb-registeredmodels',
+            name=model_zip_name.split('.')[0],
+            author={'family_name': auth_family_name, 'given_name': auth_given_name},
+            organization=organization,
+            private=private_flag,
+            species=species,
+            brain_region=brain_region,
+            cell_type=cell_type,
+            model_scope=model_scope,
+            abstraction_level=abstraction_level,
+            owner={'family_name': own_family_name, 'given_name': own_given_name},
+            description=description,
+            instances=[{
+                'version': '1.0',
+                'source': reg_mod_url,
+                'license': license,
+            }]
+        )
+        print(registered_model)
+        import pprint
+        pprint.pprint(registered_model)
 
-        return ResponseUtil.ok_response('Model registered successfully')
+        model_path_on_mc = 'https://model-catalog.brainsimulation.eu/'\
+                         + '#model_id.{}'.format(registered_model['id'])
+        
+        return ResponseUtil.ok_response(
+            '<b>Congratulation, the model was successfully registered in the Model Catalog !</b><br>\
+             <br>Model\'s info and metadata can be shown <a href="{}" target="_black">here</a>.\
+             <br><br>Once the page will be opened in a new tab, if a welcome message is \
+             displayed instead of the model instance, please click on the "Authorize" button\
+             if requested.<br><br>Leave the current tab open in case you need to recollect the\
+             model url.'.format(model_path_on_mc)
+        )
 
     except EbrainsDriveClientError as e:
         code = e.code
         message = e.message
         return ResponseUtil.ko_response(code, message)
 
+    except FileExistsError as e:
+        print(e)
+        return ResponseUtil.ko_response('Model already exists on the Model Catalog.')
+
     except EnvironmentError as e:
         print(e)
         return ResponseUtil.ko_response('Invalid credentials')
+
+    except Exception as e:
+        uploaded_model.delete()
+        print(e)
+        return ResponseUtil.ko_response(f'<b>Error !</b><br><br>{str(e)}')
 
     return ResponseUtil.ko_response('Some error occurred.')
 

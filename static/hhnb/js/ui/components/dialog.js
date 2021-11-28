@@ -323,15 +323,69 @@ class OptimizationSettingsDialog {
 }
 
 
+function replaceWithSelectElement(id, options) {
+    $("#" + id).remove();
+    $("#" + id + "InputGroup")
+        .append("<select id='" + id + "' class='form-select' name='" + id + "'>");
+    $.each(options, (index, value)  => {
+        $("#" + id).append("<option>" + value + "</option>");
+    });
+}   
+
 class ModelRegistrationDialog {
 
     static open() {
-        $("#overlaywrapper").css("display", "block");
-        $("#overlaywrapmodreg").css("display", "block"); 
-        
+        showLoadingAnimation("Loading options...");
         let modelName = $("#wf-title").text().split("Workflow ID: ")[1];
+        
+
+        $.ajax({
+            url: "/hh-neuron-builder/get-model-catalog-attribute-options",
+            method: "GET",
+            async: false,
+            success: options => {
+                Log.debug(options);
+                for (let key of Object.keys(options)) {
+                    switch(key) {
+                        case "species":
+                            replaceWithSelectElement("modelSpecies", options[key]);
+                            break;
+
+                        case "brain_region":
+                            replaceWithSelectElement("modelBrainRegion", options[key]);
+                            break;
+                    
+                        case "model_scope":
+                            replaceWithSelectElement("modelScope", options[key]);
+                            break;
+                    
+                        case "abstraction_level":
+                            replaceWithSelectElement("modelAbstraction", options[key]);
+                            break;
+                    
+                        case "cell_type":
+                            replaceWithSelectElement("modelCellType", options[key]);
+                            break;
+
+                        case "license":
+                            
+                            $("#modelLicense").empty();    
+                            $.each(options[key], (index, value) => {
+                                $("#modelLicense").append("<option>" + value + "</option>");
+                            })
+                            break
+                        
+                        default:
+                    }
+                }
+            }
+        })
         Log.debug("modelName " + modelName);
         $("#modelName").val(modelName)
+    
+        $("#overlaywrapper").css("display", "block");
+        $("#overlaywrapmodreg").css("display", "block"); 
+        hideLoadingAnimation();
     }
 
     static close() {
@@ -341,8 +395,12 @@ class ModelRegistrationDialog {
 
     static getFormData() {
         const formData = new FormData($("#modelRegisterForm")[0]);
+        formData.append("modelPrivate", $("#modelPrivate").prop("checked"));
         for (let value of formData.values()) {
             Log.debug(value);
+        }
+        for (let key of formData.keys()) {
+            Log.debug(key);
         }
         return formData;
     }
