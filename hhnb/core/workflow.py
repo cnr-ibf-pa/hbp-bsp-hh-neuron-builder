@@ -16,6 +16,7 @@ from pyunicore.client import PathFile
 from datetime import datetime
 from subprocess import call as os_call
 from sys import prefix as env_prefix
+import sys
 import shutil
 import os
 import json
@@ -515,8 +516,11 @@ class WorkflowUtil:
 
         curr_dir = os.getcwd()
         os.chdir(output_dir)
-        os_call('nrnivmodl mechanisms', shell=True)
-        os_call('python ./opt_neuron.py --analyse --checkpoint ./checkpoints > /dev/null 2>&1', shell=True)        
+        os_call(f'source {env_prefix}/bin/activate; nrnivmodl mechanisms',
+                shell=True, executable='/bin/bash')
+        os_call(f'source {env_prefix}/bin/activate;' \
+                +'python ./opt_neuron.py --analyse --checkpoint ./checkpoints', 
+                shell=True, executable='/bin/bash')
         os.chdir(curr_dir)
 
 

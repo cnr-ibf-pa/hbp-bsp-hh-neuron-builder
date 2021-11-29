@@ -624,7 +624,8 @@ def upload_to_naas(request, exc):
 
     try:
         naas_archive = WorkflowUtil.make_naas_archive(workflow)
-    except Exception:
+    except Exception as e:
+        print(e)
         return ResponseUtil.ko_response('<b>Error !</b><br><br>Somethig goes wrong \
                                          with the analysis process.<br>Please try again \
                                          later and if the error persists contact the \
