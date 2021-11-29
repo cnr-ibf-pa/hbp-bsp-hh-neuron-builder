@@ -498,6 +498,7 @@ function dismissAlert(el) {
 }
 
 function resetJobFetchDiv() {
+    $("#overlayjobs").removeClass("scroll-long-content");
     $("#nsgLoginRow").css("display", "none");
     $("#spinnerRow").css("display", "none");
     $("#progressRow").css("display", "none");
