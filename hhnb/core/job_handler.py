@@ -1,9 +1,6 @@
-from requests.models import HTTPBasicAuth, HTTPError
 from hh_neuron_builder.settings import NSG_KEY
 from hhnb.core.response import ResponseUtil
 from collections import OrderedDict
-
-from hhnb.core.security import Cypher
 
 import pyunicore.client as unicore_client
 import xml.etree.ElementTree
@@ -12,6 +9,8 @@ import os
 import json
 import re
 import datetime
+
+from hhnb.utils import messages
 
 
 def str_to_datetime(datetime_string, format=None):
@@ -104,7 +103,7 @@ class JobHandler:
             if not r.status_code == 200:
                 return ResponseUtil.ko_response(r.text)
 
-            return ResponseUtil.ok_response('Job submitted correctly on NSG')            
+            return ResponseUtil.ok_response(messages.JOB_SUBMITTED.format('NSG'))            
 
         return ResponseUtil.ko_response(r.text)
 
@@ -131,7 +130,7 @@ class JobHandler:
                                  auth=(username, password),
                                  headers=self._get_nsg_headers())
             if r_job.status_code != 200:
-                raise self.HPCException('Error while fetching jobs !')
+                raise self.HPCException(messages.JOB_FETCH_ERROR.format('NSG'))
 
             root_job = xml.etree.ElementTree.fromstring(r_job.text)
             
@@ -175,7 +174,7 @@ class JobHandler:
                          headers=self._get_nsg_headers())
 
         if r.status_code != 200:
-            raise self.HPCException('Unable to fetch job results !')
+            raise self.HPCException(messages.JOB_RESULTS_FETCH_ERRROR)
         
         file_list = {}
         root = xml.etree.ElementTree.fromstring(r.text)
@@ -212,7 +211,7 @@ class JobHandler:
         hpc_url = unicore_client.get_sites(transport)[hpc]
         client = unicore_client.Client(transport, hpc_url)
         if client.access_info()['role']['selected'] == 'anonymous':
-            raise self.UnicoreClientException('Unable to login user')
+            raise self.UnicoreClientException(messages.USER_LOGIN_ERROR)
         return client
 
     def _submit_on_unicore(self, hpc, token, zip_file, settings):
@@ -229,7 +228,7 @@ class JobHandler:
 
         client = self._initialize_unicore_client(hpc, token)        
         job = client.new_job(job_description=job_description, inputs=[zip_file])
-        return ResponseUtil.ok_response('Job submitted correctly on DAINT-CSCS')
+        return ResponseUtil.ok_response(messages.JOB_SUBMITTED.format(hpc))
 
     def _get_unicore_jobs(self, hpc, token):
         client = self._initialize_unicore_client(hpc, token)
@@ -277,7 +276,7 @@ class JobHandler:
             
             return ResponseUtil.ko_response(r.text)
         
-        return ResponseUtil.ok_response('Job submitted correctly on SA-CSCS')
+        return ResponseUtil.ok_response(messages.JOB_SUBMITTED.format('SA-CSCS'))
 
     def _get_service_account_jobs(self, token):
         headers = self._get_service_account_headers(token)
@@ -290,7 +289,7 @@ class JobHandler:
         headers = self._get_service_account_headers(token)
         r = requests.get(url=self._SA_DAINT_FILES_URL + job_id + '/', headers=headers)
         if r.status_code == 404:
-            raise self.JobsFilesNotFound('Job "%s" has expired and no one files is present' % job_id)
+            raise self.JobsFilesNotFound(messages.JOB_EXPIRED.format(job_id))
         if r.status_code != 200:
             raise self.ServiceAccountException(r.content, r.status_code)
         return r.json()
@@ -310,7 +309,7 @@ class JobHandler:
         elif settings['hpc'] == job_handler._SA_CSCS:
             return job_handler._submit_on_service_account(user.get_token(),
                                                           zip_file, settings)
-        return ResponseUtil.ko_response('Something goes wrong.')
+        return ResponseUtil.ko_response(messages.GENERAL_ERROR)
        
     @classmethod
     def fetch_jobs_list(cls, hpc, user):

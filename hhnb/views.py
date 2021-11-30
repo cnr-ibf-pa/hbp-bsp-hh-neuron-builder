@@ -1,6 +1,5 @@
 """ Views """
 
-from posix import listdir
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 
@@ -11,7 +10,9 @@ from hhnb.core.response import ResponseUtil
 from hhnb.core.workflow import Workflow, WorkflowUtil
 from hhnb.core.user import * 
 from hhnb.core.security import *
-from hhnb.utils.misc import JobHandler
+from hhnb.core.job_handler import *
+
+from hhnb.utils import messages 
 
 from hbp_validation_framework import ModelCatalog, ResponseError
 
@@ -23,7 +24,7 @@ import datetime
 import os
 import json
 import shutil
-import time
+
 
 def status(request):
     return ResponseUtil.ok_json_response({'hh-neuron-builder-status': 1})
@@ -88,7 +89,7 @@ def initialize_workflow(request):
         return ResponseUtil.ko_response(500, str(e))
     except PermissionError as e:
         print(e)
-        return ResponseUtil.ko_response(500, 'Critical error !<br>Please contact the support.')
+        return ResponseUtil.ko_response(500, messages.CRITICAL_ERROR)
 
     exc = generate_exc_code(request)
 
@@ -188,9 +189,7 @@ def fetch_models(request, exc):
 
     try:
         if MODEL_CATALOG_CREDENTIALS == ('username', 'password'):
-            raise EnvironmentError('Invalid ModelCatalog credentials.\
-                                    Set them into your configuration \
-                                    file under\ "hh_neuron_builder/conf/"')
+            raise EnvironmentError(messages.MODEL_CATALOG_CREDENTIALS_NOT_FOUND)
 
         mc_username, mc_password = MODEL_CATALOG_CREDENTIALS
         mc = ModelCatalog(username=mc_username, password=mc_password)
@@ -211,7 +210,7 @@ def fetch_models(request, exc):
                                                             local_directory=TMP_DIR, overwrite=False)    
                     model_path = model_path.decode()
                     if not model_path:
-                        return ResponseUtil.ko_response('ModelCatalog temporarily not accessible')
+                        return ResponseUtil.ko_response(messages.MODEL_CATALOG_NOT_AVAILABLE)
                 except FileExistsError:
                     model_path = os.path.join(TMP_DIR, model['name'] + '.zip')
                 workflow, _ = get_workflow_and_user(request, exc)
@@ -219,10 +218,10 @@ def fetch_models(request, exc):
                 
     except ResponseError as e:
         print(e)
-        return ResponseUtil.ko_response('ModelCatalog termporarily not accessible')
+        return ResponseUtil.ko_response(messages.MODEL_CATALOG_NOT_AVAILABLE)
     except EnvironmentError as e:
         print(e)
-        return ResponseUtil.ko_response('Invalid credentials')
+        return ResponseUtil.ko_response(messages.MODEL_CATALOG_INVALID_CREDENTIALS)
 
     # handle model 
     return ResponseUtil.ok_response()
@@ -249,13 +248,13 @@ def upload_features(request, exc):
     # get uploaded features 
     uploaded_files = request.FILES.getlist('formFile')
     if len(uploaded_files) == 0:
-        return ResponseUtil.ok_response('No files uploaded')
+        return ResponseUtil.ok_response(messages.NO_FILE_UPLOADED)
     if len(uploaded_files) > 2:
-            return ResponseUtil.ko_response('Cannot upload more then 2 files')
+            return ResponseUtil.ko_response(messages.NO_MORE_THEN.format('2 files'))
     
     for uploaded_file in uploaded_files:
         if uploaded_file.name != 'features.json' and uploaded_file.name != 'protocols.json':
-            return ResponseUtil.ko_response('Wrong files uploaded')
+            return ResponseUtil.ko_response(messages.WRONG_UPLAODED_FILE)
         if uploaded_file.name == 'features.json':
             workflow.write_features(uploaded_file)
         elif uploaded_file.name == 'protocols.json':
@@ -272,9 +271,9 @@ def upload_model(request, exc):
 
     uploaded_files = request.FILES.getlist('formFile')
     if len(uploaded_files) == 0:
-        return ResponseUtil.ok_response('No files uploaded')
+        return ResponseUtil.ok_response(messages.NO_FILE_UPLOADED)
     if len(uploaded_files) != 1:
-        return ResponseUtil.ko_response('Must upload only "model.zip" file.')
+        return ResponseUtil.ko_response(messages.ONLY_ACCEPTED_FILE.format('"model.zip"'))
 
     workflow, user = get_workflow_and_user(request, exc)
 
@@ -294,21 +293,19 @@ def upload_model(request, exc):
     os.mkdir(tmp_dir)
     shutil.unpack_archive(uploaded_file_path, tmp_dir)
     if os.listdir(tmp_dir) != [uploaded_file.name, 'sign.txt']:
-        return ResponseUtil.ko_response('<b>Invalid file!</b><br><br>\
-                                         Upload a correct archive.')
+        return ResponseUtil.ko_response(messages.INVALID_FILE.format('model'))
     try:
         with open(os.path.join(tmp_dir, uploaded_file.name), 'rb') as arch_fd:
             with open(os.path.join(tmp_dir, 'sign.txt'), 'r') as sign_fd:
                 Sign.verify_data_sign(sign_fd.read(), arch_fd.read())
     except InvalidSign:
-        return ResponseUtil.ko_response('<b>Invalid signature!</b><br><br>\
-                                         Uploaded file is corrupted or modified.')
+        return ResponseUtil.ko_response(messages.INVALID_SIGNATURE.format('model'))
 
     try:
         workflow.load_model_zip(os.path.join(workflow.get_tmp_dir(),
                                              uploaded_file.name))
     except FileNotFoundError as e:
-        return ResponseUtil.ko_response('Invalid model archive')
+        return ResponseUtil.ko_response(messages.MARLFORMED_FILE.format('"model.zip"'))
 
     return ResponseUtil.ok_response()
 
@@ -322,9 +319,9 @@ def upload_analysis(request, exc):
 
     uploaded_files = request.FILES.getlist('formFile')
     if len(uploaded_files) == 0:
-        return ResponseUtil.ok_response('No files uploaded')
+        return ResponseUtil.ok_response(messages.NO_FILE_UPLOADED)
     if len(uploaded_files) != 1:
-        return ResponseUtil.ko_response('Must upload only ".zip" file.')
+        return ResponseUtil.ko_response(messages.NO_MORE_THEN.format('a ".zip" file'))
 
     workflow, user = get_workflow_and_user(request, exc)
 
@@ -353,15 +350,13 @@ def upload_analysis(request, exc):
             return ResponseUtil.ok_response('')
 
     if os.listdir(tmp_dir) != [uploaded_file.name, 'sign.txt']:
-        return ResponseUtil.ko_response('<b>Invalid file!</b><br><br>\
-                                         Upload a correct archive.')
+        return ResponseUtil.ko_response(messages.INVALID_FILE.format('analysis'))
     try:
         with open(os.path.join(tmp_dir, uploaded_file.name), 'rb') as arch_fd:
             with open(os.path.join(tmp_dir, 'sign.txt'), 'r') as sign_fd:
                 Sign.verify_data_sign(sign_fd.read(), arch_fd.read())
     except InvalidSign:
-        return ResponseUtil.ko_response('<b>Invalid signature!</b><br><br>\
-                                         Uploaded file is corrupted or modified.')
+        return ResponseUtil.ko_response(messages.INVALID_SIGNATURE.format('analysis'))
 
     try:
         shutil.unpack_archive(os.path.join(tmp_dir, uploaded_file.name),
@@ -385,7 +380,8 @@ def upload_analysis(request, exc):
     except Exception as e:
         print(str(e))
 
-    return ResponseUtil.ko_response('Error! Malformed zip file.')
+    return ResponseUtil.ko_response(messages.MARLFORMED_FILE.format('"analysis.zip"'))
+
 
 def upload_files(request, exc):
     if not exc in request.session.keys():
@@ -452,7 +448,7 @@ def download_files(request, exc):
         )  
         return ResponseUtil.file_response(final_zip_file)
     
-    return ResponseUtil.ko_response('No files selected to download')
+    return ResponseUtil.ko_response(messages.NO_FILE_TO_DOWNLOAD)
 
 
 def delete_files(request, exc):
@@ -464,7 +460,7 @@ def delete_files(request, exc):
     file_list = json.loads(request.body).get('file_list')
 
     if file_list and len(file_list) <= 0:
-        return ResponseUtil.ok_response('Any file to delete')
+        return ResponseUtil.ok_response(messages.NO_FILE_TO_DELETE)
     
     workflow, _ = get_workflow_and_user(request, exc)
     
@@ -472,8 +468,7 @@ def delete_files(request, exc):
         try:
             workflow.remove_file(f)
         except PermissionError:
-            return ResponseUtil.ko_response('Critical error !<br>If the problem persists, \
-                                             please contact the support.')
+            return ResponseUtil.ko_response(messages.CRITICAL_ERROR)
     
     return ResponseUtil.ok_json_response()
 
@@ -496,7 +491,7 @@ def optimization_settings(request, exc=None):
             if nsg_username and nsg_password:
                 nsg_user = NsgUser(nsg_username, nsg_password)
                 if not nsg_user.validate_credentials():
-                    return ResponseUtil.ko_response('Invalid credentials')
+                    return ResponseUtil.ko_response(messages.AUTHENTICATION_INVALID_CREDENTIALS)
 
                 request.session['nsg_username'] = nsg_username
                 request.session['nsg_password'] = nsg_password
@@ -539,7 +534,7 @@ def fetch_jobs(request, exc):
 
     hpc = request.GET.get('hpc')
     if not hpc:
-        return ResponseUtil.ko_response('No HPC selected')
+        return ResponseUtil.ko_response(messages.NO_HPC_SELECTED)
 
     _, hhnb_user = get_workflow_and_user(request, exc)
 
@@ -548,21 +543,17 @@ def fetch_jobs(request, exc):
         return ResponseUtil.ok_json_response(data)
     except JobHandler.ServiceAccountException as e:
         print(e)
-        return ResponseUtil.ko_response('Some error occurred while fetching jobs on \
-                                         Service Account.<br>If the problem persists \
-                                         contact the support.')
+        return ResponseUtil.ko_response(messages.JOB_FETCH_ERROR.format('SERVICE ACCOUNT'))
     except JobHandler.UnicoreClientException as e:
         print(e)
-        return ResponseUtil.ko_response('Some error occurred while fetching jobs on \
-                                         Daint-CSCS.<br>If the problem persists \
-                                         contact the support.')
+        return ResponseUtil.ko_response(messages.JOB_FETCH_ERROR.format('DAINT-CSCS'))
     except JobHandler.HPCException as e:
         print(e)
         return ResponseUtil.ko_response(str(f'<b>{e}</b>'))
 
     except Exception as e:
         print(e)
-        return ResponseUtil.ko_response('<b>Critical Error !</b>')
+        return ResponseUtil.ko_response(messages.CRITICAL_ERROR)
 
 
 def fetch_job_results(request, exc):
@@ -573,9 +564,9 @@ def fetch_job_results(request, exc):
     job_id = request.GET.get('job_id')
 
     if not hpc:
-        return ResponseUtil.ko_response('No HPC selected')
+        return ResponseUtil.ko_response(messages.NO_HPC_SELECTED)
     if not job_id:
-        return ResponseUtil.ko_response('No Job selected')
+        return ResponseUtil.ko_response(messages.NO_JOB_SELECTED)
 
     workflow, hhnb_user = get_workflow_and_user(request, exc)
 
@@ -591,7 +582,7 @@ def fetch_job_results(request, exc):
     except Exception as e:
         print(e)
 
-    return ResponseUtil.ko_response('Error while fetching job results')
+    return ResponseUtil.ko_response(messages.JOB_RESULTS_FETCH_ERRROR)
 
 
 def run_analysis(request, exc):
@@ -613,7 +604,7 @@ def run_analysis(request, exc):
      
     except Exception as e:
         print(e)
-    return ResponseUtil.ko_response('Some error occurred')
+    return ResponseUtil.ko_response(messages.ANALYSIS_ERROR)
 
 
 def upload_to_naas(request, exc):
@@ -626,10 +617,7 @@ def upload_to_naas(request, exc):
         naas_archive = WorkflowUtil.make_naas_archive(workflow)
     except Exception as e:
         print(e)
-        return ResponseUtil.ko_response('<b>Error !</b><br><br>Somethig goes wrong \
-                                         with the analysis process.<br>Please try again \
-                                         later and if the error persists contact the \
-                                         Ebrains support.')
+        return ResponseUtil.ko_response(messages.ANALYSIS_ERROR)
 
     try:
         r = requests.post(url='https://blue-naas-svc-bsp-epfl.apps.hbp.eu/upload',
@@ -638,8 +626,7 @@ def upload_to_naas(request, exc):
             return ResponseUtil.ok_response(os.path.split(naas_archive)[1].split('.zip')[0])
     except requests.exceptions.ConnectionError as e:
         print(e)
-        return ResponseUtil.ko_response(500, 'BlueNaas temporarily not available.\
-                                              <br>Please, try again later.')
+        return ResponseUtil.ko_response(500, messages.BLUE_NAAS_NOT_AVAILABLE)
 
     return ResponseUtil.ko_response(r.status_code, r.content)
 
@@ -665,7 +652,7 @@ def get_model_catalog_attribute_options(request):
         return ResponseUtil.ok_json_response(options)
     except Exception as e:
         print(e)
-        return ResponseUtil.ko_response('Error')
+        return ResponseUtil.ko_response(messages.GENERAL_ERROR)
 
 
 def register_model(request, exc):
@@ -690,9 +677,7 @@ def register_model(request, exc):
 
     try:
         if MODEL_CATALOG_CREDENTIALS == ('username', 'password'):
-            raise EnvironmentError('Invalid ModelCatalog credentials.\
-                                    Set them into your configuration \
-                                    file under\ "hh_neuron_builder/conf/"')
+            raise EnvironmentError(messages.MODEL_CATALOG_INVALID_CREDENTIALS)
 
         mc_username, mc_password = MODEL_CATALOG_CREDENTIALS
         mc = ModelCatalog(username=mc_username, password=mc_password)
@@ -745,14 +730,7 @@ def register_model(request, exc):
         model_path_on_mc = 'https://model-catalog.brainsimulation.eu/'\
                          + '#model_id.{}'.format(registered_model['id'])
         
-        return ResponseUtil.ok_response(
-            '<b>Congratulation, the model was successfully registered in the Model Catalog !</b><br>\
-             <br>Model\'s info and metadata can be shown <a href="{}" target="_black">here</a>.\
-             <br><br>Once the page will be opened in a new tab, if a welcome message is \
-             displayed instead of the model instance, please click on the "Authorize" button\
-             if requested.<br><br>Leave the current tab open in case you need to recollect the\
-             model url.'.format(model_path_on_mc)
-        )
+        return ResponseUtil.ok_response(messages.MODEL_SUCCESSFULLY_REGISTERED.format(model_path_on_mc))
 
     except EbrainsDriveClientError as e:
         code = e.code
@@ -761,18 +739,18 @@ def register_model(request, exc):
 
     except FileExistsError as e:
         print(e)
-        return ResponseUtil.ko_response('Model already exists on the Model Catalog.')
+        return ResponseUtil.ko_response(messages.MODEL_ALREADY_EXISTS)
 
     except EnvironmentError as e:
         print(e)
-        return ResponseUtil.ko_response('Invalid credentials')
+        return ResponseUtil.ko_response(messages.MODEL_CATALOG_INVALID_CREDENTIALS)
 
     except Exception as e:
         uploaded_model.delete()
         print(e)
         return ResponseUtil.ko_response(f'<b>Error !</b><br><br>{str(e)}')
 
-    return ResponseUtil.ko_response('Some error occurred.')
+    return ResponseUtil.ko_response(messages.GENERAL_ERROR)
 
 
 def get_user_avatar(request):
@@ -796,7 +774,7 @@ def get_authentication(request):
 
         if hhnb_user.validate_nsg_login():
             return ResponseUtil.ok_response()
-    return ResponseUtil.ko_response('user not autheticated')
+    return ResponseUtil.ko_response(messages.NOT_AUTHENTICATED)
 
 
 def hhf_comm(request):
@@ -932,11 +910,10 @@ def hhf_save_config_file(request, folder, config_file, exc):
         return ResponseUtil.ok_response('')
     except json.JSONDecodeError:
         print('Malformed json')
-        return ResponseUtil.ko_response('Error!<br>Malformed "' \
-                                        + config_file + '.json" file.') 
+        return ResponseUtil.ko_response(messages.MARLFORMED_FILE.format(config_file + '.json')) 
     except FileNotFoundError:
         print('File not found')
-        return ResponseUtil.ko_response(404, 'Critical error !')
+        return ResponseUtil.ko_response(404, messages.CRITICAL_ERROR)
     except Exception as e:
         print(str(e))
-        return ResponseUtil.ko_response(400, 'Some error occurred!')
+        return ResponseUtil.ko_response(400, messages.GENERAL_ERROR)
