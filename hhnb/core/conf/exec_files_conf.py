@@ -9,7 +9,7 @@ class ExecFileConf:
 f"""
 import os
 
-os.system('python opt_neuron.py --max_ngen={ str(max_gen) } --offspring_size={ str(offspring) } --start --checkpoint ./checkpoints/checkpoint.pkl')
+os.system('python3 opt_neuron.py --max_ngen={ str(max_gen) } --offspring_size={ str(offspring) } --start --checkpoint ./checkpoints/checkpoint.pkl')
 
 """
         try:

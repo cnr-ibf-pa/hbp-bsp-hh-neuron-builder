@@ -261,7 +261,8 @@ class WorkflowUtil:
     def clone_workflow(workflow):
         new_workflow = Workflow.generate_user_workflow(workflow.get_user(), make_files=False)
         shutil.copytree(workflow.get_workflow_path(), new_workflow.get_workflow_path())
-        os.remove(new_workflow._optimization_settings)
+        if os.path.exists(new_workflow._optimization_settings):
+            os.remove(new_workflow._optimization_settings)
         return new_workflow
 
     @staticmethod
