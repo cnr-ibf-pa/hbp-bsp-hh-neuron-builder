@@ -567,13 +567,16 @@ function displayJobList(button) {
             for (let job_id of Object.keys(jobs)) {
                 let job = jobs[job_id];
                 let statusColor = "";
+                let disabled = "disabled";
                 if (job.status == "COMPLETED" || job.status == "SUCCESSFUL" || job.status == "FAILED") {
                     statusColor = "#00802b"
+                    disabled = "";
                     if (job.status == "FAILED") {
                         statusColor = "#DD9900";
                     }
                 } else {
                     statusColor = "#DD9900";
+                    disabled = "disabled";
                 }
 
                 $("#job-list-body").append(
@@ -583,7 +586,7 @@ function displayJobList(button) {
                     + "<td style='font-weight: bold; color: " + statusColor + "'>" + job.status + "</td>"
                     + "<td>" + job.date + "</td>"
                     + "<td>"
-                    + "<button type='button' id='" + job_id + "' class='btn workflow-btn job-download-button'>Download</button>"
+                    + "<button type='button' id='" + job_id + "' class='btn workflow-btn job-download-button'" + disabled + ">Download</button>"
                     + "</td>"
                     + "</tr>"
                 )

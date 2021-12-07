@@ -461,10 +461,14 @@ class WorkflowUtil:
                     file_list['file_list'][f].download(dst)
         elif file_list['root_url'].startswith('https://bspsa.cineca.it'):
             for f in file_list['file_list']:
-                r = requests.get(url=file_list['root_url'] + f,
-                                 headers=file_list['headers'])
-                if r.status_code != 200:      
+                print(file_list['root_url'] + f)
+                r = requests.get(url=file_list['root_url'] + f + '/',
+                                 headers=file_list['headers'],)
+                print(r.status_code)
+                if r.status_code != 200:   
                     continue
+                if f.startswith('/'):
+                    f = f[1:]
                 dst = os.path.join(workflow.get_results_dir(), f)
                 with open(dst, 'wb') as fd:
                     for chunk in r.iter_content(chunk_size=4096):
@@ -517,7 +521,7 @@ class WorkflowUtil:
 
         curr_dir = os.getcwd()
         os.chdir(output_dir)
-        os_call(f'source {env_prefix}/bin/activate; nrnivmodl mechanisms',
+        os_call(f'source {env_prefix}/bin/activate; nrnivmodl mechanisms > /dev/null',
                 shell=True, executable='/bin/bash')
         os_call(f'source {env_prefix}/bin/activate;' \
                 +'python ./opt_neuron.py --analyse --checkpoint ./checkpoints', 

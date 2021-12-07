@@ -17,8 +17,13 @@ html {
 }
 .form-control, .form-control:hover, .form-control:focus {
     box-shadow: none;
-    border-color: unset;
+    border: 1px solid lightgray;
 }
+
+.form-control.border-black, .form-control.border-black:hover, .form-control.border-black:focus{
+    border: 1px solid black;
+}
+
 .accordion-button:not(collapsed):focus {
     border-color: #daa520ff;
     box-shadow: none;
@@ -1763,8 +1768,4 @@ i.disabled:hover {
 
 .form-select {
     width: 100%;
-}
-
-.form-control {
-    border: 1px solid lightgray;
 }

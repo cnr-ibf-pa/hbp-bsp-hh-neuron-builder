@@ -593,6 +593,7 @@ def run_analysis(request, exc):
 
     try:
         for f in os.listdir(workflow.get_results_dir()):
+            print(f)
             if f.split('.')[0] == 'output':
                 job_output = os.path.join(workflow.get_results_dir(), f)
 

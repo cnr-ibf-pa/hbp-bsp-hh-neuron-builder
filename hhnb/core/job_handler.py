@@ -254,7 +254,7 @@ class JobHandler:
     def _get_service_account_headers(self, token, zip_name=None, payload=None):
         headers = {'Authorization': 'Bearer ' + token}
         if zip_name:
-            headers.update({'Content-Disposition': 'attachment;filename=' + zip_name + '.zip'})
+            headers.update({'Content-Disposition': 'attachment;filename=' + zip_name})
         if payload:
             headers.update({'payload': json.dumps(payload)})
         return headers
@@ -270,12 +270,9 @@ class JobHandler:
         )
         headers = self._get_service_account_headers(token, zip_name, payload)
         job_file = {'file': open(zip_file, 'rb')}
-
         r = requests.post(url=self._SA_DAINT_JOB_URL, headers=headers, files=job_file)
-        if r.status_code == 400:
-            
+        if r.status_code == 400:            
             return ResponseUtil.ko_response(r.text)
-        
         return ResponseUtil.ok_response(messages.JOB_SUBMITTED.format('SA-CSCS'))
 
     def _get_service_account_jobs(self, token):
@@ -374,7 +371,7 @@ class JobHandler:
         if hpc == job_handler._SA_CSCS:
             raw_file_list = job_handler._get_service_account_job_results(user.get_token(), job_id)
             file_list = {
-                'root_url': cls._SA_DAINT_FILES_URL + job_id, 
+                'root_url': job_handler._SA_DAINT_FILES_URL + job_id, 
                 'file_list': raw_file_list,
                 'headers': {'Authorization': 'Bearer ' + user.get_token()}
             }
