@@ -11,9 +11,11 @@ class MessageDialog {
 
 
     static #openMessageDialog(msg) {
-        this.#overlayWrapper.css("display", "block");
-        this.#overlayContent.css("display", "block");
-        this.#dialogMessage.html(msg);
+        if (!msg.startsWith("{\"refresh_url\"")) {
+            this.#overlayWrapper.css("display", "block");
+            this.#overlayContent.css("display", "block");
+            this.#dialogMessage.html(msg);
+        }
     }
 
     static #closeMessageDialog() {
@@ -24,8 +26,6 @@ class MessageDialog {
     static openSuccessDialog(msg) {
         this.#overlayContent.css("box-shadow", "0 0 1rem 1rem rgba(0, 128, 0, .8)")
             .css("border-color", "green");
-/*         this.#overlayDialog.addClass("error-content")
-            .removeClass("reload-content info-content"); */
         this.#dialogButton.text("Ok")
             .addClass("green").removeClass("blue red fill-background")
             .on("click", () => { this.#closeMessageDialog() });
@@ -35,8 +35,6 @@ class MessageDialog {
     static openErrorDialog(msg) {
         this.#overlayContent.css("box-shadow", "0 0 1rem 1rem rgba(255, 0, 0, .8)")
             .css("border-color", "red");
-/*         this.#overlayDialog.addClass("error-content")
-            .removeClass("reload-content info-content"); */
         this.#dialogButton.text("Ok")
             .addClass("red").removeClass("blue green fill-background")
             .on("click", () => { this.#closeMessageDialog() });
@@ -46,8 +44,6 @@ class MessageDialog {
     static openInfoDialog(msg) {
         this.#overlayContent.css("box-shadow", "0 0 1rem 1rem rgba(0, 0, 255, .8)")
             .css("border-color", "blue");
-/*         this.#overlayDialog.addClass("error-content")
-            .removeClass("error-content reload-content"); */
         this.#dialogButton.text("Ok")
             .addClass("blue").removeClass("red green fill-background")
             .on("click", () => { this.#closeMessageDialog() });
@@ -79,8 +75,6 @@ class UploadFileDialog {
     static #open(label) {
         $("#overlayupload").css("display", "block");
         $("#overlaywrapper").css("display", "block");
-        // $("#overlaywrapper").css("z-index", "100").addClass("show");
-        // $("#uploadForm").attr("action", uploadUrl);
         $("#uploadFormLabel").html("<strong>" + label + "<strong>");
         $("#uploadFormButton").prop("disabled", true);
     }
@@ -130,25 +124,6 @@ $(".accordion-button.hpc").on("click", (button) => {
         $("#apply-param").prop("disabled", true);
     }
 })
-
-/* function checkField(e) {
-    if (e.target.value == "") {
-        $("#apply-param").prop("disabled", true);
-    } else {
-        $("#apply-param").prop("disabled", false);
-    }
-}
-$("#daint_project_id").on("keyup", checkField);
-$("#username_submit").on("keyup", (e) => {
-    if ($("#password_submit").val() != "") {
-        checkField(e);
-    }
-});
-$("#password_submit").on("keyup", (e) => {
-    if ($("#username_submit").val() != "") {
-        checkField(e);
-    }
-}); */
 
 
 class OptimizationSettingsDialog {
@@ -244,16 +219,7 @@ class OptimizationSettingsDialog {
             } else {
                 data["username_submit"] = nsgUser.val();
                 data["password_submit"] = nsgPass.val();
-            } 
-            
-          /*   if ($("#username_submit").val() == "" || $("#password_submit").val() == "") {
-                $("#username_submit").removeClass("is-valid").addClass("is-invalid");
-                $("#password_submit").removeClass("is-valid").addClass("is-invalid");
-                alert("Please fill \"username\" and \"password\" to apply settings");
-                throw "credentials empty";
-            } else {
-                
-            } */
+            }             
         }
         return data;
     }
@@ -304,7 +270,6 @@ class OptimizationSettingsDialog {
     static open() {
         Log.debug("open settings dialog");
         $("#overlayparam").css("display", "block");
-        // $("#overlaywrapper").css("z-index", "100").addClass("show");
         $("#overlaywrapper").css("display", "block");
         $("#username_submit").removeClass("is-invalid");
         $("#password_submit").removeClass("is-invalid");
@@ -315,9 +280,7 @@ class OptimizationSettingsDialog {
         Log.debug("close");
         $("#overlayparam").css("display", "none");
         $("#overlaywrapper").css("display", "none");
-        // $("#apply-param").prop("disabled", true);
         $("#hpcAuthAlert").removeClass("show");
-        // $("#overlayparam").removeClass("show");
     }
 
 }

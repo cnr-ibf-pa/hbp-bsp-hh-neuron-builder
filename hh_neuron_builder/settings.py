@@ -218,7 +218,3 @@ LOGIN_REDIRECT_URL = "/hh-neuron-builder"
 LOGOUT_REDIRECT_URL = "/hh-neuron-builder"
 
 LOGIN_URL = 'oidc_authentication_init'
-
-# OIDC_RENEW_ID_TOKEN_EXPIRY_SECONDS = 20
-
-

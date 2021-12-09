@@ -9,12 +9,19 @@ const UPLOAD_FILES_BASE_URL = "/hh-neuron-builder/upload-files/";
 function checkRefreshSession(response) {
     console.log(response);
     if (response.status === 403 && response.responseJSON.refresh_url) {
-        $.post("/hh-neuron-builder/session-refresh/" + exc, response.responseJSON )
-            .done((result) => {
+        showLoadingAnimation("Session expired.<br>Refreshing session automatically...");
+        $.ajax({
+            url: "/hh-neuron-builder/session-refresh/" + exc,
+            method: "POST",
+            data: response.responseJSON,
+            async: false,
+            success: result => {
                 document.location.href = "/hh-neuron-builder/workflow/" + exc;
-            }).fail((error) => {
-                alert("Can't refresh session automatically, please refresh page");
-            })
+            },
+            error: error => {
+                MessageDialog.openReloadDialog("Unable to refresh session automatically.<br>Try by reloading the page.")
+            }
+        })
     } 
 }
 
