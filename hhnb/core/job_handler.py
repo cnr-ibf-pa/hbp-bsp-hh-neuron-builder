@@ -26,9 +26,23 @@ def str_to_datetime(datetime_string, format=None):
     if match and match.end() == len(datetime_string):
         format = '%Y-%m-%dT%H:%M:%SZ'
 
-
-    
     return datetime.datetime.strptime(datetime_string, format).replace(tzinfo=None)
+
+
+def get_expiration_time():
+    return\
+        datetime.datetime.strftime(
+            datetime.datetime.now() + datetime.timedelta(days=30),
+            '%Y-%m-%dT%H:%M:%S%z'
+        )
+
+
+def is_job_expired(job_details):
+    job_init_date = job_details['date']
+    if job_init_date + datetime.timedelta(days=30) <\
+        datetime.datetime.now().replace(microsecond=0):
+        return True
+    return False
 
 
 class JobHandler:
@@ -223,7 +237,7 @@ class JobHandler:
             node_num=settings['node-num'],
             core_num=settings['core-num'],
             runtime=settings['runtime'],
-            project=settings['project']
+            project=settings['project'],
         )
 
         client = self._initialize_unicore_client(hpc, token)        
@@ -249,6 +263,7 @@ class JobHandler:
             'core_number': core_num,
             'runtime': runtime,
             'title': title,
+            'expiration_time': get_expiration_time()
         }
 
     def _get_service_account_headers(self, token, zip_name=None, payload=None):
@@ -338,7 +353,8 @@ class JobHandler:
                     'status': raw_job['stage'],
                     'date': str_to_datetime(raw_job['init_date'])
                 }}
-                jobs.update(job)
+                if not is_job_expired(job[raw_job['job_id']]):
+                    jobs.update(job)
 
         # sort jobs from last to first
         ordered_jobs = OrderedDict(sorted(jobs.items(),
