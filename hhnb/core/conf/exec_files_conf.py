@@ -47,6 +47,9 @@ zipdir('{ folder_name }', zipf)
         SLURM_JOBID = '{SLURM_JOBID}'
         IPYTHON_PROFILE = '{IPYTHON_PROFILE}'
         CHECKPOINTS_DIR = '{CHECKPOINTS_DIR}'
+        OFFSPRING = '{OFFSPRING}'
+        MAXGEN = '{MAXGEN}'
+
         buffer_sbatch = \
 f"""
 #!/bin/bash -l
@@ -78,7 +81,7 @@ ipcontroller --init --sqlitedb --ip='*' --profile=${IPYTHON_PROFILE} &
 sleep 30
 srun ipengine --profile=${IPYTHON_PROFILE} &
 CHECKPOINTS_DIR="checkpoints"
-python opt_neuron.py --offspring_size=10 --max_ngen=2 --start --checkpoint "${CHECKPOINTS_DIR}/checkpoint.pkl"
+BLUEPYOPT_SEED=1 python opt_neuron.py --offspring_size=${OFFSPRING} --max_ngen=${MAXGEN} --start --checkpoint "${CHECKPOINTS_DIR}/checkpoint.pkl"
 python zipfolder.py
 """
         try:
