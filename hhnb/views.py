@@ -292,11 +292,11 @@ def upload_model(request, exc):
         shutil.rmtree(tmp_dir)
     os.mkdir(tmp_dir)
     shutil.unpack_archive(uploaded_file_path, tmp_dir)
-    if os.listdir(tmp_dir) != [uploaded_file.name, 'sign.txt']:
+    if os.listdir(tmp_dir) != [uploaded_file.name, 'signature.txt']:
         return ResponseUtil.ko_response(messages.INVALID_FILE.format('model'))
     try:
         with open(os.path.join(tmp_dir, uploaded_file.name), 'rb') as arch_fd:
-            with open(os.path.join(tmp_dir, 'sign.txt'), 'r') as sign_fd:
+            with open(os.path.join(tmp_dir, 'signature.txt'), 'r') as sign_fd:
                 Sign.verify_data_sign(sign_fd.read(), arch_fd.read())
     except InvalidSign:
         return ResponseUtil.ko_response(messages.INVALID_SIGNATURE.format('model'))
@@ -349,11 +349,11 @@ def upload_analysis(request, exc):
             shutil.move(unzip_dir_path, workflow.get_analysis_dir())
             return ResponseUtil.ok_response('')
 
-    if os.listdir(tmp_dir) != [uploaded_file.name, 'sign.txt']:
+    if os.listdir(tmp_dir) != [uploaded_file.name, 'signature.txt']:
         return ResponseUtil.ko_response(messages.INVALID_FILE.format('analysis'))
     try:
         with open(os.path.join(tmp_dir, uploaded_file.name), 'rb') as arch_fd:
-            with open(os.path.join(tmp_dir, 'sign.txt'), 'r') as sign_fd:
+            with open(os.path.join(tmp_dir, 'signature.txt'), 'r') as sign_fd:
                 Sign.verify_data_sign(sign_fd.read(), arch_fd.read())
     except InvalidSign:
         return ResponseUtil.ko_response(messages.INVALID_SIGNATURE.format('analysis'))
@@ -399,8 +399,6 @@ def upload_files(request, exc):
 
 
 def download_files(request, exc):
-    print(request.GET)
-
     if not exc in request.session.keys():
         return ResponseUtil.no_exc_code_response()
     
@@ -413,6 +411,7 @@ def download_files(request, exc):
     if pack:
         if pack == 'features':
             arch_file = WorkflowUtil.make_features_archive(workflow)
+            return ResponseUtil.file_response(arch_file)
         elif pack == 'model':
             arch_file = WorkflowUtil.make_model_archive(workflow)
         elif pack == 'results':
@@ -422,7 +421,7 @@ def download_files(request, exc):
     elif file_list:
         path_list = json.loads(file_list).get('path')
 
-        # TODO: add Permission controller
+        # TODO: add Permission control
 
         files = [os.path.join(workflow.get_model_dir(), f) for f in path_list]
         arch_name = workflow.get_id() + '_model_files.zip'
@@ -436,11 +435,15 @@ def download_files(request, exc):
         os.mkdir(tmp_dir)
 
         root_dir, zip_name = os.path.split(arch_file)
-        arch_sign = os.path.join(root_dir, 'sign.txt')
+        arch_sign = os.path.join(root_dir, 'signature.txt')
         with open(arch_sign, 'w') as sign_fd:
             with open(arch_file, 'rb') as arch_fd:
                 sign_fd.write(Sign.get_data_sign(arch_fd.read()))
-
+        
+        arch_readme = os.path.join(root_dir, 'README.txt')
+        with open(arch_readme, 'w') as readme_fd:
+            readme_fd.write(messages.SIGNATURE_README_DESCRIPTION)
+        
         final_zip_file = shutil.make_archive(
             base_name=os.path.join(tmp_dir, zip_name.split('.zip')[0]),
             format='zip',
