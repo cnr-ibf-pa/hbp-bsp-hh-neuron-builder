@@ -25,11 +25,19 @@ import os
 import json
 import shutil
 
+import logging
+logger = logging.getLogger(__name__)
+
+
+LOG_ACTION = 'User: "{}"\t Action: {}'
+
 
 def status(request):
     return ResponseUtil.ok_json_response({'hh-neuron-builder-status': 1})
 
+
 def session_refresh(request, exc):
+    logger.debug('refreshing session')
     if request.method == 'POST':
         refresh_url = request.POST.get('refresh_url')
         r = requests.get(url=refresh_url, verify=False)
@@ -41,6 +49,7 @@ def session_refresh(request, exc):
 
 def generate_exc_code(request):
     exc = 'tab_' + datetime.datetime.now().strftime('%Y%m%d%H%M%S')
+    logger.debug(f'generating exc code: {exc}')
     request.session[exc] = {}
     request.session.save()
     return exc
@@ -55,10 +64,10 @@ def get_workflow_and_user(request, exc):
 
 
 def home_page(request):
-
     hhnb_user = HhnbUser.get_user_from_request(request)
-
     context = {}
+
+    logger.info(LOG_ACTION.format(hhnb_user, 'access HOME page'))
 
     if 'old_workflow_path' in request.session.keys():
         workflow = Workflow.generate_user_workflow_from_path(hhnb_user.get_username(),
@@ -68,6 +77,7 @@ def home_page(request):
         request.session.pop('old_workflow_path')
         request.session.save()
         context = {'exc': exc}
+        logger.debug(f'workflow {workflow} restored for user: "{hhnb_user}"')
 
     return render(request, 'hhnb/home.html', context)
 
@@ -75,20 +85,24 @@ def home_page(request):
 def workflow_page(request, exc):
     if not exc in request.session.keys():
         return home_page(request)
+    
+    _, hhnb_user = get_workflow_and_user(request, exc) 
+    logger.info(LOG_ACTION.format(hhnb_user, 'access WORKFLOW page'))
 
     return render(request, 'hhnb/workflow.html', context={'exc': exc})
 
 
 def initialize_workflow(request):
-    print('intializing workflow')
     hhnb_user = HhnbUser.get_user_from_request(request)
-
+    logger.debug(f'initializing workflow for "{hhnb_user}"')
     try:
         workflow = Workflow.generate_user_workflow(hhnb_user.get_username())
+        logger.debug(f'workflow {workflow} created for "{hhnb_user}"')
     except WorkflowExists as e:
+        logger.error(e)
         return ResponseUtil.ko_response(500, str(e))
     except PermissionError as e:
-        print(e)
+        logger.critical(e)
         return ResponseUtil.ko_response(500, messages.CRITICAL_ERROR)
 
     exc = generate_exc_code(request)
@@ -103,6 +117,7 @@ def store_workflow_in_session(request, exc):
         return ResponseUtil.no_exc_code_response()
 
     workflow, _ = get_workflow_and_user(request, exc)
+    logger.debug('store workflow {workflow} in session')
 
     request.session['old_workflow_path'] =  workflow.get_workflow_path()
     request.session.save()
@@ -124,10 +139,13 @@ def upload_workflow(request):
     
     exc = generate_exc_code(request)
     hhnb_user = HhnbUser.get_user_from_request(request)
+    logger.info(LOG_ACTION.format(hhnb_user, 'uploading workflow'))
+
     try:
         workflow = Workflow.generate_user_workflow_from_zip(hhnb_user.get_username(),
                                                             os.path.join(TMP_DIR, filename))
     except WorkflowExists as e:
+        logger.error(e)
         return ResponseUtil.ko_json_response({'response': 'KO', 'message': str(e)})
     
     request.session[exc]['workflow_id'] = workflow.get_id()
@@ -139,9 +157,13 @@ def clone_workflow(request, exc):
     if not exc in request.session.keys():
         return ResponseUtil.no_exc_code_response()
 
-    old_workflow, _ = get_workflow_and_user(request, exc)
+    old_workflow, hhnb_user = get_workflow_and_user(request, exc)
     new_worfklow = WorkflowUtil.clone_workflow(old_workflow)
     new_exc = generate_exc_code(request)
+
+    logger.info(LOG_ACTION.format(
+        hhnb_user, 'cloning old workflow %s to %s' % (old_workflow, new_worfklow))
+    )
 
     request.session[new_exc]['workflow_id'] = new_worfklow.get_id()
     request.session.save()
@@ -156,8 +178,10 @@ def download_workflow(request, exc):
     if zip_path:
         return ResponseUtil.file_response(zip_path)
     
-    workflow, _ = get_workflow_and_user(request, exc)
+    workflow, hhnb_user = get_workflow_and_user(request, exc)
     zip_path = WorkflowUtil.make_workflow_archive(workflow)
+
+    logger.info(LOG_ACTION.format(hhnb_user, 'downloading workflow %s' % workflow))
     
     return ResponseUtil.ok_json_response({'zip_path': zip_path})
 
@@ -174,10 +198,12 @@ def get_workflow_properties(request, exc):
         request.session.save()
 
     props = workflow.get_properties()
+    logger.debug(f'getting properties for {workflow}: {props}')
 
     # hhf flag needs to handle the modal dialog 
     hhf = True if 'hhf_dict' in request.session[exc].keys() else False
     props.update({'hhf_flag': hhf}) 
+    logger.debug('enabling HHF flag on {workflow}')
     return ResponseUtil.ok_json_response(props)
 
 
@@ -185,10 +211,13 @@ def fetch_models(request, exc):
     if not exc in request.session.keys():
         return ResponseUtil.no_exc_code_response()
 
+    
+
     mc_filter = MODEL_CATALOG_FILTER['hippocampus_models']
 
     try:
         if MODEL_CATALOG_CREDENTIALS == ('username', 'password'):
+            logger.debug('ModelCatalog username and password are not set')
             raise EnvironmentError(messages.MODEL_CATALOG_CREDENTIALS_NOT_FOUND)
 
         mc_username, mc_password = MODEL_CATALOG_CREDENTIALS
@@ -200,27 +229,39 @@ def fetch_models(request, exc):
                                     species=mc_filter['species'],
                                     collab_id=mc_filter['collab_id'])
             if len(models) > 0:
+                logger.debug(f'{len(models)} models found')
                 return ResponseUtil.ok_json_response({'models': models})
+            logger.debug(f'no model founds in the ModelCatalog using the filter {mc_filter}')
             return ResponseUtil.ok_response(204, 'No content')
         else:
-            model = mc.get_model(model_id=request.GET.get('model'))
+            workflow, hhnb_user = get_workflow_and_user(request, exc)
+            requested_model = request.GET.get('model')
+            logger.debug(f'requesting {requested_model} on ModelCatalog')
+            model = mc.get_model(model_id=requested_model)
             if model:
+                logger.debug(f'downloading model {model} from ModelCatalog')
                 try:
-                    model_path = mc.download_model_instance(instance_id=model['instances'][-1]['id'],
-                                                            local_directory=TMP_DIR, overwrite=False)    
+                    model_path = mc.download_model_instance(
+                        instance_id=model['instances'][-1]['id'],
+                        local_directory=TMP_DIR, 
+                        overwrite=False
+                    )    
                     model_path = model_path.decode()
                     if not model_path:
+                        logger.error(f'User: {hhnb_user} got error while fetching\
+                                       model {model} from ModelCatalog on model_path: {model_path}')
                         return ResponseUtil.ko_response(messages.MODEL_CATALOG_NOT_AVAILABLE)
                 except FileExistsError:
                     model_path = os.path.join(TMP_DIR, model['name'] + '.zip')
-                workflow, _ = get_workflow_and_user(request, exc)
                 workflow.load_model_zip(model_path)
                 
+                logger.info(LOG_ACTION.format(hhnb_user, 'downloaded model %s on %s' % (model, workflow)))
+
     except ResponseError as e:
-        print(e)
+        logger.error(e)
         return ResponseUtil.ko_response(messages.MODEL_CATALOG_NOT_AVAILABLE)
     except EnvironmentError as e:
-        print(e)
+        logger.error(e)
         return ResponseUtil.ko_response(messages.MODEL_CATALOG_INVALID_CREDENTIALS)
 
     # handle model 
@@ -231,7 +272,8 @@ def upload_features(request, exc):
     if not exc in request.session.keys():
         return ResponseUtil.no_exc_code_response()
 
-    workflow, _ = get_workflow_and_user(request, exc) 
+    workflow, hhnb_user = get_workflow_and_user(request, exc) 
+    logger.info(LOG_ACTION.format(hhnb_user, 'uploading features in %s' % workflow))
 
     # get features from NFE
     folder = request.POST.get('folder')
@@ -242,6 +284,7 @@ def upload_features(request, exc):
                     workflow.copy_features(os.path.join(folder, d, 'features.json'))
                     workflow.copy_features(os.path.join(folder, d, 'protocols.json'))
         except FileNotFoundError as e:
+            logger.error(e)
             return ResponseUtil.ko_response(str(e))
         return ResponseUtil.ok_response()
     
@@ -250,7 +293,7 @@ def upload_features(request, exc):
     if len(uploaded_files) == 0:
         return ResponseUtil.ok_response(messages.NO_FILE_UPLOADED)
     if len(uploaded_files) > 2:
-            return ResponseUtil.ko_response(messages.NO_MORE_THEN.format('2 files'))
+        return ResponseUtil.ko_response(messages.NO_MORE_THEN.format('2 files'))
     
     for uploaded_file in uploaded_files:
         if uploaded_file.name != 'features.json' and uploaded_file.name != 'protocols.json':
@@ -276,6 +319,7 @@ def upload_model(request, exc):
         return ResponseUtil.ko_response(messages.ONLY_ACCEPTED_FILE.format('"model.zip"'))
 
     workflow, user = get_workflow_and_user(request, exc)
+    logger.info(LOG_ACTION.format(user, 'uploading model to %s' % workflow))
 
     for uploaded_file in uploaded_files: 
         uploaded_file_path = os.path.join(workflow.get_tmp_dir(), uploaded_file.name)
@@ -311,13 +355,13 @@ def upload_model(request, exc):
     try:
         workflow.load_model_zip(os.path.join(tmp_dir, model_zip_name))
     except FileNotFoundError as e:
-        print(e)
+        logger.error(e)
         return ResponseUtil.ko_response(messages.MARLFORMED_FILE.format('"model.zip"'))
 
     return ResponseUtil.ok_response()
 
 
-# TODO: fix this function 
+# TODO: optimize this function 
 def upload_analysis(request, exc):
     if request.method != 'POST':
         return ResponseUtil.method_not_allowed('POST') 
@@ -331,6 +375,7 @@ def upload_analysis(request, exc):
         return ResponseUtil.ko_response(messages.NO_MORE_THEN.format('a ".zip" file'))
 
     workflow, user = get_workflow_and_user(request, exc)
+    logger.info(LOG_ACTION.format(user, 'uploading analysis to %s' % workflow))
 
     for uploaded_file in uploaded_files: 
         uploaded_file_path = os.path.join(workflow.get_tmp_dir(), 
@@ -370,7 +415,8 @@ def upload_analysis(request, exc):
         with open(os.path.join(tmp_dir, analysis_zip_name), 'rb') as arch_fd:
             with open(os.path.join(tmp_dir, 'signature.txt'), 'r') as sign_fd:
                 Sign.verify_data_sign(sign_fd.read(), arch_fd.read())
-    except InvalidSign:
+    except InvalidSign as e:
+        logger.error(e)
         return ResponseUtil.ko_response(messages.INVALID_SIGNATURE.format('analysis'))
 
     try:
@@ -393,7 +439,7 @@ def upload_analysis(request, exc):
         return ResponseUtil.ok_response('')
 
     except Exception as e:
-        print(str(e))
+        logger.error(e)
 
     return ResponseUtil.ko_response(messages.MARLFORMED_FILE.format('"analysis.zip"'))
 
@@ -404,7 +450,8 @@ def upload_files(request, exc):
     if request.method != 'POST':
         return ResponseUtil.method_not_allowed('POST')
 
-    workflow, _ = get_workflow_and_user(request, exc)
+    workflow, user = get_workflow_and_user(request, exc)
+    logger.info(LOG_ACTION.format(user, 'uploading file to %s' % workflow))
 
     folder = request.POST.get('folder')
     uploaded_file = request.FILES.get('file')
@@ -445,6 +492,7 @@ def download_files(request, exc):
     file_list = request.GET.get('file_list')
 
     if pack:
+        logger.info(LOG_ACTION.format(user, 'downloading %s from %s' % (pack, workflow)))
         if pack == 'features':
             arch_file = WorkflowUtil.make_features_archive(workflow)
             return ResponseUtil.file_response(arch_file)
@@ -455,6 +503,7 @@ def download_files(request, exc):
         elif pack == 'analysis':
             arch_file = WorkflowUtil.make_analysis_archive(workflow)
     elif file_list:
+        logger.info(LOG_ACTION.format(user, 'download %s from %s' % (file_list, workflow)))
         path_list = json.loads(file_list).get('path')
 
         # TODO: add Permission control
@@ -501,12 +550,14 @@ def delete_files(request, exc):
     if file_list and len(file_list) <= 0:
         return ResponseUtil.ok_response(messages.NO_FILE_TO_DELETE)
     
-    workflow, _ = get_workflow_and_user(request, exc)
-    
+    workflow, user = get_workflow_and_user(request, exc)
+    logger.info(LOG_ACTION.format(user, 'deleting %s from %s' % (file_list, workflow)))
+
     for f in file_list:
         try:
             workflow.remove_file(f)
-        except PermissionError:
+        except PermissionError as e:
+            logger.error(e)
             return ResponseUtil.ko_response(messages.CRITICAL_ERROR)
     
     return ResponseUtil.ok_json_response()
@@ -515,13 +566,16 @@ def delete_files(request, exc):
 def optimization_settings(request, exc=None):
     if not exc in request.session.keys():
         return ResponseUtil.no_exc_code_response()
-    workflow, _ = get_workflow_and_user(request, exc)
+    workflow, hhnb_user = get_workflow_and_user(request, exc)
     if request.method == 'GET':
+        logger.info(LOG_ACTION.format(hhnb_user, 'get optimization settings from %s' % workflow))
         try:
             return ResponseUtil.ok_json_response(workflow.get_optimization_settings())
-        except FileNotFoundError:
+        except FileNotFoundError as e:
+            logger.error(e)
             return ResponseUtil.ok_json_response({})
     elif request.method == 'POST':
+        logger.info(LOG_ACTION.format(hhnb_user, 'set optimization settings from %s' % workflow))
         optimization_settings = json.loads(request.body)
         if optimization_settings['hpc'] == 'NSG':
             nsg_username = optimization_settings.get('username_submit')
@@ -547,6 +601,7 @@ def run_optimization(request, exc):
         return ResponseUtil.no_exc_code_response()
 
     workflow, hhnb_user = get_workflow_and_user(request, exc)
+    logger.info(LOG_ACTION.format(hhnb_user, 'run optimization of %s' % workflow))
     opt_model_dir = WorkflowUtil.make_optimization_model(workflow)
     zip_dst_dir = os.path.join(workflow.get_tmp_dir(), 
                                os.path.split(opt_model_dir)[1])
@@ -576,22 +631,23 @@ def fetch_jobs(request, exc):
         return ResponseUtil.ko_response(messages.NO_HPC_SELECTED)
 
     _, hhnb_user = get_workflow_and_user(request, exc)
+    logger.info(LOG_ACTION.format(hhnb_user, 'fetch all %s jobs' % hpc))
 
     try:
         data = JobHandler.fetch_jobs_list(hpc, hhnb_user)
         return ResponseUtil.ok_json_response(data)
     except JobHandler.ServiceAccountException as e:
-        print(e)
+        logger.error(e)
         return ResponseUtil.ko_response(messages.JOB_FETCH_ERROR.format('SERVICE ACCOUNT'))
     except JobHandler.UnicoreClientException as e:
-        print(e)
+        logger.error(e)
         return ResponseUtil.ko_response(messages.JOB_FETCH_ERROR.format('DAINT-CSCS'))
     except JobHandler.HPCException as e:
-        print(e)
+        logger.error(e)
         return ResponseUtil.ko_response(str(f'<b>{e}</b>'))
 
     except Exception as e:
-        print(e)
+        logger.error(e)
         return ResponseUtil.ko_response(messages.CRITICAL_ERROR)
 
 
@@ -608,6 +664,9 @@ def fetch_job_results(request, exc):
         return ResponseUtil.ko_response(messages.NO_JOB_SELECTED)
 
     workflow, hhnb_user = get_workflow_and_user(request, exc)
+    logger.info(LOG_ACTION.format(
+        hhnb_user, 'download result for job: %s in %s' % (job_id, workflow)
+    ))
 
     try:
         file_list = JobHandler.fetch_job_files(hpc, job_id, hhnb_user)
@@ -616,10 +675,11 @@ def fetch_job_results(request, exc):
         return ResponseUtil.ok_response()
 
     except JobHandler.JobsFilesNotFound as e:
+        logger.error(e)
         return ResponseUtil.ko_response(str(e))
 
     except Exception as e:
-        print(e)
+        logger.error(e)
 
     return ResponseUtil.ko_response(messages.JOB_RESULTS_FETCH_ERRROR)
 
@@ -628,7 +688,8 @@ def run_analysis(request, exc):
     if not exc in request.session.keys():
         return ResponseUtil.no_exc_code_response()
 
-    workflow, _ = get_workflow_and_user(request, exc)
+    workflow, hhnb_user = get_workflow_and_user(request, exc)
+    logger.info(LOG_ACTION.format(hhnb_user, 'run analysis on %s' % workflow))
 
     try:
         for f in os.listdir(workflow.get_results_dir()):
@@ -640,10 +701,11 @@ def run_analysis(request, exc):
         return ResponseUtil.ok_response('')
 
     except FileNotFoundError as e:
+        logger.error(e)
         return ResponseUtil.ko_response(404, str(e))       
      
     except Exception as e:
-        print(e)
+        logger.error(e)
     return ResponseUtil.ko_response(messages.ANALYSIS_ERROR)
 
 
@@ -651,13 +713,15 @@ def upload_to_naas(request, exc):
     if not exc in request.session.keys():
         return ResponseUtil.no_exc_code_response()
 
-    workflow, _ = get_workflow_and_user(request, exc)
-    
+    workflow, hhnb_user = get_workflow_and_user(request, exc)
+    logger.info(LOG_ACTION.format(
+        hhnb_user, 'uploading analysis of %s to naas' % workflow
+    ))
     try:
         naas_archive = WorkflowUtil.make_naas_archive(workflow)
         naas_model = os.path.split(naas_archive)[1].split('.zip')[0]
     except Exception as e:
-        print(e)
+        logger.error(e)
         return ResponseUtil.ko_response(messages.ANALYSIS_ERROR)
     
     uploaded_naas_model = request.session[exc].get('naas_model')
@@ -672,21 +736,10 @@ def upload_to_naas(request, exc):
             request.session.save()
             return ResponseUtil.ok_response(naas_model)
     except requests.exceptions.ConnectionError as e:
-        print(e)
+        logger.error(e)
         return ResponseUtil.ko_response(500, messages.BLUE_NAAS_NOT_AVAILABLE)
 
     return ResponseUtil.ko_response(r.status_code, r.content)
-
-
-def get_model_data(request, exc):
-    if request.method != 'GET':
-        return ResponseUtil.method_not_allowed('GET')
-    if not exc in request.session.keys():
-        return ResponseUtil.no_exc_code_response()
-    
-    workflow, hhnb_user = get_workflow_and_user(request, exc)
-
-    # STILL USING THE DEFAULT CREDENTIAL
 
 
 def get_model_catalog_attribute_options(request):
@@ -698,7 +751,7 @@ def get_model_catalog_attribute_options(request):
         options = mc.get_attribute_options()
         return ResponseUtil.ok_json_response(options)
     except Exception as e:
-        print(e)
+        logger.error('get_model_catalog_attriute_options(): %s' % e)
         return ResponseUtil.ko_response(messages.GENERAL_ERROR)
 
 
@@ -722,8 +775,13 @@ def register_model(request, exc):
     os.rename(src=model_zip, dst=os.path.join(model_zip_path, model_zip_name))
     model_zip = os.path.join(model_zip_path, model_zip_name)
 
+    logger.info(LOG_ACTION.format(
+        hhnb_user, 'register model %s of %s' % (model_zip_name, workflow)
+    ))
+
     try:
         if MODEL_CATALOG_CREDENTIALS == ('username', 'password'):
+            logger.error('Invalid ModelCatalog credentials')
             raise EnvironmentError(messages.MODEL_CATALOG_INVALID_CREDENTIALS)
 
         mc_username, mc_password = MODEL_CATALOG_CREDENTIALS
@@ -770,9 +828,6 @@ def register_model(request, exc):
                 'license': license,
             }]
         )
-        print(registered_model)
-        import pprint
-        pprint.pprint(registered_model)
 
         model_path_on_mc = 'https://model-catalog.brainsimulation.eu/'\
                          + '#model_id.{}'.format(registered_model['id'])
@@ -782,25 +837,27 @@ def register_model(request, exc):
     except EbrainsDriveClientError as e:
         code = e.code
         message = e.message
+        logger.error(e)
         return ResponseUtil.ko_response(code, message)
 
     except FileExistsError as e:
-        print(e)
+        logger.error(e)
         return ResponseUtil.ko_response(messages.MODEL_ALREADY_EXISTS)
 
     except EnvironmentError as e:
-        print(e)
+        logger.error(e)
         return ResponseUtil.ko_response(messages.MODEL_CATALOG_INVALID_CREDENTIALS)
 
     except Exception as e:
+        logger.error(e)
         uploaded_model.delete()
-        print(e)
         return ResponseUtil.ko_response(f'<b>Error !</b><br><br>{str(e)}')
 
     return ResponseUtil.ko_response(messages.GENERAL_ERROR)
 
 
 def get_user_avatar(request):
+    logger.debug('get_user_avatar() called')
     url = 'https://wiki.ebrains.eu/bin/download/XWiki/' + request.user.username \
         + '/avatar.png?width=36&height=36&keepAspectRatio=true'
     r = requests.get(url, verify=False)
@@ -814,6 +871,7 @@ def get_user_page(request):
 
 
 def get_authentication(request):
+    logger.debug('get_authentication() called')
     if request.method == 'GET':
         if request.user.is_authenticated:
             return ResponseUtil.ok_response()
@@ -829,8 +887,8 @@ def get_authentication(request):
 
 
 def hhf_comm(request):
-    
     hhf_comm = json.loads(request.GET.get('hhf_dict')).get('HHF-Comm')
+    logger.debug('got dictionary from HHF')
     if not hhf_comm:
         # if hhf_dict is not found redirect to home 
         return home_page(request)

@@ -196,7 +196,8 @@ MODEL_CATALOG_FILTER = {
 MODEL_CATALOG_COLLAB_URL = 'https://wiki.ebrains.eu/bin/view/Collabs/hhnb-registeredmodels/'
 MODEL_CATALOG_COLLAB_DIR = 'hhnb_wf_model'
 
-# OIDC PARAMETERS
+
+# OIDC Parameters
 OIDC_RP_CLIENT_ID = os.environ['OIDC_RP_CLIENT_ID']
 OIDC_RP_CLIENT_SECRET = os.environ['OIDC_RP_CLIENT_SECRET']
 
@@ -218,3 +219,78 @@ LOGIN_REDIRECT_URL = "/hh-neuron-builder"
 LOGOUT_REDIRECT_URL = "/hh-neuron-builder"
 
 LOGIN_URL = 'oidc_authentication_init'
+
+
+# Logging
+
+# Set LOG_ROOT_PATH for logging files
+LOG_ROOT_PATH = './'
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'filters': {
+        'require_debug_true': {
+            '()': 'django.utils.log.RequireDebugTrue'
+        },
+        'require_debug_false': {
+            '()': 'django.utils.log.RequireDebugFalse'
+        }
+    },
+    'formatters': {
+        'verbose': {
+            'format': '{asctime} {name}.{funcName} {process:d} {thread:d} > {message}',
+            'style': '{'
+        },
+        'default': {
+            'format': '[{asctime} {name}.{funcName}\t{levelname}] > {message}',
+            'style': '{'
+        },
+    },
+    'handlers': {
+        'debug': {
+            'class': 'logging.FileHandler',
+            'filename': LOG_ROOT_PATH + 'debug.log',
+            'level': 'DEBUG',
+            'formatter': 'verbose',
+            'filters': ['require_debug_true'],
+        },
+        'hhnb': {
+            'class': 'logging.FileHandler',
+            'filename': LOG_ROOT_PATH + 'hhnb.log',
+            'level': 'INFO',
+            'formatter': 'default', 
+        },
+        'job_handler': {
+            'class': 'logging.FileHandler',
+            'filename': LOG_ROOT_PATH + 'job_handler.log',
+            'level': 'DEBUG',
+            'formatter': 'default',
+        },
+        'efelg': {
+            'class': 'logging.FileHandler',
+            'filename': LOG_ROOT_PATH + 'efel.log',
+            'level': 'INFO',
+            'formatter': 'default',
+        } 
+    },
+    'loggers': {
+        '': {
+            'level': 'DEBUG',
+            'handlers': ['debug'],
+        },
+        'hhnb': {
+            'level': 'INFO',
+            'handlers': ['hhnb'],
+        },
+        'hhnb.core.job_handler': {
+            'level': 'DEBUG',
+            'handlers': ['job_handler', 'debug'],
+            'propagate': False,
+        },
+        'efelg': {
+            'level': 'INFO',
+            'handlers': ['efelg'],
+        } 
+    }
+}

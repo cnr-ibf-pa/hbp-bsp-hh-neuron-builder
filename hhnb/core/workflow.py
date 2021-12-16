@@ -44,6 +44,12 @@ class _WorkflowBase:
         if os.path.exists(self._model_dir) and any(os.scandir(self._model_dir)):
             self._model = Model.from_dir(self._model_dir, key=workflow_id)
 
+    def __repr__(self):
+        return self.__class__
+
+    def __str__(self):
+        return f'<Workflow {self._id}>'
+
     def get_user(self):
         return self._username
 

@@ -1,5 +1,7 @@
 from hh_neuron_builder.settings import NSG_KEY
 from hhnb.core.response import ResponseUtil
+from hhnb.utils import messages
+
 from collections import OrderedDict
 
 import pyunicore.client as unicore_client
@@ -10,7 +12,10 @@ import json
 import re
 import datetime
 
-from hhnb.utils import messages
+import logging
+logger = logging.getLogger(__name__)
+
+LOG_ACTION = 'User: {}\tAction: {}'
 
 
 def str_to_datetime(datetime_string, format=None):
@@ -75,7 +80,7 @@ class JobHandler:
         }
 
     def _get_nsg_payload(self, job_name, core_num, node_num, runtime):
-        return {
+        payload = {
             'tool': 'BLUEPYOPT_EXPANSE',
             'metadata.statusEmail': 'false',
             'metadata.clientJobId': job_name,
@@ -84,6 +89,8 @@ class JobHandler:
             'vparam.runtime_': runtime,
             'vparam.filename_': 'init.py'
         } 
+        logger.debug(f'NSG payload: {payload}')
+        return payload
 
     def _submit_on_nsg(self, username, password, zip_file, settings):
         zip_name = os.path.split(zip_file)[1]
@@ -101,8 +108,10 @@ class JobHandler:
                           headers=headers,
                           files=files,
                           verify=False)
-        
+        logger.debug(f'requests: {r.url} with headers: {r.headers}'\
+                     f'data: {r.data} and files {r.files}')
         if r.status_code == 200:
+            logger.error(f'CODE: {r.status_code}, CONTENT: {r.content}')
             root = xml.etree.ElementTree.fromstring(r.text)
 
             # extract job selfuri and resulturi
@@ -125,11 +134,12 @@ class JobHandler:
         r = requests.get(url=f'{self._NSG_URL}/job/{username}',
                          auth=(username, password),
                          headers=self._get_nsg_headers())
-
+        logger.debug(f'requests: {r.url} with headers: {r.headers}')
         if r.status_code != 200:
             root = xml.etree.ElementTree.fromstring(r.text)
             message = '<b>' + root.find('displayMessage').text + '</b><br><br>'\
                     + root.find('message').text
+            logger.error(f'CODE: {r.status_code}, CONTENT: {r.content}')
             raise self.HPCException(message)
         
         jobs = {}
@@ -143,7 +153,9 @@ class JobHandler:
             r_job = requests.get(url=job_url,
                                  auth=(username, password),
                                  headers=self._get_nsg_headers())
+            logger.debug(f'requests: {r.url} with headers: {r.headers}')
             if r_job.status_code != 200:
+                logger.error(f'CODE: {r.status_code}, CONTENT: {r.content}')    
                 raise self.HPCException(messages.JOB_FETCH_ERROR.format('NSG'))
 
             root_job = xml.etree.ElementTree.fromstring(r_job.text)
@@ -186,8 +198,9 @@ class JobHandler:
         r = requests.get(url=f'{self._NSG_URL}/job/{username}/{job_id}/output',
                          auth=(username, password),
                          headers=self._get_nsg_headers())
-
+        logger.debug(f'requests: {r.url} with headers: {r.headers}')
         if r.status_code != 200:
+            logger.error(f'CODE: {r.status_code}, CONTENT: {r.content}')
             raise self.HPCException(messages.JOB_RESULTS_FETCH_ERRROR)
         
         file_list = {}
@@ -224,12 +237,14 @@ class JobHandler:
         transport = unicore_client.Transport(token)
         hpc_url = unicore_client.get_sites(transport)[hpc]
         client = unicore_client.Client(transport, hpc_url)
+        logger.info(f'UNICORE Client initialized for {hpc}')
+        logger.debug(f'UNICORE Client access info {client.access_info()}')
         if client.access_info()['role']['selected'] == 'anonymous':
+            logger.error('UNICORE Client initialization failed... User not recognized')
             raise self.UnicoreClientException(messages.USER_LOGIN_ERROR)
         return client
 
     def _submit_on_unicore(self, hpc, token, zip_file, settings):
-
         zip_name = os.path.split(zip_file)[1]
         job_description = self._get_unicore_job_description(
             command=self._get_unicore_command(zip_name),
@@ -239,9 +254,9 @@ class JobHandler:
             runtime=settings['runtime'],
             project=settings['project'],
         )
-
         client = self._initialize_unicore_client(hpc, token)        
         job = client.new_job(job_description=job_description, inputs=[zip_file])
+        logger.info(f'job submitted on UNICORE Client: {job}')
         return ResponseUtil.ok_response(messages.JOB_SUBMITTED.format(hpc))
 
     def _get_unicore_jobs(self, hpc, token):
@@ -250,7 +265,6 @@ class JobHandler:
 
     def _get_unicore_job_results(self, hpc, token, job_id):
         client = self._initialize_unicore_client(hpc, token)
-        print(client.access_info())
         job_url = client.links['jobs'] + '/' + job_id
         job = unicore_client.Job(client.transport, job_url)
         storage = job.working_dir
@@ -286,30 +300,37 @@ class JobHandler:
         headers = self._get_service_account_headers(token, zip_name, payload)
         job_file = {'file': open(zip_file, 'rb')}
         r = requests.post(url=self._SA_DAINT_JOB_URL, headers=headers, files=job_file)
+        logger.debug(f'requests: {r.url} with headers: {r.headers} and files: {job_file}')
         if r.status_code == 400:            
+            logger.error(f'CODE: {r.status_code}, CONTENT: {r.content}')
             return ResponseUtil.ko_response(r.text)
         return ResponseUtil.ok_response(messages.JOB_SUBMITTED.format('SA-CSCS'))
 
     def _get_service_account_jobs(self, token):
         headers = self._get_service_account_headers(token)
         r = requests.get(url=self._SA_DAINT_JOB_URL, headers=headers)
+        logger.debug(f'requests: {r.url} with headers: {r.headers}')
         if r.status_code != 200:
+            logger.error(f'CODE: {r.status_code}, CONTENT: {r.content}')
             raise self.ServiceAccountException(r.content, r.status_code)
         return r.json()
 
     def _get_service_account_job_results(self, token, job_id):
         headers = self._get_service_account_headers(token)
         r = requests.get(url=self._SA_DAINT_FILES_URL + job_id + '/', headers=headers)
+        logger.debug(f'requests: {r.url} with headers: {r.headers}')
         if r.status_code == 404:
+            logger.error(f'CODE: {r.status_code}, CONTENT: {r.content}')
             raise self.JobsFilesNotFound(messages.JOB_EXPIRED.format(job_id))
         if r.status_code != 200:
+            logger.error(f'CODE: {r.status_code}, CONTENT: {r.content}')
             raise self.ServiceAccountException(r.content, r.status_code)
         return r.json()
           
 
     @classmethod
     def submit_job(cls, user, zip_file, settings):
-        
+        logger.info(LOG_ACTION.format(user, 'submitting job with settings: %s' % settings))
         job_handler = cls()
         if settings['hpc'] == job_handler._NSG:
             return job_handler._submit_on_nsg(user.get_nsg_user().get_username(),
@@ -325,7 +346,7 @@ class JobHandler:
        
     @classmethod
     def fetch_jobs_list(cls, hpc, user):
-
+        logger.info(LOG_ACTION.format(user, 'fetch %s jobs list' % hpc))
         job_handler = cls()
         jobs = {}
 
@@ -360,12 +381,13 @@ class JobHandler:
         ordered_jobs = OrderedDict(sorted(jobs.items(),
                                           key=lambda x: x[1]['date'],
                                           reverse=True))
+        logger.info(LOG_ACTION.format(user, 'jobs list: %s' % ordered_jobs))
         return {'jobs': ordered_jobs}
 
 
     @classmethod
     def fetch_job_files(cls, hpc, job_id, user):
-
+        logger.info(LOG_ACTION.format(user, 'fetch files of job: %s in %s' % (job_id, hpc)))
         job_handler = cls()
         if hpc == job_handler._NSG:
             raw_file_list = job_handler._get_nsg_job_results(user.get_nsg_user().get_username(),
@@ -391,4 +413,5 @@ class JobHandler:
                 'file_list': raw_file_list,
                 'headers': {'Authorization': 'Bearer ' + user.get_token()}
             }
+        logger.info(LOG_ACTION.format(user, 'file_list: %s' % file_list))
         return file_list

@@ -16,8 +16,15 @@ class EbrainsUser:
     def __init__(self, username, token=None):
         self._username = username
         self._avatar_url = AVATAR_URL.format(username)
+        self._token = None
         if token:
             self._token = token
+
+    def __repr__(self):
+        return f'EBRAINS User: {self._username}'
+
+    def __str__(self):
+        return self._username
 
     def set_token(self, token):
         self._token = token
@@ -44,6 +51,12 @@ class NsgUser:
         self._username = username
         self._password = password
 
+    def __repr__(self):
+        return f'NSG User: {self._username}'
+
+    def __str__(self):
+        return self._username
+
     def get_username(self):
         return self._username
 
@@ -64,10 +77,19 @@ class NsgUser:
 class HhnbUser:
 
     def __init__(self, ebrains_user=None, nsg_user=None):
+        self._ebrains_user = None
+        self._nsg_user = None
         if ebrains_user:
             self.set_ebrains_user(ebrains_user)
         if nsg_user:
             self.set_nsg_user(nsg_user)
+
+    def __repr__(self):
+        return self.__class__
+
+    def __str__(self):
+        return f'<ebrains: "{self._ebrains_user}", '\
+             + f'nsg: "{self._nsg_user}>'
 
     def set_ebrains_user(self, ebrains_user):
         if type(ebrains_user) != EbrainsUser:
