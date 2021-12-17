@@ -524,7 +524,7 @@ class WorkflowUtil:
         os_call(f'source {env_prefix}/bin/activate; nrnivmodl mechanisms > /dev/null',
                 shell=True, executable='/bin/bash')
         os_call(f'source {env_prefix}/bin/activate;' \
-                +'python ./opt_neuron.py --analyse --checkpoint ./checkpoints', 
+                +'python ./opt_neuron.py --analyse --checkpoint ./checkpoints > /dev/null', 
                 shell=True, executable='/bin/bash')
         os.chdir(curr_dir)
 

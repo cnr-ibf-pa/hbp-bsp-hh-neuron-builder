@@ -1,6 +1,6 @@
 """ Views """
 
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.views.decorators.csrf import csrf_exempt
 
 from hh_neuron_builder.settings import MODEL_CATALOG_COLLAB_DIR, MODEL_CATALOG_COLLAB_URL, MODEL_CATALOG_CREDENTIALS, MODEL_CATALOG_FILTER, TMP_DIR
@@ -292,7 +292,10 @@ def upload_model(request, exc):
         shutil.rmtree(tmp_dir)
     os.mkdir(tmp_dir)
     shutil.unpack_archive(uploaded_file_path, tmp_dir)
-    if os.listdir(tmp_dir) != [uploaded_file.name, 'signature.txt']:
+    
+    zip_content_list = [uploaded_file.name, 'signature.txt', 'README.txt']
+    # if os.listdir(tmp_dir) != [uploaded_file.name, 'signature.txt', 'README.txt']:
+    if not all([f in zip_content_list for f in os.listdir(tmp_dir)]):
         return ResponseUtil.ko_response(messages.INVALID_FILE.format('model'))
     try:
         with open(os.path.join(tmp_dir, uploaded_file.name), 'rb') as arch_fd:
@@ -300,11 +303,11 @@ def upload_model(request, exc):
                 Sign.verify_data_sign(sign_fd.read(), arch_fd.read())
     except InvalidSign:
         return ResponseUtil.ko_response(messages.INVALID_SIGNATURE.format('model'))
-
+ 
     try:
-        workflow.load_model_zip(os.path.join(workflow.get_tmp_dir(),
-                                             uploaded_file.name))
+        workflow.load_model_zip(os.path.join(tmp_dir, uploaded_file.name))
     except FileNotFoundError as e:
+        print(e)
         return ResponseUtil.ko_response(messages.MARLFORMED_FILE.format('"model.zip"'))
 
     return ResponseUtil.ok_response()
@@ -349,7 +352,9 @@ def upload_analysis(request, exc):
             shutil.move(unzip_dir_path, workflow.get_analysis_dir())
             return ResponseUtil.ok_response('')
 
-    if os.listdir(tmp_dir) != [uploaded_file.name, 'signature.txt']:
+    zip_content_list = [uploaded_file.name, 'signature.txt', 'README.txt']
+    # if os.listdir(tmp_dir) != [uploaded_file.name, 'signature.txt', 'README.txt']:
+    if not all([f in zip_content_list for f in os.listdir(tmp_dir)]):
         return ResponseUtil.ko_response(messages.INVALID_FILE.format('analysis'))
     try:
         with open(os.path.join(tmp_dir, uploaded_file.name), 'rb') as arch_fd:
@@ -391,11 +396,32 @@ def upload_files(request, exc):
 
     workflow, _ = get_workflow_and_user(request, exc)
 
-    file_content = request.body
-    file_path = request.META['HTTP_CONTENT_DISPOSITION'].split('filename="')[1].split('"')[0]
+    folder = request.POST.get('folder')
+    uploaded_file = request.FILES.get('file')
+    print(uploaded_file.name)
 
-    WorkflowUtil.write_file_content(workflow, file_path, file_content)
-    return ResponseUtil.ok_response()
+    if folder == 'morphology/':
+        if not uploaded_file.endswith('.asc'):
+            return ResponseUtil.ko_response('Morphology must be "<b>.asc</b>" file.')
+    elif folder == 'mechanisms/':
+        if not uploaded_file.endswith('.mod'):
+            return ResponseUtil.ko_response('Mechanisms must be "<b>.mod</b>" file.')
+    elif folder == 'config/':
+        if not uploaded_file.name in ['features.json', 'protocols.json', 'parameters.json']:
+            return ResponseUtil.ko_response(
+                'Config file must be one of the fallowing files:<br>\
+                "<b>protocols.json</b>", "<b>features.json</b>", <b>"parameters.json</b>"'
+            )
+ 
+    full_path = os.path.join(workflow.get_model_dir(), folder, uploaded_file.name)
+    with open(full_path, 'wb') as fd:
+        if uploaded_file.multiple_chunks(chunk_size=4096):
+            for chunk in uploaded_file.chunks(chunk_size=4096):
+                fd.write(chunk)
+        else:
+            fd.write(uploaded_file.read())
+
+    return ResponseUtil.ok_response('')
 
 
 def download_files(request, exc):
@@ -617,6 +643,11 @@ def upload_to_naas(request, exc):
 
     workflow, _ = get_workflow_and_user(request, exc)
 
+    naas_model = request.session[exc].get('naas_model')
+    print(naas_model)
+    if naas_model:
+        return ResponseUtil.ok_response(naas_model)
+
     try:
         naas_archive = WorkflowUtil.make_naas_archive(workflow)
     except Exception as e:
@@ -627,7 +658,10 @@ def upload_to_naas(request, exc):
         r = requests.post(url='https://blue-naas-svc-bsp-epfl.apps.hbp.eu/upload',
                           files={'file': open(naas_archive, 'rb')}, verify=False)
         if r.status_code == 200:
-            return ResponseUtil.ok_response(os.path.split(naas_archive)[1].split('.zip')[0])
+            model_link = os.path.split(naas_archive)[1].split('.zip')[0]
+            request.session[exc]['naas_model'] = 'already_uploaded'
+            request.session.save()
+            return ResponseUtil.ok_response(model_link)
     except requests.exceptions.ConnectionError as e:
         print(e)
         return ResponseUtil.ko_response(500, messages.BLUE_NAAS_NOT_AVAILABLE)
@@ -764,6 +798,10 @@ def get_user_avatar(request):
     return ResponseUtil.raw_response(content=r.content,
                                      content_type='image/png;',
                                      charset='UTF-8')
+
+
+def get_user_page(request):
+    return redirect('https://wiki.ebrains.eu/bin/view/Identity/#/users/' + request.user.username)
 
 
 def get_authentication(request):

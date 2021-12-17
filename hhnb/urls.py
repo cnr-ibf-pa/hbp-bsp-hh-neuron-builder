@@ -74,6 +74,7 @@ urlpatterns = [
 
     # user avatar
     path('get-user-avatar', views.get_user_avatar),
+    path('get-user-page', views.get_user_page),
     path('get-authentication', views.get_authentication),
 
     # jobs apis

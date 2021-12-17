@@ -240,41 +240,48 @@ $("#uploadFileButton").click(function() {
     }
     
     const input = document.createElement("input");
-    if ($(".folder-item.active").attr("id") == "mechanismsFolder") {
+    let folderId = $(".folder-item.active").attr("id");
+    if (folderId == "mechanismsFolder") {
         input.setAttribute("multiple", "true");
+        input.setAttribute("accept", ".mod");
+    } else if (folderId == "configFolder") {
+        input.setAttribute("multiple", "true");
+        input.setAttribute("accept", ".json");
+    } else if (folderId == "morphologyFolder") {
+        input.setAttribute("multiple", "false");
+        input.setAttribute("accept", ".asc");
     }
-    input.setAttribute("multiple", "true");
     input.setAttribute("type", "file");
     input.click();
     
     var counter = 0;
     var files = 0
 
-    var filePath = $(".folder-item.active").attr("id").split("Folder")[0] + "/";
+    var folder = $(".folder-item.active").attr("id").split("Folder")[0] + "/";
 
     const upload = (file) => {
-        
-        fetch("/hh-neuron-builder/upload-files/" + req_pattern, {
+        var formData = new FormData();
+        formData.append("folder", folder);
+        formData.append("file", file);
+        $.ajax({
+            url: "/hh-neuron-builder/upload-files/" + req_pattern,
             method: "POST",
-            headers: {
-                "Content-Type": "application/octet-stream",
-                "Content-Disposition": "attachment; filename=\"" + filePath + file.name + "\""
-            },
-            body: file
-        })
-        .then((result) => {
-            if (result.statusText == "OK") {
-                counter += 1;
-                if (counter == files) {
-                    hideLoadingAnimation();
-                    refreshHHFFileList();
-                    updateEditor();
-                }
-            } else {
-                closeFileManager();
-                openErrorDiv(result.message, "error");
+            data: formData,
+            contentType: false,
+            processData: false,
+            error: error => {
+                let text = error.responseText;
+                console.log(text);
+                openErrorMessage(text);
             }
-        });
+        }).always(() => {
+            counter += 1;
+            if (counter == files) {
+                hideLoadingAnimation();
+                refreshHHFFileList();
+                updateEditor();
+            }
+        })
     }
 
     const onSelectFile = async function(x) {        
@@ -711,3 +718,54 @@ $("#editorAlert")[0].addEventListener("transitionend", async function(){
     await sleep(2000);
     $(this).removeClass("show");
 });
+
+
+function openErrorMessage(msg) {
+    console.log(msg);
+    $("#overlaywrapperdialog").css("display", "block");
+    $("#overlaycontentdialog").css("display", "block").css("box-shadow", "0 0 1rem 1rem rgba(255, 0, 0, .8)")
+        .css("border-color", "red");
+    $("#dialog-btn").text("Ok").addClass("red").removeClass("blue green fill-background")
+        .on("click", closeErrorMessage);
+    $("#dialogtext").html(msg);
+}
+
+function closeErrorMessage() {
+    $("#overlaywrapperdialog").css("display", "none");
+    $("#overlaycontentdialog").css("display", "none");
+    
+}
+
+
+class MessageDialog {
+
+    static #overlayWrapper = $("#overlaywrapperdialog");
+    static #overlayContent = $("#overlaycontentdialog");
+    static #dialogMessage = $("#dialogtext");
+    static #dialogButton = $("#dialog-btn");
+
+
+    static #openMessageDialog(msg) {
+        if (!msg.startsWith("{\"refresh_url\"")) {
+            this.#overlayWrapper.css("display", "block");
+            this.#overlayContent.css("display", "block");
+            this.#dialogMessage.html(msg);
+        }
+    }
+
+    static #closeMessageDialog() {
+        this.#overlayWrapper.css("display", "none");
+        this.#overlayContent.css("display", "none");
+    }
+
+    static openErrorDialog(msg) {
+        console.log(msg);
+        this.#overlayContent.css("box-shadow", "0 0 1rem 1rem rgba(255, 0, 0, .8)")
+            .css("border-color", "red");
+        this.#dialogButton.text("Ok")
+            .addClass("red").removeClass("blue green fill-background")
+            .on("click", () => { this.#closeMessageDialog() });
+        this.#openMessageDialog(msg);
+    }
+
+}
