@@ -38,3 +38,4 @@ DATABASES = {
 
 MEDIA_ROOT = os.path.join('/apps', 'media')
 
+LOG_ROOT_PATH = './'

@@ -224,7 +224,7 @@ LOGIN_URL = 'oidc_authentication_init'
 # Logging
 
 # Set LOG_ROOT_PATH for logging files
-LOG_ROOT_PATH = './'
+LOG_ROOT_PATH = conf.LOG_ROOT_PATH
 
 LOGGING = {
     'version': 1,
