@@ -293,19 +293,23 @@ def upload_model(request, exc):
     os.mkdir(tmp_dir)
     shutil.unpack_archive(uploaded_file_path, tmp_dir)
     
-    zip_content_list = [uploaded_file.name, 'signature.txt', 'README.txt']
-    # if os.listdir(tmp_dir) != [uploaded_file.name, 'signature.txt', 'README.txt']:
+    # grep model zip name
+    for f in os.listdir(tmp_dir):
+        if os.path.splitext(f)[1] == '.zip':
+            model_zip_name = f
+
+    zip_content_list = [model_zip_name, 'signature.txt', 'README.txt']
     if not all([f in zip_content_list for f in os.listdir(tmp_dir)]):
         return ResponseUtil.ko_response(messages.INVALID_FILE.format('model'))
     try:
-        with open(os.path.join(tmp_dir, uploaded_file.name), 'rb') as arch_fd:
+        with open(os.path.join(tmp_dir, model_zip_name), 'rb') as arch_fd:
             with open(os.path.join(tmp_dir, 'signature.txt'), 'r') as sign_fd:
                 Sign.verify_data_sign(sign_fd.read(), arch_fd.read())
     except InvalidSign:
         return ResponseUtil.ko_response(messages.INVALID_SIGNATURE.format('model'))
  
     try:
-        workflow.load_model_zip(os.path.join(tmp_dir, uploaded_file.name))
+        workflow.load_model_zip(os.path.join(tmp_dir, model_zip_name))
     except FileNotFoundError as e:
         print(e)
         return ResponseUtil.ko_response(messages.MARLFORMED_FILE.format('"model.zip"'))
@@ -345,33 +349,39 @@ def upload_analysis(request, exc):
     os.mkdir(tmp_dir)
     shutil.unpack_archive(uploaded_file_path, tmp_dir)
 
-    if os.listdir(tmp_dir) == [uploaded_file.name.split('.')[0]]:
-        unzip_dir_path = os.path.join(tmp_dir, uploaded_file.name.split('.')[0])
-        if all([True if dir in os.listdir(unzip_dir_path) else False\
-                for dir in ['mechanisms', 'morphology', 'checkpoints']]):
-            shutil.move(unzip_dir_path, workflow.get_analysis_dir())
-            return ResponseUtil.ok_response('')
+    # grep analysis zip name
+    # analysis_zip_name = None
+    for f in os.listdir(tmp_dir):
+        if os.path.splitext(f)[1] == '.zip':
+            analysis_zip_name = f
 
-    zip_content_list = [uploaded_file.name, 'signature.txt', 'README.txt']
-    # if os.listdir(tmp_dir) != [uploaded_file.name, 'signature.txt', 'README.txt']:
+    # upload BlueNaas simulation zip 
+    # if os.listdir(tmp_dir) == [uploaded_file.name.split('.')[0]]:
+    #     unzip_dir_path = os.path.join(tmp_dir, uploaded_file.name.split('.')[0])
+    #     if all([True if dir in os.listdir(unzip_dir_path) else False\
+    #             for dir in ['mechanisms', 'morphology', 'checkpoints']]):
+    #         shutil.move(unzip_dir_path, workflow.get_analysis_dir())
+    #         return ResponseUtil.ok_response('')
+
+    zip_content_list = [analysis_zip_name, 'signature.txt', 'README.txt']
     if not all([f in zip_content_list for f in os.listdir(tmp_dir)]):
-        return ResponseUtil.ko_response(messages.INVALID_FILE.format('analysis'))
+        return ResponseUtil.ko_response(messages.INVALID_FILE.format('model'))
     try:
-        with open(os.path.join(tmp_dir, uploaded_file.name), 'rb') as arch_fd:
+        with open(os.path.join(tmp_dir, analysis_zip_name), 'rb') as arch_fd:
             with open(os.path.join(tmp_dir, 'signature.txt'), 'r') as sign_fd:
                 Sign.verify_data_sign(sign_fd.read(), arch_fd.read())
     except InvalidSign:
         return ResponseUtil.ko_response(messages.INVALID_SIGNATURE.format('analysis'))
 
     try:
-        shutil.unpack_archive(os.path.join(tmp_dir, uploaded_file.name),
+        shutil.unpack_archive(os.path.join(tmp_dir, analysis_zip_name),
                               workflow.get_tmp_dir())
         tmp_dir_list = os.listdir(workflow.get_tmp_dir())
-        tmp_dir_list.remove(uploaded_file.name) # remove zip file from list
+        tmp_dir_list.remove(analysis_zip_name) # remove zip file from list
         if len(tmp_dir_list) == 1:
             unzip_dir_path = os.path.join(workflow.get_tmp_dir(), tmp_dir_list[0])
-            if all([True if dir in os.listdir(unzip_dir_path) else False\
-                    for dir in ['mechanisms', 'morphology', 'checkpoints']]):
+            simulation_folder_list = ['mechanisms', 'morphology', 'checkpoints']
+            if all([folder in os.listdir(unzip_dir_path) for folder in simulation_folder_list]):
                 shutil.move(unzip_dir_path, workflow.get_analysis_dir())
         else:
             for f in tmp_dir_list:
@@ -642,26 +652,25 @@ def upload_to_naas(request, exc):
         return ResponseUtil.no_exc_code_response()
 
     workflow, _ = get_workflow_and_user(request, exc)
-
-    naas_model = request.session[exc].get('naas_model')
-    print(naas_model)
-    if naas_model:
-        return ResponseUtil.ok_response(naas_model)
-
+    
     try:
         naas_archive = WorkflowUtil.make_naas_archive(workflow)
+        naas_model = os.path.split(naas_archive)[1].split('.zip')[0]
     except Exception as e:
         print(e)
         return ResponseUtil.ko_response(messages.ANALYSIS_ERROR)
-
+    
+    uploaded_naas_model = request.session[exc].get('naas_model')
+    if uploaded_naas_model and uploaded_naas_model == naas_model: 
+        return ResponseUtil.ok_response(naas_model)
+    
     try:
         r = requests.post(url='https://blue-naas-svc-bsp-epfl.apps.hbp.eu/upload',
                           files={'file': open(naas_archive, 'rb')}, verify=False)
         if r.status_code == 200:
-            model_link = os.path.split(naas_archive)[1].split('.zip')[0]
-            request.session[exc]['naas_model'] = 'already_uploaded'
+            request.session[exc]['naas_model']
             request.session.save()
-            return ResponseUtil.ok_response(model_link)
+            return ResponseUtil.ok_response(naas_model)
     except requests.exceptions.ConnectionError as e:
         print(e)
         return ResponseUtil.ko_response(500, messages.BLUE_NAAS_NOT_AVAILABLE)

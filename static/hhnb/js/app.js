@@ -741,24 +741,25 @@ $("#checkNsgLoginButton").on("click", () => {
 
 
 /* ****************************** */
-
+var blueNaasModel = "";
 $("#run-sim-btn").on("click", () => {
     showLoadingAnimation("Uploading to BlueNaas...");
     $("#run-sim-btn").prop("disable", true);
     $.get("/hh-neuron-builder/upload-to-naas/" + exc)
         .done((data) => {
-            Log.debug("Filename uploaded " + data);
-            if (data == "already_uploaded") {
-                hideLoadingAnimation();
-                $("#modalBlueNaasContainer").css("display", "block");
-                $("#modalBlueNaas").css("z-index", "100").addClass("show");
-            } else {
-                $("#bluenaas-frame").attr("src", "https://blue-naas-bsp-epfl.apps.hbp.eu/#/model/" + data);
+            if (blueNaasModel != data) {
+                blueNaasModel = data;
+                Log.debug("Filename uploaded " + blueNaasModel);
+                $("#bluenaas-frame").attr("src", "https://blue-naas-bsp-epfl.apps.hbp.eu/#/model/" + blueNaasModel);
                 $("#bluenaas-frame").on("load", function () {
                     hideLoadingAnimation();
                     $("#modalBlueNaasContainer").css("display", "block");
                     $("#modalBlueNaas").css("z-index", "100").addClass("show");
                 })
+            } else {
+                hideLoadingAnimation();
+                $("#modalBlueNaasContainer").css("display", "block");
+                $("#modalBlueNaas").css("z-index", "100").addClass("show");
             }
         }).fail((error) => {
             checkRefreshSession(error);

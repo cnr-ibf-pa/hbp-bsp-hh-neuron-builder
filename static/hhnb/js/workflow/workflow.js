@@ -205,7 +205,11 @@ export default class Workflow {
             bar.text("");
             disable(fetchButton);
             disable(uploadButton);
-            enable(downloadResultLink);
+            if (this.#props.results) {
+                enable(downloadResultLink);
+            } else {
+                disable(downloadResultLink);
+            }
             enable(downloadAnalysisLink);
             enable(deleteLink);
             this.#simulationBlock = true
