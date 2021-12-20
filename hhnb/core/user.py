@@ -124,8 +124,11 @@ class HhnbUser:
     @classmethod
     def get_user_from_request(cls, request):
         hhnb_user = cls()
-        ebrains_user = EbrainsUser(username=request.user.username 
-                                   if request.user.is_authenticated 
+        # ebrains_user = EbrainsUser(username=request.user.username 
+        #                            if request.user.is_authenticated 
+        #                            else 'anonymous')
+        ebrains_user = EbrainsUser(username=str(request.user.sub)
+                                   if request.user.is_authenticated
                                    else 'anonymous')
         if 'oidc_access_token' in request.session.keys():
             ebrains_user.set_token(request.session['oidc_access_token'])

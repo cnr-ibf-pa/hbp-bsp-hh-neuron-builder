@@ -4,6 +4,7 @@ from django.db import models
 
 class MyUser(AbstractUser):
     name = models.CharField(max_length=64, blank=True)
+    sub = models.UUIDField(editable=True, blank=True, null=True)
 
 
 class Workflow():
