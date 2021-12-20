@@ -19,22 +19,31 @@ from efelg.tools.manage_storage import EfelStorage
 import efel
 import requests
 import datetime
-import logging
 import sys
 import os
 import json
 
 import bluepyefe as bpefe
 
+import logging
+logger = logging.getLogger(__name__)
+
+
+LOG_ACTION = 'User: "{}"\t Action: {}'
+
 
 def overview(request, wfid=None):
+    
     """
     Render the NeuroFeatureExtract main page
     """
     if request.user.is_authenticated:
-        username = request.user.username
+        # username = request.user.username
+        username = str(request.user.sub)
     else:
         username = 'anonymous'
+
+    logger.info(LOG_ACTION.format(username, 'access OVERVIEW page'))    
 
     if wfid:
         time_info = wfid.split('_')[0]
@@ -54,6 +63,7 @@ def select_features(request):
     """
     Render the application select-features page
     """
+    logger.info(LOG_ACTION.format(request.session['username'], 'access SELECT_FEATURES page'))
 
     # if not context variable exists exit the application
     if not request.session.get("is_free_space_enough"):
@@ -76,6 +86,8 @@ def show_traces(request):
     """
     Render the trace selection page
     """
+    logger.info(LOG_ACTION.format(request.session['username'], 'access TRACES page'))
+
 
     # check the space left on disk and show a message in case >10GB are left
     if EfelStorage.isThereEnoughFreeSpace():
@@ -409,6 +421,8 @@ def results(request):
     """
     Render result page
     """
+    logger.info(LOG_ACTION.format(request.session['username'], 'access RESULT page'))
+
 
     # if not enough space is left on disk display error page
     if not request.session.get("is_free_space_enough"):
@@ -550,6 +564,8 @@ def index_docs(request):
     """
     Render Guidebook main page
     """
+    logger.info(LOG_ACTION.format(request.session['username'], 'access INDEX_DOCS page'))
+
     return render(request, 'efelg/docs/index.html')
 
 
@@ -557,6 +573,8 @@ def file_formats_docs(request):
     """
     Render Guidebook file formats page
     """
+    logger.info(LOG_ACTION.format(request.session['username'], 'access FILE_FORMATS page'))
+
     return render(request, 'efelg/docs/file_formats.html')
 
 
@@ -575,6 +593,7 @@ def dataset(request):
     """
     Return Guidebook dataset page
     """
+    logger.info(LOG_ACTION.format(request.session['username'], 'access DATASET page'))
 
     return render(request, 'efelg/docs/dataset.html')
 
@@ -688,4 +707,5 @@ def error_space_left(request):
     Render no-space-left error page
     """
     time_info = request.session["time_info"]
+    logger.info(LOG_ACTION.format(request.session['username'], 'access ERROR_SPACE_LEFT page'))
     return render(request, 'efelg/error_space_left.html', context={'efel_wf_id': time_info})
