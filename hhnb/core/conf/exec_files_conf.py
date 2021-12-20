@@ -9,7 +9,7 @@ class ExecFileConf:
 f"""
 import os
 
-os.system('python3 opt_neuron.py --max_ngen={ str(max_gen) } --offspring_size={ str(offspring) } --start --checkpoint ./checkpoints/checkpoint.pkl')
+os.system('python3 opt_neuron.py --max_ngen={max_gen} --offspring_size={offspring} --start --checkpoint ./checkpoints/checkpoint.pkl')
 
 """
         try:
@@ -47,8 +47,6 @@ zipdir('{ folder_name }', zipf)
         SLURM_JOBID = '{SLURM_JOBID}'
         IPYTHON_PROFILE = '{IPYTHON_PROFILE}'
         CHECKPOINTS_DIR = '{CHECKPOINTS_DIR}'
-        #OFFSPRING = '{OFFSPRING}'
-        #MAXGEN = '{MAXGEN}'
 
         buffer_sbatch = \
 f"""
