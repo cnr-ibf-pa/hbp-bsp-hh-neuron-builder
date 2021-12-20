@@ -732,7 +732,7 @@ def upload_to_naas(request, exc):
         r = requests.post(url='https://blue-naas-svc-bsp-epfl.apps.hbp.eu/upload',
                           files={'file': open(naas_archive, 'rb')}, verify=False)
         if r.status_code == 200:
-            request.session[exc]['naas_model']
+            request.session[exc]['naas_model'] = naas_model
             request.session.save()
             return ResponseUtil.ok_response(naas_model)
     except requests.exceptions.ConnectionError as e:
