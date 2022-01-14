@@ -1769,3 +1769,7 @@ i.disabled:hover {
 .form-select {
     width: 100%;
 }
+
+#external_link {
+    color: white;
+}

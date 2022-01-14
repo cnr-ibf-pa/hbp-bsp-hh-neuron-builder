@@ -337,7 +337,7 @@ function chooseOptModel() {
                 $("#modelCatalogContainer").append("<div  id=" + model_uuid + " name=" +
                     model_name + " class='mc-model main-content model-info-div'></div>");
                 $("#" + model_uuid).append(
-                    "<div id=" + model_uuid + " class='row model-info-div-title'><div class='col'></div><div id=" + model_uuid + " class='col flex-grow-4 flex-center'>" + e['species'] + ' > ' + e['brain_region'] + ' > ' + e['cell_type'] + ' > ' + model_name + "</div><div class='col flex-grow-1 flex-end'><i id='" + model_uuid + "' class='fas fa-external-link-alt fa-lg' title='Open in ModelCatalog'></i></div></div>"
+                    "<div id=" + model_uuid + " class='row model-info-div-title'><div class='col'></div><div id=" + model_uuid + " class='col flex-grow-4 flex-center'>" + e['species'] + ' > ' + e['brain_region'] + ' > ' + e['cell_type'] + ' > ' + model_name + "</div><div class='col flex-grow-1 flex-end'><a href='https://model-catalog.brainsimulation.eu/#model_id." + model_uuid + "' target='_blank'><i id='external_link' class='fas fa-external-link-alt fa-lg' title='Open in ModelCatalog'></i></a></div></div>"
                 );
                 $("#" + model_uuid).append("<div style='display:flex;' id=" + model_uuid + 'a' + " ></div>");
                 var img_div = document.createElement("DIV");
@@ -362,26 +362,23 @@ function chooseOptModel() {
         });
         $("#modalMC").modal("show");
         $("#closeModalMCButton").css("display", "block").addClass("show");
-        $(".fa-external-link-alt").on("click", (button) => {
-            let id = button.currentTarget.getAttribute("id")
-            let win = window.open("https://model-catalog.brainsimulation.eu/#model_id." + id);
-            win.focus();
-            return false;
-        })
         $(".mc-model").on("click", (button) => {
-            closeModelCatalog();
-            let optimization_id = button.currentTarget.getAttribute("id");
+            console.log(button.target.getAttribute("id"));
+            if (button.target.getAttribute("id") != "external_link") {
+                closeModelCatalog();
+                let optimization_id = button.currentTarget.getAttribute("id");
 
-            showLoadingAnimation("Fetching model from the HBP Model Catalog");
+                showLoadingAnimation("Fetching model from the HBP Model Catalog");
 
-            $.get("/hh-neuron-builder/fetch-models/" + exc, { "model": optimization_id })
-                .done((result) => {
-                    Log.debug(result);
-                    workflow.updateProperties();
-                }).fail((error) => {
-                    checkRefreshSession(error);
-                    Log.error(error);
-                }).always(() => { hideLoadingAnimation() })
+                $.get("/hh-neuron-builder/fetch-models/" + exc, { "model": optimization_id })
+                    .done((result) => {
+                        Log.debug(result);
+                        workflow.updateProperties();
+                    }).fail((error) => {
+                        checkRefreshSession(error);
+                        Log.error(error);
+                    }).always(() => { hideLoadingAnimation() })
+            }
         });
     }).done(() => {
         modelsReady = true;
