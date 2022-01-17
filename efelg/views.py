@@ -184,7 +184,8 @@ def get_data(request, cellname=""):
     keys = [
         "md5", "sampling_rate", "etype", "cell_type", "cell_id",
         "brain_structure", "filename", "animal_species", "cell_soma_location",
-        "stimulus_unit", "voltage_unit", "contributors_affiliations"
+        "stimulus_unit", "voltage_unit", "contributors_affiliations", 
+        "voltage_correction"
     ]
     for key in keys:
         if key in content:
