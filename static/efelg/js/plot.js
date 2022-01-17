@@ -1,6 +1,6 @@
-const SHOW_FADED = 0.2;
-const SHOW_CHECK = 0.8;
-const SHOW_HOVER = 1.0;
+const SHOW_FADED = 0.15;
+const SHOW_CHECK = 1.0;
+const SHOW_HOVER = 0.8;
 
 var plotData = {}
 var num = 0;
@@ -221,6 +221,7 @@ function plotMinibatch(cells, isUploaded, id) {
                 $.getJSON('/efelg/get_data/' + fileName, data => {
                     var dict = JSON.parse(data);
                     var currentPlotData = [];
+                    console.log(dict);
                     Object.keys(dict["traces"]).forEach(label => {
                         y = dict["traces"][label];
                         x = Array
