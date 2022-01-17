@@ -40,7 +40,8 @@ function plotVoltageCorrection(plot_id, correction) {
 
 // plot all cells contained in cells
 function plotCells(cells, isUploaded, id) {
-    if (cells.length > 5) {
+    console.log("plotting in " + id.toString());
+    if (cells.length >= 5) {
         loadMore(cells, isUploaded, id);
     } else {
         $("#load-more-button").remove();
@@ -61,12 +62,20 @@ async function sendParallelRequests(promises) {
 function loadMore(cells, isUploaded, id) {
     n_plots = 1;
     var promises = plotMinibatch(cells.slice((n_plots - 1) * minibatch_size, n_plots * minibatch_size), isUploaded, id);
-    $("#charts").append("<button id='load-more-button' class='btn btn-outline-primary w-25 mt-3'>Load more</button>");
+    if (isUploaded) {
+        $("#charts_upload_" + id.toString()).append("<button id='load-more-button' class='btn btn-outline-primary w-25 mt-3'>Load more</button>");
+    } else {
+        $("#charts").append("<button id='load-more-button' class='btn btn-outline-primary w-25 mt-3'>Load more</button>");
+    }
     $("#load-more-button").click(() => {
         n_plots++;
         sendParallelRequests(plotMinibatch(cells.slice((n_plots - 1) * minibatch_size, n_plots * minibatch_size), isUploaded, id));
         if (cells.length > n_plots * minibatch_size) {
-            $("#charts").append($("#load-more-button"));
+            if (isUploaded) {
+                $("#charts_upload_" + id.toString()).append($("#load-more-button"));
+            } else {
+                $("#charts").append($("#load-more-button"));
+            }
         } else {
             $("#load-more-button").remove();
         }
@@ -76,15 +85,14 @@ function loadMore(cells, isUploaded, id) {
 }
 
 
-function createCellHeader(cell_name, cell_id, cellHeaderIds) {
+function createCellHeader(cell_name, cell_id) {
 
-    var cell_container;
-    if (cellHeaderIds.includes(cell_id)) {
-        cell_container = $('<div id="cell-' + cell_id + '"class=text-center" style="display: none"/>');
-    } else {
-        cell_container = $('<div id="cell-' + cell_id + '"class="text-center"/>');
-        cellHeaderIds.push(cell_id);
-    }
+    var cell_container = $("#cell-" + cell_id);
+    if (cell_container.length > 0) {
+        return cell_container;
+    } 
+
+    cell_container = $('<div id="cell-' + cell_id + '"class="text-center"/>');
 
     cell_container.append(' \
             <div class="row bg-light-grey mx-auto py-2"> \
@@ -188,8 +196,6 @@ function createCellPlotBox(id, container, currentPlotData, xLabel, yLabel, cellI
     });
 }
 
-var cellHeaderIds = [];
-
 function plotMinibatch(cells, isUploaded, id) {
     var promises = [];
     for (var i = 0; i < cells.length; i++) {
@@ -208,13 +214,13 @@ function plotMinibatch(cells, isUploaded, id) {
             cell_name = contributor + ' > ' + specie + ' > ' + structure + ' > ' + region + ' > ' + type + ' > ' + etype + ' > ' + cell;
             files = files.concat(Object.values(json['Contributors'][contributor][specie][structure][region][type][etype][cell]));
         }
-
-        var cellHeader = createCellHeader(cell_name, cell, cellHeaderIds)
+        var cellHeader = createCellHeader(cell_name, cell);
         cellHeader.addClass("mt-4");
         cellHeader.append('<div id="charts-' + cell + '"></div>');
         $(divId).append(cellHeader);
         files.forEach(file => {
             var fileName = file.split('.')[0];
+            console.log(fileName);
             $('#charts-' + cell).append('<div id="' + fileName + '" class="border border-primary rounded-3 my-4 mx-1 p-2"></div>');
             var container = $("#" + fileName);
             promises.push(new Promise((resolve, reject) => {
@@ -277,7 +283,6 @@ Plot the data using Plotly. Requires a dictionary containing the following keys:
 - plot_width: the width of the plot
 */
 function plot(plot_id, input_id, data) {
-
     function manageLegend() {
 
         var legend = Plotly.d3.select('div#' + plot_id + ' g.legend');
