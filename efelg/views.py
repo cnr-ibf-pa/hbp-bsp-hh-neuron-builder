@@ -314,7 +314,7 @@ def extract_features(request):
 
         # set v_corr
         final_cell_dict[crr_cell_name]['v_corr'].append(
-            int(selected_traces_rest_json[k]['v_corr']))
+            float(selected_traces_rest_json[k]['v_corr']))
   
     # build option configuration dictionary for the feature extraction
     config = {}
@@ -349,7 +349,8 @@ def extract_features(request):
             'num_events': int(global_parameters_json['num_events']),
         }
     }
-
+    import pprint
+    pprint.pprint(config)
     # launch the feature extraction process
     try:
         main_results_folder = os.path.join(user_results_dir,
@@ -371,10 +372,10 @@ def extract_features(request):
         print(e)
 
     # manage how to cite instructions
-    conf_cit = os.path.join(conf_dir, 'citation_list.json')
-    final_cit_file = os.path.join(main_results_folder, 'HOWTOCITE.txt')
-    resources.print_citations(selected_traces_rest_json, conf_cit,
-                              final_cit_file)
+    # conf_cit = os.path.join(conf_dir, 'citation_list.json')
+    # final_cit_file = os.path.join(main_results_folder, 'HOWTOCITE.txt')
+    # resources.print_citations(selected_traces_rest_json, conf_cit,
+    #                          final_cit_file)
 
     # set result .zip file parameters
     zip_name = time_info + '_nfe_results.zip'
