@@ -40,7 +40,6 @@ function plotVoltageCorrection(plot_id, correction) {
 
 // plot all cells contained in cells
 function plotCells(cells, isUploaded, id) {
-    console.log("plotting in " + id.toString());
     if (cells.length >= 5) {
         loadMore(cells, isUploaded, id);
     } else {
