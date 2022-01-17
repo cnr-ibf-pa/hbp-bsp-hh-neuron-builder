@@ -424,9 +424,6 @@ def extract_features(request):
     finally:
         zip_file.close()
 
-    response = {'status': 'KO'}
-    
-
     return HttpResponse(json.dumps(response))
 
 
