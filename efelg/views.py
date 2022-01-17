@@ -1,4 +1,5 @@
 import functools
+from json.decoder import JSONDecodeError
 import math
 import re
 import shutil
@@ -8,7 +9,7 @@ import zipfile
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
-from django.http.response import HttpResponse, JsonResponse
+from django.http.response import HttpResponse, HttpResponseServerError, JsonResponse
 from django.http.response import HttpResponseBadRequest
 
 from hh_neuron_builder import settings
@@ -151,10 +152,18 @@ def get_data(request, cellname=""):
         if not file_name in os.listdir(traces_files_dir):
             r = requests.get(EfelStorage.getTracesBaseUrl() + file_name)
             with open(path_to_file, "w") as f:
-                json.dump(r.json(), f)
+                try:
+                    json.dump(r.json(), f)
+                except JSONDecodeError as e:
+                    return HttpResponse(content={'response': 'KO', 'message': e.msg},
+                                        content_type='application/json')
 
     with open(path_to_file, "r") as f:
-        content = json.loads(f.read())
+        try:
+            content = json.loads(f.read())
+        except JSONDecodeError as e:
+            return HttpResponse(content={'response':'KO', 'message': e.msg},
+                                content_type='application/json')
 
     # extract data sampling rate
     disp_sampling_rate = 5000
@@ -252,6 +261,7 @@ def extract_features(request):
         elif "amp_unit" in crr_file_dict:
             crr_file_amp_unit = crr_file_dict["amp_unit"]
         else:
+            return HttpResponse(json.dumps({'status': 'KO', 'message': 'stimulus not found!'}))
             raise Exception("stimulus_unit not found!")
 
         if "cell_id" in crr_file_dict:
@@ -259,6 +269,7 @@ def extract_features(request):
         elif "name" in crr_file_dict:
             crr_cell_name = crr_file_dict["name"]
         else:
+            return HttpResponse(json.dumps({'status': 'KO', 'message': 'cell_id not found!'}))
             raise Exception("cell_id not found!")
 
         new_keys = ["animal_species", "brain_structure",
@@ -351,24 +362,20 @@ def extract_features(request):
     }
 
     # launch the feature extraction process
-    try:
-        main_results_folder = os.path.join(user_results_dir,
-                                           time_info + "_nfe_results")
-        extractor = bpefe.Extractor(main_results_folder, config)
-        extractor.create_dataset()
-        extractor.plt_traces()
-        if global_parameters_json['threshold'] != '':
-            extractor.extract_features(threshold=int(
-                global_parameters_json['threshold']))
-        else:
-            extractor.extract_features(threshold=-20)
-        extractor.mean_features()
-        extractor.plt_features()
-        extractor.feature_config_cells(version="legacy")
-        extractor.feature_config_all(version="legacy")
-    except ValueError as e:
-        print('SOME ERROR OCCURED')
-        print(e)
+    main_results_folder = os.path.join(user_results_dir,
+                                        time_info + "_nfe_results")
+    extractor = bpefe.Extractor(main_results_folder, config)
+    extractor.create_dataset()
+    extractor.plt_traces()
+    if global_parameters_json['threshold'] != '':
+        extractor.extract_features(threshold=int(
+            global_parameters_json['threshold']))
+    else:
+        extractor.extract_features(threshold=-20)
+    extractor.mean_features()
+    extractor.plt_features()
+    extractor.feature_config_cells(version="legacy")
+    extractor.feature_config_all(version="legacy")
 
     # manage how to cite instructions
     conf_cit = os.path.join(conf_dir, 'citation_list.json')
@@ -389,32 +396,38 @@ def extract_features(request):
 
     # create result .zip files
     contents = os.walk(main_results_folder)
+    response = {'status': 'OK'}
     try:
         zip_file = zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED)
         for root, folders, files in contents:
             for folder_name in folders:
                 absolute_path = os.path.join(root, folder_name)
                 relative_path = absolute_path.replace(main_results_folder +
-                                                      os.sep, '')
+                                                        os.sep, '')
                 zip_file.write(absolute_path, relative_path)
             for file_name in files:
                 absolute_path = os.path.join(root, file_name)
                 relative_path = absolute_path.replace(main_results_folder +
-                                                      os.sep, '')
+                                                        os.sep, '')
                 zip_file.write(absolute_path, relative_path)
     except IOError as message:
         print(message)
-        sys.exit(1)
+        response = {'status': 'KO'}
     except OSError as message:
         print(message)
-        sys.exit(1)
+        response = {'status': 'KO'}
+        # sys.exit(1)
     except zip_file.BadZipfile as message:
         print(message)
-        sys.exit(1)
+        response = {'status': 'KO'}
+        # sys.exit(1)
     finally:
         zip_file.close()
 
-    return HttpResponse(json.dumps({"status": "OK"}))
+    response = {'status': 'KO'}
+    
+
+    return HttpResponse(json.dumps(response))
 
 
 def results(request):
@@ -629,25 +642,8 @@ def load_hhf_etraces(request):
     if not hhf_etraces_dir:
         return HttpResponseBadRequest('"hhf_etraces_dir" not found')
     
-    print(hhf_etraces_dir)
-
-    # try:
     username = request.session['username']
     time_info = request.session['time_info']
-    # except KeyError:
-    #     if not wfid:
-    #         try:
-    #             wfid = request.session['wfid']
-    #         except KeyError:
-    #             return HttpResponse(json.dumps({'resp': 'KO', 'message':
-    #                                             'key error occurred'}))
-
-    # time_info = hhf_etraces_dir.split('/')[-1]
-    # username = hhf_etraces_dir.split('/')[-2]
-
-    print("QUESTO è TIME_INFO")
-    print(time_info)
-    print(username)
 
     data_name_dict = {
         "all_json_names": [],
@@ -655,26 +651,9 @@ def load_hhf_etraces(request):
     }
 
     try:
-        # if hhf_etraces_dir == 'True':
-        #     for k in request.session.keys():
-        #         try:
-        #             if ('wf_id' in request.session[k].keys() and
-        #                     request.session[k]['wf_id'] == wfid):
-        #                 try:
-        #                     hhf_etraces_dir = \
-        #                         request.session[k]['hhf_etraces_dir']
-        #                 except:
-        #                     # if exception is thrown then "hhf_etraces_dir" is
-        #                     # not present and an error code is returned
-        #                     return JsonResponse({'resp': 'KO', 'message':
-        #                                          'etraces dir not present error'
-        #                                          })
-        #         except AttributeError:
-        #             continue
 
         # save data files sent from the HippocampusHub in the appropriate folder
         for f in os.listdir(hhf_etraces_dir):
-            print(f)
             if not f.endswith('.abf'):
                 continue
             #try:
