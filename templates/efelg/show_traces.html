@@ -12,6 +12,13 @@
     <link rel="stylesheet" href="{% static 'assets/themes/efelg.css' %}">
     <link rel="icon" href="{% static 'efelg/img/favicon.ico' %}">
     <script type="text/javascript" src="{% static 'hhnb-motomo.js' %}"></script>
+    <script type="text/javascript">
+        // Callback
+        window.onbeforeunload = function (e) {
+            // Turning off the event
+            e.preventDefault();
+        }
+    </script>
 </head>
 
 <body>
@@ -81,10 +88,10 @@
                             <label class="form-label mb-0">Accept zero std: </label>
                         </div>
                         <div class="col-xl-3 col-lg-6 col-md-6">
-                            <input id="zero_std_false" type="radio" name="zero_std" value="False" checked="checked">
-                            <label for="zero_std_false" class="form-label mb-0">False</label>
-                            <input id="zero_std_true" type="radio" name="zero_std" value="True" class="ms-3">
+                            <input id="zero_std_true" type="radio" name="zero_std" value="True" checked="checked" class="ms-3">
                             <label for="zero_std_true" class="form-label mb-0">True</label>
+                            <input id="zero_std_false" type="radio" name="zero_std" value="False">
+                            <label for="zero_std_false" class="form-label mb-0">False</label>
                         </div>
                         <div class="col-xl-7 col-lg-12 col-md-12">
                             <span>Convert zero feature values to</span>
@@ -100,39 +107,63 @@
                                     <li>
                                         <label>
                                             <input type="checkbox" class="mx-2" value="all"
-                                                name="mean_features_no_zeros"
-                                                onclick="selectAllCheckboxes(this)" />Select
+                                                   name="mean_features_no_zeros"
+                                                   onclick="selectAllCheckboxes(this)" />Select
                                             all
                                         </label>
                                     </li>
                                     <li>
                                         <label>
                                             <input type="checkbox" class="mx-2" value="inv_first_ISI"
-                                                name="mean_features_no_zeros" />inv first ISI
+                                                   name="mean_features_no_zeros" />inv first ISI
                                         </label>
                                     </li>
                                     <li>
                                         <label>
                                             <input type="checkbox" class="mx-2" value="inv_second_ISI"
-                                                name="mean_features_no_zeros" />inv second ISI
+                                                   name="mean_features_no_zeros" />inv second ISI
                                         </label>
                                     </li>
                                     <li>
                                         <label>
                                             <input type="checkbox" class="mx-2" value="inv_third_ISI"
-                                                name="mean_features_no_zeros" />inv third ISI
+                                                   name="mean_features_no_zeros" />inv third ISI
                                         </label>
                                     </li>
                                     <li>
                                         <label>
                                             <input type="checkbox" class="mx-2" value="inv_fourth_ISI"
-                                                name="mean_features_no_zeros" />inv fourth ISI
+                                                   name="mean_features_no_zeros" />inv fourth ISI
                                         </label>
                                     </li>
                                     <li>
                                         <label>
                                             <input type="checkbox" class="mx-2" value="inv_fifth_ISI"
-                                                name="mean_features_no_zeros" />inv fifth ISI
+                                                   name="mean_features_no_zeros" />inv fifth ISI
+                                        </label>
+                                    </li>
+                                    <li>
+                                        <label>
+                                            <input type="checkbox" class="mx-2" value="inv_last_ISI"
+                                                   name="mean_features_no_zeros" />inv last ISI
+                                        </label>
+                                    </li>
+                                    <li>
+                                        <label>
+                                            <input type="checkbox" class="mx-2" value="time_to_first_spike"
+                                                   name="mean_features_no_zeros" />time to first spike
+                                        </label>
+                                    </li>
+                                    <li>
+                                        <label>
+                                            <input type="checkbox" class="mx-2" value="time_to_second_spike"
+                                                   name="mean_features_no_zeros" />time to second spike
+                                        </label>
+                                    </li>
+                                    <li>
+                                        <label>
+                                            <input type="checkbox" class="mx-2" value="time_to_last_spike"
+                                                   name="mean_features_no_zeros" />time to last spike
                                         </label>
                                     </li>
                                 </ul>

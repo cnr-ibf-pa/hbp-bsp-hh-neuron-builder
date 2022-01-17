@@ -339,7 +339,7 @@ def extract_features(request):
         'logging': True,
         'nangrace': 0,
         'amp_min': -1e22,
-        'zero_std': bool(global_parameters_json['zero_std']),
+        'zero_std': global_parameters_json['zero_std'] in ["True"],
         'trace_check': False,
         'strict_stiminterval': {
             'base': True
@@ -349,9 +349,8 @@ def extract_features(request):
             'num_events': int(global_parameters_json['num_events']),
         }
     }
-    import pprint
-    pprint.pprint(config)
-    # launch the feature extraction process
+    
+   # launch the feature extraction process
     try:
         main_results_folder = os.path.join(user_results_dir,
                                            time_info + "_nfe_results")
