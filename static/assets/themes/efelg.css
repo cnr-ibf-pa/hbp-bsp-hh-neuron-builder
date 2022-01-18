@@ -8,6 +8,15 @@ body {
     overflow: overlay;
 }
 
+.error-div {
+    border-style: solid;
+    border-color: red;
+}
+
+.error-message {
+    font-size: 14pt;
+    color: red;
+}
 
 /* Chrome, Safari, Edge, Opera */
 
