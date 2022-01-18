@@ -4,7 +4,8 @@ $(document).ready(function(){
     $.getJSON('/efelg/extract_features', function(data){
         if (data["status"] == "OK"){
             $.getJSON('/efelg/get_result_dir/', function(data) {
-                document.getElementById("hiddendiv").className = JSON.parse(data).result_dir
+                document.getElementById("hiddendiv").className = JSON.parse(data).result_dir;
+                document.getElementById("hiddendiv2").className = "true";
             });
             closeMessageDiv("wait-div", "main-e-res-div");
         } else if (data.status == "KO") {

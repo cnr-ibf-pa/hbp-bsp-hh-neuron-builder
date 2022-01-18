@@ -265,10 +265,11 @@ $("#apply-param").on("click", () => {
 
 $("#feat-efel-btn").on("click", () => {
     // showLoadingAnimation("Loading...");
+    let iframe = document.getElementById("efelgui-frame");
     if (workflow.getProps().etraces) {
-        document.getElementById("efelgui-frame").setAttribute("src", "/efelg/hhf_etraces/" + exc);
+        iframe.setAttribute("src", "/efelg/hhf_etraces/" + exc);
     } else {
-        document.getElementById("efelgui-frame").setAttribute("src", "/efelg/?ctx=" + exc);
+        iframe.setAttribute("src", "/efelg/?ctx=" + exc);
     }
 
     $("#modalNFEContainer").css("display", "block");
