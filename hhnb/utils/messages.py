@@ -19,6 +19,7 @@ INVALID_SIGNATURE = '<b>Invalid signature !</b><br><br>Upload {} archive is corr
 MARLFORMED_FILE = '<b>Error !</b><br><br>Malformed {} file.'
 NO_FILE_TO_DOWNLOAD = 'No file selected to download.' 
 NO_FILE_TO_DELETE = 'No file to delete.'
+FILE_NOT_FOUND_ERROR = '<b>Error !</b><br><br>File not found.'
 
 
 # Authentication messages
