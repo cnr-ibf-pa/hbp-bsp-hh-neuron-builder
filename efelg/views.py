@@ -367,6 +367,11 @@ def extract_features(request):
         extractor.plt_features()
         extractor.feature_config_cells(version="legacy")
         extractor.feature_config_all(version="legacy")
+        import pprint
+        pprint.pprint(config)
+        config["options"]["tolerance"] = config["options"]["tolerance"].tolist()
+        with open(os.path.join(main_results_folder, "config.json"), "w") as cf:
+            json.dump(config, cf, indent=4)
     except ValueError as e:
         print('SOME ERROR OCCURED')
         print(e)
