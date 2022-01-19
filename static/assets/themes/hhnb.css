@@ -252,14 +252,14 @@ body {
     margin-bottom: 4rem;
     box-shadow: 0rem 1rem 5px -6px rgba(0, 0, 0, .35);
     width: 80%;
-    max-width: 1100px;
+    max-width: 1000px;
     min-width: 980px;
     /* margin: auto; */
     padding: 0 2.5rem;
     transition: all ease .3s;
 }
 .main-content.home {
-    padding: 5%;
+    padding: 3%;
     font-size: 1.2rem;
     font-weight: 500;
 }
@@ -299,16 +299,33 @@ body {
 
 /* Overview page content */
 .side-button-panel {
-    height: 50%;
+    height: 60%;
     margin: auto;
 }
 
+.click-btn-msg {
+    font-size: 0.8rem;
+    text-align: center;
+}
+.hr-separator {
+    width: 60%;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 1.4rem;
+    margin-bottom: 1.8rem;
+}
+.main-message-div {
+    text-align: center; 
+    padding: 1rem;
+    font-size: 1.4rem;
+}
 .main-panel-btn {
     margin: auto;
+    width: 70%;
     background-color: white;
     color: black;
     transition: all .3s linear;
-    font-size: 1.2rem;
+    font-size: 1.4rem;
     font-weight: 600;
     border-radius: .5rem;
     border: solid 1.5px #78909c;

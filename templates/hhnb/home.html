@@ -14,28 +14,32 @@
     <div class="container main-content home">
         <div class="row">
             <div class="col">
-                Go through the entire cell NEURON model building pipeline via the following steps:
-                <ul>
-                    <li>electrophysiological feature extraction from voltage traces;</li>
-                    <li>model parameter optimization</li>
-                    <li><i>in silico</i> experiments using the optimized model cell.</li>
-                </ul>
-                Click on the buttons on the right to get started.
-            </div>
-            <div class="col">
-                <div class="row side-button-panel">
-                    <button id="new-wf" type="button" class="btn btn-lg main-panel-btn">
-                        Initiate a new workflow
-                    </button>
+                <div class="main-message-div">
+                    Build a single cell NEURON model via the following steps:
+                    <br><br>
+                    <ul>
+                        <li>electrophysiological feature extraction from voltage traces</li>
+                        <li>model parameter optimization</li>
+                        <li><i>in silico</i> experiments based on the optimized single cell model</li>
+                    </ul>
+                    <span class="click-btn-msg">Click a button below or read the <a href="/hh-neuron-builder/docs" target="_blank">guidebook</a> to get started</span>
+                    <hr class="hr-separator">
+                    <div class="row side-button-panel">
+                        <button id="new-wf" type="button" class="btn btn-lg main-panel-btn">
+                            Initiate a new workflow
+                        </button>
+                    </div>
+                    <br>
+                    <div class="row side-button-panel">
+                        <input type="file" accept="application/zip" id="workflow-upload" style="display: none">
+                        <button id="fetch-wf-btn" type="button" class="btn btn-lg main-panel-btn">
+                            Upload workflow
+                        </button>
+                    </div>
                 </div>
-                <br><br>
-                <div class="row side-button-panel">
-                    <input type="file" accept="application/zip" id="workflow-upload" style="display: none">
-                    <button id="fetch-wf-btn" type="button" class="btn btn-lg main-panel-btn">
-                        Upload workflow
-                    </button>                
-                </div>
             </div>
+        </div>
+            
         </div>
     </div>
 </div>
