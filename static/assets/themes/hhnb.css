@@ -226,7 +226,7 @@ body {
 }
 
 .page {
-    padding: 3% 5%;
+    padding: 1.5% 2.0%;
     /* padding-top: 3%; */
     height: calc(100vh - 22.5%);
     overflow: auto;
@@ -248,11 +248,11 @@ body {
     background-color: white;
     border-radius: .75rem;
     border: solid 1px #cfd8dc;
-    margin-top: 2rem;
-    margin-bottom: 4rem;
+    margin-top: 0.1rem;
+    margin-bottom: 1rem;
     box-shadow: 0rem 1rem 5px -6px rgba(0, 0, 0, .35);
     width: 80%;
-    max-width: 1000px;
+    max-width: 1100px;
     min-width: 980px;
     /* margin: auto; */
     padding: 0 2.5rem;
@@ -377,6 +377,8 @@ body {
 .workflow-content {
     min-width: 1000px;
     max-width: 1100px;
+    margin-top: 2rem;
+    margin-top: 2rem;
 }
 
 .workflow-title {
