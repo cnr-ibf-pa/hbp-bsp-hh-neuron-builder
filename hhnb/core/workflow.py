@@ -285,7 +285,7 @@ class WorkflowUtil:
             if not os.path.exists(f):
                 raise FileNotFoundError(f'{f} file not found!')
             if not os.path.commonpath([wf_path, f]) == wf_path:
-                raise PermissionError(f'file "{f}" is not inside the workflow path!')
+                raise PermissionError(f'file "{f} is not inside the workflow path!')
             shutil.copy(f, tmp_dir)
         shutil.make_archive(os.path.splitext(zip_path)[0], 'zip', tmp_dir)
         shutil.rmtree(tmp_dir)

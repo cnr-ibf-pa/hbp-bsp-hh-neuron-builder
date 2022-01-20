@@ -2,6 +2,7 @@
 
 from django.shortcuts import render, redirect
 from django.views.decorators.csrf import csrf_exempt
+from requests.models import Response
 
 from hh_neuron_builder.settings import MODEL_CATALOG_COLLAB_DIR, MODEL_CATALOG_COLLAB_URL, MODEL_CATALOG_CREDENTIALS, MODEL_CATALOG_FILTER, TMP_DIR
 
@@ -26,6 +27,8 @@ import json
 import shutil
 
 import logging
+
+from hhnb.utils.misc import InvalidArchiveError, get_signed_archive, validate_archive
 logger = logging.getLogger(__name__)
 
 
@@ -134,16 +137,26 @@ def upload_workflow(request):
     wf = request.body
     filename = request.META['HTTP_CONTENT_DISPOSITION'].split('filename="')[1].split('"')[0]
 
-    with open(os.path.join(TMP_DIR, filename), 'wb') as fd:
+    wf_zip = os.path.join(TMP_DIR, filename)
+    with open(wf_zip, 'wb') as fd:
         fd.write(wf)
-    
+
+    try:
+        valide_wf_zip = validate_archive(wf_zip)
+    except InvalidArchiveError:
+        return ResponseUtil.ko_json_response({'response': 'KO',
+                                              'message': messages.INVALID_FILE.format(filename)})
+    except InvalidSign:
+        return ResponseUtil.ko_json_response({'response': 'KO',
+                                              'message': messages.INVALID_SIGNATURE.format(filename)})
+
     exc = generate_exc_code(request)
     hhnb_user = HhnbUser.get_user_from_request(request)
     logger.info(LOG_ACTION.format(hhnb_user, 'uploading workflow'))
 
     try:
         workflow = Workflow.generate_user_workflow_from_zip(hhnb_user.get_username(),
-                                                            os.path.join(TMP_DIR, filename))
+                                                            valide_wf_zip)
     except WorkflowExists as e:
         logger.error(e)
         return ResponseUtil.ko_json_response({'response': 'KO', 'message': str(e)})
@@ -180,10 +193,10 @@ def download_workflow(request, exc):
     
     workflow, hhnb_user = get_workflow_and_user(request, exc)
     zip_path = WorkflowUtil.make_workflow_archive(workflow)
-
+    signed_zip_path = get_signed_archive(zip_path)
     logger.info(LOG_ACTION.format(hhnb_user, 'downloading workflow %s' % workflow))
     
-    return ResponseUtil.ok_json_response({'zip_path': zip_path})
+    return ResponseUtil.ok_json_response({'zip_path': signed_zip_path})
 
 
 def get_workflow_properties(request, exc):
@@ -330,30 +343,15 @@ def upload_model(request, exc):
             else:
                 fd.write(uploaded_file.read())
 
-    # check signature
-    tmp_dir = os.path.join(TMP_DIR, user.get_username() + '_' + workflow.get_id())
-    if os.path.exists(tmp_dir):
-        shutil.rmtree(tmp_dir)
-    os.mkdir(tmp_dir)
-    shutil.unpack_archive(uploaded_file_path, tmp_dir)
-    
-    # grep model zip name
-    for f in os.listdir(tmp_dir):
-        if os.path.splitext(f)[1] == '.zip':
-            model_zip_name = f
-
-    zip_content_list = [model_zip_name, 'signature.txt', 'README.txt']
-    if not all([f in zip_content_list for f in os.listdir(tmp_dir)]):
-        return ResponseUtil.ko_response(messages.INVALID_FILE.format('model'))
     try:
-        with open(os.path.join(tmp_dir, model_zip_name), 'rb') as arch_fd:
-            with open(os.path.join(tmp_dir, 'signature.txt'), 'r') as sign_fd:
-                Sign.verify_data_sign(sign_fd.read(), arch_fd.read())
+        zip_path = validate_archive(uploaded_file_path)
     except InvalidSign:
         return ResponseUtil.ko_response(messages.INVALID_SIGNATURE.format('model'))
- 
+    except InvalidArchiveError:
+        return ResponseUtil.ko_response(messages.INVALID_FILE.format('model'))
+
     try:
-        workflow.load_model_zip(os.path.join(tmp_dir, model_zip_name))
+        workflow.load_model_zip(zip_path)
     except FileNotFoundError as e:
         logger.error(e)
         return ResponseUtil.ko_response(messages.MARLFORMED_FILE.format('"model.zip"'))
@@ -387,43 +385,17 @@ def upload_analysis(request, exc):
             else:
                 fd.write(uploaded_file.read())
 
-    # check signature
-    tmp_dir = os.path.join(TMP_DIR, user.get_username() + '_' + workflow.get_id())
-    if os.path.exists(tmp_dir):
-        shutil.rmtree(tmp_dir)
-    os.mkdir(tmp_dir)
-    shutil.unpack_archive(uploaded_file_path, tmp_dir)
-
-    # grep analysis zip name
-    # analysis_zip_name = None
-    for f in os.listdir(tmp_dir):
-        if os.path.splitext(f)[1] == '.zip':
-            analysis_zip_name = f
-
-    # upload BlueNaas simulation zip 
-    # if os.listdir(tmp_dir) == [uploaded_file.name.split('.')[0]]:
-    #     unzip_dir_path = os.path.join(tmp_dir, uploaded_file.name.split('.')[0])
-    #     if all([True if dir in os.listdir(unzip_dir_path) else False\
-    #             for dir in ['mechanisms', 'morphology', 'checkpoints']]):
-    #         shutil.move(unzip_dir_path, workflow.get_analysis_dir())
-    #         return ResponseUtil.ok_response('')
-
-    zip_content_list = [analysis_zip_name, 'signature.txt', 'README.txt']
-    if not all([f in zip_content_list for f in os.listdir(tmp_dir)]):
+    try:
+        analysis_zip = validate_archive(uploaded_file_path)
+    except InvalidSign:
+        return ResponseUtil.ko_response(messages.INVALID_SIGNATURE.format('model'))
+    except InvalidArchiveError:
         return ResponseUtil.ko_response(messages.INVALID_FILE.format('model'))
-    try:
-        with open(os.path.join(tmp_dir, analysis_zip_name), 'rb') as arch_fd:
-            with open(os.path.join(tmp_dir, 'signature.txt'), 'r') as sign_fd:
-                Sign.verify_data_sign(sign_fd.read(), arch_fd.read())
-    except InvalidSign as e:
-        logger.error(e)
-        return ResponseUtil.ko_response(messages.INVALID_SIGNATURE.format('analysis'))
 
     try:
-        shutil.unpack_archive(os.path.join(tmp_dir, analysis_zip_name),
-                              workflow.get_tmp_dir())
+        shutil.unpack_archive(analysis_zip, workflow.get_tmp_dir())
         tmp_dir_list = os.listdir(workflow.get_tmp_dir())
-        tmp_dir_list.remove(analysis_zip_name) # remove zip file from list
+        tmp_dir_list.remove(os.path.split(analysis_zip)[1]) # remove zip file from list
         if len(tmp_dir_list) == 1:
             unzip_dir_path = os.path.join(workflow.get_tmp_dir(), tmp_dir_list[0])
             simulation_folder_list = ['mechanisms', 'morphology', 'checkpoints']
@@ -432,7 +404,7 @@ def upload_analysis(request, exc):
         else:
             for f in tmp_dir_list:
                shutil.move(os.path.join(workflow.get_tmp_dir(), f),
-                          workflow.get_results_dir())
+                           workflow.get_results_dir())
             # run analisys
             return run_analysis(request, exc)
         
@@ -455,7 +427,6 @@ def upload_files(request, exc):
 
     folder = request.POST.get('folder')
     uploaded_file = request.FILES.get('file')
-    print(uploaded_file.name)
 
     if folder == 'morphology/':
         if not uploaded_file.endswith('.asc'):
@@ -496,45 +467,33 @@ def download_files(request, exc):
         if pack == 'features':
             arch_file = WorkflowUtil.make_features_archive(workflow)
             return ResponseUtil.file_response(arch_file)
+        
         elif pack == 'model':
             arch_file = WorkflowUtil.make_model_archive(workflow)
         elif pack == 'results':
             arch_file = WorkflowUtil.make_results_archive(workflow)
         elif pack == 'analysis':
             arch_file = WorkflowUtil.make_analysis_archive(workflow)
+
+        return ResponseUtil.file_response(get_signed_archive(arch_file))
+
     elif file_list:
         logger.info(LOG_ACTION.format(user, 'download %s from %s' % (file_list, workflow)))
         path_list = json.loads(file_list).get('path')
 
-        # TODO: add Permission control
-
         files = [os.path.join(workflow.get_model_dir(), f) for f in path_list]
         arch_name = workflow.get_id() + '_model_files.zip'
-        arch_file = WorkflowUtil.make_archive(workflow, arch_name, 'files', files)
-
-    if arch_file:
-
-        tmp_dir = os.path.join(TMP_DIR, user.get_username() + '_' + workflow.get_id())
-        if os.path.exists(tmp_dir):
-            shutil.rmtree(tmp_dir)
-        os.mkdir(tmp_dir)
-
-        root_dir, zip_name = os.path.split(arch_file)
-        arch_sign = os.path.join(root_dir, 'signature.txt')
-        with open(arch_sign, 'w') as sign_fd:
-            with open(arch_file, 'rb') as arch_fd:
-                sign_fd.write(Sign.get_data_sign(arch_fd.read()))
         
-        arch_readme = os.path.join(root_dir, 'README.txt')
-        with open(arch_readme, 'w') as readme_fd:
-            readme_fd.write(messages.SIGNATURE_README_DESCRIPTION)
-        
-        final_zip_file = shutil.make_archive(
-            base_name=os.path.join(tmp_dir, zip_name.split('.zip')[0]),
-            format='zip',
-            root_dir=root_dir
-        )  
-        return ResponseUtil.file_response(final_zip_file)
+        try:
+            arch_file = WorkflowUtil.make_archive(workflow, arch_name, 'files', files)
+        except PermissionError as e:
+            logger.error(e)
+            return ResponseUtil.ko_response(messages.CRITICAL_ERROR)
+        except FileNotFoundError as e:
+            logger.error(e)
+            return ResponseUtil.ko_response(str(e))
+
+        return ResponseUtil.file_response(arch_file)
     
     return ResponseUtil.ko_response(messages.NO_FILE_TO_DOWNLOAD)
 
