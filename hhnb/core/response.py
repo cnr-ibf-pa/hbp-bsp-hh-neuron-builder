@@ -1,3 +1,4 @@
+from dis import dis
 from genericpath import isfile
 from os import stat
 from typing import Tuple
@@ -79,6 +80,11 @@ class ResponseUtil:
 
     @staticmethod
     @dispatch(str)
+    def ko_json_response(data):
+        return _json_response(400, data)
+
+    @staticmethod
+    @dispatch(dict)
     def ko_json_response(data):
         return _json_response(400, data)
 
