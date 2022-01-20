@@ -45,7 +45,9 @@ urlpatterns = [
     # pages
     path('', views.home_page),
     path('workflow/<exc:exc>', views.workflow_page),
-    
+    path('docs/', views.index_docs),
+    path('docs/index/', views.index_docs),
+
     # workflow apis
     path('initialize-workflow', views.initialize_workflow),
     path('upload-workflow', views.upload_workflow),

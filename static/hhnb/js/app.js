@@ -562,8 +562,8 @@ function displayJobList(button) {
             let jobs = results.jobs;
             Log.debug(jobs);
             if ($.isEmptyObject(jobs)) {
+                closeJobFetchDiv();
                 MessageDialog.openInfoDialog("No jobs on this HPC system");
-                resetJobFetchDiv();
                 return false;
             }
             for (let job_id of Object.keys(jobs)) {

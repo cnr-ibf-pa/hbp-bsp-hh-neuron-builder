@@ -55,14 +55,12 @@
             </div>
             <div class="home-main-div">
                 <div class="hhnb-secondary-nav home">
-                    <div class="page-title">
-                        <a class="text-white fs-6" href="/hh-neuron-builder/docs/index/">Home</a>
-                    </div>
+                    <div class="page-title">Guidebook</div>
                 </div>
             </div>
         </header>
         
-        <main class="page my-4 px-15" style="position:absolute; top: 12.5%">
+        <main class="page my-4 px-15" style="position:absolute; top: 12.5%; height: calc(100vh - 12.5%); padding: 8rem;">
             <div class="text-justify">
                 <h3><strong>Hodgkin-Huxley Neuron Builder</strong></h3>
                 <br>
@@ -77,13 +75,13 @@
                     The web-application homepage (see figure below) allows the user to initiate a new workflow or to select a workflow previously saved in the current Collab storage.
                 </p>
                 <div class="my-4 text-center">
-                    <img src="{% static 'hhnb/img/01_Main-HHNB.PNG' %}" alt="main_image" style="width: 85%;"/>
+                    <img src="{% static 'hhnb/img/01_Main-HHNB.PNG' %}" alt="main_image" style="max-width: 750px;"/>
                 </div>
                 <p>
                     After initiating a new workflow, the user is provided with two panels allowing to go through the processes of “Cell Optimization” and “Single Cell Simulation” respectively (see figure below).
                 </p>
                 <div class="my-4 text-center">
-                    <img src="{% static 'hhnb/img/02_Panels.PNG' %}" alt="main_image" style="width: 85%;"/>
+                    <img src="{% static 'hhnb/img/02_Panels.PNG' %}" alt="main_image" style="width: 750px;"/>
                 </div>
                 <br>
                 <br>
@@ -92,7 +90,7 @@
                     The cell optimization is made up of two main steps: i) the feature extraction and ii) the choice of the single cell model to be optimized. An additional panel, the “Optimization settings” one, is provided for the insertion of the optimization parameters (see figure below).
                 </p>
                 <div class="my-4 text-center">
-                    <img src="{% static 'hhnb/img/03_before_submission.PNG' %}" alt="main_image" style="width: 85%;"/>
+                    <img src="{% static 'hhnb/img/03_before_submission.PNG' %}" alt="main_image" style="width: 750px;"/>
                 </div>
                 <ul>
                     <li>
@@ -101,7 +99,7 @@
                         Alternatively, the user can upload his own features.json and protocols.json files through the “Upload files” button.
                     </li>
                     <div class="my-4 text-center">
-                        <img src="{% static 'hhnb/img/04_NFE_Panel.PNG' %}" alt="main_image" style="width: 80%;"/>
+                        <img src="{% static 'hhnb/img/04_NFE_Panel.PNG' %}" alt="main_image" style="width: 750px;"/>
                     </div>
                     <li>
                         The model to be optimized is chosen among a dataset displayed to the user after clicking the “Choose from database” button. The dataset is made up of
@@ -115,13 +113,13 @@
                         (please reproduce the same folder structure in the example file, including empty folders).
                     </li>
                     <div class="my-4 text-center">
-                        <img src="{% static 'hhnb/img/05_model_choice.PNG' %}" alt="main_image" style="width: 85%;"/>
+                        <img src="{% static 'hhnb/img/05_model_choice.PNG' %}" alt="main_image" style="width: 750px;"/>
                     </div>
                     <li>
                         Before launching the optimization, the user must set the optimization parameters by clicking the “Set parameters/Choose HPC” button of the “Optimization settings” panel. A form is presented to the user (see image below), to be filled in with: i) parameters concerning the genetic algorithm, namely the maximum number of generations the user wants to adopt as well as the number of offsprings to be considered; ii) system parameters for the optimization run, namely the number of nodes and cores to be reserved on the HPC system and the maximum time the process is allowed to be running; iii) the HPC system to be used.
                     </li>
                     <div class="my-4 text-center">
-                        <img src="{% static 'hhnb/img/06_hpc_choice.PNG' %}" alt="main_image" style="width: 70%;"/>
+                        <img src="{% static 'hhnb/img/06_hpc_choice.PNG' %}" alt="main_image" style="width: 750px;"/>
                     </div>
                 </ul>
                 <p>
@@ -137,7 +135,7 @@
                     The status of the submitted jobs can be monitored via the “Single Cell Simulation Run” panel (see next paragraph), through the “Fetch results” button.
                 </p>
                 <div class="my-4 text-center">
-                    <img src="{% static 'hhnb/img/07_ready_for_submission.PNG' %}" alt="main_image" style="width: 85%;"/>
+                    <img src="{% static 'hhnb/img/07_ready_for_submission.PNG' %}" alt="main_image" style="width: 750px;"/>
                 </div>
                 <br>
                 <br>
@@ -146,7 +144,7 @@
                     After successful termination of the optimization phase, the optimized model can be retrieved and used for simulations. This step is performed through the “Single Cell Simulation Run” panel (see figure below).
                 </p>
                 <div class="my-4 text-center">
-                    <img src="{% static 'hhnb/img/08_run_simulation.PNG' %}" alt="main_image" style="width: 85%;"/>
+                    <img src="{% static 'hhnb/img/08_run_simulation.PNG' %}" alt="main_image" style="width: 750px;"/>
                 </div>
                 <p>
                     The user can fetch the results from the HPC system of choice through the “Fetch results” button which allows to select the HPC system the optimization files reside in and, successively, select the result file of interest (see figures below). At the moment, only the Neuroscience Gateway HPC system can be used for running the optimization scripts. A full description of the meaning of the job status tags can be found under this
@@ -154,20 +152,20 @@
                     Please note that, while the job status can be “Completed”, the outcome of the optimization might be empty, if, for example, the optimization parameters are not chosen appropriately (e.g. if the “Runtime” value is set so as not to allow the optimization to come to an end).
                 </p>
                 <div class="my-4 text-center">
-                    <img src="{% static 'hhnb/img/09_hpc_choice_fetch.PNG' %}" alt="main_image" style="width: 70%;"/>
+                    <img src="{% static 'hhnb/img/09_hpc_choice_fetch.PNG' %}" alt="main_image" style="width: 750px;"/>
                 </div>
                 <p>
                     Alternatively, the user can upload a .zip package containing the files needed for the simulation, through the upload button. For an example of how the .zip file content must be structured, please refer to the following
                     <a href="https://object.cscs.ch/v1/AUTH_c0a333ecf7c045809321ce9d9ecdfdea/hippocampus_optimization/rat/CA1/v4.0.5/optimizations/CA1_pyr_cACpyr_oh140807_A0_idG_20190328143451/CA1_pyr_cACpyr_oh140807_A0_idG_20190328143451.zip" target="_blank">link</a>.
                 </p>
                 <div class="my-4 text-center">
-                    <img src="{% static 'hhnb/img/10_jobs_fetched.PNG' %}" alt="main_image" style="width: 80%;"/>
+                    <img src="{% static 'hhnb/img/10_jobs_fetched.PNG' %}" alt="main_image" style="width: 750px;"/>
                 </div>
                 <p>
                     Once the model files are integrated into the pipeline, the simulation can be run by clicking the “Run Simulation” button. The model is fed to the “Neuron As A Service” web-application, integrated into the neuron builder (see figure below), which allows the user to visualize the morphology of the chosen model (both in 3D and as a dendogram) and set the simulation run parameters.
                 </p>
                 <div class="my-4 text-center">
-                    <img src="{% static 'hhnb/img/11_BlueNaas.PNG' %}" alt="main_image" style="width: 85%;"/>
+                    <img src="{% static 'hhnb/img/11_BlueNaas.PNG' %}" alt="main_image" style="width: 750px;"/>
                 </div>
                 <p>
                     For further details on the “Neuron As A Service” application, please refer to the dedicated page of this guidebook
@@ -179,7 +177,7 @@
                     Finally, the user can register the optimized model in the Model Catalog. From the simulation page, after clicking on the “Register in Model Catalog” button, a form will be displayed where the user will be able to insert the model’s metadata (see figure below). By clicking on the “Register” button, the registration process will be triggered, at the end of which the user will be provided with the Model Catalog URL of the optimized model.
                 </p>
                 <div class="my-4 text-center">
-                    <img src="{% static 'hhnb/img/12_hhnb_mc_params.png' %}" alt="main_image" style="width: 85%;"/>
+                    <img src="{% static 'hhnb/img/12_hhnb_mc_params.png' %}" alt="main_image" style="width: 750px;"/>
                 </div>
             </div>
         </main>

@@ -66,6 +66,13 @@ def get_workflow_and_user(request, exc):
     return workflow, hhnb_user
 
 
+def index_docs(request):
+    """
+    Render Guidebook main page
+    """
+    return render(request, 'hhnb/docs/index.html')
+
+
 def home_page(request):
     hhnb_user = HhnbUser.get_user_from_request(request)
     context = {}
