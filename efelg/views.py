@@ -383,7 +383,7 @@ def extract_features(request):
         with open(os.path.join(main_results_folder, "config.json"), "w") as cf:
             json.dump(config, cf, indent=4)
     except Exception as e:
-        return HttpResponse(json.dumps({"status": "KO", "message": f"Unexpected {e=}, {type(e)=}"}))
+        return HttpResponse(json.dumps({"status": "KO", "message": f"Unexpected {e}, {type(e)}"}))
 
     # manage how to cite instructions
     # conf_cit = os.path.join(conf_dir, 'citation_list.json')
