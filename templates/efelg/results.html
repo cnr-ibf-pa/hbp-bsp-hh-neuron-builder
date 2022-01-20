@@ -47,18 +47,19 @@
             Back to the homepage
         </button>
 
-        <div id=hiddendiv></div>
+        <div id="hiddendiv"></div>
+        <div id="hiddendiv2" class="false"></div>
 
         <!-- Wait div -->
         <div id="wait-div" class="overlay-wrapper">
-            <div class="overlay-content text-center" style="top: 40%;">
+            <div class="overlay-content text-center" style="top: 40%; padding-bottom: 2rem;">
                 <div class="mt-2">
                     <div class="spinner-border" role="status"></div>
                 </div>
                 <div class="mt-4">
-                    <span>Extracting features from traces. This may take a few minutes.</span>
+                    <span id="wmd-first">Extracting features from traces. This may take a few minutes.</span>
                     <br />
-                    <span>Please wait ...</span>
+                    <span id="wmd-second">Please wait ...</span>
                 </div>
             </div>
         </div>

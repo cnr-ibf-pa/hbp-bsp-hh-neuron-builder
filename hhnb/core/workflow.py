@@ -278,13 +278,19 @@ class WorkflowUtil:
             os.remove(zip_path)
         tmp_dir = os.path.join(workflow.get_tmp_dir(), dir_name)
         os.mkdir(tmp_dir)
+
+        wf_path = workflow.get_workflow_path()
+
         for f in file_list:
+            if not os.path.exists(f):
+                raise FileNotFoundError(f'{f} file not found!')
+            if not os.path.commonpath([wf_path, f]) == wf_path:
+                raise PermissionError(f'file "{f} is not inside the workflow path!')
             shutil.copy(f, tmp_dir)
         shutil.make_archive(os.path.splitext(zip_path)[0], 'zip', tmp_dir)
         shutil.rmtree(tmp_dir)
         return zip_path
         
-
     @staticmethod
     def make_workflow_archive(workflow):
         zip_path = os.path.join(TMP_DIR, workflow.get_id())
@@ -305,17 +311,6 @@ class WorkflowUtil:
             dir_name='feature',
             file_list=file_list
         )
-
-        # zip_name = os.path.join(workflow.get_tmp_dir(), 'features.zip')
-        # if os.path.exists(zip_name):
-        #     os.remove(zip_name)
-        # tmp_feat_dir = os.path.join(workflow.get_tmp_dir(), 'features')
-        # os.mkdir(tmp_feat_dir)
-        # shutil.copy(workflow.get_model().get_features().get_features(), tmp_feat_dir)
-        # shutil.copy(workflow.get_model().get_features().get_protocols(), tmp_feat_dir)
-        # shutil.make_archive(zip_name.split('.zip')[0], 'zip', tmp_feat_dir)
-        # shutil.rmtree(tmp_feat_dir)
-        # return zip_name
         
     @staticmethod
     def make_model_archive(workflow):

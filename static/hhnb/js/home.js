@@ -60,7 +60,8 @@ function uploadWorkflow() {
                 "Content-Disposition": "attachment; filename=\"" + file.name + "\""
             },
             body: file
-        }).then( response => { 
+        }).then( response => {
+            // handle expired session
             if (response.status === 403 && response.headers.get("refresh_url")) {
                 $.post("/hh-neuron-builder/session-refresh/" + exc, response.responseJSON )
                     .done((result) => {
@@ -69,22 +70,16 @@ function uploadWorkflow() {
                         alert("Can't refresh session automatically, please refresh page");
                     })
             } else {
-                response.json() 
+                response.json().then( data => {
+                    if (data.response == "OK") {
+                        window.location.href = "/hh-neuron-builder/workflow/" + data.exc;
+                    } else {
+                        hideLoadingAnimation();
+                        MessageDialog.openErrorDialog(data.message);
+                    }        
+                })
             }
-        }
-        ).then(
-            
-            data => {
-                console.log(data);
-                if (data.response == "OK") {
-                    window.location.href = "/hh-neuron-builder/workflow/" + data.exc;
-                }
-                else {
-                    hideLoadingAnimation();
-                    MessageDialog.openErrorDialog(data.message);
-                }
-            }
-        )};
+        })};
 
     // Event handler executed when a file is selected
     const onSelectFile = () => upload(input.files[0]);

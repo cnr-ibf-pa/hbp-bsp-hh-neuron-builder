@@ -12,9 +12,8 @@ var structure = null;
 var region = null;
 var type = null;
 var etype = null;
-
-var menus = []
 var i_box = 0;
+var menus = []
 var selected_files = [];
 var json;
 
@@ -801,7 +800,8 @@ function createUploadBox() {
 
 //
 function removeUploadBox(remove_button) {
-    $(remove_button).parents("#upload_box_" + remove_button.id.substring(remove_button.id.lastIndexOf("_") + 1)).remove();
+    let index = Array.from(remove_button.getAttribute("id")).pop();
+    $("#upload_box_" + index).remove();
 }
 
 
