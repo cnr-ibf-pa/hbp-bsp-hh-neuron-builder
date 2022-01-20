@@ -226,7 +226,7 @@ body {
 }
 
 .page {
-    padding: 3% 5%;
+    padding: 1.5% 2.0%;
     /* padding-top: 3%; */
     height: calc(100vh - 22.5%);
     overflow: auto;
@@ -248,8 +248,8 @@ body {
     background-color: white;
     border-radius: .75rem;
     border: solid 1px #cfd8dc;
-    margin-top: 2rem;
-    margin-bottom: 4rem;
+    margin-top: 0.1rem;
+    margin-bottom: 1rem;
     box-shadow: 0rem 1rem 5px -6px rgba(0, 0, 0, .35);
     width: 80%;
     max-width: 1100px;
@@ -259,7 +259,7 @@ body {
     transition: all ease .3s;
 }
 .main-content.home {
-    padding: 5%;
+    padding: 3%;
     font-size: 1.2rem;
     font-weight: 500;
 }
@@ -299,16 +299,33 @@ body {
 
 /* Overview page content */
 .side-button-panel {
-    height: 50%;
+    height: 60%;
     margin: auto;
 }
 
+.click-btn-msg {
+    font-size: 0.8rem;
+    text-align: center;
+}
+.hr-separator {
+    width: 60%;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 1.4rem;
+    margin-bottom: 1.8rem;
+}
+.main-message-div {
+    text-align: center; 
+    padding: 1rem;
+    font-size: 1.4rem;
+}
 .main-panel-btn {
     margin: auto;
+    width: 70%;
     background-color: white;
     color: black;
     transition: all .3s linear;
-    font-size: 1.2rem;
+    font-size: 1.4rem;
     font-weight: 600;
     border-radius: .5rem;
     border: solid 1.5px #78909c;
@@ -360,6 +377,8 @@ body {
 .workflow-content {
     min-width: 1000px;
     max-width: 1100px;
+    margin-top: 2rem;
+    margin-top: 2rem;
 }
 
 .workflow-title {

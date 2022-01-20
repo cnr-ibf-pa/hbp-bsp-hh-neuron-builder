@@ -2,6 +2,7 @@ function openMessageDiv(divId, mainDivId) {
     document.getElementById(mainDivId).style.pointerEvents = "none";
     document.body.style.overflow = "hidden";
     document.getElementById(divId).style.display = "block";
+    document.getElementById(divId).style.pointerEvents = "auto";
 }
 
 //
@@ -12,6 +13,11 @@ function closeMessageDiv(divId, mainDivId) {
     document.body.style.overflow = "auto";
 }
 
+//
+function backToPage(divId, pageToOpen) {
+    document.getElementById(divId).style.display = "none";
+    window.location.href = '/efelg/download_zip';
+ }
 //
 function writeMessage(divId, message) {
     document.getElementById(divId).innerHTML = message;

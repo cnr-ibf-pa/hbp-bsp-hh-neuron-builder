@@ -1,6 +1,6 @@
-const SHOW_FADED = 0.2;
-const SHOW_CHECK = 0.8;
-const SHOW_HOVER = 1.0;
+const SHOW_FADED = 0.15;
+const SHOW_CHECK = 1.0;
+const SHOW_HOVER = 0.8;
 
 var plotData = {}
 var num = 0;
@@ -118,7 +118,7 @@ function createCellHeader(cell_name, cell_id) {
     return cell_container;
 }
 
-function createCellPlotBox(id, container, currentPlotData, xLabel, yLabel, cellInfo, note) {
+function createCellPlotBox(id, container, currentPlotData, xLabel, yLabel, cellInfo, note, voltage_correction) {
 
     var infobox = $('<div/>', {
         'id': 'info_' + id,
@@ -165,6 +165,9 @@ function createCellPlotBox(id, container, currentPlotData, xLabel, yLabel, cellI
     $('#vcorr_' + num).on("change", function() {
         plotVoltageCorrection(plot_id, parseFloat($(this).val()))
     });
+
+    $('#vcorr_' + num).val(voltage_correction);
+    plotVoltageCorrection(plot_id, voltage_correction);
 
     // menus is defined in show_traces.js
     menus.push($(settingsMenu));
@@ -224,8 +227,11 @@ function plotMinibatch(cells, isUploaded, id) {
             var container = $("#" + fileName);
             promises.push(new Promise((resolve, reject) => {
                 $.getJSON('/efelg/get_data/' + fileName, data => {
+                    console.log(fileName)
                     var dict = JSON.parse(data);
                     var currentPlotData = [];
+                    var voltage_correction = dict["voltage_correction"][0]
+                    console.log(dict["voltage_correction"][0]);
                     Object.keys(dict["traces"]).forEach(label => {
                         y = dict["traces"][label];
                         x = Array
@@ -264,7 +270,7 @@ function plotMinibatch(cells, isUploaded, id) {
                     if ("note" in dict) {
                         note = dict["note"]
                     }
-                    createCellPlotBox(fileName, container, currentPlotData, "ms", dict["voltage_unit"], cellinfo, note);
+                    createCellPlotBox(fileName, container, currentPlotData, "ms", dict["voltage_unit"], cellinfo, note, voltage_correction);
                     resolve();
                 });
             }));

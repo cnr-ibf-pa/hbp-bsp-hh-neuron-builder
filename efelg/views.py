@@ -193,7 +193,8 @@ def get_data(request, cellname=""):
     keys = [
         "md5", "sampling_rate", "etype", "cell_type", "cell_id",
         "brain_structure", "filename", "animal_species", "cell_soma_location",
-        "stimulus_unit", "voltage_unit", "contributors_affiliations"
+        "stimulus_unit", "voltage_unit", "contributors_affiliations", 
+        "voltage_correction"
     ]
     for key in keys:
         if key in content:
@@ -325,7 +326,7 @@ def extract_features(request):
 
         # set v_corr
         final_cell_dict[crr_cell_name]['v_corr'].append(
-            int(selected_traces_rest_json[k]['v_corr']))
+            float(selected_traces_rest_json[k]['v_corr']))
   
     # build option configuration dictionary for the feature extraction
     config = {}
@@ -350,7 +351,7 @@ def extract_features(request):
         'logging': True,
         'nangrace': 0,
         'amp_min': -1e22,
-        'zero_std': bool(global_parameters_json['zero_std']),
+        'zero_std': global_parameters_json['zero_std'] in ["True"],
         'trace_check': False,
         'strict_stiminterval': {
             'base': True
@@ -360,28 +361,35 @@ def extract_features(request):
             'num_events': int(global_parameters_json['num_events']),
         }
     }
-
-    # launch the feature extraction process
-    main_results_folder = os.path.join(user_results_dir,
-                                        time_info + "_nfe_results")
-    extractor = bpefe.Extractor(main_results_folder, config)
-    extractor.create_dataset()
-    extractor.plt_traces()
-    if global_parameters_json['threshold'] != '':
-        extractor.extract_features(threshold=int(
-            global_parameters_json['threshold']))
-    else:
-        extractor.extract_features(threshold=-20)
-    extractor.mean_features()
-    extractor.plt_features()
-    extractor.feature_config_cells(version="legacy")
-    extractor.feature_config_all(version="legacy")
+    
+   # launch the feature extraction process
+    try:
+        main_results_folder = os.path.join(user_results_dir,
+                                           time_info + "_nfe_results")
+        extractor = bpefe.Extractor(main_results_folder, config)
+        extractor.create_dataset()
+        extractor.plt_traces()
+        if global_parameters_json['threshold'] != '':
+            extractor.extract_features(threshold=int(
+                global_parameters_json['threshold']))
+        else:
+            extractor.extract_features(threshold=-20)
+        extractor.mean_features()
+        extractor.plt_features()
+        extractor.feature_config_cells(version="legacy")
+        extractor.feature_config_all(version="legacy")
+        config["options"]["tolerance"] = \
+            config["options"]["tolerance"].tolist()
+        with open(os.path.join(main_results_folder, "config.json"), "w") as cf:
+            json.dump(config, cf, indent=4)
+    except Exception as e:
+        return HttpResponse(json.dumps({"status": "KO", "message": f"Unexpected {e=}, {type(e)=}"}))
 
     # manage how to cite instructions
-    conf_cit = os.path.join(conf_dir, 'citation_list.json')
-    final_cit_file = os.path.join(main_results_folder, 'HOWTOCITE.txt')
-    resources.print_citations(selected_traces_rest_json, conf_cit,
-                              final_cit_file)
+    # conf_cit = os.path.join(conf_dir, 'citation_list.json')
+    # final_cit_file = os.path.join(main_results_folder, 'HOWTOCITE.txt')
+    # resources.print_citations(selected_traces_rest_json, conf_cit,
+    #                          final_cit_file)
 
     # set result .zip file parameters
     zip_name = time_info + '_nfe_results.zip'
