@@ -235,7 +235,10 @@ class JobHandler:
 
     def _initialize_unicore_client(self, hpc, token):
         transport = unicore_client.Transport(token)
-        hpc_url = unicore_client.get_sites(transport)[hpc]
+        try:
+            hpc_url = unicore_client.get_sites(transport)[hpc]
+        except KeyError:
+            raise self.HPCException(messages.HPC_NOT_AVAILABLE.format(hpc))
         client = unicore_client.Client(transport, hpc_url)
         logger.info(f'UNICORE Client initialized for {hpc}')
         logger.debug(f'UNICORE Client access info {client.access_info()}')

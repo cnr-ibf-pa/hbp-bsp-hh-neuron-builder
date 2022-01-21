@@ -1,11 +1,11 @@
 
 # General error messages
-CRITICAL_ERROR = '<b>Critical Error !</b><br><br>Please contact the EBRAINS <a href="https://ebrains.eu/support" target="_blank">support</a> if the problem persists.'
+CRITICAL_ERROR = '<b>Critical Error !</b><br><br>Please contact the <a href="https://ebrains.eu/support" target="_blank">EBRAINS support</a> if the problem persists.'
 MODEL_CATALOG_CREDENTIALS_NOT_FOUND = '<b>Error !</b><br><br>Invalid Model Catalog credentials. Set them in your configuraztion file under "/hh_neuron_builder/conf".'
 GENERAL_ERROR = '<b>Error !<b>'
 
 #  Model Catalog error messages
-MODEL_CATALOG_INVALID_CREDENTIALS = '<b>Error !</b><br><br>Invalid Model Catalog credentials.<br><br>Please, contanct the EBRAINS <a href="https://ebrains.eu/support" target="_blank">support</a>.'
+MODEL_CATALOG_INVALID_CREDENTIALS = '<b>Error !</b><br><br>Invalid Model Catalog credentials.<br><br>Please, contanct the <a href="https://ebrains.eu/support" target="_blank">EBRAINS support</a>.'
 MODEL_CATALOG_NOT_AVAILABLE = 'The Model Catalog is temporarily not available.<br>Please, try again later.'
 
 
@@ -31,14 +31,15 @@ USER_LOGIN_ERROR = 'Unable to logged in the user.'
 # HPC error messages
 NO_HPC_SELECTED = 'No HPC was selected.'
 NO_JOB_SELECTED = 'No job was selected.'
-JOB_FETCH_ERROR = '<b>Error !</b><br><br>Some error occurred while fetching jobs on {}.<br>Please contact the EBRAINS <a href="https://ebrains.eu/support" target="_blank">support</a> if the problem persists.'
+JOB_FETCH_ERROR = '<b>Error !</b><br><br>Some error occurred while fetching jobs on {}.<br>Please contact the <a href="https://ebrains.eu/support" target="_blank">EBRAINS support</a> if the problem persists.'
 JOB_RESULTS_FETCH_ERRROR = '<b>Error !</b><br><br>Error while fetching job results.'
 JOB_SUBMITTED = 'Job submitted on {}.'
 JOB_EXPIRED = 'Job {} has expired and no file is present'
+HPC_NOT_AVAILABLE = '<b>{}</b> system not available at this moment.<br>Please, try again later...<br><br>If the problem persists contact the <a href="https://ebrains.eu/support" target="_blank">EBRAINS support</a>.'
 
 
 # Analysis error messages
-ANALYSIS_ERROR = '<b>Error !</b><br><br>Something went wrong while the analysis process was running.<br>Please contact the EBRAINS <a href="https://ebrains.eu/support" target="_blank">support</a> if the problem persists.'
+ANALYSIS_ERROR = '<b>Error !</b><br><br>Something went wrong while the analysis process was running.<br>Please contact the <a href="https://ebrains.eu/support" target="_blank">EBRAINS support</a> if the problem persists.'
 BLUE_NAAS_NOT_AVAILABLE = 'The BlueNaas is temporarily not available.<br>Please, try again later.'
 
 

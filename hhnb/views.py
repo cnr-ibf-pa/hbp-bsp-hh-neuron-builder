@@ -582,7 +582,10 @@ def run_optimization(request, exc):
         'nsg_password': request.session.get('nsg_password'),
     })
 
-    response = JobHandler.submit_job(hhnb_user, zip_file, optimization_settings)
+    try:
+        response = JobHandler.submit_job(hhnb_user, zip_file, optimization_settings)
+    except JobHandler.HPCException as e:
+        return ResponseUtil.ko_response(str(e))
     if response.status_code == 200:
         workflow.set_optimization_settings(optimization_settings, job_submitted_flag=True)
     return response
