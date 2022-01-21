@@ -238,6 +238,7 @@ class JobHandler:
         try:
             hpc_url = unicore_client.get_sites(transport)[hpc]
         except KeyError:
+            logger.error(f'KeyError when looking for {hpc} on unicore_client.')
             raise self.HPCException(messages.HPC_NOT_AVAILABLE.format(hpc))
         client = unicore_client.Client(transport, hpc_url)
         logger.info(f'UNICORE Client initialized for {hpc}')
