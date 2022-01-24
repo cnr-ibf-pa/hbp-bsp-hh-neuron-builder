@@ -68,6 +68,7 @@ class JobHandler:
         self._SA_DAINT_JOB_URL = 'https://bspsa.cineca.it/jobs/pizdaint/hhnb_daint_cscs/'
         self._SA_DAINT_FILES_URL = 'https://bspsa.cineca.it/files/pizdaint/hhnb_daint_cscs/'
         self._NSG_URL = 'https://nsgr.sdsc.edu:8443/cipresrest/v1'
+        self._DAINT_URL = 'https://brissago.cscs.ch:8080/DAINT-CSCS/rest/core'
         
         self._DAINT_CSCS = 'DAINT-CSCS'
         self._SA_CSCS = 'SA-CSCS'
@@ -235,12 +236,15 @@ class JobHandler:
 
     def _initialize_unicore_client(self, hpc, token):
         transport = unicore_client.Transport(token)
-        try:
-            hpc_url = unicore_client.get_sites(transport)[hpc]
-        except KeyError:
-            logger.error(f'KeyError when looking for {hpc} on unicore_client.')
-            raise self.HPCException(messages.HPC_NOT_AVAILABLE.format(hpc))
-        client = unicore_client.Client(transport, hpc_url)
+        if hpc == self._DAINT_CSCS:
+            client = unicore_client.Client(transport, self._DAINT_URL)
+        else:
+            try:
+                hpc_url = unicore_client.get_sites(transport)[hpc]
+            except KeyError:
+                logger.error(f'KeyError when looking for {hpc} on unicore_client.')
+                raise self.HPCException(messages.HPC_NOT_AVAILABLE.format(hpc))
+            client = unicore_client.Client(transport, hpc_url)
         logger.info(f'UNICORE Client initialized for {hpc}')
         logger.debug(f'UNICORE Client access info {client.access_info()}')
         if client.access_info()['role']['selected'] == 'anonymous':
