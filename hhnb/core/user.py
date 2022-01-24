@@ -88,8 +88,7 @@ class HhnbUser:
         return self.__class__
 
     def __str__(self):
-        return f'<ebrains: "{self._ebrains_user}", '\
-             + f'nsg: "{self._nsg_user}>'
+        return f'<User: "{self._ebrains_user}">'
 
     def set_ebrains_user(self, ebrains_user):
         if type(ebrains_user) != EbrainsUser:
@@ -142,4 +141,5 @@ class HhnbUser:
 
             hhnb_user.set_nsg_user(nsg_user)    
         
+        print(str(hhnb_user))
         return hhnb_user

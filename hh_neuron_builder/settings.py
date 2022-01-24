@@ -76,11 +76,10 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = 200000000
 FILE_UPLOAD_MAX_MEMORY_SIZE = 200000000
 
 
-
 AUTHENTICATION_BACKENDS = [
     'auth.backend.MyOIDCBackend',
-    'mozilla_django_oidc.auth.OIDCAuthenticationBackend',
-    'django.contrib.auth.backends.ModelBackend',
+    # 'mozilla_django_oidc.auth.OIDCAuthenticationBackend',
+    # 'django.contrib.auth.backends.ModelBackend',
 ]
 
 
