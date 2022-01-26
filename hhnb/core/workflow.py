@@ -4,11 +4,9 @@ Workspace utils classes
 
 from hh_neuron_builder.settings import MEDIA_ROOT, HHF_TEMPLATE_DIR, TMP_DIR
 
-from multipledispatch import dispatch
 from hhnb.core.conf.exec_files_conf import ExecFileConf
 
 from hhnb.core.lib.exception.workflow_exception import *
-from hhnb.core.user import NsgUser
 from hhnb.core.model import *
 
 from json.decoder import JSONDecodeError
@@ -16,7 +14,6 @@ from pyunicore.client import PathFile
 from datetime import datetime
 from subprocess import call as os_call
 from sys import prefix as env_prefix
-import sys
 import shutil
 import os
 import json
@@ -26,13 +23,13 @@ import requests
 
 class _WorkflowBase:
     
-    def __init__(self, username, workflow_id):
-        self._username = username
+    def __init__(self, user_sub, workflow_id):
+        self._user_sub = user_sub
         if workflow_id[0] in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']:
             workflow_id = 'W_' + workflow_id 
         self._id = workflow_id
         self._workflow_path = os.path.abspath(os.path.join(MEDIA_ROOT, 'hhnb', 'workflows',
-                                                           self._username, self._id))
+                                                           self._user_sub, self._id))
         self._results_dir = os.path.join(self._workflow_path, 'results')
         self._analysis_dir = os.path.join(self._workflow_path, 'analysis')
         self._model_dir = os.path.join(self._workflow_path, 'model')
@@ -51,7 +48,7 @@ class _WorkflowBase:
         return f'<Workflow {self._id}>'
 
     def get_user(self):
-        return self._username
+        return self._user_sub
 
     def get_id(self):
         return self._id
@@ -85,33 +82,33 @@ class Workflow(_WorkflowBase):
         self._hhf_flag = False
 
     @classmethod
-    def generate_user_workflow(cls, username, make_files=True):
+    def generate_user_workflow(cls, user_sub, make_files=True):
         workflow_id = datetime.now().strftime('%Y%m%d%H%M%S')
-        wf = cls(username, workflow_id)
+        wf = cls(user_sub, workflow_id)
         if make_files:
             wf.make_workflow_dirs()
         return wf
     
     @classmethod
-    def generate_user_workflow_from_zip(cls, username, zip_file):
+    def generate_user_workflow_from_zip(cls, user_sub, zip_file):
         workflow_id = datetime.now().strftime('%Y%m%d%H%M%S')
-        wf = cls(username, workflow_id)
+        wf = cls(user_sub, workflow_id)
         shutil.unpack_archive(zip_file, wf.get_workflow_path())
         return wf 
 
     @classmethod
-    def generate_user_workflow_from_path(cls, username, path_to_clone):
+    def generate_user_workflow_from_path(cls, user_sub, path_to_clone):
         old_wf_id = os.path.split(path_to_clone)[1]
-        user_dir = os.path.join(MEDIA_ROOT, 'hhnb', 'workflows', username) 
-        wf = cls(username, old_wf_id)
+        user_dir = os.path.join(MEDIA_ROOT, 'hhnb', 'workflows', user_sub) 
+        wf = cls(user_sub, old_wf_id)
         if not os.path.exists(user_dir):
             os.mkdir(user_dir)
         shutil.copytree(path_to_clone, os.path.join(user_dir, old_wf_id))
         return wf
 
     @classmethod
-    def get_user_workflow_by_id(cls, username, workflow_id):
-        wf = cls(username, workflow_id)
+    def get_user_workflow_by_id(cls, user_sub, workflow_id):
+        wf = cls(user_sub, workflow_id)
         return wf
 
     def _copy_file(self, src_file, dst_path, safe=True):

@@ -1,24 +1,32 @@
-from mozilla_django_oidc.auth import OIDCAuthenticationBackend, SuspiciousOperation, LOGGER
-from hhnb.models import MyUser as User
+from mozilla_django_oidc.auth import OIDCAuthenticationBackend, SuspiciousOperation
+from hhnb.models import User
 
 
 class MyOIDCBackend(OIDCAuthenticationBackend):
 
+    def filter_users_by_claims(self, claims):
+        sub_id = claims.get('sub')
+        if not sub_id:
+            return self.UserModel.objects.none()
+        try:
+            user = User.objects.get(sub=sub_id)
+            return user
+        except User.DoesNotExist:
+            return self.UserModel.objects.none()
+
     def get_or_create_user(self, access_token, id_token, payload):
-        print('[MyOIDCBackend] get_or_create_user() called.')
 
         user_info = self.get_userinfo(access_token, id_token, payload)
-
+        sub = user_info.get('sub')
         claims_verified = self.verify_claims(user_info)
         if not claims_verified:
             msg = 'Claims verification failed'
             raise SuspiciousOperation(msg)
 
-        return User(
-            username=user_info.get('preferred_username'),
-            email=user_info.get('email'),
-            first_name=user_info.get('given_name', ''),
-            last_name=user_info.get('family_name', ''),
-            name=user_info.get('name', ''),
-            sub=user_info.get('sub', '')
-        )
+        try:
+            return User.objects.get(sub=sub)
+        except User.DoesNotExist:
+            user = User(sub=sub)
+            user.save()
+            return user
+          

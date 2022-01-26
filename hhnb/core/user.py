@@ -1,42 +1,73 @@
 # User class
 
-from hh_neuron_builder.settings import NSG_KEY
+from hh_neuron_builder.settings import NSG_KEY, OIDC_OP_USER_ENDPOINT, TMP_DIR
+import os
 import requests
 
 
-AVATAR_URL = 'https://wiki.ebrains.eu/bin/download/XWiki/{}/avatar.png?width=36&height=36&keepAspectRatio=true'
+class AvatarNotFoundError(Exception):
+    pass
 
 
-class AvatarNotFound(Exception):
+class UserInfoError(Exception):
     pass
 
 
 class EbrainsUser:
 
-    def __init__(self, username, token=None):
-        self._username = username
-        self._avatar_url = AVATAR_URL.format(username)
-        self._token = None
+    _AVATAR_URL = 'https://wiki.ebrains.eu/bin/download/XWiki/{}/avatar.png?width=36&height=36&keepAspectRatio=true'
+    _USER_PAGE_URL = 'https://wiki.ebrains.eu/bin/view/Identity/#/users/{}'
+
+    def __init__(self, sub, token=None):
+        self._sub = sub
+        self._cache_dir = os.path.join(TMP_DIR, self._sub)
         if token:
             self._token = token
 
     def __repr__(self):
-        return f'EBRAINS User: {self._username}'
+        return f'EBRAINS User: {self._sub}'
 
     def __str__(self):
-        return self._username
+        return self._sub
+
+    def _get_user_info(self):
+        r = requests.get(url=OIDC_OP_USER_ENDPOINT,
+                         headers={'Authorization': self.get_bearer_token()},
+                         verify=False)
+        if r.status_code == 200:
+            return r.json()
+        else:
+            raise UserInfoError('Error while fetching user information')
 
     def set_token(self, token):
         self._token = token
 
+    def get_sub(self):
+        return self._sub
+
     def get_username(self):
-        return self._username
+        return self._get_user_info()['preferred_username']
 
     def get_user_avatar(self):
-        r = requests.get(url=self._avatar_url, verify=False)
+        if not os.path.exists(self._cache_dir):
+            os.mkdir(self._cache_dir)
+        
+        if 'avatar.png' in os.listdir(self._cache_dir):
+            with open(os.path.join(self._cache_dir, 'avatar.png'), 'rb') as fd:
+                return fd.read()        
+        
+        r = requests.get(url=self._AVATAR_URL.format(self.get_username()), 
+                         verify=False)
         if r.status_code == 200:
+            with open(os.path.join(self._cache_dir, 'avatar.png'), 'wb') as fd:
+                fd.write(r.content)    
             return r.content
-        raise AvatarNotFound('Avatar not found')
+
+        raise AvatarNotFoundError('Avatar not found')
+        
+
+    def get_user_page(self):
+        return self._USER_PAGE_URL.format(self.get_username())
 
     def get_token(self):
         return self._token
@@ -117,16 +148,17 @@ class HhnbUser:
 
     def get_username(self):
         return self._ebrains_user.get_username()
+
+    def get_sub(self):
+        return self._ebrains_user.get_sub()
     
 
 
     @classmethod
     def get_user_from_request(cls, request):
         hhnb_user = cls()
-        # ebrains_user = EbrainsUser(username=request.user.username 
-        #                            if request.user.is_authenticated 
-        #                            else 'anonymous')
-        ebrains_user = EbrainsUser(username=str(request.user.sub)
+
+        ebrains_user = EbrainsUser(sub=str(request.user.sub)
                                    if request.user.is_authenticated
                                    else 'anonymous')
         if 'oidc_access_token' in request.session.keys():
