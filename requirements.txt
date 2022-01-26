@@ -55,7 +55,7 @@ nameparser==1.1.0
 neo==0.9.0
 nest-asyncio==1.5.4
 NEURON==8.0.0
-numpy==1.19.5
+numpy==1.21.0
 packaging==21.3
 pandas==1.1.5
 parso==0.8.3
