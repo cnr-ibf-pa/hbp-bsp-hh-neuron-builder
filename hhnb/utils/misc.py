@@ -9,9 +9,9 @@ import shutil
 import time
 
 
+
 class InvalidArchiveError(Exception):
     pass
-
 
 
 def _get_tmp_dir():
@@ -37,20 +37,22 @@ def validate_archive(archive):
     # unpack the archive to tmp_dir
     shutil.unpack_archive(archive, tmp_dir)
     
+    archive_name = None
     # look for the real zip name
     for f in os.listdir(tmp_dir):
         if f.endswith('.zip'):
             archive_name = f 
-
-    archive_path = os.path.join(tmp_dir, archive_name)
     
     # check if the archive zip is malfomed
-    archive_content_list = [archive_name, 'signature.txt']
-
-    print(all(f in archive_content_list for f in os.listdir(tmp_dir)))
-    if not all(f in archive_content_list for f in os.listdir(tmp_dir)):
-        raise InvalidArchiveError(f'{archive} not valid')
+    if not archive_name:
+        raise InvalidArchiveError(f'{archive} not valid.')
+        
+    for f in [archive_name, 'signature.txt']:
+        if not f in os.listdir(tmp_dir):
+            raise InvalidArchiveError(f'{archive} not valid')
     
+    archive_path = os.path.join(tmp_dir, archive_name)
+
     # read the zip signature
     with open(os.path.join(tmp_dir, 'signature.txt'), 'r') as fd:
         signature = fd.read()
