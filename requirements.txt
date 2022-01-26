@@ -30,9 +30,9 @@ hbp-seafile==0.1.1
 hbp-service-client==1.1.1
 hbp-validation-framework==0.6.3
 html5lib==1.1
-idna==2.10
+idna==3.3
 igor==0.3
-importlib-metadata==3.4.0
+importlib-metadata==4.8.3
 ipaddr==2.2.0
 ipykernel==5.5.6
 ipyparallel==8.1.0
@@ -94,10 +94,10 @@ tomli==1.2.3
 tornado==6.1
 tqdm==4.62.3
 traitlets==4.3.3
-typing-extensions==3.7.4.3
+typing_extensions==4.0.1
 urllib3==1.26.8
 validators==0.18.2
 wcwidth==0.2.5
 webencodings==0.5.1
 wrapt==1.13.3
-zipp==3.4.0
+zipp==3.6.0
