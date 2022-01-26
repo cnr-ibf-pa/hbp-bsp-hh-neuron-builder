@@ -32,7 +32,6 @@ class Cypher:
             plaint_text = f.decrypt_at_time(token, 10, int(at_time))
         else:
             plaint_text = f.decrypt(token, 10).decode('utf-8')
-        print(plaint_text)
         return plaint_text
 
 
@@ -47,10 +46,10 @@ class Sign:
 
     def _get_hash(self, data):
         if type(data) != bytes:
-            data = bytes(data, 'utf-8')
+            data = bytes(data)
         self._h.update(data)
-        return self._h.hexdigest()
-    
+        return bytes(self._h.hexdigest(), 'utf-8')
+
     @classmethod
     def get_data_sign(cls, data):
         s = cls()

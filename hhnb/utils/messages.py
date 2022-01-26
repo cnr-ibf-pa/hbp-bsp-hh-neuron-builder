@@ -49,7 +49,7 @@ MODEL_ALREADY_EXISTS = 'Model already exists on the Model Catalog.'
 
 SIGNATURE_README_DESCRIPTION = \
 """
-The "signature.txt" file provides the ".zip" file sign generated from the Hodgikin-Huxley NeuronBuilder.
+The "signature" file provides the ".zip" file sign generated from the Hodgikin-Huxley NeuronBuilder.
 This signature is unique and is generated using the ".zip" file readed bitwise. 
 If you want to upload a previously downloaded ".zip" file, you must provide the original "signature.txt" otherwise the file will be rejected.
 """

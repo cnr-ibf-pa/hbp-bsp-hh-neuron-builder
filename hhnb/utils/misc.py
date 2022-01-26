@@ -46,21 +46,19 @@ def validate_archive(archive):
     # check if the archive zip is malfomed
     if not archive_name:
         raise InvalidArchiveError(f'{archive} not valid.')
-        
-    for f in [archive_name, 'signature.txt']:
+
+    for f in [archive_name, 'signature']:
         if not f in os.listdir(tmp_dir):
             raise InvalidArchiveError(f'{archive} not valid')
     
     archive_path = os.path.join(tmp_dir, archive_name)
 
     # read the zip signature
-    with open(os.path.join(tmp_dir, 'signature.txt'), 'r') as fd:
+    with open(os.path.join(tmp_dir, 'signature'), 'rb') as fd:
         signature = fd.read()
-    # read zip data 
+    # read zip data and validate the sign
     with open(archive_path, 'rb') as fd:
-        data = fd.read()
-    # validate the signature
-    Sign.verify_data_sign(signature, data)
+        Sign.verify_data_sign(signature, fd.read())
     
     return archive_path
 
@@ -81,7 +79,7 @@ def get_signed_archive(arch_file):
         signature = Sign.get_data_sign(fd.read())
 
     # write sign to signature.txt file
-    with open(os.path.join(tmp_dir, 'signature.txt'), 'w') as fd:
+    with open(os.path.join(tmp_dir, 'signature'), 'wb') as fd:
         fd.write(signature)
 
     # add README.txt file

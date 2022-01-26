@@ -396,32 +396,40 @@ def upload_analysis(request, exc):
     try:
         analysis_zip = validate_archive(uploaded_file_path)
     except InvalidSign:
-        return ResponseUtil.ko_response(messages.INVALID_SIGNATURE.format('model'))
+        return ResponseUtil.ko_response(messages.INVALID_SIGNATURE.format(f'"{uploaded_file.name}"'))
     except InvalidArchiveError:
-        return ResponseUtil.ko_response(messages.INVALID_FILE.format('model'))
+        return ResponseUtil.ko_response(messages.INVALID_FILE.format(f'"{uploaded_file.name}"'))
 
-    try:
+    try:        
         shutil.unpack_archive(analysis_zip, workflow.get_tmp_dir())
+        
         tmp_dir_list = os.listdir(workflow.get_tmp_dir())
-        tmp_dir_list.remove(os.path.split(analysis_zip)[1]) # remove zip file from list
-        if len(tmp_dir_list) == 1:
+        for f in tmp_dir_list:
+            if f.endswith('.zip'):
+                tmp_dir_list.remove(f)
+
+        if len(tmp_dir_list) > 1:            
+            # if uploaded zip has more then one file it means that it is a job results zip
+            for f in tmp_dir_list:
+                shutil.move(os.path.join(workflow.get_tmp_dir(), f),
+                            workflow.get_results_dir())
+            # and then run the analisys
+            return run_analysis(request, exc)
+
+        else:
+            # otherwise check if it has the required folders to run the simulation 
             unzip_dir_path = os.path.join(workflow.get_tmp_dir(), tmp_dir_list[0])
             simulation_folder_list = ['mechanisms', 'morphology', 'checkpoints']
             if all([folder in os.listdir(unzip_dir_path) for folder in simulation_folder_list]):
                 shutil.move(unzip_dir_path, workflow.get_analysis_dir())
-        else:
-            for f in tmp_dir_list:
-               shutil.move(os.path.join(workflow.get_tmp_dir(), f),
-                           workflow.get_results_dir())
-            # run analisys
-            return run_analysis(request, exc)
         
         return ResponseUtil.ok_response('')
 
     except Exception as e:
+        print(e)
         logger.error(e)
 
-    return ResponseUtil.ko_response(messages.MARLFORMED_FILE.format('"analysis.zip"'))
+    return ResponseUtil.ko_response(messages.MARLFORMED_FILE.format(f'"{uploaded_file.name}"'))
 
 
 def upload_files(request, exc):
