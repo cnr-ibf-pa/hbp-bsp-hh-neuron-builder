@@ -29,3 +29,4 @@ class MyOIDCBackend(OIDCAuthenticationBackend):
             user = User(sub=sub)
             user.save()
             return user
+          
