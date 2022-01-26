@@ -60,7 +60,7 @@ def generate_exc_code(request):
 
 def get_workflow_and_user(request, exc):
     hhnb_user = HhnbUser.get_user_from_request(request)
-    workflow = Workflow.get_user_workflow_by_id(hhnb_user.get_username(),
+    workflow = Workflow.get_user_workflow_by_id(hhnb_user.get_sub(),
                                                 request.session[exc]['workflow_id'])
     workflow.clean_tmp_dir()
     return workflow, hhnb_user
@@ -75,12 +75,15 @@ def index_docs(request):
 
 def home_page(request):
     hhnb_user = HhnbUser.get_user_from_request(request)
+    print(hhnb_user)
+    print(request.user)
+    print(request.user.is_authenticated)
     context = {}
 
     logger.info(LOG_ACTION.format(hhnb_user, 'access HOME page'))
 
     if 'old_workflow_path' in request.session.keys():
-        workflow = Workflow.generate_user_workflow_from_path(hhnb_user.get_username(),
+        workflow = Workflow.generate_user_workflow_from_path(hhnb_user.get_sub(),
                                                 request.session['old_workflow_path'])
         exc = generate_exc_code(request)
         request.session[exc]['workflow_id'] = workflow.get_id()
@@ -106,7 +109,7 @@ def initialize_workflow(request):
     hhnb_user = HhnbUser.get_user_from_request(request)
     logger.debug(f'initializing workflow for "{hhnb_user}"')
     try:
-        workflow = Workflow.generate_user_workflow(hhnb_user.get_username())
+        workflow = Workflow.generate_user_workflow(hhnb_user.get_sub())
         logger.debug(f'workflow {workflow} created for "{hhnb_user}"')
     except WorkflowExists as e:
         logger.error(e)
@@ -162,7 +165,7 @@ def upload_workflow(request):
     logger.info(LOG_ACTION.format(hhnb_user, 'uploading workflow'))
 
     try:
-        workflow = Workflow.generate_user_workflow_from_zip(hhnb_user.get_username(),
+        workflow = Workflow.generate_user_workflow_from_zip(hhnb_user.get_sub(),
                                                             valide_wf_zip)
     except WorkflowExists as e:
         logger.error(e)
@@ -230,8 +233,6 @@ def get_workflow_properties(request, exc):
 def fetch_models(request, exc):
     if not exc in request.session.keys():
         return ResponseUtil.no_exc_code_response()
-
-    
 
     mc_filter = MODEL_CATALOG_FILTER['hippocampus_models']
 
@@ -758,11 +759,16 @@ def register_model(request, exc):
 
         client = ebrains_drive.connect(username=mc_username, password=mc_password)
         repo = client.repos.get_repo_by_url(MODEL_CATALOG_COLLAB_URL)
+        print("Questo è repo:", repo)
         seafdir = repo.get_dir('/' + MODEL_CATALOG_COLLAB_DIR)
+        print("Questa è dir:", seafdir)
         uploaded_model = seafdir.upload_local_file(model_zip)
+        print(" ================ UPLOADED_MODEL =====================", uploaded_model)
 
         reg_mod_url = f'https://wiki.ebrains.eu/lib/{ repo.id }/file/'\
                     + f'{ MODEL_CATALOG_COLLAB_DIR }/{ model_zip_name }?dl=1'
+        print(" ================ REG_MOD_URL ================== ", reg_mod_url)
+
 
         auth_family_name = form_data.get('authorLastName')
         auth_given_name = form_data.get('authorFirstName')
@@ -827,16 +833,24 @@ def register_model(request, exc):
 
 def get_user_avatar(request):
     logger.debug('get_user_avatar() called')
-    url = 'https://wiki.ebrains.eu/bin/download/XWiki/' + request.user.username \
-        + '/avatar.png?width=36&height=36&keepAspectRatio=true'
-    r = requests.get(url, verify=False)
-    return ResponseUtil.raw_response(content=r.content,
-                                     content_type='image/png;',
+    hhnb_user = HhnbUser.get_user_from_request(request)
+    return ResponseUtil.raw_response(content=hhnb_user.get_user_avatar(),
+                                     content_type='image/png',
                                      charset='UTF-8')
+
+    # url = 'https://wiki.ebrains.eu/bin/download/XWiki/' + request.user.username \
+    #     + '/avatar.png?width=36&height=36&keepAspectRatio=true'
+    # r = requests.get(url, verify=False)
+
+    # return ResponseUtil.raw_response(content=r.content,
+    #                                  content_type='image/png;',
+    #                                  charset='UTF-8')
 
 
 def get_user_page(request):
-    return redirect('https://wiki.ebrains.eu/bin/view/Identity/#/users/' + request.user.username)
+    # return redirect('https://wiki.ebrains.eu/bin/view/Identity/#/users/' + request.user.username)
+    hhnb_user = HhnbUser.get_user_from_request(request)
+    return redirect(hhnb_user.get_ebrains_user().get_user_page())
 
 
 def get_authentication(request):

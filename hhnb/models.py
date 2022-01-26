@@ -1,13 +1,27 @@
-from django.contrib.auth.models import AbstractUser
 from django.db import models
 
 
-class MyUser(AbstractUser):
-    name = models.CharField(max_length=64, blank=True)
-    sub = models.UUIDField(editable=True, blank=True, null=True)
+class User(models.Model):
+    sub = models.UUIDField('sub', primary_key=True)
+    last_login = models.DateTimeField('last login', auto_now=True, blank=True, null=True)
 
+    USERNAME_FIELD = 'sub'
+    REQUIRED_FIELDS = []
 
-class Workflow():
-    workflow_id = models.CharField(editable=False, max_length=16)
-    username = models.CharField(editable=False, max_length=32)
-    model_id = models.CharField(editable=False, max_length=64)
+    is_active = True
+
+    @property
+    def is_anonymous(self):
+        """
+        Always return False. This is a way of comparing User objects to
+        anonymous users.
+        """
+        return False
+
+    @property
+    def is_authenticated(self):
+        """
+        Always return True. This is a way to tell if the user has been
+        authenticated in templates.
+        """
+        return True

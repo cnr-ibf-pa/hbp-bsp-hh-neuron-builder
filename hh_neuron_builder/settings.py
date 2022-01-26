@@ -14,6 +14,7 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 
 from socket import gethostname
 from shutil import copy as shutilcopy
+from sys import stdout
 import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -39,8 +40,7 @@ DEBUG = conf.DEBUG
 
 ALLOWED_HOSTS = ['*']
 
-AUTH_USER_MODEL = 'hhnb.MyUser'
-
+AUTH_USER_MODEL = 'hhnb.User'
 
 # Application definition
 INSTALLED_APPS = [
@@ -76,11 +76,10 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = 200000000
 FILE_UPLOAD_MAX_MEMORY_SIZE = 200000000
 
 
-
 AUTHENTICATION_BACKENDS = [
     'auth.backend.MyOIDCBackend',
-    'mozilla_django_oidc.auth.OIDCAuthenticationBackend',
-    'django.contrib.auth.backends.ModelBackend',
+    # 'mozilla_django_oidc.auth.OIDCAuthenticationBackend',
+    # 'django.contrib.auth.backends.ModelBackend',
 ]
 
 
@@ -166,7 +165,6 @@ STATICFILES_DIRS = [
 
 MEDIA_ROOT = conf.MEDIA_ROOT
 
-# HHF_TEMPLATE_DIR = os.path.join(MEDIA_ROOT, 'hhnb', 'hhf_template', 'hhf')
 HHF_TEMPLATE_DIR = os.path.join(BASE_DIR, 'hh_neuron_builder', 'config', 'hhf_template', 'hhf')
 TMP_DIR = os.path.join(MEDIA_ROOT, 'hhnb', 'tmp')
 
@@ -204,16 +202,17 @@ OIDC_RP_CLIENT_SECRET = os.environ['OIDC_RP_CLIENT_SECRET']
 OIDC_RP_SCOPES = 'openid profile email team clb.wiki.read clb.drive:read clb.drive:write'
 
 OIDC_CREATE_USER = False
+OIDC_PERSISTENT_USER = False
 OIDC_STORE_ACCESS_TOKEN = True
 
 
 OIDC_RP_SIGN_ALGO = 'RS256'
 
-OIDC_OP_JWKS_ENDPOINT = "https://iam.ebrains.eu/auth/realms/hbp/protocol/openid-connect/certs"
+OIDC_OP_JWKS_ENDPOINT = 'https://iam.ebrains.eu/auth/realms/hbp/protocol/openid-connect/certs'
 
-OIDC_OP_AUTHORIZATION_ENDPOINT = "https://iam.ebrains.eu/auth/realms/hbp/protocol/openid-connect/auth"
-OIDC_OP_TOKEN_ENDPOINT = "https://iam.ebrains.eu/auth/realms/hbp/protocol/openid-connect/token"
-OIDC_OP_USER_ENDPOINT = "https://iam.ebrains.eu/auth/realms/hbp/protocol/openid-connect/userinfo"
+OIDC_OP_AUTHORIZATION_ENDPOINT = 'https://iam.ebrains.eu/auth/realms/hbp/protocol/openid-connect/auth'
+OIDC_OP_TOKEN_ENDPOINT = 'https://iam.ebrains.eu/auth/realms/hbp/protocol/openid-connect/token'
+OIDC_OP_USER_ENDPOINT = 'https://iam.ebrains.eu/auth/realms/hbp/protocol/openid-connect/userinfo'
 
 LOGIN_REDIRECT_URL = "/hh-neuron-builder"
 LOGOUT_REDIRECT_URL = "/hh-neuron-builder"
@@ -248,6 +247,11 @@ LOGGING = {
         },
     },
     'handlers': {
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'stream': stdout
+        },
         'debug': {
             'class': 'logging.FileHandler',
             'filename': LOG_ROOT_PATH + 'debug.log',
@@ -291,6 +295,10 @@ LOGGING = {
         'efelg': {
             'level': 'INFO',
             'handlers': ['efelg'],
-        } 
+        },
+        'mozilla_django_oidc': {
+            'handlers': ['console'],
+            'level': 'DEBUG'
+        },
     }
 }
