@@ -346,7 +346,7 @@ def extract_features(request):
         'tolerance': 0.02,
         'target': target,
         'target_unit': 'nA',
-        'delay': 500,
+        'delay': 50,
         'nanmean': True,
         'logging': True,
         'nangrace': 0,
