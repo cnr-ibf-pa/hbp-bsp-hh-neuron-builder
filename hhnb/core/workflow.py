@@ -18,6 +18,7 @@ import shutil
 import os
 import json
 import requests
+import time
 
 
 
@@ -475,8 +476,9 @@ class WorkflowUtil:
     @staticmethod
     def run_analysis(workflow, job_output):
         analysis_dir = workflow.get_analysis_dir()
+        time.sleep(2)
         shutil.unpack_archive(job_output, analysis_dir)
-        
+        time.sleep(2)       
         for f in [os.path.join(analysis_dir, f) for f in os.listdir(analysis_dir)]:
             if os.path.isdir(f):
                 output_dir = f
@@ -494,6 +496,7 @@ class WorkflowUtil:
         figures_dir = os.path.join(output_dir, 'figures')
         if os.path.exists(figures_dir):
             shutil.rmtree(figures_dir)
+        time.sleep(2)
         os.mkdir(figures_dir)
 
         checkpoint_dir = os.path.join(output_dir, 'checkpoints')
@@ -504,23 +507,24 @@ class WorkflowUtil:
                     if f.endswith('.pkl'):
                         os.rename(os.path.join(checkpoint_dir, f),
                                   os.path.join(checkpoint_dir, 'checkpoint.pkl'))
-        
+        time.sleep(2)
         opt_neuron_file = os.path.join(output_dir, 'opt_neuron.py')
         with open(opt_neuron_file, 'r') as fd:
             buffer = fd.readlines()
         buffer = ['import matplotlib\n', 'matplotlib.use(\'Agg\')\n'] + buffer
         with open(opt_neuron_file, 'w') as fd:
             fd.writelines(buffer)
-
+        time.sleep(2)
         r_0_dir = os.path.join(output_dir, 'r_0')
         if os.path.exists(r_0_dir):
             shutil.rmtree(r_0_dir)
         os.mkdir(r_0_dir)
-
+        time.sleep(2)
         curr_dir = os.getcwd()
         os.chdir(output_dir)
         os_call(f'source {env_prefix}/bin/activate; nrnivmodl mechanisms > /dev/null',
                 shell=True, executable='/bin/bash')
+        time.sleep(2)
         os_call(f'source {env_prefix}/bin/activate;' \
                 +'python ./opt_neuron.py --analyse --checkpoint ./checkpoints > /dev/null', 
                 shell=True, executable='/bin/bash')
