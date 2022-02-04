@@ -2,7 +2,7 @@
 Workspace utils classes
 """
 
-from hh_neuron_builder.settings import MEDIA_ROOT, HHF_TEMPLATE_DIR, TMP_DIR
+from hh_neuron_builder.settings import MEDIA_ROOT, HHF_TEMPLATE_DIR, TMP_DIR, LOG_ROOT_PATH
 
 from hhnb.core.conf.exec_files_conf import ExecFileConf
 
@@ -18,6 +18,7 @@ import shutil
 import os
 import json
 import requests
+import time
 
 
 
@@ -476,7 +477,6 @@ class WorkflowUtil:
     def run_analysis(workflow, job_output):
         analysis_dir = workflow.get_analysis_dir()
         shutil.unpack_archive(job_output, analysis_dir)
-        
         for f in [os.path.join(analysis_dir, f) for f in os.listdir(analysis_dir)]:
             if os.path.isdir(f):
                 output_dir = f
@@ -504,25 +504,33 @@ class WorkflowUtil:
                     if f.endswith('.pkl'):
                         os.rename(os.path.join(checkpoint_dir, f),
                                   os.path.join(checkpoint_dir, 'checkpoint.pkl'))
-        
         opt_neuron_file = os.path.join(output_dir, 'opt_neuron.py')
         with open(opt_neuron_file, 'r') as fd:
             buffer = fd.readlines()
         buffer = ['import matplotlib\n', 'matplotlib.use(\'Agg\')\n'] + buffer
         with open(opt_neuron_file, 'w') as fd:
             fd.writelines(buffer)
-
+        
         r_0_dir = os.path.join(output_dir, 'r_0')
         if os.path.exists(r_0_dir):
             shutil.rmtree(r_0_dir)
         os.mkdir(r_0_dir)
-
+        
+        # delete compiled mods files directory
+        compiled_mods_dir = os.path.join(output_dir, 'x86_64')
+        if os.path.exists(compiled_mods_dir):
+            shutil.rmtree(compiled_mods_dir)
+        
         curr_dir = os.getcwd()
         os.chdir(output_dir)
-        os_call(f'source {env_prefix}/bin/activate; nrnivmodl mechanisms > /dev/null',
-                shell=True, executable='/bin/bash')
-        os_call(f'source {env_prefix}/bin/activate;' \
-                +'python ./opt_neuron.py --analyse --checkpoint ./checkpoints > /dev/null', 
+       
+        log_file_path = os.path.join(LOG_ROOT_PATH, 'analysis', workflow.get_user())
+        if not os.path.exists(log_file_path):
+            os.makedirs(log_file_path)
+        log_file = os.path.join(log_file_path, workflow.get_id() + '.log')
+        
+        os_call(f'source {env_prefix}/bin/activate; nrnivmodl mechanisms > {log_file};' \
+                + f'python ./opt_neuron.py --analyse --checkpoint ./checkpoints > {log_file}', 
                 shell=True, executable='/bin/bash')
         os.chdir(curr_dir)
 
