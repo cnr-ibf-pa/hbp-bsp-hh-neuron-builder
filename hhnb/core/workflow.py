@@ -18,8 +18,6 @@ import shutil
 import os
 import json
 import requests
-import time
-
 
 
 class _WorkflowBase:
