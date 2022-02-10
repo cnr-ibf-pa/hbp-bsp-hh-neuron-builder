@@ -18,7 +18,7 @@ decorator==5.1.1
 Deprecated==1.2.13
 distlib==0.3.4
 distro==1.6.0
-Django==3.2.11
+Django==3.2.12
 django-sslserver==0.22
 djangorestframework==3.13.1
 ebrains-drive==0.4.0
