@@ -381,7 +381,18 @@ def extract_features(request):
         config["options"]["tolerance"] = \
             config["options"]["tolerance"].tolist()
         with open(os.path.join(main_results_folder, "config.json"), "w") as cf:
+            config.update(
+                    {'info': 
+                        {'libraries': 
+                            [
+                                'efel': efel.__version__,
+                                'blupyefe': bpefe.__version__
+                            ]
+                        }
+                    }
+            )
             json.dump(config, cf, indent=4)
+
     except Exception as e:
         return HttpResponse(json.dumps({"status": "KO", "message": f"Unexpected {e}, {type(e)}"}))
 
