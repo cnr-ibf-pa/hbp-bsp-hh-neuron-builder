@@ -28,4 +28,6 @@ urlpatterns = [
     
     path('efelg/', include('efelg.urls')),
 
+    path('status', lambda request: redirect('hh-neuron-builder/status', permanent=True)),
+
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
