@@ -62,14 +62,20 @@ mkdir logs
 export PMI_NO_FORK=1
 export PMI_NO_PREINITIALIZE=1
 export PMI_MMAP_SYNC_WAIT_TIME=300 
-set -e
-set -x
+#set -e
+#set -x
 
-module load daint-mc cray-python/3.8.2.1 PyExtensions/python3-CrayGNU-20.11
-module load intel/19.0.1.144
-module use /apps/hbp/ich002/hbp-spack-deployments/softwares/27-10-2020/install/modules/tcl/cray-cnl7-haswell
-module load neuron/8.0a
+module load daint-mc cray-python/3.9.4.1
+# If needed for analysis
+module load matplotlib numpy
+
+module use /apps/hbp/ich002/hbp-spack-deployments/softwares/23-02-2022/modules/tcl/cray-cnl7-haswell
+
+# always load neuron module
+module load neuron/8.0.2
+
 module load py-bluepyopt
+
 nrnivmodl mechanisms
 
 export USEIPYP=1
