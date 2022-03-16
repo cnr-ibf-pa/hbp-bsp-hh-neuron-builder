@@ -230,8 +230,10 @@ function plotMinibatch(cells, isUploaded, id) {
                     console.log(fileName)
                     var dict = JSON.parse(data);
                     var currentPlotData = [];
-                    var voltage_correction = dict["voltage_correction"][0]
-                    console.log(dict["voltage_correction"][0]);
+                    var voltage_correction = dict["voltage_correction"][0];
+                    if (voltage_correction == "u") {
+                        voltage_correction = 0;
+                    }
                     Object.keys(dict["traces"]).forEach(label => {
                         y = dict["traces"][label];
                         x = Array
