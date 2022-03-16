@@ -383,14 +383,12 @@ def extract_features(request):
         with open(os.path.join(main_results_folder, "config.json"), "w") as cf:
             config.update(
                     {'info': 
-                        {'libraries': 
-                            [
+                        {'libraries': {
                                 'efel': efel.__version__,
                                 'blupyefe': bpefe.__version__
-                            ]
+                            }
                         }
-                    }
-            )
+                    })
             json.dump(config, cf, indent=4)
 
     except Exception as e:
