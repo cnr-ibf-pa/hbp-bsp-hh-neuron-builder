@@ -67,13 +67,12 @@ export PMI_MMAP_SYNC_WAIT_TIME=300
 
 module load daint-mc cray-python/3.9.4.1
 # If needed for analysis
-module load matplotlib numpy
 
 module use /apps/hbp/ich002/hbp-spack-deployments/softwares/23-02-2022/modules/tcl/cray-cnl7-haswell
 
 # always load neuron module
 module load neuron/8.0.2
-
+module load py-matplotlib
 module load py-bluepyopt
 
 nrnivmodl mechanisms
