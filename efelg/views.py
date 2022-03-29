@@ -390,7 +390,9 @@ def extract_features(request):
                         }
                     })
             json.dump(config, cf, indent=4)
-
+        shutil.copy(src=os.path.join(settings.BASE_DIR, 'requirements.txt'),
+                    dst=os.path.join(main_results_folder, 'libraries.txt'))
+        
     except Exception as e:
         return HttpResponse(json.dumps({"status": "KO", "message": f"Unexpected {e}, {type(e)}"}))
 
