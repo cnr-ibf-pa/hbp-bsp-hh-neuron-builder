@@ -309,7 +309,7 @@ class JobHandler:
         job_file = {'file': open(zip_file, 'rb')}
         r = requests.post(url=self._SA_DAINT_JOB_URL, headers=headers, files=job_file)
         logger.debug(f'requests: {r.url} with headers: {r.headers} and files: {job_file}')
-        if r.status_code == 400:            
+        if r.status_code >= 400:            
             logger.error(f'CODE: {r.status_code}, CONTENT: {r.content}')
             return ResponseUtil.ko_response(r.text)
         return ResponseUtil.ok_response(messages.JOB_SUBMITTED.format('SA-CSCS'))
@@ -327,7 +327,7 @@ class JobHandler:
         headers = self._get_service_account_headers(token)
         r = requests.get(url=self._SA_DAINT_FILES_URL + job_id + '/', headers=headers)
         logger.debug(f'requests: {r.url} with headers: {r.headers}')
-        if r.status_code == 404:
+        if r.status_code >= 400:
             logger.error(f'CODE: {r.status_code}, CONTENT: {r.content}')
             raise self.JobsFilesNotFound(messages.JOB_EXPIRED.format(job_id))
         if r.status_code != 200:
