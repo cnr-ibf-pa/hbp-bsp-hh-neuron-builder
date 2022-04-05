@@ -200,14 +200,14 @@ class OptimizationSettingsDialog {
             data["offspring"] = $("#sa-daint-offspring").val();
             data["node-num"] = $("#sa-daint-node-num").val();
             data["core-num"] = $("#sa-daint-core-num").val();
-            data["runtime"] = $("#sa-daint-gen-max").val();
+            data["runtime"] = $("#sa-daint-runtime").val();
         }
         if (hpc == "NSG") {
             data["gen-max"] = $("#nsg-gen-max").val();
             data["offspring"] = $("#nsg-offspring").val();
             data["node-num"] = $("#nsg-node-num").val();
             data["core-num"] = $("#nsg-core-num").val();
-            data["runtime"] = $("#nsg-gen-max").val();
+            data["runtime"] = $("#nsg-runtime").val();
 
             let nsgUser = $("#username_submit");
             let nsgPass = $("#password_submit");
