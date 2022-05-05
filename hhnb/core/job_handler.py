@@ -109,10 +109,8 @@ class JobHandler:
                           headers=headers,
                           files=files,
                           verify=False)
-        logger.debug(f'requests: {r.url} with headers: {r.headers}'\
-                     f'data: {r.data} and files {r.files}')
         if r.status_code == 200:
-            logger.error(f'CODE: {r.status_code}, CONTENT: {r.content}')
+            logger.info(f'CODE: {r.status_code}, CONTENT: {r.content}')
             root = xml.etree.ElementTree.fromstring(r.text)
 
             # extract job selfuri and resulturi
@@ -422,4 +420,3 @@ class JobHandler:
                 'headers': {'Authorization': 'Bearer ' + user.get_token()}
             }
         logger.info(LOG_ACTION.format(user, 'file_list: %s' % file_list))
-        return file_list
