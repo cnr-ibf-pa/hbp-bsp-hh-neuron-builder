@@ -519,7 +519,7 @@ function resetJobFetchDiv() {
 
 // Manage job list div
 $(".jobs-unicore").on("click", (button) => {
-    let jButton = $("#" + button.target.id);
+    let jButton = $("#" + button.currentTarget.id);
     if (jButton.hasClass("clicked")) {
         return false;
     }
