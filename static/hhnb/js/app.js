@@ -244,7 +244,7 @@ $("#cancel-param-btn").on("click", () => {
 $("#apply-param").on("click", () => {
     Log.debug("Uploading optimization settings");
     let formData = OptimizationSettingsDialog.getJsonData();
-    if (formData.hpc == "DAINT-CSCS" || formData.hpc == "SA-CSCS") {
+    if (formData.hpc == "DAINT-CSCS" || formData.hpc == "SA-CSCS" || "SA-NSG" ) {
         showLoadingAnimation("Checking login...");
         $.get("/hh-neuron-builder/get-authentication")
             .done(() => {
@@ -520,7 +520,6 @@ function resetJobFetchDiv() {
 // Manage job list div
 $(".jobs-unicore").on("click", (button) => {
     let jButton = $("#" + button.target.id);
-    Log.debug(jButton);
     if (jButton.hasClass("clicked")) {
         return false;
     }
