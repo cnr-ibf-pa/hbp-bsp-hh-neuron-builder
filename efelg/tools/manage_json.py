@@ -77,7 +77,6 @@ def get_metadata(filename):
 
 # perform units conversions
 def perform_conversions_json(data):
-    print('========================= PERFORM CONVERSION =======================')
     if ("stimulus_unit" in data) and (not data["stimulus_unit"].lower() in ["na", "unknown"]):
         a_pow = 1
         stimlus_unit = data["stimulus_unit"].lower()
@@ -123,7 +122,7 @@ def perform_conversions_json(data):
         data["sampling_rate_unit"] = "Hz"
 
 
-def extract_data(filepath, metadata_dict=None):
+def extract_data(filepath, metadata_dict=None, metadata_dict_name=None):
     if filepath.endswith(".abf"):
         sampling_rate, tonoff, traces, voltage_unit, stimulus_unit = get_traces_abf(filepath)
         data = {
@@ -135,6 +134,7 @@ def extract_data(filepath, metadata_dict=None):
             'tonoff': tonoff,
             'sampling_rate': sampling_rate
         }
+
     elif filepath.endswith(".json"):
         with open(filepath, "r") as f:
             data = json.load(f)
@@ -148,7 +148,7 @@ def extract_data(filepath, metadata_dict=None):
         "region": "cell_soma_location",
         "amp_unit": "stimulus_unit",
         "volt_unit": "voltage_unit",
-        "v_unit": "voltage_unit"
+        "v_unit": "voltage_unit",
     }
 
     # update dictionary keys
@@ -173,7 +173,10 @@ def extract_data(filepath, metadata_dict=None):
     data["filename"] = filename[:filename.index(".")]
 
     if metadata_dict:
-       update_file_name(data, metadata_dict)
+        data.update(metadata_dict)
+
+    if metadata_dict_name:
+       update_file_name(data, metadata_dict_name)
    
     return data
 
