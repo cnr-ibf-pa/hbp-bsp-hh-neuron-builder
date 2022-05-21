@@ -350,7 +350,7 @@ class JobHandler:
 
     def _get_service_account_job_results(self, hpc, token, job_id):
         headers = self._get_service_account_headers(token)
-        if hpc == self.SA_CSCS:
+        if hpc == self._SA_CSCS:
             sa_endpoint = self._SA_DAINT_FILES_URL + job_id + '/'
         elif hpc == self._SA_NSG:
             sa_endpoint = self._SA_NSG_FILES_URL + job_id + '/'
@@ -444,6 +444,7 @@ class JobHandler:
                 'root_url': 'unicore', 
                 'file_list': raw_file_list
             }
+            print(file_list)
         if hpc == job_handler._SA_CSCS or hpc == job_handler._SA_NSG:
             raw_file_list = job_handler._get_service_account_job_results(hpc, user.get_token(), job_id)
             if hpc == job_handler._SA_CSCS:
@@ -456,3 +457,4 @@ class JobHandler:
                 'headers': {'Authorization': 'Bearer ' + user.get_token()}
             }
         logger.info(LOG_ACTION.format(user, 'file_list: %s' % file_list))
+        return file_list
