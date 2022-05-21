@@ -10,7 +10,7 @@ from hhnb.core.lib.exception.workflow_exception import *
 from hhnb.core.model import *
 
 from json.decoder import JSONDecodeError
-from pyunicore.client import PathFile
+from pyunicore.client import PathFile as UnicorePathFile
 from datetime import datetime
 from subprocess import call as os_call
 from sys import prefix as env_prefix
@@ -439,29 +439,32 @@ class WorkflowUtil:
                 fd.write(file_content)
 
     @staticmethod
-    def download_job_result_files(workflow, file_list):
-        if file_list['root_url'] == 'nsg':
-            for f in file_list['file_list'].keys():
-                r = requests.get(url=file_list['file_list'][f],
-                                 headers=file_list['headers'],
-                                 auth=(file_list['username'], file_list['password']))
+    def download_job_result_files(workflow, data):
+        hpc_system = data['root_url']
+        file_list = data['file_list']
+
+        if hpc_system == 'nsg':
+            for f in file_list.keys():
+                r = requests.get(url=file_list[f],
+                                 headers=data['headers'],
+                                 auth=(data['username'], data['password']))
                 if r.status_code != 200:
                     continue
                 dst = os.path.join(workflow.get_results_dir(), f)
                 with open(dst, 'wb') as fd:
                     for chunk in r.iter_content(chunk_size=4096):
-                        fd.write(chunk)   
-        elif file_list['root_url'] == 'unicore':
-            for f in file_list['file_list'].keys():
-                if type(file_list['file_list'][f]) == PathFile:
+                        fd.write(chunk)
+
+        elif hpc_system == 'unicore':
+            for f in file_list.keys():
+                if type(file_list[f]) == UnicorePathFile:
                     dst = os.path.join(workflow.get_results_dir(), f)
-                    file_list['file_list'][f].download(dst)
-        elif file_list['root_url'].startswith('https://bspsa.cineca.it'):
-            for f in file_list['file_list']:
-                print(file_list['root_url'] + f)
-                r = requests.get(url=file_list['root_url'] + f + '/',
-                                 headers=file_list['headers'],)
-                print(r.status_code)
+                    file_list[f].download(dst)
+        
+        elif hpc_system.startswith('https://bspsa.cineca.it'):
+            for f in file_list:
+                r = requests.get(url=data['root_url'] + f + '/',
+                                 headers=data['headers'],)
                 if r.status_code != 200:   
                     continue
                 if f.startswith('/'):
@@ -470,6 +473,9 @@ class WorkflowUtil:
                 with open(dst, 'wb') as fd:
                     for chunk in r.iter_content(chunk_size=4096):
                         fd.write(chunk)
+        
+        else:
+            raise Exception('No hpc system found!')
 
     @staticmethod
     def run_analysis(workflow, job_output):

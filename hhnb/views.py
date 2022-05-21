@@ -399,15 +399,16 @@ def upload_analysis(request, exc):
         return ResponseUtil.ko_response(messages.INVALID_SIGNATURE.format(f'"{uploaded_file.name}"'))
     except InvalidArchiveError:
         return ResponseUtil.ko_response(messages.INVALID_FILE.format(f'"{uploaded_file.name}"'))
-
     try:        
         shutil.unpack_archive(analysis_zip, workflow.get_tmp_dir())
         
-        tmp_dir_list = os.listdir(workflow.get_tmp_dir())
-        for f in tmp_dir_list:
-            if f.endswith('.zip'):
-                tmp_dir_list.remove(f)
+        try:
+            os.remove(os.path.join(workflow.get_tmp_dir(), os.path.split(analysis_zip)[1]))
+        except FileNotFoundError:
+            # go haed if file is not found
+            pass
 
+        tmp_dir_list = os.listdir(workflow.get_tmp_dir())
         if len(tmp_dir_list) > 1:            
             # if uploaded zip has more then one file it means that it is a job results zip
             for f in tmp_dir_list:
