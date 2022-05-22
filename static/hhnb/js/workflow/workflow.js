@@ -291,7 +291,7 @@ export default class Workflow {
             var loadingMessage = "Uploading files / running analysis.<br>Please wait...";
         }
         showLoadingAnimation(loadingMessage);
-        Log.debug("Uploading files");
+        Log.debug("Uploading files ", this.#uploadFileType);
         $.ajax({
             url: "/hh-neuron-builder/upload-" + this.#uploadFileType + "/" + this.#exc,
             method: "POST",
