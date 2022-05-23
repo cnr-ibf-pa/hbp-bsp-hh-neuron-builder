@@ -44,7 +44,15 @@ def get_traces_abf(filename):
         sampling_rate = "unknown"
     else:
         sampling_rate = str(metadata["sampling_rate"][0])
-   
+
+    # voltage_correction and voltage_correction_unit
+    voltage_correction = [0]
+    if 'voltage_correction' in metadata:
+        voltage_correction = metadata['voltage_correction']
+    voltage_correction_unit = 'unknown'
+    if 'voltage_correction_unit' in metadata:
+        voltage_correction_unit = metadata['voltage_correction_unit']
+
     # build dictionaries 
     traces = {}
     tonoff = {}
@@ -60,7 +68,7 @@ def get_traces_abf(filename):
         traces.update({label: voltage})
         tonoff.update({label: {'ton': [stim[i][1]], 'toff': [stim[i][2]]}})
 
-    return sampling_rate, tonoff, traces, volt_unit, amp_unit
+    return sampling_rate, tonoff, traces, volt_unit, amp_unit, voltage_correction, voltage_correction_unit
 
 
 # read metadata file into a json dictionary
@@ -122,9 +130,9 @@ def perform_conversions_json(data):
         data["sampling_rate_unit"] = "Hz"
 
 
-def extract_data(filepath, metadata_dict=None, metadata_dict_name=None):
+def extract_data(filepath, metadata_dict=None):
     if filepath.endswith(".abf"):
-        sampling_rate, tonoff, traces, voltage_unit, stimulus_unit = get_traces_abf(filepath)
+        sampling_rate, tonoff, traces, voltage_unit, stimulus_unit, voltage_correction, voltage_correction_unit = get_traces_abf(filepath)
         data = {
             'abfpath': filepath,
             'md5': md5(filepath),
@@ -132,9 +140,10 @@ def extract_data(filepath, metadata_dict=None, metadata_dict_name=None):
             'stimulus_unit': stimulus_unit,
             'traces': traces,
             'tonoff': tonoff,
-            'sampling_rate': sampling_rate
+            'sampling_rate': sampling_rate,
+            'voltage_correction': voltage_correction,
+            'voltage_correction_unit': voltage_correction_unit
         }
-
     elif filepath.endswith(".json"):
         with open(filepath, "r") as f:
             data = json.load(f)
@@ -148,7 +157,7 @@ def extract_data(filepath, metadata_dict=None, metadata_dict_name=None):
         "region": "cell_soma_location",
         "amp_unit": "stimulus_unit",
         "volt_unit": "voltage_unit",
-        "v_unit": "voltage_unit",
+        "v_unit": "voltage_unit"
     }
 
     # update dictionary keys
@@ -173,10 +182,7 @@ def extract_data(filepath, metadata_dict=None, metadata_dict_name=None):
     data["filename"] = filename[:filename.index(".")]
 
     if metadata_dict:
-        data.update(metadata_dict)
-
-    if metadata_dict_name:
-       update_file_name(data, metadata_dict_name)
+       update_file_name(data, metadata_dict)
    
     return data
 

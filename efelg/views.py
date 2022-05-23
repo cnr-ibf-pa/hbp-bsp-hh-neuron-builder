@@ -526,18 +526,16 @@ def upload_files(request):
         "all_json_names": [],
         "refused_files": []
     }
-    
+
     if request.POST["file_name"] != "":
         for old_filename in request.POST["file_name"].split(","):
             old_filepath = os.path.join(user_files_dir, old_filename)
             with open(old_filepath, "r") as old_file:
                 data = json.load(old_file)
-
             os.remove(old_filepath)
             manage_json.update_file_name(data, request.POST)
             new_filename = manage_json.create_file_name(data)
             new_filepath = os.path.join(user_files_dir, new_filename)
-
             with open(new_filepath, "w") as new_file:
                 json.dump(data, new_file)
             data_name_dict['all_json_names'].append(new_filename)
@@ -556,6 +554,7 @@ def upload_files(request):
                     os.remove(path_to_file)
 
                 with open(path_to_file, 'wb') as f:
+
                     # save chunks or entire file based on dimensions
                     if k.multiple_chunks():
                         for chunk in k.chunks():
@@ -568,24 +567,13 @@ def upload_files(request):
 
         for f in names_full_path:
             #try:
-            metadata_file = f.replace('.abf', '_metadata.json')
-            if os.path.isfile(metadata_file):
-                with open(metadata_file, 'r') as fd:
-                    metadata_dict = json.load(fd)
-            else: 
-                metadata_file = None
-            data = manage_json.extract_data(f, metadata_dict=metadata_dict, metadata_dict_name=request.POST)
-            
-
+            data = manage_json.extract_data(f, request.POST)
             output_filename = manage_json.create_file_name(data)
-            # output_filename = output_filename.replace(' ', '___')
             output_filepath = os.path.join(user_files_dir, output_filename)
             if os.path.isfile(output_filepath):
                 os.remove(output_filepath)
             with open(output_filepath, 'w') as f:
                 json.dump(data, f)
-            print(output_filepath)
-
             data_name_dict['all_json_names'].append(output_filename)
             #except:
             #    data_name_dict['refused_files'].append(f[f.rindex("/")+1:])
