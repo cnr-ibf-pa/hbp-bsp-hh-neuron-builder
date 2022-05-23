@@ -199,14 +199,19 @@ def get_data(request, cellname=""):
         "voltage_correction", "voltage_correction_unit"
     ]
     for key in keys:
-        if key in content:
-            trace_info[key] = content[key]
+        if key == 'voltage_correction':
+            if key not in content or not content[key]:
+                trace_info[key] = [0]
+            else:
+                trace_info[key] = content[key]
         else:
-            trace_info[key] = 'unknown'
+            if key in content:
+                trace_info[key] = content[key]
+            else:
+                trace_info[key] = 'unknown'
 
     if "note" in content:
         trace_info["note"] = content["note"]
-
 
     return HttpResponse(json.dumps(json.dumps(trace_info)), content_type="application/json")
 
@@ -570,6 +575,7 @@ def upload_files(request):
             else: 
                 metadata_file = None
             data = manage_json.extract_data(f, metadata_dict=metadata_dict, metadata_dict_name=request.POST)
+            
 
             output_filename = manage_json.create_file_name(data)
             # output_filename = output_filename.replace(' ', '___')
@@ -578,6 +584,7 @@ def upload_files(request):
                 os.remove(output_filepath)
             with open(output_filepath, 'w') as f:
                 json.dump(data, f)
+            print(output_filepath)
 
             data_name_dict['all_json_names'].append(output_filename)
             #except:
