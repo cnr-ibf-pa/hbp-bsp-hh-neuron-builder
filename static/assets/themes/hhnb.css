@@ -746,7 +746,8 @@ body {
     position: relative;
     margin: auto;
     top: calc(50%);
-    width: max-content;
+    /* width: max-content; */
+    min-width: 800px;
     height: max-content;
     padding: 2rem;
     text-align: center;
@@ -786,6 +787,7 @@ body {
 
 #overlayupload {
     width: 520px;
+    min-width: unset;
 }
 
 #uploadImg > img{
@@ -889,7 +891,6 @@ body {
 }
 .list-group-item.fetch-jobs {
     width: 100%;
-    min-width: 15rem;
 }
 .list-group-item.disable {
     background-color: rgb(210, 210, 210);
