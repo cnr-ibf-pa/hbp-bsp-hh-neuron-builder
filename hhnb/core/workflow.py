@@ -359,7 +359,7 @@ class WorkflowUtil:
             pass
 
         settings = workflow.get_optimization_settings()
-        if settings['hpc'] == 'NSG':
+        if settings['hpc'] == 'NSG' or settings['hpc'] == 'SA-NSG':
             ExecFileConf.write_nsg_exec(dst_dir=tmp_model_dir,
                                         max_gen=settings['gen-max'],
                                         offspring=settings['offspring'])
@@ -462,14 +462,18 @@ class WorkflowUtil:
                     file_list[f].download(dst)
         
         elif hpc_system.startswith('https://bspsa.cineca.it'):
+            print(data)
+            print("WORKFLOW DOWNLOADING JOB FILES")
+            print(file_list)
             for f in file_list:
-                r = requests.get(url=data['root_url'] + f + '/',
+                r = requests.get(url=data['root_url'] + f['id'] + '/',
                                  headers=data['headers'],)
+                print(r.status_code, r.content)
                 if r.status_code != 200:   
                     continue
-                if f.startswith('/'):
-                    f = f[1:]
-                dst = os.path.join(workflow.get_results_dir(), f)
+                if f['name'].startswith('/'):
+                    f['name'] = f['name'][1:]
+                dst = os.path.join(workflow.get_results_dir(), f['name'])
                 with open(dst, 'wb') as fd:
                     for chunk in r.iter_content(chunk_size=4096):
                         fd.write(chunk)

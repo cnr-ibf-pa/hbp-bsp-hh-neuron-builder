@@ -670,10 +670,11 @@ def run_analysis(request, exc):
     workflow, hhnb_user = get_workflow_and_user(request, exc)
     logger.info(LOG_ACTION.format(hhnb_user, 'run analysis on %s' % workflow))
 
+    print("CARTELLA RESULTS")
+    print(os.listdir(workflow.get_results_dir()))
     try:
         for f in os.listdir(workflow.get_results_dir()):
-            print(f)
-            if f.split('.')[0] == 'output':
+            if 'output' in f:
                 job_output = os.path.join(workflow.get_results_dir(), f)
 
         WorkflowUtil.run_analysis(workflow, job_output)

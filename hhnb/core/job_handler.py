@@ -350,11 +350,14 @@ class JobHandler:
 
     def _get_service_account_job_results(self, hpc, token, job_id):
         headers = self._get_service_account_headers(token)
+        
         if hpc == self._SA_CSCS:
             sa_endpoint = self._SA_DAINT_FILES_URL + job_id + '/'
         elif hpc == self._SA_NSG:
             sa_endpoint = self._SA_NSG_FILES_URL + job_id + '/'
+        
         r = requests.get(url=sa_endpoint, headers=headers)
+
         logger.debug(f'requests: {r.url} with headers: {r.headers}')
         if r.status_code >= 400:
             logger.error(f'CODE: {r.status_code}, CONTENT: {r.content}')
@@ -362,7 +365,18 @@ class JobHandler:
         if r.status_code != 200:
             logger.error(f'CODE: {r.status_code}, CONTENT: {r.content}')
             raise self.ServiceAccountException(r.content, r.status_code)
-        return r.json()
+        
+        file_list = []
+        print("JOB HANDLER JOB FILE RESPONSE")
+        print(r.json())
+        for f in r.json():
+            if hpc == self._SA_CSCS:
+                file_list.append({'id': f, 'name': f})
+            elif hpc == self._SA_NSG:
+                file_list.append({'id': f['fileid'], 'name': f['filename']})
+        print("JOB HADNLER FILE LIST")
+        print(file_list)
+        return file_list
           
 
     @classmethod
@@ -414,7 +428,6 @@ class JobHandler:
                 if not is_job_expired(job[raw_job['job_id']]):
                     jobs.update(job)
         
-
         # sort jobs from last to first
         ordered_jobs = OrderedDict(sorted(jobs.items(),
                                           key=lambda x: x[1]['date'],
@@ -438,22 +451,25 @@ class JobHandler:
                 'username': user.get_nsg_user().get_username(),
                 'password': user.get_nsg_user().get_password()
             }
+        
         if hpc == job_handler._DAINT_CSCS:
             raw_file_list = job_handler._get_unicore_job_results(hpc, user.get_token(), job_id)
             file_list = {
                 'root_url': 'unicore', 
                 'file_list': raw_file_list
             }
+        
         if hpc == job_handler._SA_CSCS or hpc == job_handler._SA_NSG:
             raw_file_list = job_handler._get_service_account_job_results(hpc, user.get_token(), job_id)
             if hpc == job_handler._SA_CSCS:
                 root_url = job_handler._SA_DAINT_FILES_URL + job_id
             elif hpc == job_handler._SA_NSG:
-                root_url = job_handler._SA_NSG_FILES_URL + job_id
+                root_url = job_handler._SA_NSG_FILES_URL + job_id + '/'
             file_list = {
                 'root_url': root_url, 
                 'file_list': raw_file_list,
                 'headers': {'Authorization': 'Bearer ' + user.get_token()}
             }
+        
         logger.info(LOG_ACTION.format(user, 'file_list: %s' % file_list))
         return file_list
