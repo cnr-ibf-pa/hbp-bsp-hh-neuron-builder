@@ -115,11 +115,10 @@ class UploadFileDialog {
 // Enable apply button hpc selection
 $(".accordion-button.hpc").on("click", (button) => {
     Log.debug(button);
-    Log.debug(button.target.className);
-    let isAlreadyOpened = $("#" + button.target.id).hasClass("active");
+    let isAlreadyOpened = $("#" + button.currentTarget.id).hasClass("active");
     $(".accordion-button.hpc").removeClass("active");
     if (!isAlreadyOpened) {
-        $("#" + button.target.id).addClass("active");
+        $("#" + button.currentTarget.id).addClass("active");
         $("#apply-param").prop("disabled", false);
     } else {
         $("#apply-param").prop("disabled", true);
@@ -139,7 +138,7 @@ class OptimizationSettingsDialog {
         $("#daint-runtime").val("120m");
         $("#sa-daint-gen-max").val(2)
         $("#sa-daint-offspring").val(10)
-        $("#sa-daint-node-num").val(6);
+        $("#sa-daint-node-num").val(3);
         $("#sa-daint-core-num").val(24);
         $("#sa-daint-runtime").val(2);
         $("#username_submit").val("");

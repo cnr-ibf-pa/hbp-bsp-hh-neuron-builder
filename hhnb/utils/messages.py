@@ -43,7 +43,7 @@ ANALYSIS_ERROR = '<b>Error !</b><br><br>Something went wrong while the analysis 
 BLUE_NAAS_NOT_AVAILABLE = 'The BlueNaas is temporarily not available.<br>Please, try again later.'
 
 
-MODEL_SUCCESSFULLY_REGISTERED = '<b>Congratulation, the model was successfully registered in the Model Catalog !</b><br><br>Model\'s info and metadata can be shown <a href="{}" target="_blank">here</a>.<br><br>Once the page will be opened in a new tab, if a welcome message is displayed instead of the model instance, please click on the "Authorize" button if requested.<br><br>Leave the current tab open in case you need to recollect the model url.'
+MODEL_SUCCESSFULLY_REGISTERED = '<b>Congratulation, the model was successfully registered in the Model Catalog !</b><br><br>Model\'s info and metadata can be shown <a href="{}" target="_blank">here</a>.<br><br>Once the page is opened in a new tab, if a welcome message is displayed instead of the model instance, please click on the "Authorize" button if requested.<br><br>Leave the current tab open in case you need to recollect the model url.'
 MODEL_ALREADY_EXISTS = 'Model already exists on the Model Catalog.'
 
 
