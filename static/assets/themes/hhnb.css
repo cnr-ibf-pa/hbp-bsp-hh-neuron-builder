@@ -510,6 +510,7 @@ body {
 .workflow-btn.extends {
     width: 100%;
     height: 80%;
+    max-width: 450px;
 }
 .workflow-btn.small {
     height: 2rem;
@@ -1772,6 +1773,8 @@ i.disabled:hover {
 
 #overlayjobs {
     transition: unset;
+    max-width: 1300px;
+    width: unset;
 }
 
 #overlaycontentdialog {
