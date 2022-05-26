@@ -541,9 +541,8 @@ class WorkflowUtil:
         
         build_mechanisms_command = f'source {env_prefix}/bin/activate; nrnivmodl mechanisms > {log_file}'
         opt_neuron_analysis_command = f'source {env_prefix}/bin/activate; python ./opt_neuron.py --analyse --checkpoint ./checkpoints > {log_file}' 
-        p0 = subprocess.run(build_mechanisms_command, shell='/bin/bash', capture_output=True,text=True)
-        p1 = subprocess.run(opt_neuron_analysis_command, shell='/bin/bash', capture_output=True, text=True)
-        
+        p0 = subprocess.run(build_mechanisms_command, shell='/bin/bash', stderr=subprocess.PIPE)
+        p1 = subprocess.run(opt_neuron_analysis_command, shell='/bin/bash', stderr=subprocess.PIPE)
         os.chdir(curr_dir)
 
         if p0.returncode > 0:
