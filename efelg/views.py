@@ -566,9 +566,11 @@ def upload_files(request):
                         names_full_path.append(path_to_file)
 
         for f in names_full_path:
-            #try:
-            data = manage_json.extract_data(f, request.POST)
-            output_filename = manage_json.create_file_name(data)
+            try:
+                data = manage_json.extract_data(f, request.POST)
+                output_filename = manage_json.create_file_name(data)
+            except JSONDecodeError as e:
+                return HttpResponseBadRequest(os.path.split(f)[-1])
             output_filepath = os.path.join(user_files_dir, output_filename)
             if os.path.isfile(output_filepath):
                 os.remove(output_filepath)

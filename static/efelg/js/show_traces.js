@@ -701,8 +701,13 @@ function createUploadBox() {
                 var read = new FileReader();
                 read.readAsBinaryString(file);
                 read.onloadend = function() {
-                    var data = JSON.parse(read.result);
-                    if (data != null) {
+                    var data;
+                    try {
+                        data = JSON.parse(read.result);
+                    } catch(err) {
+                        console.log(err);
+                    }
+                        if (data != null) {
                         var cell_name = $("#cell_name_" + id);
                         var structure = $("#structure_" + id);
                         var species = $("#species_" + id);
@@ -791,6 +796,11 @@ function createUploadBox() {
                     } else {
                         plotCells(name_dict['all_json_names'], true, id);
                     }
+                },
+                error: (error) => {
+                    console.log(error);
+                    closeMessageDiv("wait-message-div", "main-e-st-div");
+                    openWarning("Malformed JSON file for \"" + error.responseText + "\" trace.");
                 }
             })
         }

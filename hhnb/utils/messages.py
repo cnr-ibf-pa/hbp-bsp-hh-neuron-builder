@@ -40,6 +40,8 @@ HPC_NOT_AVAILABLE = '<b>{}</b> system not available at this moment.<br>Please, t
 
 # Analysis error messages
 ANALYSIS_ERROR = '<b>Error !</b><br><br>Something went wrong while the analysis process was running.<br>Please contact the <a href="https://ebrains.eu/support" target="_blank">EBRAINS support</a> if the problem persists.'
+MECHANISMS_PROCESS_ERROR = '<b>Error !</b><br><br>Something went wrong while mechanisms file were building.<br>Please, take a look on the files and if the problem persists contact the <a href="https://ebrains.eu/support" target="_blank">EBRAINS support</a>.'
+ANALYSIS_PROCESS_ERROR = '<b>Error !</b><br><br>Analysis process was stopped due to the following error:<br><br><i>{}</i><br><br>If the problem persists contact the <a href="https://ebrains.eu/support" target="_blank">EBRAINS support</a>.'
 BLUE_NAAS_NOT_AVAILABLE = 'The BlueNaas is temporarily not available.<br>Please, try again later.'
 
 

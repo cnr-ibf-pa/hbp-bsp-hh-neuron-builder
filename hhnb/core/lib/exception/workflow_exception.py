@@ -1,3 +1,6 @@
+from subprocess import CalledProcessError
+
+
 # Workflow exception definition
 
 class WorkflowExists(Exception):
@@ -13,4 +16,11 @@ class NoWorkflowFound(Exception):
 
 
 class EmptyWorkflow(Exception):
+    pass
+
+
+class MechanismsProcessError(CalledProcessError):
+    pass
+
+class AnalysisProcessError(CalledProcessError):
     pass

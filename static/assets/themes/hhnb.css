@@ -653,6 +653,9 @@ body {
 #progressBarFetchJob.s40 {
     transition: width 40s linear;
 }
+#progressBarFetchJob.s20 {
+    transition: width 20s linear;
+}
 #progressBarFetchJob.s4 {
     transition: width 4s linear;
 }
@@ -747,8 +750,8 @@ body {
     position: relative;
     margin: auto;
     top: calc(50%);
-    /* width: max-content; */
-    min-width: 800px;
+    width: max-content;
+    /* min-width: 800px; */
     height: max-content;
     padding: 2rem;
     text-align: center;

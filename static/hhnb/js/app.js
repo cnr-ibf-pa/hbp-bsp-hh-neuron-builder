@@ -594,9 +594,13 @@ function displayJobList(button) {
             }
 
             $(".job-download-button").on("click", (button) => {
-                // closeJobFetchDiv();
-                // openJobProcessingDiv();
-                downloadJob(button.target.id);
+                var jobId = button.target.id;
+                var jobStatus = jobs[jobId].status
+                if (jobStatus == "SUCCESSFUL" || jobStatus == "COMPLETED") {
+                    downloadJobAndRunAnalysis(jobId);
+                } else {
+                    downloadJobOnly(jobId);
+                }
             });
 
             $("#spinnerRow").css("display", "none");
@@ -635,23 +639,6 @@ function resetProgressBar() {
     $(".progress-bar").css("width", "0%").attr("aria-valuenow", "0");
 }
 
-/* 
-function setJobProcessingTitle(message) {
-    console.log(message);
-    var title = $("#jobProcessingTitle");
-
-    function eventListener(transition) {
-        if (transition.target == title[0]) {
-            if (title.hasClass("fade-text")) {
-                title.html(message);
-                title.removeClass("fade-text");
-                title[0].removeEventListener("transitionend", eventListener);
-            }
-        }
-    }
-    title[0].addEventListener("transitionend", eventListener);
-    title.addClass("fade-text");
-} */
 function setJobProcessingTitle(message) {
     $("#jobProcessingTitle").html(message);
 }
@@ -660,19 +647,15 @@ function openJobProcessingDiv() {
     $("#overlaywrapper").css("display", "block");
     $("#overlayjobprocessing").css("display", "block");
     setProgressBarValue(0);
-    // $("#overlayjobprocessing").removeClass("show");
-    // $("#overlayjobs").addClass("hide-to-left");
 }
 
 function closeJobProcessingDiv() {
     $("#overlaywrapper").css("display", "none");
     $("#overlayjobprocessing").css("display", "none");
     setProgressBarValue(0);
-    // $("#overlayjobprocessing").removeClass("show");
-    // $("#overlayjobs").addClass("hide-to-left");
 }
 
-async function downloadJob(jobId) {
+async function downloadJobOnly(jobId) {
     Log.debug("Downloading " + jobId);
     // disable all buttons
     const data = { "job_id": jobId, "hpc": $("button.fetch-jobs.active").attr("name") }
@@ -683,7 +666,38 @@ async function downloadJob(jobId) {
     openJobProcessingDiv();
 
     await sleep(500);
-    $("#progressBarFetchJob").addClass("s40").removeClass("s4 s2");
+    $("#progressBarFetchJob").addClass("s20").removeClass("s40 s4 s2");
+    setProgressBarValue(60);
+
+    $.get("/hh-neuron-builder/fetch-job-result/" + exc, data)
+        .done(async (downloadResult) => {
+            Log.debug(downloadResult);
+            $("#progressBarFetchJob").addClass("s2").removeClass("s40 s20 s4");
+            setProgressBarValue(100);
+            await sleep(2000);
+            closeJobProcessingDiv(); 
+            workflow.updateProperties();
+        }).fail((downloadError) => {
+            checkRefreshSession(downloadError);
+            closeJobProcessingDiv();
+            Log.error("Status: " + downloadError.status + " > " + downloadError.responseText);
+            MessageDialog.openErrorDialog(downloadError.responseText)
+            workflow.updateProperties();
+        });
+}
+
+async function downloadJobAndRunAnalysis(jobId) {
+    Log.debug("Downloading " + jobId);
+    // disable all buttons
+    const data = { "job_id": jobId, "hpc": $("button.fetch-jobs.active").attr("name") }
+
+    $("#jobProcessingTitle").html("Downloading job:<br>" + jobId.toUpperCase() + "<br>");
+
+    closeJobFetchDiv();
+    openJobProcessingDiv();
+
+    await sleep(500);
+    $("#progressBarFetchJob").addClass("s40").removeClass("s20 s4 s2");
     setProgressBarValue(40);
 
     $.get("/hh-neuron-builder/fetch-job-result/" + exc, data)
@@ -694,7 +708,7 @@ async function downloadJob(jobId) {
             $.get("/hh-neuron-builder/run-analysis/" + exc)
                 .done(async (analysisResult) => {
                     setJobProcessingTitle("Completing...<br>");
-                    $("#progressBarFetchJob").addClass("s4").removeClass("s40 s2");
+                    $("#progressBarFetchJob").addClass("s4").removeClass("s40 s20 s2");
                     setProgressBarValue(100);
                     await sleep(4000);
                     closeJobProcessingDiv(); 
@@ -741,7 +755,7 @@ $("#checkNsgLoginButton").on("click", () => {
 var blueNaasModel = "";
 $("#run-sim-btn").on("click", () => {
     showLoadingAnimation("Uploading to BlueNaas...");
-    $("#run-sim-btn").prop("disable", true);
+    $("#run-sim-btn").prop("disabled", true);
     $.get("/hh-neuron-builder/upload-to-naas/" + exc)
         .done((data) => {
             if (blueNaasModel != data) {
@@ -764,8 +778,8 @@ $("#run-sim-btn").on("click", () => {
             MessageDialog.openErrorDialog(error.responseText);
             hideLoadingAnimation();
         }).always(() => {
-            $("#run-sim-btn").prop("disable", false);
-        })
+            $("#run-sim-btn").prop("disabled", false);
+        }) 
 })
 
 

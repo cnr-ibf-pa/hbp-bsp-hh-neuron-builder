@@ -367,15 +367,11 @@ class JobHandler:
             raise self.ServiceAccountException(r.content, r.status_code)
         
         file_list = []
-        print("JOB HANDLER JOB FILE RESPONSE")
-        print(r.json())
         for f in r.json():
             if hpc == self._SA_CSCS:
                 file_list.append({'id': f, 'name': f})
             elif hpc == self._SA_NSG:
                 file_list.append({'id': f['fileid'], 'name': f['filename']})
-        print("JOB HADNLER FILE LIST")
-        print(file_list)
         return file_list
           
 

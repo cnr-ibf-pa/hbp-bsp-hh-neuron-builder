@@ -443,7 +443,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="accordion-item">
+                        <!--<div class="accordion-item">
                             <h2 id="SA-NSG" class="accordion-header">
                                 <button type="button" id="accordionSANSG" name="SA-NSG" class="accordion-button hpc collapsed" data-bs-toggle="collapse" data-bs-target="#serviceAccountNSGCollapse" aria-expanded="false" aria-controls="serviceAccountNSGCollapse">
                                     <b>NSG-SA</b>&emsp;<i>NeuroScience Gateway on Service Account</i>
@@ -457,23 +457,17 @@
                                                 <div class="card-header input-card-header">Algorithm Parameters</div>
                                                 <div class="card-body ">
                                                     <div class="input-group">
-                                                        <!-- <div class="input-group-prepend"> -->
                                                             <span class="input-group-text" title="Number of generation (max 60)"># Gen</span>
-                                                        <!-- </div> -->
                                                         <input type="number" class="form-control small-placeholder" name="gen-max" id="sa-nsg-gen-max" title="Number of generation (max 60)" placeholder="Number of generation (max 60)" step="1" min="1" max="60">
                                                     </div>
                                                     <br>
                                                     <div class="input-group">
-                                                        <!-- <div class="input-group-prepend"> -->
                                                             <span class="input-group-text" title="Offspring size">Offspring</span>
-                                                        <!-- </div> -->
                                                         <input type="number" class="form-control" name="offspring" id="sa-nsg-offspring" title="Offspring size" placeholder="Offspring size" step="1" min="1" max="60">
                                                     </div>
                                                     <br>
                                                     <div class="input-group" style="visibility: hidden;">
-                                                        <!-- <div class="input-group-prepend"> -->
                                                             <span class="input-group-text"></span>
-                                                        <!-- </div> -->
                                                         <input class="form-control">
                                                     </div>
                                                         
@@ -485,23 +479,17 @@
                                                 <div class="card-header input-card-header">Optimization Run Parameters</div>
                                                 <div class="card-body">
                                                     <div class="input-group">
-                                                        <!-- <div class="input-group-prepend"> -->
                                                             <span class="input-group-text" title="Number of nodes"># Nodes</span>
-                                                        <!-- </div> -->
                                                         <input type="number" class="form-control small-placeholder" name="node-num" id="sa-nsg-node-num" title="Number of nodes" placeholder="Number of nodes" value="6" step="1" min="1" required>
                                                     </div>    
                                                     <br>
                                                     <div class="input-group">
-                                                        <!-- <div class="input-group-prepend"> -->
                                                             <span class="input-group-text" title="Number of cores"># Cores</span>
-                                                        <!-- </div> -->
                                                         <input type="number" class="form-control small-placeholder" name="core-num" id="sa-nsg-core-num" title="Number of cores" placeholder="Number of cores" value="24" step="1" min="1" required>
                                                     </div>   
                                                     <br>
                                                     <div class="input-group">
-                                                        <!-- <div class="input-group-prepend"> -->
                                                             <span class="input-group-text" title="Runtime">Runtime</span>
-                                                        <!-- </div> -->
                                                         <input type="" class="form-control small-placeholder" name="runtime" id="sa-nsg-runtime" title="Runtime" placeholder="Runtime" value="2" required>
                                                     </div>  
                                                 </div>
@@ -510,7 +498,7 @@
                                     </div>        
                                 </div>
                             </div>
-                        </div>
+                        </div> -->
                     </div>
                 </div>
                 <br>
@@ -534,7 +522,7 @@
                     <button type="button" id="jobsDaint" name="DAINT-CSCS" class="jobs-unicore list-group-item fetch-jobs list-group-item-action"><b>CSCS-PizDaint</b></button>
                     <button type="button" id="jobsSADaint" name="SA-CSCS" class="jobs-unicore list-group-item fetch-jobs list-group-item-action"><b>CSCS-PizDaint<br>Service Account</b></button>
                     <button type="button" id="jobsNSG" name="NSG" class="list-group-item fetch-jobs list-group-item-action"><b>NSG<br>NeuroScience Gateway</b></button>
-                    <button type="button" id="jobsSANSG" name="SA-NSG" class="jobs-unicore list-group-item fetch-jobs list-group-item-action"><b>NSG<br>Service Account</b></button>
+                    <!-- <button type="button" id="jobsSANSG" name="SA-NSG" class="jobs-unicore list-group-item fetch-jobs list-group-item-action"><b>NSG<br>Service Account</b></button> -->
                 </div>
             </div>
             <div class="row-separator"></div>
@@ -934,10 +922,10 @@
             </div>
             <div class="row" style="height: 10%; margin-top: 10px;">
                 <div class="col flex-center">
-                    <button type="button" id="back-to-wf-btn" class="btn main-panel-btn extends modal-btn">Cancel</button>
+                    <button type="button" id="back-to-wf-btn" class="btn main-panel-btn extends modal-btn" style="width: unset; max-width:500px;">Cancel</button>
                 </div>
                 <div class="col flex-center">
-                    <button type="button" id="reg-mod-main-btn" class="btn main-panel-btn extends modal-btn">Register in Model Catalog</button>
+                    <button type="button" id="reg-mod-main-btn" class="btn main-panel-btn extends modal-btn" style="width: unset; max-width:500px;">Register in Model Catalog</button>
                 </div>  
             </div>
         </div>

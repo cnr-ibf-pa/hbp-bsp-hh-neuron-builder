@@ -12,19 +12,20 @@ from hhnb.core.model import *
 from json.decoder import JSONDecodeError
 from pyunicore.client import PathFile as UnicorePathFile
 from datetime import datetime
-from subprocess import call as os_call
 from sys import prefix as env_prefix
+
 import shutil
 import os
 import json
 import requests
+import subprocess
 
 
 class _WorkflowBase:
     
     def __init__(self, user_sub, workflow_id):
         self._user_sub = user_sub
-        if workflow_id[0] in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']:
+        if workflow_id[0] in '1234567890':
             workflow_id = 'W_' + workflow_id 
         self._id = workflow_id
         self._workflow_path = os.path.abspath(os.path.join(MEDIA_ROOT, 'hhnb', 'workflows',
@@ -244,6 +245,11 @@ class Workflow(_WorkflowBase):
             if not os.path.exists(self._tmp_dir):
                 os.mkdir(self._tmp_dir)
 
+    def clean_analysis_dir(self):
+        shutil.rmtree(self.get_analysis_dir())
+        if not os.path.exists(self.get_analysis_dir()):
+            os.mkdir(self.get_analysis_dir())
+
 
 class WorkflowUtil:
 
@@ -462,13 +468,9 @@ class WorkflowUtil:
                     file_list[f].download(dst)
         
         elif hpc_system.startswith('https://bspsa.cineca.it'):
-            print(data)
-            print("WORKFLOW DOWNLOADING JOB FILES")
-            print(file_list)
             for f in file_list:
                 r = requests.get(url=data['root_url'] + f['id'] + '/',
                                  headers=data['headers'],)
-                print(r.status_code, r.content)
                 if r.status_code != 200:   
                     continue
                 if f['name'].startswith('/'):
@@ -537,10 +539,20 @@ class WorkflowUtil:
             os.makedirs(log_file_path)
         log_file = os.path.join(log_file_path, workflow.get_id() + '.log')
         
-        os_call(f'source {env_prefix}/bin/activate; nrnivmodl mechanisms > {log_file};' \
-                + f'python ./opt_neuron.py --analyse --checkpoint ./checkpoints > {log_file}', 
-                shell=True, executable='/bin/bash')
+        build_mechanisms_command = f'source {env_prefix}/bin/activate; nrnivmodl mechanisms > {log_file}'
+        opt_neuron_analysis_command = f'source {env_prefix}/bin/activate; python ./opt_neuron.py --analyse --checkpoint ./checkpoints > {log_file}' 
+        p0 = subprocess.run(build_mechanisms_command, shell='/bin/bash', capture_output=True,text=True)
+        p1 = subprocess.run(opt_neuron_analysis_command, shell='/bin/bash', capture_output=True, text=True)
+        
         os.chdir(curr_dir)
+
+        if p0.returncode > 0:
+            workflow.clean_analysis_dir()
+            raise MechanismsProcessError(p0.returncode, build_mechanisms_command, stderr=p0.stderr)
+        if p1.returncode > 0:
+            workflow.clean_analysis_dir()
+            raise AnalysisProcessError(p1.returncode, opt_neuron_analysis_command, stderr=p1.stderr)
+
 
 
     @staticmethod

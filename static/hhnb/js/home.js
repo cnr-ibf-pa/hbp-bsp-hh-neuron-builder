@@ -27,16 +27,24 @@ $( document ).ready(() => {
     }
 })
 
+var newWfCounter = 0;
+
 $("#new-wf").on("click", () => {
+    newWfCounter += 1;
     showLoadingAnimation("Initializing workflow...");
     $.get("/hh-neuron-builder/initialize-workflow")
         .done((result) => {
             Log.debug(result);
             window.location.href = "/hh-neuron-builder/workflow/" + result.exc;                        
         }).fail((error) => {
-            hideLoadingAnimation();
+            console.log(error.status)
+            if (error.status == 497 && newWfCounter < 100) {
+                $("#new-wf").trigger("click");
+                return;
+            }
             checkRefreshSession(error);
             Log.error("Status: " + error.status + " > " + error.responseText);
+            hideLoadingAnimation();
             MessageDialog.openErrorDialog(error.responseText);
         });
 });
