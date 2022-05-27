@@ -19,8 +19,8 @@ class EmptyWorkflow(Exception):
     pass
 
 
-class MechanismsProcessError(CalledProcessError):
+class MechanismsProcessError(Exception): # CalledProcessError):
     pass
 
-class AnalysisProcessError(CalledProcessError):
+class AnalysisProcessError(Exception): # CalledProcessError):
     pass

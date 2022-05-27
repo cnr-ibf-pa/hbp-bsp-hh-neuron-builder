@@ -679,19 +679,22 @@ def run_analysis(request, exc):
 
     except MechanismsProcessError as e:
         logger.error(e)
+        workflow.clean_analysis_dir()
         return ResponseUtil.ko_response(498, messages.MECHANISMS_PROCESS_ERROR)
     
     except AnalysisProcessError as e:
-        print(e)
         logger.error(e)
-        return ResponseUtil.ko_response(499, messages.ANALYSIS_PROCESS_ERROR.format(e.stderr))
+        workflow.clean_analysis_dir()
+        return ResponseUtil.ko_response(499, messages.ANALYSIS_PROCESS_ERROR.format(e))
     
     except FileNotFoundError as e:
         logger.error(e)
+        workflow.clean_analysis_dir()
         return ResponseUtil.ko_response(404, str(e))       
      
     except Exception as e:
         logger.error(e)
+        workflow.clean_analysis_dir()
     return ResponseUtil.ko_response(messages.ANALYSIS_ERROR)
 
 

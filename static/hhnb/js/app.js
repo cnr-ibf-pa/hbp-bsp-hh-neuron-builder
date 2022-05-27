@@ -548,7 +548,12 @@ $("#jobsNSG").on("click", (button) => {
 });
 
 
+var jobListButtonClicked = false;
 function displayJobList(button) {
+    if (jobListButtonClicked) {
+        return;
+    }
+    jobListButtonClicked = true;
     $("#overlayjobs").removeClass("scroll-long-content");
     $("#cancel-job-list-btn").prop("disabled", true);
     $("#spinnerRow").css("display", "flex");
@@ -621,14 +626,13 @@ function displayJobList(button) {
             Log.error("Status: " + error.status + " > " + error.responseText);
             MessageDialog.openErrorDialog(error.responseText);
         });
+    jobListButtonClicked = false;
 }
 
 function animateProgressBar(progress) {
     let current_progress = parseFloat($(".progress-bar").attr("aria-valuenow"));
     let next_progress = current_progress + progress;
     $(".progress-bar").css("width", next_progress + "%").attr("aria-valuenow", next_progress);
-    // console.log($(".progress-bar").css("width"));
-    // console.log($(".progress-bar").attr("aria-valuenow"));
 }
 
 function setProgressBarValue(value) {

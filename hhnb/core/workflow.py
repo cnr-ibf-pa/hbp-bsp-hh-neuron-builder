@@ -514,6 +514,9 @@ class WorkflowUtil:
                     if f.endswith('.pkl'):
                         os.rename(os.path.join(checkpoint_dir, f),
                                   os.path.join(checkpoint_dir, 'checkpoint.pkl'))
+        else:
+            raise AnalysisProcessError('Checkpoints folder not found! Maybe the optimization process failed.')
+
         opt_neuron_file = os.path.join(output_dir, 'opt_neuron.py')
         with open(opt_neuron_file, 'r') as fd:
             buffer = fd.readlines()
@@ -532,7 +535,6 @@ class WorkflowUtil:
             shutil.rmtree(compiled_mods_dir)
         
         curr_dir = os.getcwd()
-        os.chdir(output_dir)
        
         log_file_path = os.path.join(LOG_ROOT_PATH, 'analysis', workflow.get_user())
         if not os.path.exists(log_file_path):
@@ -541,16 +543,21 @@ class WorkflowUtil:
         
         build_mechanisms_command = f'source {env_prefix}/bin/activate; nrnivmodl mechanisms > {log_file}'
         opt_neuron_analysis_command = f'source {env_prefix}/bin/activate; python ./opt_neuron.py --analyse --checkpoint ./checkpoints > {log_file}' 
-        p0 = subprocess.run(build_mechanisms_command, shell='/bin/bash', stderr=subprocess.PIPE)
-        p1 = subprocess.run(opt_neuron_analysis_command, shell='/bin/bash', stderr=subprocess.PIPE)
+        
+        os.chdir(output_dir)
+        p0 = subprocess.call(build_mechanisms_command, shell=True, executable='/bin/bash')
+        p1 = subprocess.call(opt_neuron_analysis_command, shell=True, executable='/bin/bash')
         os.chdir(curr_dir)
 
-        if p0.returncode > 0:
-            workflow.clean_analysis_dir()
-            raise MechanismsProcessError(p0.returncode, build_mechanisms_command, stderr=p0.stderr)
-        if p1.returncode > 0:
-            workflow.clean_analysis_dir()
-            raise AnalysisProcessError(p1.returncode, opt_neuron_analysis_command, stderr=p1.stderr)
+        if p0 > 0:
+            raise MechanismsProcessError()#p0.returncode, build_mechanisms_command, stderr=p0.stderr)
+        if p1 > 0:
+            error = 'Can\'t identify the error.'
+            for f in os.listdir(os.path.join(output_dir, 'checkpoints')):
+                if not f.endswith('.pkl'):
+                    error = 'Checkpoint not found! Maybe the optimization process failed.'
+                    break
+            raise AnalysisProcessError(error)#p1.returncode, opt_neuron_analysis_command, stderr=p1.stderr)
 
 
 
