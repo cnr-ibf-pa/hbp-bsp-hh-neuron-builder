@@ -587,7 +587,7 @@ function createUploadBox() {
                         <input id="abf_extension_' + i_box + '" type="radio" name="extension_' + i_box + '" value=".abf, .json" checked="checked"> \
                         <label for="abf_extension_' + i_box + '">.abf + _metadata.json</label> \
                         <input id="json_extension_' + i_box + '" type="radio" name="extension_' + i_box + '" value=".json" class="ms-3"> \
-                        <label for="json_extension_' + i_box + '">json</label> \
+                        <label for="json_extension_' + i_box + '">.json</label> \
                     </div> \
                     <div class="col-lg-2 col-md-3 col-4 text-end"> \
                         <i class="far fa-question-circle fa-lg" \
