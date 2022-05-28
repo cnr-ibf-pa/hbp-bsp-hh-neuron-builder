@@ -510,6 +510,7 @@ body {
 .workflow-btn.extends {
     width: 100%;
     height: 80%;
+    max-width: 450px;
 }
 .workflow-btn.small {
     height: 2rem;
@@ -652,6 +653,9 @@ body {
 #progressBarFetchJob.s40 {
     transition: width 40s linear;
 }
+#progressBarFetchJob.s20 {
+    transition: width 20s linear;
+}
 #progressBarFetchJob.s4 {
     transition: width 4s linear;
 }
@@ -747,6 +751,7 @@ body {
     margin: auto;
     top: calc(50%);
     width: max-content;
+    /* min-width: 800px; */
     height: max-content;
     padding: 2rem;
     text-align: center;
@@ -786,6 +791,7 @@ body {
 
 #overlayupload {
     width: 520px;
+    min-width: unset;
 }
 
 #uploadImg > img{
@@ -889,7 +895,6 @@ body {
 }
 .list-group-item.fetch-jobs {
     width: 100%;
-    min-width: 15rem;
 }
 .list-group-item.disable {
     background-color: rgb(210, 210, 210);
@@ -1771,6 +1776,8 @@ i.disabled:hover {
 
 #overlayjobs {
     transition: unset;
+    max-width: 1300px;
+    width: unset;
 }
 
 #overlaycontentdialog {

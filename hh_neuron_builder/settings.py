@@ -166,7 +166,12 @@ STATICFILES_DIRS = [
 MEDIA_ROOT = conf.MEDIA_ROOT
 
 HHF_TEMPLATE_DIR = os.path.join(BASE_DIR, 'hh_neuron_builder', 'config', 'hhf_template', 'hhf')
+if not os.path.exists(HHF_TEMPLATE_DIR):
+    os.makedirs(HHF_TEMPLATE_DIR)
+    
 TMP_DIR = os.path.join(MEDIA_ROOT, 'hhnb', 'tmp')
+if not os.path.exists(TMP_DIR):
+    os.mkdir(TMP_DIR) 
 
 
 MODEL_CATALOG_FILTER = {

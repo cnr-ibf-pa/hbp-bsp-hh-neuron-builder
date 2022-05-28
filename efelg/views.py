@@ -158,6 +158,7 @@ def get_data(request, cellname=""):
                     return HttpResponse(content={'response': 'KO', 'message': e.msg},
                                         content_type='application/json')
 
+    print(path_to_file)
     with open(path_to_file, "r") as f:
         try:
             content = json.loads(f.read())
@@ -179,6 +180,7 @@ def get_data(request, cellname=""):
         disp_sampling_rate = crr_sampling_rate
 
     # create dictionary to be sent to the frontend
+
     trace_info = {}
     trace_info['traces'] = {}
     for key in content['traces'].keys():
@@ -194,13 +196,19 @@ def get_data(request, cellname=""):
         "md5", "sampling_rate", "etype", "cell_type", "cell_id",
         "brain_structure", "filename", "animal_species", "cell_soma_location",
         "stimulus_unit", "voltage_unit", "contributors_affiliations", 
-        "voltage_correction"
+        "voltage_correction", "voltage_correction_unit"
     ]
     for key in keys:
-        if key in content:
-            trace_info[key] = content[key]
+        if key == 'voltage_correction':
+            if key not in content or not content[key]:
+                trace_info[key] = [0]
+            else:
+                trace_info[key] = content[key]
         else:
-            trace_info[key] = 'unknown'
+            if key in content:
+                trace_info[key] = content[key]
+            else:
+                trace_info[key] = 'unknown'
 
     if "note" in content:
         trace_info["note"] = content["note"]
@@ -558,9 +566,11 @@ def upload_files(request):
                         names_full_path.append(path_to_file)
 
         for f in names_full_path:
-            #try:
-            data = manage_json.extract_data(f, request.POST)
-            output_filename = manage_json.create_file_name(data)
+            try:
+                data = manage_json.extract_data(f, request.POST)
+                output_filename = manage_json.create_file_name(data)
+            except JSONDecodeError as e:
+                return HttpResponseBadRequest(os.path.split(f)[-1])
             output_filepath = os.path.join(user_files_dir, output_filename)
             if os.path.isfile(output_filepath):
                 os.remove(output_filepath)

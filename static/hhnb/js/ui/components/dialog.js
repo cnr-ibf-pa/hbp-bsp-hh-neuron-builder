@@ -114,11 +114,11 @@ class UploadFileDialog {
 
 // Enable apply button hpc selection
 $(".accordion-button.hpc").on("click", (button) => {
-    Log.debug(button.target.className);
-    let isAlreadyOpened = $("#" + button.target.id).hasClass("active");
+    Log.debug(button);
+    let isAlreadyOpened = $("#" + button.currentTarget.id).hasClass("active");
     $(".accordion-button.hpc").removeClass("active");
     if (!isAlreadyOpened) {
-        $("#" + button.target.id).addClass("active");
+        $("#" + button.currentTarget.id).addClass("active");
         $("#apply-param").prop("disabled", false);
     } else {
         $("#apply-param").prop("disabled", true);
@@ -138,7 +138,7 @@ class OptimizationSettingsDialog {
         $("#daint-runtime").val("120m");
         $("#sa-daint-gen-max").val(2)
         $("#sa-daint-offspring").val(10)
-        $("#sa-daint-node-num").val(6);
+        $("#sa-daint-node-num").val(3);
         $("#sa-daint-core-num").val(24);
         $("#sa-daint-runtime").val(2);
         $("#username_submit").val("");
@@ -148,6 +148,11 @@ class OptimizationSettingsDialog {
         $("#nsg-node-num").val(1);
         $("#nsg-core-num").val(2);
         $("#nsg-runtime").val(2);
+        $("#sa-nsg-gen-max").val(2)
+        $("#sa-nsg-offspring").val(10)
+        $("#sa-nsg-node-num").val(1);
+        $("#sa-nsg-core-num").val(2);
+        $("#sa-nsg-runtime").val(2);
     }
 
     static loadSettings(jObj) {
@@ -174,6 +179,12 @@ class OptimizationSettingsDialog {
                 $("#nsg-node-num").val(jObj["node-num"]);
                 $("#nsg-core-num").val(jObj["core-num"]);
                 $("#nsg-runtime").val(jObj.runtime);
+            } else if (jObj.hpc == "SA-NSG") {
+                $("#sa-nsg-gen-max").val(jObj["gen-max"]);
+                $("#sa-ngs-offspring").val(jObj.offspring);
+                $("#sa-nsg-node-num").val(jObj["node-num"]);
+                $("#sa-nsg-core-num").val(jObj["core-num"]);
+                $("#sa-nsg-runtime").val(jObj.runtime);
             }
         }
     }
@@ -221,6 +232,14 @@ class OptimizationSettingsDialog {
                 data["password_submit"] = nsgPass.val();
             }             
         }
+        if (hpc == "SA-NSG") {
+            data["gen-max"] = $("#sa-nsg-gen-max").val();
+            data["offspring"] = $("#sa-nsg-offspring").val();
+            data["node-num"] = $("#sa-nsg-node-num").val();
+            data["core-num"] = $("#sa-nsg-core-num").val();
+            data["runtime"] = $("#sa-nsg-runtime").val();
+        }
+        
         return data;
     }
 
@@ -250,13 +269,20 @@ class OptimizationSettingsDialog {
             formData.append("offspring", $("#nsg-offspring").val());
             formData.append("node-num", $("#nsg-node-num").val());
             formData.append("core-num", $("#nsg-core-num").val());
-            formData.append("runtime", $("#nsg-gen-max").val());
+            formData.append("runtime", $("#nsg-runtime").val());
             if (!$("#username_submit").hasClass("is-valid")) {
                 formData.append("username_submit", $("#username_submit").val());
             }
             if (!$("#password_submit").hasClass("is-valid")) {
                 formData.append("password_submit", $("#password_submit").val());
             }
+        }
+        if (hpc == "SA-NSG") {
+            formData.append("gen-max", $("#sa-nsg-gen-max").val());
+            formData.append("offspring", $("#sa-nsg-offspring").val());
+            formData.append("node-num", $("#sa-nsg-node-num").val());
+            formData.append("core-num", $("#sa-nsg-core-num").val());
+            formData.append("runtime", $("#sa-nsg-runtime").val());
         }
 
         if (Log.enabled) {

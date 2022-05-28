@@ -197,9 +197,6 @@
             <div class="row">
                 <div class="mb-3">
                     <label id="uploadFormLabel" for="formFile" class="form-label"></label>
-                    <div id="uploadImg">
-                        <img src="{% static 'hhnb/img/expected_sim_zip.jpg' %}" alt="Expected sim zip file">
-                    </div>
                     <input id="formFile" name="formFile" type="file" class="form-control">
                 </div>
             </div>
@@ -223,7 +220,7 @@
                         <div class="accordion-item">
                             <h2 id="DAINT-CSCS" class="accordion-header">
                                 <button type="button" id="accordionDaint" name="DAINT-CSCS" class="accordion-button hpc collapsed" data-bs-toggle="collapse" data-bs-target="#daintCollapse" aria-expanded="false" aria-controls="daintCollapse">
-                                    CSCS-DAINT
+                                    <b>CSCS-DAINT</b>&emsp;<i>CSCS Piz Daint</i> 
                                 </button>
                             </h2> 
                             <div id="daintCollapse" class="accordion-collapse collapse" aria-labelledby="DAINT-CSCS" data-bs-parent="#hpcChooserParams">
@@ -299,11 +296,11 @@
                         </div>
                         <div class="accordion-item">
                             <h2 id="SA-CSCS" class="accordion-header">
-                                <button type="button" id="accordionSADaint" name="SA-CSCS" class="accordion-button hpc collapsed" data-bs-toggle="collapse" data-bs-target="#serviceAccountCollapse" aria-expanded="false" aria-controls="serviceAccountCollapse">
-                                    CSCS-DAINT Service Account
+                                <button type="button" id="accordionSADaint" name="SA-CSCS" class="accordion-button hpc collapsed tab4" data-bs-toggle="collapse" data-bs-target="#serviceAccountDAINTCollapse" aria-expanded="false" aria-controls="serviceAccountDAINTCollapse">
+                                    <b>CSCS-DAINT-SA</b>&emsp;<i>CSCS PizDaint on Service Account</i>
                                 </button>
                             </h2>
-                            <div id="serviceAccountCollapse" class="accordion-collapse collapse" aria-labelledby="SA-CSCS" data-bs-parent="#hpcChooserParams">
+                            <div id="serviceAccountDAINTCollapse" class="accordion-collapse collapse" aria-labelledby="SA-CSCS" data-bs-parent="#hpcChooserParams">
                                 <div class="hpc-param-chooser container">
                                     <div class="row">
                                         <div class="col">
@@ -368,7 +365,7 @@
                         <div class="accordion-item">
                             <h2 id="NSG" class="accordion-header">
                                 <button type="button" id="accordionNSG" name="NSG" class="accordion-button hpc collapsed" data-bs-toggle="collapse" data-bs-target="#nsgCollapse" aria-expanded="false" aria-controls="nsgCollapse">
-                                    NSG - NeuroScience Gateway
+                                    <b>NSG</b>&emsp;<i>NeuroScience Gateway</i>
                                 </button>
                             </h2>
                             <div id="nsgCollapse" class="accordion-collapse collapse" aria-labelledby="NSG" data-bs-parent="#hpcChooserParams">
@@ -446,6 +443,62 @@
                                 </div>
                             </div>
                         </div>
+                        <!--<div class="accordion-item">
+                            <h2 id="SA-NSG" class="accordion-header">
+                                <button type="button" id="accordionSANSG" name="SA-NSG" class="accordion-button hpc collapsed" data-bs-toggle="collapse" data-bs-target="#serviceAccountNSGCollapse" aria-expanded="false" aria-controls="serviceAccountNSGCollapse">
+                                    <b>NSG-SA</b>&emsp;<i>NeuroScience Gateway on Service Account</i>
+                                </button>
+                            </h2>
+                            <div id="serviceAccountNSGCollapse" class="accordion-collapse collapse" aria-labelledby="SA-NSG" data-bs-parent="#hpcChooserParams">
+                                <div class="hpc-param-chooser container">
+                                    <div class="row">
+                                        <div class="col">
+                                            <div class="card input-card">
+                                                <div class="card-header input-card-header">Algorithm Parameters</div>
+                                                <div class="card-body ">
+                                                    <div class="input-group">
+                                                            <span class="input-group-text" title="Number of generation (max 60)"># Gen</span>
+                                                        <input type="number" class="form-control small-placeholder" name="gen-max" id="sa-nsg-gen-max" title="Number of generation (max 60)" placeholder="Number of generation (max 60)" step="1" min="1" max="60">
+                                                    </div>
+                                                    <br>
+                                                    <div class="input-group">
+                                                            <span class="input-group-text" title="Offspring size">Offspring</span>
+                                                        <input type="number" class="form-control" name="offspring" id="sa-nsg-offspring" title="Offspring size" placeholder="Offspring size" step="1" min="1" max="60">
+                                                    </div>
+                                                    <br>
+                                                    <div class="input-group" style="visibility: hidden;">
+                                                            <span class="input-group-text"></span>
+                                                        <input class="form-control">
+                                                    </div>
+                                                        
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col">
+                                            <div class="card input-card">
+                                                <div class="card-header input-card-header">Optimization Run Parameters</div>
+                                                <div class="card-body">
+                                                    <div class="input-group">
+                                                            <span class="input-group-text" title="Number of nodes"># Nodes</span>
+                                                        <input type="number" class="form-control small-placeholder" name="node-num" id="sa-nsg-node-num" title="Number of nodes" placeholder="Number of nodes" value="6" step="1" min="1" required>
+                                                    </div>    
+                                                    <br>
+                                                    <div class="input-group">
+                                                            <span class="input-group-text" title="Number of cores"># Cores</span>
+                                                        <input type="number" class="form-control small-placeholder" name="core-num" id="sa-nsg-core-num" title="Number of cores" placeholder="Number of cores" value="24" step="1" min="1" required>
+                                                    </div>   
+                                                    <br>
+                                                    <div class="input-group">
+                                                            <span class="input-group-text" title="Runtime">Runtime</span>
+                                                        <input type="" class="form-control small-placeholder" name="runtime" id="sa-nsg-runtime" title="Runtime" placeholder="Runtime" value="2" required>
+                                                    </div>  
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>        
+                                </div>
+                            </div>
+                        </div> -->
                     </div>
                 </div>
                 <br>
@@ -466,9 +519,10 @@
         <div class="container">
             <div class="row">
                 <div id="hpcSource" class="list-group list-group-horizontal">
-                    <button type="button" id="jobsDaint" name="DAINT-CSCS" class="jobs-unicore list-group-item fetch-jobs list-group-item-action">CSCS-DAINT</button>
-                    <button type="button" id="jobsSADaint" name="SA-CSCS" class="jobs-unicore list-group-item fetch-jobs list-group-item-action">CSCS-DAINT<br>Service Account</button>
-                    <button type="button" id="jobsNSG" name="NSG" class="list-group-item fetch-jobs list-group-item-action">NSG<br>NeuroScience Gateway</button>
+                    <button type="button" id="jobsDaint" name="DAINT-CSCS" class="jobs-unicore list-group-item fetch-jobs list-group-item-action"><b>CSCS-PizDaint</b></button>
+                    <button type="button" id="jobsSADaint" name="SA-CSCS" class="jobs-unicore list-group-item fetch-jobs list-group-item-action"><b>CSCS-PizDaint<br>Service Account</b></button>
+                    <button type="button" id="jobsNSG" name="NSG" class="list-group-item fetch-jobs list-group-item-action"><b>NSG<br>NeuroScience Gateway</b></button>
+                    <!-- <button type="button" id="jobsSANSG" name="SA-NSG" class="jobs-unicore list-group-item fetch-jobs list-group-item-action"><b>NSG<br>Service Account</b></button> -->
                 </div>
             </div>
             <div class="row-separator"></div>

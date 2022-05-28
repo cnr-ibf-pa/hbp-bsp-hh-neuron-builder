@@ -65,14 +65,18 @@ class JobHandler:
         pass
 
     def __init__(self):
-        self._SA_DAINT_JOB_URL = 'https://bspsa.cineca.it/jobs/pizdaint/hhnb_daint_cscs/'
-        self._SA_DAINT_FILES_URL = 'https://bspsa.cineca.it/files/pizdaint/hhnb_daint_cscs/'
+        self._SA_ROOT_URL = 'https://bspsa.cineca.it/'
+        self._SA_DAINT_JOB_URL = self._SA_ROOT_URL + 'jobs/pizdaint/hhnb_daint_cscs/'
+        self._SA_DAINT_FILES_URL = self._SA_ROOT_URL + 'files/pizdaint/hhnb_daint_cscs/'
+        self._SA_NSG_JOB_URL = self._SA_ROOT_URL + 'jobs/nsg/hhnb_nsg/'
+        self._SA_NSG_FILES_URL = self._SA_ROOT_URL + 'files/nsg/hhnb_nsg/'
         self._NSG_URL = 'https://nsgr.sdsc.edu:8443/cipresrest/v1'
         self._DAINT_URL = 'https://brissago.cscs.ch:8080/DAINT-CSCS/rest/core'
         
         self._DAINT_CSCS = 'DAINT-CSCS'
         self._SA_CSCS = 'SA-CSCS'
         self._NSG = 'NSG'
+        self._SA_NSG = 'SA-NSG'
         self._TAGS = ['hhnb']
 
     def _get_nsg_headers(self):
@@ -276,15 +280,21 @@ class JobHandler:
         storage = job.working_dir
         return storage.listdir()
 
-    def _get_service_account_payload(self, command, node_num, core_num, runtime, title):
-        return {
-            'command': command,
+    def _get_service_account_payload(self, node_num, core_num, runtime, title, command=None, tool=None):
+        payload = {
             'node_number': node_num,
             'core_number': core_num,
             'runtime': runtime,
             'title': title,
             'expiration_time': get_expiration_time()
         }
+        if command:
+            payload.update({'command': command})
+        elif tool:
+            payload.update({'tool': tool})
+
+        logger.debug(f'Service Account payload: {str(payload)}')
+        return payload
 
     def _get_service_account_headers(self, token, zip_name=None, payload=None):
         headers = {'Authorization': 'Bearer ' + token}
@@ -294,36 +304,60 @@ class JobHandler:
             headers.update({'payload': json.dumps(payload)})
         return headers
 
-    def _submit_on_service_account(self, token, zip_file, settings):
+    def _submit_on_service_account(self, hpc, token, zip_file, settings):
         zip_name = os.path.split(zip_file)[1]
         payload = self._get_service_account_payload(
-            command=self._get_unicore_command(zip_name),
+            command=self._get_unicore_command(zip_name) if hpc=='SA-CSCS' else None,
+            tool='BLUEPYOPT_EXPANSE' if hpc=='SA-NSG' else None,
             node_num=settings['node-num'],
             core_num=settings['core-num'],
             runtime=settings['runtime'],
             title=zip_name.split('.')[0]
-        )
+        ) 
+
         headers = self._get_service_account_headers(token, zip_name, payload)
         job_file = {'file': open(zip_file, 'rb')}
-        r = requests.post(url=self._SA_DAINT_JOB_URL, headers=headers, files=job_file)
+        
+        if hpc == self._SA_CSCS:
+            sa_endpoint = self._SA_DAINT_JOB_URL
+        elif hpc == self._SA_NSG:
+            sa_endpoint =self._SA_NSG_JOB_URL
+        r = requests.post(url=sa_endpoint, headers=headers, files=job_file)
         logger.debug(f'requests: {r.url} with headers: {r.headers} and files: {job_file}')
         if r.status_code >= 400:            
             logger.error(f'CODE: {r.status_code}, CONTENT: {r.content}')
             return ResponseUtil.ko_response(r.text)
-        return ResponseUtil.ok_response(messages.JOB_SUBMITTED.format('SA-CSCS'))
 
-    def _get_service_account_jobs(self, token):
+        message = 'Job submitted'
+        if hpc == self._SA_CSCS:
+            message = messages.JOB_SUBMITTED.format('SA-CSCS')
+        elif hpc == self._SA_NSG:
+            message = messages.JOB_SUBMITTED.format('SA-NSG') 
+        return ResponseUtil.ok_response(message)
+
+    def _get_service_account_jobs(self, hpc, token):
         headers = self._get_service_account_headers(token)
-        r = requests.get(url=self._SA_DAINT_JOB_URL, headers=headers)
+        if hpc == self._SA_CSCS:
+            sa_endpoint = self._SA_DAINT_JOB_URL
+        elif hpc == self._SA_NSG:
+            sa_endpoint = self._SA_NSG_JOB_URL
+        r = requests.get(url=sa_endpoint, headers=headers)
         logger.debug(f'requests: {r.url} with headers: {r.headers}')
         if r.status_code != 200:
             logger.error(f'CODE: {r.status_code}, CONTENT: {r.content}')
             raise self.ServiceAccountException(r.content, r.status_code)
         return r.json()
 
-    def _get_service_account_job_results(self, token, job_id):
+    def _get_service_account_job_results(self, hpc, token, job_id):
         headers = self._get_service_account_headers(token)
-        r = requests.get(url=self._SA_DAINT_FILES_URL + job_id + '/', headers=headers)
+        
+        if hpc == self._SA_CSCS:
+            sa_endpoint = self._SA_DAINT_FILES_URL + job_id + '/'
+        elif hpc == self._SA_NSG:
+            sa_endpoint = self._SA_NSG_FILES_URL + job_id + '/'
+        
+        r = requests.get(url=sa_endpoint, headers=headers)
+
         logger.debug(f'requests: {r.url} with headers: {r.headers}')
         if r.status_code >= 400:
             logger.error(f'CODE: {r.status_code}, CONTENT: {r.content}')
@@ -331,7 +365,14 @@ class JobHandler:
         if r.status_code != 200:
             logger.error(f'CODE: {r.status_code}, CONTENT: {r.content}')
             raise self.ServiceAccountException(r.content, r.status_code)
-        return r.json()
+        
+        file_list = []
+        for f in r.json():
+            if hpc == self._SA_CSCS:
+                file_list.append({'id': f, 'name': f})
+            elif hpc == self._SA_NSG:
+                file_list.append({'id': f['fileid'], 'name': f['filename']})
+        return file_list
           
 
     @classmethod
@@ -345,8 +386,8 @@ class JobHandler:
         elif settings['hpc'] == job_handler._DAINT_CSCS:
             return job_handler._submit_on_unicore(job_handler._DAINT_CSCS, user.get_token(),
                                                   zip_file, settings)
-        elif settings['hpc'] == job_handler._SA_CSCS:
-            return job_handler._submit_on_service_account(user.get_token(),
+        elif settings['hpc'] == job_handler._SA_CSCS or settings['hpc'] == job_handler._SA_NSG:
+            return job_handler._submit_on_service_account(settings['hpc'], user.get_token(),
                                                           zip_file, settings)
         return ResponseUtil.ko_response(messages.GENERAL_ERROR)
        
@@ -372,8 +413,8 @@ class JobHandler:
                 }
                 jobs.update(job)
 
-        elif hpc == job_handler._SA_CSCS:
-            raw_jobs = job_handler._get_service_account_jobs(user.get_token())
+        elif hpc == job_handler._SA_CSCS or hpc == job_handler._SA_NSG:
+            raw_jobs = job_handler._get_service_account_jobs(hpc, user.get_token())
             for raw_job in raw_jobs:
                 job = {raw_job['job_id']: {
                     'workflow_id': raw_job['title'],
@@ -382,7 +423,7 @@ class JobHandler:
                 }}
                 if not is_job_expired(job[raw_job['job_id']]):
                     jobs.update(job)
-
+        
         # sort jobs from last to first
         ordered_jobs = OrderedDict(sorted(jobs.items(),
                                           key=lambda x: x[1]['date'],
@@ -406,18 +447,24 @@ class JobHandler:
                 'username': user.get_nsg_user().get_username(),
                 'password': user.get_nsg_user().get_password()
             }
+        
         if hpc == job_handler._DAINT_CSCS:
             raw_file_list = job_handler._get_unicore_job_results(hpc, user.get_token(), job_id)
             file_list = {
                 'root_url': 'unicore', 
                 'file_list': raw_file_list
             }
-        if hpc == job_handler._SA_CSCS:
-            raw_file_list = job_handler._get_service_account_job_results(user.get_token(), job_id)
+        
+        if hpc == job_handler._SA_CSCS or hpc == job_handler._SA_NSG:
+            raw_file_list = job_handler._get_service_account_job_results(hpc, user.get_token(), job_id)
+            if hpc == job_handler._SA_CSCS:
+                root_url = job_handler._SA_DAINT_FILES_URL + job_id
+            elif hpc == job_handler._SA_NSG:
+                root_url = job_handler._SA_NSG_FILES_URL + job_id + '/'
             file_list = {
-                'root_url': job_handler._SA_DAINT_FILES_URL + job_id, 
+                'root_url': root_url, 
                 'file_list': raw_file_list,
                 'headers': {'Authorization': 'Bearer ' + user.get_token()}
             }
-        #logger.info(LOG_ACTION.format(user, 'file_list: %s' % file_list))
+            
         return file_list
