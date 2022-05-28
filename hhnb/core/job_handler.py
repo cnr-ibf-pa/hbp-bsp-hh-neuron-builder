@@ -466,6 +466,5 @@ class JobHandler:
                 'file_list': raw_file_list,
                 'headers': {'Authorization': 'Bearer ' + user.get_token()}
             }
-        
-        logger.info(LOG_ACTION.format(user, 'file_list: %s' % file_list))
+            
         return file_list
