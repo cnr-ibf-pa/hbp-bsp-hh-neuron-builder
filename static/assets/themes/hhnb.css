@@ -1799,3 +1799,20 @@ i.disabled:hover {
 #external_link {
     color: white;
 }
+
+#js-banner {
+    position: relative;
+    margin: auto;
+    top: 0;
+    left: 0;
+    transform: translateY(20%);
+    z-index: 1000;
+}
+
+.dimmed-background {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    z-index: 1000;
+    background-color: #000000cc;
+}
