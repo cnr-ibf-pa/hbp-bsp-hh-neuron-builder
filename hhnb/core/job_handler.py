@@ -77,6 +77,7 @@ class JobHandler:
         self._SA_CSCS = 'SA-CSCS'
         self._NSG = 'NSG'
         self._SA_NSG = 'SA-NSG'
+        self._NSG_TOOL = 'BLUEPYOPT_EXPANSE'
         self._TAGS = ['hhnb']
 
     def _get_nsg_headers(self):
@@ -86,7 +87,7 @@ class JobHandler:
 
     def _get_nsg_payload(self, job_name, core_num, node_num, runtime):
         payload = {
-            'tool': 'BLUEPYOPT_EXPANSE',
+            'tool': self._NSG_TOOL,
             'metadata.statusEmail': 'false',
             'metadata.clientJobId': job_name,
             'vparam.number_cores_': core_num,
@@ -291,8 +292,8 @@ class JobHandler:
         if command:
             payload.update({'command': command})
         elif tool:
-            payload.update({'tool': tool})
-
+            payload.update({'tool': tool, 'init_file': 'init.py'})
+        
         logger.debug(f'Service Account payload: {str(payload)}')
         return payload
 
@@ -308,7 +309,7 @@ class JobHandler:
         zip_name = os.path.split(zip_file)[1]
         payload = self._get_service_account_payload(
             command=self._get_unicore_command(zip_name) if hpc=='SA-CSCS' else None,
-            tool='BLUEPYOPT_EXPANSE' if hpc=='SA-NSG' else None,
+            tool=self._NSG_TOOL if hpc=='SA-NSG' else None,
             node_num=settings['node-num'],
             core_num=settings['core-num'],
             runtime=settings['runtime'],
@@ -324,7 +325,7 @@ class JobHandler:
             sa_endpoint =self._SA_NSG_JOB_URL
         r = requests.post(url=sa_endpoint, headers=headers, files=job_file)
         logger.debug(f'requests: {r.url} with headers: {r.headers} and files: {job_file}')
-        if r.status_code >= 400:            
+        if r.status_code >= 400:
             logger.error(f'CODE: {r.status_code}, CONTENT: {r.content}')
             return ResponseUtil.ko_response(r.text)
 
