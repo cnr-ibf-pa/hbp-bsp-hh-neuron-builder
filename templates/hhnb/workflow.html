@@ -19,9 +19,7 @@
 <div class="page">
     <div id="cellOptimizationBlock" class="container main-content workflow-content">
         <nav class="navbar main-content-title">
-            <!-- <div class="col"></div> -->
             <div class="title col">Cell Optimization</div>
-            <!-- <div class="col flex-end"><i class="fas fa-info-circle fa-lg white margin-right-1"></i></div> -->
         </nav>
         <div class="row">
             <div class="col">
@@ -32,7 +30,7 @@
                             <div class="box-title">Feature extraction</div>
                         </div>
                         <div class="col flex-grow-1 flex-end">
-                            <i class="far fa-question-circle fa-lg black" 
+                            <i class="far fa-question-circle fa-lg black"
                                 title="Click the 'Extract features' button to compute electrophysiological features (from the HBP dataset or your own experimental files) to be used in your optimization process. You can also upload your own features.json and protocols.json files by clicking on 'Upload file'">
                             </i>
                         </div>
@@ -54,7 +52,7 @@
                             <button id="del-feat-btn" title="Delete feature files" type="button" class="delete-btn btn btn-link" disabled>
                                 Delete
                             </button>
-                        </div>                        
+                        </div>
                     </div>
                 </div>
                 <div id="feat-bar" class="row status-bar status-bar-text red"></div>
@@ -73,8 +71,8 @@
                                 title="Choose a model from the HBP dataset by clicking the 'Choose from database' button. Alternative, you can upload a properly formatted .zip file containing the model folders/files. For further details, please refer to the HBP Brain Simulation Platform Guidebook">
                             </i>
                         </div>
-                    </div>         
-                    <br>       
+                    </div>
+                    <br>
                     <div class="row">
                         <button type="button" id="opt-db-hpc-btn" class="btn workflow-btn" title="Use optimization files from database">Choose from Model Catalog</button>
                     </div>
@@ -93,7 +91,7 @@
                         <div class="col flex-center">
                             <button id="del-opt-btn" title="Delete optimization files" type="button" class="delete-btn btn btn-link" disabled>
                                 Delete
-                            </button>                        
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -112,7 +110,7 @@
                             </i>
                         </div>
                     </div>
-                    <br>                    
+                    <br>
                     <div class="row">
                         <button type="button" id="opt-set-btn" class="btn workflow-btn x2">Set parameters/Choose HPC</button>
                     </div>
@@ -125,7 +123,7 @@
                     </div>
                 </div>
                 <div id="opt-param-bar" class="row status-bar status-bar-text red"></div>
-            </div> 
+            </div>
         </div>
         <div class="row">
             <button id="launch-opt-btn" type="button" class="btn main-panel-btn extends" disabled>Run Optimization</button>
@@ -169,12 +167,12 @@
                         <div class="col flex-center">
                             <button id="down-sim-btn" title="Download model files" type="button" class="download-btn btn btn-link"
                                 disabled>Download analysis
-                            </button>                        
+                            </button>
                         </div>
                         <div class="col flex-center">
                             <button id="del-sim-btn" title="Delete optimization files" type="button" class="delete-btn btn btn-link"
                                 disabled>Delete
-                            </button>                        
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -190,7 +188,7 @@
 </div>
 
 <div id="overlaywrapper" class="overlay-wrapper">
-    
+
     <div id="overlayupload" class="container overlay-content">
         <form id="uploadForm" action="" method="POST" enctype="multipart/form-data">
             {% csrf_token %}
@@ -220,9 +218,9 @@
                         <div class="accordion-item">
                             <h2 id="DAINT-CSCS" class="accordion-header">
                                 <button type="button" id="accordionDaint" name="DAINT-CSCS" class="accordion-button hpc collapsed" data-bs-toggle="collapse" data-bs-target="#daintCollapse" aria-expanded="false" aria-controls="daintCollapse">
-                                    <b>CSCS-DAINT</b>&emsp;<i>CSCS Piz Daint</i> 
+                                    <b>CSCS-DAINT</b>&emsp;<i>CSCS Piz Daint</i>
                                 </button>
-                            </h2> 
+                            </h2>
                             <div id="daintCollapse" class="accordion-collapse collapse" aria-labelledby="DAINT-CSCS" data-bs-parent="#hpcChooserParams">
                                 <div class="hpc-param-chooser container">
                                     <div class="row">
@@ -233,7 +231,7 @@
                                             <input type="text" class="form-control" id="daint_project_id" placeholder="Set project" required>
                                         </div>
                                     </div>
-                                    <div class="row row-separator"></div> 
+                                    <div class="row row-separator"></div>
                                     <div class="row">
                                         <div class="col">
                                             <div class="card input-card">
@@ -259,7 +257,7 @@
                                                         </div>
                                                         <input class="form-control">
                                                     </div>
-                                                        
+
                                                 </div>
                                             </div>
                                         </div>
@@ -272,25 +270,25 @@
                                                             <span class="input-group-text" title="Number of nodes"># Nodes</span>
                                                         <!-- </div> -->
                                                         <input type="number" class="form-control small-placeholder" name="node-num" id="daint-node-num" title="Number of nodes" placeholder="Number of nodes" default="6" step="1" min="1" required>
-                                                    </div>    
+                                                    </div>
                                                     <br>
                                                     <div class="input-group">
                                                         <!-- <div class="input-group-prepend"> -->
                                                             <span class="input-group-text" title="Number of cores"># Cores</span>
                                                         <!-- </div> -->
                                                         <input type="number" class="form-control small-placeholder" name="core-num" id="daint-core-num" title="Number of cores" placeholder="Number of cores" value="24" step="1" min="1" required>
-                                                    </div>   
+                                                    </div>
                                                     <br>
                                                     <div class="input-group">
                                                         <!-- <div class="input-group-prepend"> -->
                                                             <span class="input-group-text" title="Runtime">Runtime</span>
                                                         <!-- </div> -->
                                                         <input type="text" class="form-control small-placeholder" name="runtime" id="daint-runtime" title="Runtime" placeholder="Runtime" value="120m" required>
-                                                    </div>  
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>        
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -327,7 +325,7 @@
                                                         <!-- </div> -->
                                                         <input class="form-control">
                                                     </div>
-                                                        
+
                                                 </div>
                                             </div>
                                         </div>
@@ -340,25 +338,25 @@
                                                             <span class="input-group-text" title="Number of nodes"># Nodes</span>
                                                         <!-- </div> -->
                                                         <input type="number" class="form-control small-placeholder" name="node-num" id="sa-daint-node-num" title="Number of nodes" placeholder="Number of nodes" value="6" step="1" min="1" required>
-                                                    </div>    
+                                                    </div>
                                                     <br>
                                                     <div class="input-group">
                                                         <!-- <div class="input-group-prepend"> -->
                                                             <span class="input-group-text" title="Number of cores"># Cores</span>
                                                         <!-- </div> -->
                                                         <input type="number" class="form-control small-placeholder" name="core-num" id="sa-daint-core-num" title="Number of cores" placeholder="Number of cores" value="24" step="1" min="1" required>
-                                                    </div>   
+                                                    </div>
                                                     <br>
                                                     <div class="input-group">
                                                         <!-- <div class="input-group-prepend"> -->
                                                             <span class="input-group-text" title="Runtime">Runtime</span>
                                                         <!-- </div> -->
                                                         <input type="" class="form-control small-placeholder" name="runtime" id="sa-daint-runtime" title="Runtime" placeholder="Runtime" value="2" required>
-                                                    </div>  
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>        
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -382,7 +380,7 @@
                                             <input type="password" class="form-control" id="password_submit" name="password_submit" placeholder="NSG Password" required>
                                         </div>
                                     </div>
-                                    <div class="row row-separator"></div> 
+                                    <div class="row row-separator"></div>
                                     <div class="row">
                                         <div class="col">
                                             <div class="card input-card">
@@ -408,7 +406,7 @@
                                                         <!-- </div> -->
                                                         <input class="form-control">
                                                     </div>
-                                                        
+
                                                 </div>
                                             </div>
                                         </div>
@@ -421,29 +419,29 @@
                                                             <span class="input-group-text" title="Number of nodes"># Nodes</span>
                                                         <!-- </div> -->
                                                         <input type="number" class="form-control small-placeholder" name="node-num" id="nsg-node-num" title="Number of nodes" placeholder="Number of nodes" value="1" step="1" min="1" required>
-                                                    </div>    
+                                                    </div>
                                                     <br>
                                                     <div class="input-group">
                                                         <!-- <div class="input-group-prepend"> -->
                                                             <span class="input-group-text" title="Number of cores"># Cores</span>
                                                         <!-- </div> -->
                                                         <input type="number" class="form-control small-placeholder" name="core-num" id="nsg-core-num" title="Number of cores" placeholder="Number of cores" value="2" step="1" min="1" required>
-                                                    </div>   
+                                                    </div>
                                                     <br>
                                                     <div class="input-group">
                                                         <!-- <div class="input-group-prepend"> -->
                                                             <span class="input-group-text" title="Runtime">Runtime</span>
                                                         <!-- </div> -->
                                                         <input type="number" class="form-control small-placeholder" name="runtime" id="nsg-runtime" title="Runtime" placeholder="Runtime" value="2" required>
-                                                    </div>  
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>        
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        <!--<div class="accordion-item">
+                        <div class="accordion-item">
                             <h2 id="SA-NSG" class="accordion-header">
                                 <button type="button" id="accordionSANSG" name="SA-NSG" class="accordion-button hpc collapsed" data-bs-toggle="collapse" data-bs-target="#serviceAccountNSGCollapse" aria-expanded="false" aria-controls="serviceAccountNSGCollapse">
                                     <b>NSG-SA</b>&emsp;<i>NeuroScience Gateway on Service Account</i>
@@ -470,7 +468,7 @@
                                                             <span class="input-group-text"></span>
                                                         <input class="form-control">
                                                     </div>
-                                                        
+
                                                 </div>
                                             </div>
                                         </div>
@@ -481,24 +479,24 @@
                                                     <div class="input-group">
                                                             <span class="input-group-text" title="Number of nodes"># Nodes</span>
                                                         <input type="number" class="form-control small-placeholder" name="node-num" id="sa-nsg-node-num" title="Number of nodes" placeholder="Number of nodes" value="6" step="1" min="1" required>
-                                                    </div>    
+                                                    </div>
                                                     <br>
                                                     <div class="input-group">
                                                             <span class="input-group-text" title="Number of cores"># Cores</span>
                                                         <input type="number" class="form-control small-placeholder" name="core-num" id="sa-nsg-core-num" title="Number of cores" placeholder="Number of cores" value="24" step="1" min="1" required>
-                                                    </div>   
+                                                    </div>
                                                     <br>
                                                     <div class="input-group">
                                                             <span class="input-group-text" title="Runtime">Runtime</span>
                                                         <input type="" class="form-control small-placeholder" name="runtime" id="sa-nsg-runtime" title="Runtime" placeholder="Runtime" value="2" required>
-                                                    </div>  
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>        
+                                    </div>
                                 </div>
                             </div>
-                        </div> -->
+                        </div>
                     </div>
                 </div>
                 <br>
@@ -515,14 +513,14 @@
     </div>
 
     <!-- fetch jobs div -->
-    <div id="overlayjobs" class="overlay-content"> 
+    <div id="overlayjobs" class="overlay-content">
         <div class="container">
             <div class="row">
                 <div id="hpcSource" class="list-group list-group-horizontal">
                     <button type="button" id="jobsDaint" name="DAINT-CSCS" class="jobs-unicore list-group-item fetch-jobs list-group-item-action"><b>CSCS-PizDaint</b></button>
                     <button type="button" id="jobsSADaint" name="SA-CSCS" class="jobs-unicore list-group-item fetch-jobs list-group-item-action"><b>CSCS-PizDaint<br>Service Account</b></button>
                     <button type="button" id="jobsNSG" name="NSG" class="list-group-item fetch-jobs list-group-item-action"><b>NSG<br>NeuroScience Gateway</b></button>
-                    <!-- <button type="button" id="jobsSANSG" name="SA-NSG" class="jobs-unicore list-group-item fetch-jobs list-group-item-action"><b>NSG<br>Service Account</b></button> -->
+                    <button type="button" id="jobsSANSG" name="SA-NSG" class="jobs-unicore list-group-item fetch-jobs list-group-item-action"><b>NSG<br>Service Account</b></button>
                 </div>
             </div>
             <div class="row-separator"></div>
@@ -673,7 +671,7 @@
 
     <div id="overlaywrapmodreg" class="overlay-content ">
         <div class="container reg-model-content">
-            <form id="modelRegisterForm" method="POST">{% csrf_token %}   
+            <form id="modelRegisterForm" method="POST">{% csrf_token %}
                     <div class="card">
                         <div class="card-header"><b>Register Model in Model Catalog</b></div>
                         <div class="card-body">
@@ -752,7 +750,7 @@
                                                                 <input class="form-check-input" type="checkbox" id="modelPrivate" checked="true" style="margin-left: auto; width: 2.8em; height: 1.2em;">
                                                                 <label class="form-check-label" for="modelPrivate" id="modelPrivateValue">Private</label>
                                                             </div>
-                                                        </div>  
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -836,7 +834,7 @@
 
 
 </div>
-    
+
 <!-- Modal -->
 <div id="modalHHF" class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="false">
     <div class="modal-dialog" style="max-width: 650px">![Screenshot from 2021-12-16 10-49-09](https://user-images.githubusercontent.com/44343476/146348432-fdb4a866-de34-4175-bfd5-7dca51c14596.png)
@@ -847,9 +845,6 @@
                 <h5 class="modal-title" id="staticBackdropLabel">Model file manager</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <!-- <div class="modal-body">
-                The single cell model optimization process, set in the HH-Neuron Builder workflows, relies on the Python-based <a href="https://pypi.org/project/bluepyopt/" target="_blank">BluePyOpt</a> optimization suite.<br><br>The model to be optimized, against electrophysiological data provided by the user, is made up of several files and folders relative to both the NEURON model itself and the BluePyOpt optimization process. <br>More specifically, the NEURON model must comprise the 'mechanisms' (i.e., NEURON <i>.mod</i> files) and a morphology file (in <i>.asc</i> format).<br>These files combines with the BluePyOpt specific routines to finalize the model optimization. More specifically the 'opt_neuron.py' script is launched and makes use of the 'template.py' and 'evaluator.py' modules, which in turn read the 'parameters.json', 'features.json' and 'protocols.json' files provided by the user.<br><br><b>In order to customize the model to be optimized you can click on 'View/Upload model files' in the 'Optimization files' panel and upload your own <i>.mod</i> and 'parameters.json' files</b> (you will be able to upload or generate the 'features.json' and 'protocols.json' files via the 'Feature extraction' panel). You will also be able to download all the other above mentioned files to get a gist of how the optimization workflow is implemented.<br><br>Please bear in mind that these are advanced funcionalities for power users. If you have any doubt on how to use these features, do not hesitate to contact us at <i>support [ at ] ebrains.eu</i>.
-            </div> -->
             <div class="modal-body">
                 The single cell model optimization process of the <b>Hodgkin Huxley Neuron Builder</b> relies on the Python-based <a href="https://pypi.org/project/bluepyopt/">BluePyOpt</a> optimization suite.<br><br>The model to be optimized is made up of several files and folders relative to both the <i>NEURON</i> model itself and the <i>BluePyOpt</i> optimization process.<br><br>More specifically, the <i>NEURON</i> model comprises the <i>mechanisms</i> (i.e., <i>NEURON .mod</i> files) and a morphology file (in <i>.asc</i> format). These files combines with the <i>BluePyOpt</i> specific routines (needed to finalize the model optimization) that are implemented following this workflow: the <i>opt_neuron.py</i> script is launched and imports the <i>template.py</i> and <i>evaluator.py</i> modules, which in turn read the <i>parameters.json</i>, <i>features.json</i> and <i>protocols.json</i> files.<br><br><b>In order to customize the model to be optimized, you can click on 'Manage files' in the 'Optimization files' panel and upload your own files (a filter is applied to exclusively allow the upload of relevant files -based on their extension- and prevent users to modify sensitive scripts) and/or modifying them when possible. From the same GUI, you will also be able to download any model file.</b><br><br>Please bear in mind that these are advanced functionalities for power users. If you have any doubt on how to use these features, do not hesitate to contact us at <a href="mailto:support@ebrains.eu">support@ebrains.eu</a>.
             </div>
@@ -891,7 +886,7 @@
                 </div>
                 <div class="col flex-center">
                     <button type="button" id="save-feature-files" class="btn main-panel-btn extends modal-btn" disabled="true">Save to workflow</button>
-                </div>  
+                </div>
             </div>
         </div>
     </div>
@@ -925,8 +920,11 @@
                     <button type="button" id="back-to-wf-btn" class="btn main-panel-btn extends modal-btn">Cancel</button>
                 </div>
                 <div class="col flex-center">
+                    <button type="button" id="reload-bluenaas" class="btn main-panel-btn extends modal-btn">Reload</button>
+                </div>
+                <div class="col flex-center">
                     <button type="button" id="reg-mod-main-btn" class="btn main-panel-btn extends modal-btn">Register in Model Catalog</button>
-                </div>  
+                </div>
             </div>
         </div>
     </div>
@@ -966,4 +964,3 @@
 
 
 {% endblock %}
-

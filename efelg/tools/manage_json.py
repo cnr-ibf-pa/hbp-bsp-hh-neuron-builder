@@ -62,9 +62,9 @@ def get_traces_abf(filename):
         if not (signal.analogsignals[0].units == pq.mV):
             signal.analogsignals[0].units = pq.mV
         voltage = np.array(signal.analogsignals[0]).astype(np.float64)
-        voltage = [k[0] for k in voltage]
+        voltage = [round(k[0], 3) for k in voltage]
         stimulus = stim[i][3]
-        label = "{0:.2f}".format(np.around(stimulus, decimals=3))
+        label = str(np.float64(stimulus))
         traces.update({label: voltage})
         tonoff.update({label: {'ton': [stim[i][1]], 'toff': [stim[i][2]]}})
 

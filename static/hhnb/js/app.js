@@ -536,7 +536,7 @@ $(".jobs-unicore").on("click", (button) => {
 });
 
 $("#jobsNSG").on("click", (button) => {
-    let jButton = $("#" + button.target.id);
+    let jButton = $("#" + button.currentTarget.id);
     if (jButton.hasClass("clicked")) {
         return false;
     }
@@ -756,6 +756,7 @@ $("#checkNsgLoginButton").on("click", () => {
 
 
 /* ****************************** */
+
 var blueNaasModel = "";
 $("#run-sim-btn").on("click", () => {
     showLoadingAnimation("Uploading to BlueNaas...");
@@ -797,6 +798,20 @@ $("#back-to-wf-btn").on("click", () => {
 $("#reg-mod-main-btn").on("click", () => {
     $("#modalBlueNaasContainer").removeClass("show");
     ModelRegistrationDialog.open();
+})
+
+$("#reload-bluenaas").on("click", async () => {
+    var blueNaasModelUrl = $("#bluenaas-frame").attr("src");
+    $("#reload-bluenaas").blur();
+    $("#reload-bluenaas").prop("disabled", true);
+    $("#bluenaas-frame").attr("src", " ");
+    await sleep(100);
+    $("#bluenaas-frame").attr("src", blueNaasModelUrl);
+    $("#bluenaas-frame").on("load", () => {
+        if ( $("#bluenaas-frame").attr("src").startsWith("https://blue-naas-bsp-epfl.apps.hbp.eu")) {
+            $("#reload-bluenaas").prop("disabled", false);
+        }
+    });
 })
 
 $("#cancel-model-register-btn").on("click", () => {

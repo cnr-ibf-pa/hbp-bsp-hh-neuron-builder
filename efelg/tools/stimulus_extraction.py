@@ -16,8 +16,8 @@ def stim_feats_from_meta(crr_dict, num_segments):
         st = crr_dict['stimulus_start'][0]
         en = crr_dict['stimulus_end'][0]
         u = str(crr_dict['stimulus_unit'])
-        fa = float(format(crr_dict['stimulus_first_amplitude'][0], '.3f'))
-        inc = float(format(crr_dict['stimulus_increment'][0], '.3f'))
+        fa = float(format(crr_dict['stimulus_first_amplitude'][0], '.4f'))
+        inc = float(format(crr_dict['stimulus_increment'][0], '.4f'))
         ru = crr_dict['sampling_rate_unit'][0]
         r = crr_dict['sampling_rate'][0]
         if tu == 's': 
@@ -31,7 +31,7 @@ def stim_feats_from_meta(crr_dict, num_segments):
     for i in range(num_segments):
 
         # compute current stimulus amplitude
-        crr_val = float(format(fa + inc * float(format(i, '.3f')), '.3f'))
+        crr_val = float(format(fa + inc * float(format(i, '.4f')), '.4f'))
         crr_stim_feats = (ty, st, en, crr_val, u)
         # store current tuple
         all_stim_feats.append(crr_stim_feats)
@@ -82,7 +82,7 @@ def stim_feats_from_header(header):
                     stim_epochs[2]['fEpochInitLevel'] or
                         stim_epochs[0]['fEpochLevelInc'] != 
                         stim_epochs[2]['fEpochLevelInc'] or
-                        float(format(stim_epochs[0]['fEpochLevelInc'], '.3f')) 
+                        float(format(stim_epochs[0]['fEpochLevelInc'], '.4f')) 
                         != 0 or
                         (len(stim_ch_info) != 1 or stim_ch_info[0][2] != k)):
 
@@ -114,10 +114,10 @@ def stim_feats_from_header(header):
                     all_stim_info = []  # create array for all stimulus info
 
                     # step increment
-                    e_one_inc = float(format(e_one['fEpochLevelInc'], '.3f'))
+                    e_one_inc = float(format(e_one['fEpochLevelInc'], '.4f'))
                     # step initial level
                     e_one_init_level = float(format(e_one['fEpochInitLevel'], 
-                                                    '.3f'))  
+                                                    '.4f'))  
 
                     # for every episode, compute stimulus start, stimulus end, 
                     # stimulus value
@@ -127,8 +127,8 @@ def stim_feats_from_header(header):
                         en = st + e_one['lEpochInitDuration'] + \
                             e_one['lEpochDurationInc'] * epiNum
                         crr_val_full = float(format(e_one_init_level + 
-                                                    e_one_inc * epiNum, '.3f'))
-                        crr_val = float(format(crr_val_full, '.3f'))
+                                                    e_one_inc * epiNum, '.4f'))
+                        crr_val = float(format(crr_val_full, '.4f'))
                         st = 1/sampling_rate * st * 1e3
                         en = 1/sampling_rate * en * 1e3
                         all_stim_info.append((ty, st, en, crr_val, u))

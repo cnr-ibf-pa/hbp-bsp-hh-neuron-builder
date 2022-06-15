@@ -5,7 +5,6 @@ Log.enabled = true;
 
 const exc = sessionStorage.getItem("exc", null);
 
-
 function checkRefreshSession(response) {
     console.log(response);
     if (response.status === 403 && response.responseJSON.refresh_url) {
@@ -96,3 +95,10 @@ function uploadWorkflow() {
     // It will be triggered when a file will be selected
     input.addEventListener('change', onSelectFile, false);
 }
+
+$("#js-banner-button").on("click", () => {
+    window.sessionStorage.setItem("js-banner", true);
+    $('#js-banner').addClass('dismiss');
+    $('#js-banner-block').addClass('fade');
+    setTimeout(() => $('#js-banner-block').css('display', 'none'), 300);
+})
