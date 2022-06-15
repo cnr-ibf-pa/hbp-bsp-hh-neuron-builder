@@ -1807,6 +1807,10 @@ i.disabled:hover {
     left: 0;
     transform: translateY(20%);
     z-index: 1000;
+    transition: all 0.3s ease;
+}
+#js-banner.dismiss {
+    transform: translateY(-15%);
 }
 
 .dimmed-background {
@@ -1815,4 +1819,8 @@ i.disabled:hover {
     height: 100%;
     z-index: 1000;
     background-color: #000000cc;
+    transition: all 0.3s ease;
+}
+.dimmed-background-fade-out {
+    opacity: 0;
 }
