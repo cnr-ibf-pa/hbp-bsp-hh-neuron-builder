@@ -372,40 +372,40 @@ def extract_features(request):
     }
     
    # launch the feature extraction process
-    # try:
-    main_results_folder = os.path.join(user_results_dir,
-                                        time_info + "_nfe_results")
-    print(main_results_folder, config)
-    extractor = bpefe.Extractor(main_results_folder, config)
-    extractor.create_dataset()
-    extractor.plt_traces()
-    if global_parameters_json['threshold'] != '':
-        extractor.extract_features(threshold=int(
-            global_parameters_json['threshold']))
-    else:
-        extractor.extract_features(threshold=-20)
-    extractor.mean_features()
-    extractor.plt_features()
-    extractor.feature_config_cells(version="legacy")
-    extractor.feature_config_all(version="legacy")
-    config["options"]["tolerance"] = \
-        config["options"]["tolerance"].tolist()
-    with open(os.path.join(main_results_folder, "config.json"), "w") as cf:
-        config.update(
-                {'info': 
-                    {'libraries': {
-                            'efel': efel.__version__,
-                            'blupyefe': bpefe.__version__
+    try:
+        main_results_folder = os.path.join(user_results_dir,
+                                            time_info + "_nfe_results")
+        print(main_results_folder, config)
+        extractor = bpefe.Extractor(main_results_folder, config)
+        extractor.create_dataset()
+        extractor.plt_traces()
+        if global_parameters_json['threshold'] != '':
+            extractor.extract_features(threshold=int(
+                global_parameters_json['threshold']))
+        else:
+            extractor.extract_features(threshold=-20)
+        extractor.mean_features()
+        extractor.plt_features()
+        extractor.feature_config_cells(version="legacy")
+        extractor.feature_config_all(version="legacy")
+        config["options"]["tolerance"] = \
+            config["options"]["tolerance"].tolist()
+        with open(os.path.join(main_results_folder, "config.json"), "w") as cf:
+            config.update(
+                    {'info': 
+                        {'libraries': {
+                                'efel': efel.__version__,
+                                'blupyefe': bpefe.__version__
+                            }
                         }
-                    }
-                })
-        json.dump(config, cf, indent=4)
-    shutil.copy(src=os.path.join(settings.BASE_DIR, 'requirements.txt'),
-                dst=os.path.join(main_results_folder, 'libraries.txt'))
+                    })
+            json.dump(config, cf, indent=4)
+        shutil.copy(src=os.path.join(settings.BASE_DIR, 'requirements.txt'),
+                    dst=os.path.join(main_results_folder, 'libraries.txt'))
         
-    # except Exception as e:
-    #     print(e)
-    #     return HttpResponse(json.dumps({"status": "KO", "message": f"Unexpected {e}, {type(e)}"}))
+    except Exception as e:
+        print(e)
+        return HttpResponse(json.dumps({"status": "KO", "message": f"Unexpected {e}, {type(e)}"}))
 
     # manage how to cite instructions
     # conf_cit = os.path.join(conf_dir, 'citation_list.json')
