@@ -11,7 +11,7 @@
             <p class="card-text flex-center text-center">This tool makes an intensive use of JavaScript.<br>Please, make sure you have not disabled JavaScript for this domain.</p>
             <p></p>
             <!-- <button class="btn btn-primary" style="display: block; margin: auto;" onclick="$('#js-banner-block').css('display', 'none');">JavaScript is enabled</button> -->
-            <button class="btn btn-primary" style="display: block; margin: auto;" onclick="$('#js-banner').addClass('dismiss');$('#js-banner-block').addClass('fade');setTimeout(() => $('#js-banner-block').css('display', 'none'), 300)">JavaScript is enabled</button>
+            <button id="js-banner-button" class="btn btn-primary" style="display: block; margin: auto;">JavaScript is enabled</button>
         </div>
     </div>
 </div>
@@ -77,6 +77,10 @@
 
 <script>
     sessionStorage.setItem("exc", "{{ exc }}");
+    const jsBanner = window.sessionStorage.getItem("js-banner", false);
+    if (jsBanner) {
+        $("#js-banner-block").css("display", "none");
+    }
 </script>
 
 <script type="module" src="{% static 'hhnb/js/home.js' %}"></script>
