@@ -779,6 +779,7 @@ function createUploadBox() {
                 contentType: false,
                 processData: false,
                 success: function(name_dict) {
+                    console.log(name_dict)
                     $("#upload_button_" + id).text("Upload data");
                     $("#upload_button_" + id).prop("disabled", true);
                     $("#user_files_" + id).prop("disabled", true);
