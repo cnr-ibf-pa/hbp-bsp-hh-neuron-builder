@@ -3,6 +3,18 @@
 
 {% block content %}
 
+<div id="js-banner-block" class="dimmed-background">
+    <div id="js-banner" class="card border-secondary" style="width: 24rem; border-radius: 8px;">
+        <img src="{% static 'ebrains/img/favicon.svg' %}" class="card-img-top center" style="padding: 2rem 6rem;" alt="...">
+        <div class="card-body">
+            <h5 class="card-title flex-center text-center">Welcome to the<br>Hodgkin-Huxley NeuronBuilder</h5>
+            <p class="card-text flex-center text-center">This tool makes an intensive use of JavaScript.<br>Please, make sure you have not disabled JavaScript for this domain.</p>
+            <p></p>
+            <button class="btn btn-primary" style="display: block; margin: auto;" onclick="$('#js-banner-block').css('display', 'none');">JavaScript is enabled</button>
+        </div>
+    </div>
+</div>
+
 <div class="home-main-div">
     <div class="hhnb-secondary-nav home">
         <div class="page-title">Overview</div>
@@ -17,11 +29,10 @@
                 <div class="main-message-div">
                     Build a single cell NEURON model via the following steps:
                     <br><br>
-                    <ul>
-                        <li>electrophysiological feature extraction from voltage traces</li>
-                        <li>model parameter optimization</li>
-                        <li><i>in silico</i> experiments based on the optimized single cell model</li>
-                    </ul>
+                    electrophysiological feature extraction from voltage traces<br>
+                    model parameter optimization<br>
+                    <i>in silico</i> experiments based on the optimized single cell model<br>
+                    <br>
                     <span class="click-btn-msg">Click a button below or read the <a href="/hh-neuron-builder/docs" target="_blank">guidebook</a> to get started</span>
                     <hr class="hr-separator">
                     <div class="row side-button-panel">

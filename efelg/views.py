@@ -158,6 +158,7 @@ def get_data(request, cellname=""):
                     return HttpResponse(content={'response': 'KO', 'message': e.msg},
                                         content_type='application/json')
 
+    print(path_to_file)
     with open(path_to_file, "r") as f:
         try:
             content = json.loads(f.read())
@@ -179,6 +180,7 @@ def get_data(request, cellname=""):
         disp_sampling_rate = crr_sampling_rate
 
     # create dictionary to be sent to the frontend
+
     trace_info = {}
     trace_info['traces'] = {}
     for key in content['traces'].keys():
@@ -194,13 +196,19 @@ def get_data(request, cellname=""):
         "md5", "sampling_rate", "etype", "cell_type", "cell_id",
         "brain_structure", "filename", "animal_species", "cell_soma_location",
         "stimulus_unit", "voltage_unit", "contributors_affiliations", 
-        "voltage_correction"
+        "voltage_correction", "voltage_correction_unit"
     ]
     for key in keys:
-        if key in content:
-            trace_info[key] = content[key]
+        if key == 'voltage_correction':
+            if key not in content or not content[key]:
+                trace_info[key] = [0]
+            else:
+                trace_info[key] = content[key]
         else:
-            trace_info[key] = 'unknown'
+            if key in content:
+                trace_info[key] = content[key]
+            else:
+                trace_info[key] = 'unknown'
 
     if "note" in content:
         trace_info["note"] = content["note"]
@@ -256,6 +264,7 @@ def extract_features(request):
 
         crr_file_all_stim = list(crr_file_dict['traces'].keys())
         crr_file_sel_stim = selected_traces_rest_json[k]['stim']
+        print(crr_file_sel_stim)
         
         if "stimulus_unit" in crr_file_dict:
             crr_file_amp_unit = crr_file_dict["stimulus_unit"]
@@ -343,7 +352,7 @@ def extract_features(request):
             global_parameters_json['mean_features_no_zeros']
         },
         'relative': False,
-        'tolerance': 0.02,
+        'tolerance': 0.0001,
         'target': target,
         'target_unit': 'nA',
         'delay':20,
@@ -363,38 +372,40 @@ def extract_features(request):
     }
     
    # launch the feature extraction process
-    try:
-        main_results_folder = os.path.join(user_results_dir,
-                                           time_info + "_nfe_results")
-        extractor = bpefe.Extractor(main_results_folder, config)
-        extractor.create_dataset()
-        extractor.plt_traces()
-        if global_parameters_json['threshold'] != '':
-            extractor.extract_features(threshold=int(
-                global_parameters_json['threshold']))
-        else:
-            extractor.extract_features(threshold=-20)
-        extractor.mean_features()
-        extractor.plt_features()
-        extractor.feature_config_cells(version="legacy")
-        extractor.feature_config_all(version="legacy")
-        config["options"]["tolerance"] = \
-            config["options"]["tolerance"].tolist()
-        with open(os.path.join(main_results_folder, "config.json"), "w") as cf:
-            config.update(
-                    {'info': 
-                        {'libraries': {
-                                'efel': efel.__version__,
-                                'blupyefe': bpefe.__version__
-                            }
+    # try:
+    main_results_folder = os.path.join(user_results_dir,
+                                        time_info + "_nfe_results")
+    print(main_results_folder, config)
+    extractor = bpefe.Extractor(main_results_folder, config)
+    extractor.create_dataset()
+    extractor.plt_traces()
+    if global_parameters_json['threshold'] != '':
+        extractor.extract_features(threshold=int(
+            global_parameters_json['threshold']))
+    else:
+        extractor.extract_features(threshold=-20)
+    extractor.mean_features()
+    extractor.plt_features()
+    extractor.feature_config_cells(version="legacy")
+    extractor.feature_config_all(version="legacy")
+    config["options"]["tolerance"] = \
+        config["options"]["tolerance"].tolist()
+    with open(os.path.join(main_results_folder, "config.json"), "w") as cf:
+        config.update(
+                {'info': 
+                    {'libraries': {
+                            'efel': efel.__version__,
+                            'blupyefe': bpefe.__version__
                         }
-                    })
-            json.dump(config, cf, indent=4)
-        shutil.copy(src=os.path.join(settings.BASE_DIR, 'requirements.txt'),
-                    dst=os.path.join(main_results_folder, 'libraries.txt'))
+                    }
+                })
+        json.dump(config, cf, indent=4)
+    shutil.copy(src=os.path.join(settings.BASE_DIR, 'requirements.txt'),
+                dst=os.path.join(main_results_folder, 'libraries.txt'))
         
-    except Exception as e:
-        return HttpResponse(json.dumps({"status": "KO", "message": f"Unexpected {e}, {type(e)}"}))
+    # except Exception as e:
+    #     print(e)
+    #     return HttpResponse(json.dumps({"status": "KO", "message": f"Unexpected {e}, {type(e)}"}))
 
     # manage how to cite instructions
     # conf_cit = os.path.join(conf_dir, 'citation_list.json')
@@ -558,9 +569,11 @@ def upload_files(request):
                         names_full_path.append(path_to_file)
 
         for f in names_full_path:
-            #try:
-            data = manage_json.extract_data(f, request.POST)
-            output_filename = manage_json.create_file_name(data)
+            try:
+                data = manage_json.extract_data(f, request.POST)
+                output_filename = manage_json.create_file_name(data)
+            except JSONDecodeError as e:
+                return HttpResponseBadRequest(os.path.split(f)[-1])
             output_filepath = os.path.join(user_files_dir, output_filename)
             if os.path.isfile(output_filepath):
                 os.remove(output_filepath)
@@ -680,7 +693,7 @@ def load_hhf_etraces(request):
             output_filename = output_filename.replace(' ', '_')
             with open(os.path.join(EfelStorage.getUserFilesDir(
                     username, time_info), output_filename), 'w') as fd:
-                json.dump(data, fd, indent=4)
+                json.dump(data, fd)
             if output_filename[:-5] not in data_name_dict['all_json_names']:
                 data_name_dict['all_json_names'].append(
                    output_filename[:-5])

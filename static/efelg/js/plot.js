@@ -40,7 +40,7 @@ function plotVoltageCorrection(plot_id, correction) {
 
 // plot all cells contained in cells
 function plotCells(cells, isUploaded, id) {
-    if (cells.length >= 5) {
+    if (cells.length >= 8) {
         loadMore(cells, isUploaded, id);
     } else {
         $("#load-more-button").remove();
@@ -248,7 +248,6 @@ function plotMinibatch(cells, isUploaded, id) {
                     });
                     currentPlotData = currentPlotData.sort((dict1, dict2) => parseFloat(dict2["label"]) - parseFloat(dict1["label"]));
                     currentPlotData.forEach(d => {
-                        d["label"] = (Math.round(d["label"] * 100) / 100).toFixed(2);
                         d["label"] += " " + dict["stimulus_unit"];
                     });
                     var new_keys = {

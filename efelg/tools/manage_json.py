@@ -44,7 +44,15 @@ def get_traces_abf(filename):
         sampling_rate = "unknown"
     else:
         sampling_rate = str(metadata["sampling_rate"][0])
-   
+
+    # voltage_correction and voltage_correction_unit
+    voltage_correction = [0]
+    if 'voltage_correction' in metadata:
+        voltage_correction = metadata['voltage_correction']
+    voltage_correction_unit = 'unknown'
+    if 'voltage_correction_unit' in metadata:
+        voltage_correction_unit = metadata['voltage_correction_unit']
+
     # build dictionaries 
     traces = {}
     tonoff = {}
@@ -54,13 +62,13 @@ def get_traces_abf(filename):
         if not (signal.analogsignals[0].units == pq.mV):
             signal.analogsignals[0].units = pq.mV
         voltage = np.array(signal.analogsignals[0]).astype(np.float64)
-        voltage = [k[0] for k in voltage]
+        voltage = [round(k[0], 3) for k in voltage]
         stimulus = stim[i][3]
-        label = "{0:.2f}".format(np.around(stimulus, decimals=3))
+        label = str(np.float64(stimulus))
         traces.update({label: voltage})
         tonoff.update({label: {'ton': [stim[i][1]], 'toff': [stim[i][2]]}})
 
-    return sampling_rate, tonoff, traces, volt_unit, amp_unit
+    return sampling_rate, tonoff, traces, volt_unit, amp_unit, voltage_correction, voltage_correction_unit
 
 
 # read metadata file into a json dictionary
@@ -77,7 +85,6 @@ def get_metadata(filename):
 
 # perform units conversions
 def perform_conversions_json(data):
-    print('========================= PERFORM CONVERSION =======================')
     if ("stimulus_unit" in data) and (not data["stimulus_unit"].lower() in ["na", "unknown"]):
         a_pow = 1
         stimlus_unit = data["stimulus_unit"].lower()
@@ -125,7 +132,7 @@ def perform_conversions_json(data):
 
 def extract_data(filepath, metadata_dict=None):
     if filepath.endswith(".abf"):
-        sampling_rate, tonoff, traces, voltage_unit, stimulus_unit = get_traces_abf(filepath)
+        sampling_rate, tonoff, traces, voltage_unit, stimulus_unit, voltage_correction, voltage_correction_unit = get_traces_abf(filepath)
         data = {
             'abfpath': filepath,
             'md5': md5(filepath),
@@ -133,7 +140,9 @@ def extract_data(filepath, metadata_dict=None):
             'stimulus_unit': stimulus_unit,
             'traces': traces,
             'tonoff': tonoff,
-            'sampling_rate': sampling_rate
+            'sampling_rate': sampling_rate,
+            'voltage_correction': voltage_correction,
+            'voltage_correction_unit': voltage_correction_unit
         }
     elif filepath.endswith(".json"):
         with open(filepath, "r") as f:

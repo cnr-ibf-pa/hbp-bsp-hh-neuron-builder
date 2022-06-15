@@ -2,11 +2,10 @@
 
 from django.shortcuts import render, redirect
 from django.views.decorators.csrf import csrf_exempt
-from requests.models import Response
 
 from hh_neuron_builder.settings import MODEL_CATALOG_COLLAB_DIR, MODEL_CATALOG_COLLAB_URL, MODEL_CATALOG_CREDENTIALS, MODEL_CATALOG_FILTER, TMP_DIR
 
-from hhnb.core.lib.exception.workflow_exception import WorkflowExists
+from hhnb.core.lib.exception.workflow_exception import AnalysisProcessError, MechanismsProcessError, WorkflowExists
 from hhnb.core.response import ResponseUtil
 from hhnb.core.workflow import Workflow, WorkflowUtil
 from hhnb.core.user import * 
@@ -20,12 +19,12 @@ from hbp_validation_framework import ModelCatalog, ResponseError
 from ebrains_drive.exceptions import ClientHttpError as EbrainsDriveClientError
 import ebrains_drive
 
+from subprocess import CalledProcessError
 import requests
 import datetime
 import os
 import json
 import shutil
-
 import logging
 
 from hhnb.utils.misc import InvalidArchiveError, get_signed_archive, validate_archive
@@ -108,12 +107,13 @@ def workflow_page(request, exc):
 def initialize_workflow(request):
     hhnb_user = HhnbUser.get_user_from_request(request)
     logger.debug(f'initializing workflow for "{hhnb_user}"')
+    
     try:
         workflow = Workflow.generate_user_workflow(hhnb_user.get_sub())
         logger.debug(f'workflow {workflow} created for "{hhnb_user}"')
     except WorkflowExists as e:
         logger.error(e)
-        return ResponseUtil.ko_response(500, str(e))
+        return ResponseUtil.ko_response(497, str(e))
     except PermissionError as e:
         logger.critical(e)
         return ResponseUtil.ko_response(500, messages.CRITICAL_ERROR)
@@ -399,15 +399,16 @@ def upload_analysis(request, exc):
         return ResponseUtil.ko_response(messages.INVALID_SIGNATURE.format(f'"{uploaded_file.name}"'))
     except InvalidArchiveError:
         return ResponseUtil.ko_response(messages.INVALID_FILE.format(f'"{uploaded_file.name}"'))
-
     try:        
         shutil.unpack_archive(analysis_zip, workflow.get_tmp_dir())
         
-        tmp_dir_list = os.listdir(workflow.get_tmp_dir())
-        for f in tmp_dir_list:
-            if f.endswith('.zip'):
-                tmp_dir_list.remove(f)
+        try:
+            os.remove(os.path.join(workflow.get_tmp_dir(), os.path.split(analysis_zip)[1]))
+        except FileNotFoundError:
+            # go haed if file is not found
+            pass
 
+        tmp_dir_list = os.listdir(workflow.get_tmp_dir())
         if len(tmp_dir_list) > 1:            
             # if uploaded zip has more then one file it means that it is a job results zip
             for f in tmp_dir_list:
@@ -671,19 +672,29 @@ def run_analysis(request, exc):
 
     try:
         for f in os.listdir(workflow.get_results_dir()):
-            print(f)
-            if f.split('.')[0] == 'output':
+            if 'output' in f:
                 job_output = os.path.join(workflow.get_results_dir(), f)
-
         WorkflowUtil.run_analysis(workflow, job_output)
         return ResponseUtil.ok_response('')
 
+    except MechanismsProcessError as e:
+        logger.error(e)
+        workflow.clean_analysis_dir()
+        return ResponseUtil.ko_response(498, messages.MECHANISMS_PROCESS_ERROR)
+    
+    except AnalysisProcessError as e:
+        logger.error(e)
+        workflow.clean_analysis_dir()
+        return ResponseUtil.ko_response(499, messages.ANALYSIS_PROCESS_ERROR.format(e))
+    
     except FileNotFoundError as e:
         logger.error(e)
+        workflow.clean_analysis_dir()
         return ResponseUtil.ko_response(404, str(e))       
      
     except Exception as e:
         logger.error(e)
+        workflow.clean_analysis_dir()
     return ResponseUtil.ko_response(messages.ANALYSIS_ERROR)
 
 
@@ -767,16 +778,11 @@ def register_model(request, exc):
 
         client = ebrains_drive.connect(username=mc_username, password=mc_password)
         repo = client.repos.get_repo_by_url(MODEL_CATALOG_COLLAB_URL)
-        print("Questo è repo:", repo)
         seafdir = repo.get_dir('/' + MODEL_CATALOG_COLLAB_DIR)
-        print("Questa è dir:", seafdir)
         uploaded_model = seafdir.upload_local_file(model_zip)
-        print(" ================ UPLOADED_MODEL =====================", uploaded_model)
 
         reg_mod_url = f'https://wiki.ebrains.eu/lib/{ repo.id }/file/'\
                     + f'{ MODEL_CATALOG_COLLAB_DIR }/{ model_zip_name }?dl=1'
-        print(" ================ REG_MOD_URL ================== ", reg_mod_url)
-
 
         auth_family_name = form_data.get('authorLastName')
         auth_given_name = form_data.get('authorFirstName')
@@ -967,7 +973,6 @@ def hhf_get_files_content(request, folder, exc):
     hhf_files_content = {}
 
     for f in os.listdir(os.path.join(workflow.get_model_dir(), folder)):
-        print(os.path.join(workflow.get_model_dir(), folder, f))
         with open(os.path.join(workflow.get_model_dir(), folder, f), 'r') as fd:
             if f.endswith('.json'):
                 jj = json.load(fd)

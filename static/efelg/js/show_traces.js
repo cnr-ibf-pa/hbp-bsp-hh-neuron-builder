@@ -585,9 +585,9 @@ function createUploadBox() {
                     </div> \
                     <div class="col-lg-8 col-md-5 col-8"> \
                         <input id="abf_extension_' + i_box + '" type="radio" name="extension_' + i_box + '" value=".abf, .json" checked="checked"> \
-                        <label for="abf_extension_' + i_box + '">abf</label> \
+                        <label for="abf_extension_' + i_box + '">.abf + _metadata.json</label> \
                         <input id="json_extension_' + i_box + '" type="radio" name="extension_' + i_box + '" value=".json" class="ms-3"> \
-                        <label for="json_extension_' + i_box + '">json</label> \
+                        <label for="json_extension_' + i_box + '">.json</label> \
                     </div> \
                     <div class="col-lg-2 col-md-3 col-4 text-end"> \
                         <i class="far fa-question-circle fa-lg" \
@@ -701,8 +701,13 @@ function createUploadBox() {
                 var read = new FileReader();
                 read.readAsBinaryString(file);
                 read.onloadend = function() {
-                    var data = JSON.parse(read.result);
-                    if (data != null) {
+                    var data;
+                    try {
+                        data = JSON.parse(read.result);
+                    } catch(err) {
+                        console.log(err);
+                    }
+                        if (data != null) {
                         var cell_name = $("#cell_name_" + id);
                         var structure = $("#structure_" + id);
                         var species = $("#species_" + id);
@@ -774,6 +779,7 @@ function createUploadBox() {
                 contentType: false,
                 processData: false,
                 success: function(name_dict) {
+                    console.log(name_dict)
                     $("#upload_button_" + id).text("Upload data");
                     $("#upload_button_" + id).prop("disabled", true);
                     $("#user_files_" + id).prop("disabled", true);
@@ -791,6 +797,11 @@ function createUploadBox() {
                     } else {
                         plotCells(name_dict['all_json_names'], true, id);
                     }
+                },
+                error: (error) => {
+                    console.log(error);
+                    closeMessageDiv("wait-message-div", "main-e-st-div");
+                    openWarning("Malformed JSON file for \"" + error.responseText + "\" trace.");
                 }
             })
         }
