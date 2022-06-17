@@ -839,7 +839,6 @@ body {
     min-width: 170px;
 }
 
-
 .form-control.username {
     margin-right: 12px;
     border-top-right-radius: .25rem;
@@ -1823,4 +1822,8 @@ i.disabled:hover {
 }
 .dimmed-background-fade-out {
     opacity: 0;
+}
+
+.sa-dropdown, .sa-dropdown-menu  {
+    width: 100%;
 }
