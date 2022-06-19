@@ -346,22 +346,22 @@
                         </div>
                         <div class="accordion-item">
                             <h2 id="SA" class="accordion-header">
-                                <button type="button" id="accordionSA" name="SA" class="accordion-button hpc collapsed" data-bs-toggle="collapse" data-bs-target="#serviceAccountCollapse" aria-expanded="false" aria-controls="serviceAccountCollapse">
+                                <button type="button" id="accordionSA" name="SA" class="accordion-button hpc collapsed" data-bs-toggle="collapse" data-bs-target="#saCollapse" aria-expanded="false" aria-controls="saCollapse">
                                     <b>SERVICE ACCOUNT</b>&emsp;<i>HPCs behind the Service Account</i>
                                 </button>
                             </h2>
-                            <div id="serviceAccountCollapse" class="accordion-collapse collapse" aria-labelledby="SA" data-bs-parent="#hpcChooserParams">
+                            <div id="saCollapse" class="accordion-collapse collapse" aria-labelledby="SA" data-bs-parent="#hpcChooserParams">
                                 <div class="hpc-param-chooser container">
                                     <div class="row">
                                         <div class="col">
                                             <div class="card input-card">
                                                 <div class="card-header input-card-header">HPC System</div>
                                                 <div class="card-body">
-                                                    <div class="dropdown">
-                                                        <button class="btn btn-secondary dropdown-toggle sa-dropdown" type="button" id="sa-hpc-dropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                                    <div id="sa-hpc-dropdown" class="dropdown">
+                                                        <button class="btn btn-secondary dropdown-toggle sa-dropdown" type="button" id="sa-hpc-dropdown-btn" data-bs-toggle="dropdown" aria-expanded="false">
                                                           Select HPC
                                                         </button>
-                                                        <ul class="dropdown-menu sa-dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                                                        <ul class="dropdown-menu sa-dropdown-menu" aria-labelledby="sa-hpc-dropdown-btn">
                                                           <li><a class="dropdown-item">CSCS-DAINT</a></li>
                                                           <li><hr class="dropdown-divider"></li>
                                                           <li><a class="dropdown-item">NSG</a></li>
@@ -374,11 +374,11 @@
                                             <div class="card input-card">
                                                 <div class="card-header input-card-header">Service Account Project</div>
                                                 <div class="card-body">
-                                                    <div class="dropdown">
-                                                        <button class="btn btn-secondary dropdown-toggle sa-dropdown" type="button" id="sa-project-dropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                                    <div id="sa-project-dropdown" class="dropdown">
+                                                        <button class="btn btn-secondary dropdown-toggle sa-dropdown" type="button" id="sa-project-dropdown-btn" data-bs-toggle="dropdown" aria-expanded="false">
                                                           Select Project
                                                         </button>
-                                                        <ul class="dropdown-menu sa-dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                                                        <ul class="dropdown-menu sa-dropdown-menu" aria-labelledby="sa-project-dropdown-btn">
                                                           <li><a class="dropdown-item" href="#">Action</a></li>
                                                           <li><a class="dropdown-item" href="#">Another action</a></li>
                                                           <li><a class="dropdown-item" href="#">Something else here</a></li>

@@ -5,6 +5,7 @@ Workspace utils classes
 from hh_neuron_builder.settings import MEDIA_ROOT, HHF_TEMPLATE_DIR, TMP_DIR, LOG_ROOT_PATH
 
 from hhnb.core.conf.exec_files_conf import ExecFileConf
+from hhnb.core.conf import get_default_optimization_values
 
 from hhnb.core.lib.exception.workflow_exception import *
 from hhnb.core.model import *
@@ -185,6 +186,7 @@ class Workflow(_WorkflowBase):
                 except JSONDecodeError:
                     return {}
         except FileNotFoundError:
+            
             raise FileNotFoundError("%s not found" % self._optimization_settings)
 
     def set_optimization_settings(self, optimization_settings, job_submitted_flag=False):

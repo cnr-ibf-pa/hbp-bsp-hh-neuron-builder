@@ -113,8 +113,7 @@ class UploadFileDialog {
 
 
 // Enable apply button hpc selection
-$(".accordion-button.hpc").on("click", (button) => {
-    Log.debug(button);
+$(".accordion-button.hpc").on("click", async (button) => {
     let isAlreadyOpened = $("#" + button.currentTarget.id).hasClass("active");
     $(".accordion-button.hpc").removeClass("active");
     if (!isAlreadyOpened) {
@@ -136,11 +135,11 @@ class OptimizationSettingsDialog {
         $("#daint-node-num").val(6);
         $("#daint-core-num").val(24);
         $("#daint-runtime").val("120m");
-        $("#sa-daint-gen-max").val(2)
+        /* $("#sa-daint-gen-max").val(2)
         $("#sa-daint-offspring").val(10)
         $("#sa-daint-node-num").val(3);
         $("#sa-daint-core-num").val(24);
-        $("#sa-daint-runtime").val(2);
+        $("#sa-daint-runtime").val(2); */
         $("#username_submit").val("");
         $("#password_submit").val("");
         $("#nsg-gen-max").val(2);
@@ -148,43 +147,46 @@ class OptimizationSettingsDialog {
         $("#nsg-node-num").val(1);
         $("#nsg-core-num").val(2);
         $("#nsg-runtime").val(2);
-        $("#sa-nsg-gen-max").val(2)
-        $("#sa-nsg-offspring").val(10)
-        $("#sa-nsg-node-num").val(1);
-        $("#sa-nsg-core-num").val(2);
-        $("#sa-nsg-runtime").val(2);
+        $("#sa-gen-max").val(2)
+        $("#sa-offspring").val(10)
+        $("#sa-runtime").val(2);
+        // $("#sa-nsg-node-num").val(1);
+        // $("#sa-nsg-core-num").val(2);
     }
 
     static loadSettings(jObj) {
         Log.debug("settings value");
         this.#setDefaultValue();
-        if (!$.isEmptyObject(jObj)) {
+        let jObjS = jObj.settings;
+        if (!$.isEmptyObject(jObjS)) {
             Log.debug("open default accordion")
-            if (jObj.hpc == "DAINT-CSCS") {
-                $("#daint_project_id").val(jObj.project);
-                $("#daint-gen-max").val(jObj["gen-max"]);
-                $("#daint-offspring").val(jObj.offspring);
-                $("#daint-node-num").val(jObj["node-num"]);
-                $("#daint-core-num").val(jObj["core-num"]);
-                $("#daint-runtime").val(jObj.runtime);
-            } else if (jObj.hpc == "SA-CSCS") {
-                $("#sa-daint-gen-max").val(jObj["gen-max"]);
-                $("#sa-daint-offspring").val(jObj.offspring);
-                $("#sa-daint-node-num").val(jObj["node-num"]);
-                $("#sa-daint-core-num").val(jObj["core-num"]);
-                $("#sa-daint-runtime").val(jObj.runtime);
-            } else if (jObj.hpc == "NSG") {
-                $("#nsg-gen-max").val(jObj["gen-max"]);
-                $("#nsg-offspring").val(jObj.offspring);
-                $("#nsg-node-num").val(jObj["node-num"]);
-                $("#nsg-core-num").val(jObj["core-num"]);
-                $("#nsg-runtime").val(jObj.runtime);
-            } else if (jObj.hpc == "SA-NSG") {
-                $("#sa-nsg-gen-max").val(jObj["gen-max"]);
-                $("#sa-ngs-offspring").val(jObj.offspring);
-                $("#sa-nsg-node-num").val(jObj["node-num"]);
-                $("#sa-nsg-core-num").val(jObj["core-num"]);
-                $("#sa-nsg-runtime").val(jObj.runtime);
+            $(".accordion-button.hpc").removeClass("active");
+            $(".accordion-collapse").removeClass("show");
+            if (jObjS.hpc == "DAINT-CSCS") {
+                $("#accordionDaint").addClass("active");
+                $("#daintCollapse").addClass("show");
+                $("#daint_project_id").val(jObjS.project);
+                $("#daint-gen-max").val(jObjS["gen-max"]);
+                $("#daint-offspring").val(jObjS.offspring);
+                $("#daint-node-num").val(jObjS["node-num"]);
+                $("#daint-core-num").val(jObjS["core-num"]);
+                $("#daint-runtime").val(jObjS.runtime);
+            } else if (jObjS.hpc == "NSG") {
+                $("#accordionNSG").addClass("active");
+                $("#nsgCollapse").addClass("show");
+                $("#nsg-gen-max").val(jObjS["gen-max"]);
+                $("#nsg-offspring").val(jObjS.offspring);
+                $("#nsg-node-num").val(jObjS["node-num"]);
+                $("#nsg-core-num").val(jObjS["core-num"]);
+                $("#nsg-runtime").val(jObjS.runtime);
+            } else if (jObjS.hpc == "SA") {
+                $("#accordionSA").addClass("active");
+                $("#saCollapse").addClass("show");
+                $("#sa-gen-max").val(jObjS["gen-max"]);
+                $("#sa-offspring").val(jObjS.offspring);
+                $("#sa-node-num").val(jObjS["node-num"]);
+                $("#sa-core-num").val(jObjS["core-num"]);
+                $("#sa-runtime").val(jObjS.runtime);
             }
         }
     }
@@ -206,13 +208,6 @@ class OptimizationSettingsDialog {
             data["runtime"] = $("#daint-runtime").val();
             data["project"] = $("#daint_project_id").val();
         }
-        if (hpc == "SA-CSCS") {
-            data["gen-max"] = $("#sa-daint-gen-max").val();
-            data["offspring"] = $("#sa-daint-offspring").val();
-            data["node-num"] = $("#sa-daint-node-num").val();
-            data["core-num"] = $("#sa-daint-core-num").val();
-            data["runtime"] = $("#sa-daint-runtime").val();
-        }
         if (hpc == "NSG") {
             data["gen-max"] = $("#nsg-gen-max").val();
             data["offspring"] = $("#nsg-offspring").val();
@@ -232,12 +227,12 @@ class OptimizationSettingsDialog {
                 data["password_submit"] = nsgPass.val();
             }             
         }
-        if (hpc == "SA-NSG") {
-            data["gen-max"] = $("#sa-nsg-gen-max").val();
-            data["offspring"] = $("#sa-nsg-offspring").val();
-            data["node-num"] = $("#sa-nsg-node-num").val();
-            data["core-num"] = $("#sa-nsg-core-num").val();
-            data["runtime"] = $("#sa-nsg-runtime").val();
+        if (hpc == "SA") {
+            data["gen-max"] = $("#sa-gen-max").val();
+            data["offspring"] = $("#sa-offspring").val();
+            data["node-num"] = $("#sa-node-num").val();
+            data["core-num"] = $("#sa-core-num").val();
+            data["runtime"] = $("#sa-runtime").val();
         }
         
         return data;
