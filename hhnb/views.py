@@ -1,5 +1,6 @@
 """ Views """
 
+from telnetlib import SE
 from django.shortcuts import render, redirect
 from django.views.decorators.csrf import csrf_exempt
 
@@ -19,7 +20,6 @@ from hbp_validation_framework import ModelCatalog, ResponseError
 from ebrains_drive.exceptions import ClientHttpError as EbrainsDriveClientError
 import ebrains_drive
 
-from subprocess import CalledProcessError
 import requests
 import datetime
 import os
@@ -32,6 +32,9 @@ logger = logging.getLogger(__name__)
 
 
 LOG_ACTION = 'User: "{}"\t Action: {}'
+
+
+SERVICE_ACCOUNT_ROOT_URL = 'https://bspsa.cineca.it/'
 
 
 def status(request):
@@ -647,13 +650,29 @@ def optimization_settings(request, exc=None):
     if not exc in request.session.keys():
         return ResponseUtil.no_exc_code_response()
     workflow, hhnb_user = get_workflow_and_user(request, exc)
+    
     if request.method == 'GET':
         logger.info(LOG_ACTION.format(hhnb_user, 'get optimization settings from %s' % workflow))
+        
+        # fetch service account hpc and projects
+        settings = {'settings': {}, 'service-account': {}}
+        r0 = requests.get(SERVICE_ACCOUNT_ROOT_URL + 'hpc/')
+        r1 = requests.get(SERVICE_ACCOUNT_ROOT_URL + 'projects/')
+        if r0.status_code == 200 and r1.status_code == 200:
+            for hpc in r0.json():
+                h = hpc['id']
+                projects = []
+                for p in r1.json():
+                    if p['hpc'] == h and 'hhnb' in p['name']:
+                        projects.append(p['name'])
+                settings['service-account'].update({h: projects})
+                print(settings)
         try:
-            return ResponseUtil.ok_json_response(workflow.get_optimization_settings())
+            settings['settings'].update(workflow.get_optimization_settings())
+            return ResponseUtil.ok_json_response(settings)
         except FileNotFoundError as e:
-            logger.error(e)
-            return ResponseUtil.ok_json_response({})
+            return ResponseUtil.ok_json_response(settings)
+
     elif request.method == 'POST':
         logger.info(LOG_ACTION.format(hhnb_user, 'set optimization settings from %s' % workflow))
         optimization_settings = json.loads(request.body)
