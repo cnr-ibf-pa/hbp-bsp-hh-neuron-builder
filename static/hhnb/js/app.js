@@ -244,7 +244,7 @@ $("#cancel-param-btn").on("click", () => {
 $("#apply-param").on("click", () => {
     Log.debug("Uploading optimization settings");
     let formData = OptimizationSettingsDialog.getJsonData();
-    if (formData.hpc == "DAINT-CSCS" || formData.hpc == "SA-CSCS" || "SA-NSG" ) {
+    if (formData.hpc == "DAINT-CSCS" || formData.hpc == "SA" ) {
         showLoadingAnimation("Checking login...");
         $.get("/hh-neuron-builder/get-authentication")
             .done(() => {

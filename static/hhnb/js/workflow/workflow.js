@@ -347,7 +347,6 @@ export default class Workflow {
             contentType: false,
             async: false,
             success: (result) => {
-                Log.debug(result)
                 if (jData.hpc == "NSG") {
                     $("#username_submit").removeClass("is-invalid").addClass("is-valid");
                     $("#password_submit").removeClass("is-invalid").addClass("is-valid");
@@ -357,7 +356,7 @@ export default class Workflow {
             error: (error) => {
                 Log.error("Status: " + error.status + " > " + error.responseText);
                 MessageDialog.openErrorDialog(error.responseText);
-                if (error.responseText == "Invalid credentials") {
+                if (error.responseText == "Invalid credentials.") {
                     $("#username_submit").removeClass("is-valid").addClass("is-invalid");
                     $("#password_submit").removeClass("is-valid").addClass("is-invalid");
                 }

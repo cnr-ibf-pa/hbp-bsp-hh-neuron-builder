@@ -553,17 +553,21 @@ def optimization_settings(request, exc=None):
         
         # fetch service account hpc and projects
         settings = {'settings': {}, 'service-account': {}}
-        r0 = requests.get(SERVICE_ACCOUNT_ROOT_URL + 'hpc/')
-        r1 = requests.get(SERVICE_ACCOUNT_ROOT_URL + 'projects/')
-        if r0.status_code == 200 and r1.status_code == 200:
-            for hpc in r0.json():
-                h = hpc['id']
-                projects = []
-                for p in r1.json():
-                    if p['hpc'] == h and 'hhnb' in p['name']:
-                        projects.append(p['name'])
-                settings['service-account'].update({h: projects})
-                print(settings)
+        try:
+            r0 = requests.get(SERVICE_ACCOUNT_ROOT_URL + 'hpc/', timeout=3)
+            r1 = requests.get(SERVICE_ACCOUNT_ROOT_URL + 'projects/', timeout=3)
+            if r0.status_code == 200 and r1.status_code == 200:
+                for hpc in r0.json():
+                    h = hpc['id']
+                    projects = []
+                    for p in r1.json():
+                        if p['hpc'] == h and 'hhnb' in p['name']:
+                            projects.append(p['name'])
+                    settings['service-account'].update({h: projects})
+        except requests.RequestException as e:
+            logger.error('Service-Account connection error: "%s".' % str(e))
+            settings.update({'service-account': False})
+
         try:
             settings['settings'].update(workflow.get_optimization_settings())
             return ResponseUtil.ok_json_response(settings)
@@ -573,21 +577,35 @@ def optimization_settings(request, exc=None):
     elif request.method == 'POST':
         logger.info(LOG_ACTION.format(hhnb_user, 'set optimization settings from %s' % workflow))
         optimization_settings = json.loads(request.body)
+
         if optimization_settings['hpc'] == 'NSG':
             nsg_username = optimization_settings.get('username_submit')
             nsg_password = optimization_settings.get('password_submit')
 
             if nsg_username and nsg_password:
                 nsg_user = NsgUser(nsg_username, nsg_password)
+                
+                # override nsg credentials 
                 if not nsg_user.validate_credentials():
-                    return ResponseUtil.ko_response(messages.AUTHENTICATION_INVALID_CREDENTIALS)
+                    optimization_settings.update({
+                        'username_submit': False,
+                        'password_submit': False
+                    })
+                else:
+                    optimization_settings.update({
+                        'username_submit': True,
+                        'password_submit': True
+                    })
+                    request.session['nsg_username'] = nsg_username
+                    request.session['nsg_password'] = nsg_password
+                    request.session.save()
+                        
+                workflow.set_optimization_settings(optimization_settings)
 
-                request.session['nsg_username'] = nsg_username
-                request.session['nsg_password'] = nsg_password
-                request.session.save()
-
-        workflow.set_optimization_settings(optimization_settings)
-        return ResponseUtil.ok_json_response()
+            if optimization_settings['username_submit'] and optimization_settings['password_submit']:
+                return ResponseUtil.ok_json_response()
+            else:
+                return ResponseUtil.ko_response(messages.AUTHENTICATION_INVALID_CREDENTIALS)
     else:
         return ResponseUtil.method_not_allowed()
 
