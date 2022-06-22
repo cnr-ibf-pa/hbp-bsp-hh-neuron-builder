@@ -88,3 +88,27 @@ $("#modelPrivate").on("click", (button) => {
         $("#modelPrivateValue").text("Public");
     }
 });
+
+
+function setServiceAccountHPC(hpc) {
+    // let hpc = b.innerText
+    if ($("#sa-hpc-dropdown-btn").text() == hpc) {
+        return false;
+    }
+    $("#sa-hpc-dropdown-btn").html(hpc);
+    $("#sa-project-dropdown-btn").prop("disabled", false);
+    $("#sa-project-dropdown-btn").html("Select Project");
+    $(".dropdown-item.project").addClass("gone");
+    $(".dropdown-item.project." + hpc.toLowerCase()).removeClass("gone");
+    
+    // automatically set the project if there is only one project for the selecte HPC system
+    if ($(".dropdown-item.project." + hpc.toLowerCase()).length == 1) {
+        setServiceAccountProject(
+            $(".dropdown-item.project." + hpc.toLowerCase()).text()
+        )
+    }
+}
+
+function setServiceAccountProject(project) {
+    $("#sa-project-dropdown-btn").html(project);
+}
