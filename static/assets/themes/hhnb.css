@@ -888,6 +888,14 @@ body {
 .list-group-item.fetch-jobs {
     width: 100%;
 }
+.list-group-item.fetch-jobs:first-child {
+    border-top-left-radius: 0.5rem;
+    border-bottom-left-radius: 0.5rem;
+}
+.list-group-item.fetch-jobs:last-child {
+    border-top-right-radius: 0.5rem;
+    border-bottom-right-radius: 0.5rem;
+}
 .list-group-item.disable {
     background-color: rgb(210, 210, 210);
     color: rgb(50, 50, 50);
@@ -915,7 +923,7 @@ body {
     padding: 8px 8px;
 }
 
-#nsgLoginRow, #spinnerRow, #progressRow, #tableRow {
+#nsgLoginRow, #saChoiseRow, #spinnerRow, #progressRow, #tableRow {
     display: none;
 }
 
@@ -1769,7 +1777,7 @@ i.disabled:hover {
 #overlayjobs {
     transition: unset;
     max-width: 1300px;
-    width: unset;
+    width: 1000px;
 }
 
 #overlaycontentdialog {
