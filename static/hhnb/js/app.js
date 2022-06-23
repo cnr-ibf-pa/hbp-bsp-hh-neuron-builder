@@ -502,6 +502,7 @@ function dismissAlert(el) {
 function resetJobFetchDiv() {
     $("#overlayjobs").removeClass("scroll-long-content");
     $("#nsgLoginRow").css("display", "none");
+    $("#saChoiseRow").css("display", "none");
     $("#spinnerRow").css("display", "none");
     $("#progressRow").css("display", "none");
     $("#tableRow").css("display", "none");
@@ -527,7 +528,14 @@ $(".jobs-unicore").on("click", (button) => {
     $.get("/hh-neuron-builder/get-authentication")
         .done(() => {
             jButton.addClass("clicked");
-            displayJobList(jButton);
+            if (button.currentTarget.id == "jobsDaint") {
+                displayJobList(jButton);
+            } else if (button.currentTarget.id == "jobsSA") {
+                jButton.addClass("active");
+                $("#tableRow").css("display", "none");
+                $("#saChoiseRow").css("display", "flex");
+                jButton.addClass("clicked");
+            }
         })
         .fail((error) => { 
             checkRefreshSession(error);

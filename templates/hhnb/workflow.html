@@ -448,28 +448,22 @@
             <div class="row">
                 <div id="hpcSource" class="list-group list-group-horizontal">
                     <button type="button" id="jobsDaint" name="DAINT-CSCS" class="jobs-unicore list-group-item fetch-jobs list-group-item-action"><b>CSCS-PizDaint</b></button>
-                    <button type="button" id="jobsSADaint" name="SA-CSCS" class="jobs-unicore list-group-item fetch-jobs list-group-item-action"><b>CSCS-PizDaint<br>Service Account</b></button>
                     <button type="button" id="jobsNSG" name="NSG" class="list-group-item fetch-jobs list-group-item-action"><b>NSG<br>NeuroScience Gateway</b></button>
-                    <button type="button" id="jobsSANSG" name="SA-NSG" class="jobs-unicore list-group-item fetch-jobs list-group-item-action"><b>NSG<br>Service Account</b></button>
+                    <button type="button" id="jobsSA" name="SA" class="jobs-unicore list-group-item fetch-jobs list-group-item-action"><b>Service Account</b></button>
                 </div>
             </div>
             <div class="row-separator"></div>
             <div id="nsgLoginRow" class="row">
-                <div id="checkNsgLoginCard" class="card">
+                <div id="checkNsgLoginCard" class="card" style="border-radius: 0.5rem;">
                     <div class="card-header input-card-header">
                         <div class="text-center">Check NSG Login</div>
                     </div>
                     <div class="card-body ">
                         <div class="input-group">
-                            <!-- <div class="input-group-prepend"> -->
-                                <span class="input-group-text" title="NSG Username">Username</span>
-                            <!-- </div> -->
-                            <input type="text" class="form-control username" id="usernameNsg" name="username_submit" placeholder="NSG Username" style="border-top-right-radius: .25rem; border-bottom-right-radius: .25rem;" required>
-                            <!-- <div class="input-group-prepend"> -->
-                                <span class="input-group-text password" title="NSG Password" style="border-top-left-radius: .25rem; border-bottom-left-radius: .25rem;">Password</span>
-                            <!-- </div> -->
-                            <input type="password" class="form-control" id="passwordNsg" name="password_submit" placeholder="NSG Password" required>
-                            <!-- <input type="button" class="btn" onclick="checkNsgLogin()" value="Check"> -->
+                            <span class="input-group-text" title="NSG Username" style="border-top-left-radius: 0.5rem; border-bottom-left-radius: 0.5rem;">Username</span>
+                            <input type="text" class="form-control username" id="usernameNsg" name="username_submit" placeholder="NSG Username" style="border-top-right-radius: .5rem; border-bottom-right-radius: .5rem;" required>
+                            <span class="input-group-text password" title="NSG Password" style="border-top-left-radius: 0.5rem; border-bottom-left-radius: 0.5rem;">Password</span>
+                            <input type="password" class="form-control" id="passwordNsg" name="password_submit" placeholder="NSG Password" style="border-top-right-radius: 0.5rem; border-bottom-right-radius: 0.5rem;" required>
                         </div>
                         <br>
                         <button id="checkNsgLoginButton" class="btn workflow-btn" type="button">
@@ -478,6 +472,36 @@
                           </button>
                     </div>
                 </div>
+            </div>
+            <div id="saChoiseRow" class="row">
+                <div class="card" style="border-radius: .5rem; padding: 10px;">
+                <div class="row">
+                    <div class="col">
+                        <div class="card input-card">
+                            <div class="card-header input-card-header">HPC System</div>
+                            <div class="card-body">
+                                <div id="sa-hpc-dropdown" class="dropdown">
+                                    <button class="btn btn-secondary dropdown-toggle sa-dropdown" type="button" id="sa-hpc-dropdown-btn" data-bs-toggle="dropdown" aria-expanded="false">Select HPC</button>
+                                    <ul id="sa-hpc-dropdown-menu" class="dropdown-menu sa-dropdown-menu" aria-labelledby="sa-hpc-dropdown-btn"></ul>
+                                  </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="card input-card">
+                            <div class="card-header input-card-header">Service Account Project</div>
+                            <div class="card-body">
+                                <div id="sa-project-dropdown" class="dropdown">
+                                    <button class="btn btn-secondary dropdown-toggle sa-dropdown" type="button" id="sa-project-dropdown-btn" data-bs-toggle="dropdown" aria-expanded="false" disabled>
+                                      Select Project
+                                    </button>
+                                    <ul id="sa-project-dropdown-menu" class="dropdown-menu sa-dropdown-menu" aria-labelledby="sa-project-dropdown-btn"></ul>
+                                  </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
             </div>
             <div id="spinnerRow" class="row">
                 <div id="jobSpinner" class="text-center">
