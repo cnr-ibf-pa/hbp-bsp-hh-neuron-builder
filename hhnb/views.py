@@ -34,7 +34,6 @@ logger = logging.getLogger(__name__)
 LOG_ACTION = 'User: "{}"\t Action: {}'
 
 
-SERVICE_ACCOUNT_ROOT_URL = 'https://bspsa.cineca.it/'
 
 
 def status(request):
@@ -550,23 +549,11 @@ def optimization_settings(request, exc=None):
     
     if request.method == 'GET':
         logger.info(LOG_ACTION.format(hhnb_user, 'get optimization settings from %s' % workflow))
+        settings = {'settings': {}, 'service-account': {}}
         
         # fetch service account hpc and projects
-        settings = {'settings': {}, 'service-account': {}}
-        try:
-            r0 = requests.get(SERVICE_ACCOUNT_ROOT_URL + 'hpc/', timeout=3)
-            r1 = requests.get(SERVICE_ACCOUNT_ROOT_URL + 'projects/', timeout=3)
-            if r0.status_code == 200 and r1.status_code == 200:
-                for hpc in r0.json():
-                    h = hpc['id']
-                    projects = []
-                    for p in r1.json():
-                        if p['hpc'] == h and 'hhnb' in p['name']:
-                            projects.append(p['name'])
-                    settings['service-account'].update({h: projects})
-        except requests.RequestException as e:
-            logger.error('Service-Account connection error: "%s".' % str(e))
-            settings.update({'service-account': False})
+        print(json.loads(get_service_account_content(request).content))
+        settings.update(json.loads(get_service_account_content(request).content))
 
         try:
             settings['settings'].update(workflow.get_optimization_settings())
@@ -1063,3 +1050,33 @@ def hhf_save_config_file(request, folder, config_file, exc):
     except Exception as e:
         print(str(e))
         return ResponseUtil.ko_response(400, messages.GENERAL_ERROR)
+
+
+def get_service_account_content(request):
+    if request.method != 'GET':
+        return ResponseUtil.method_not_allowed('GET')
+
+    SERVICE_ACCOUNT_ROOT_URL = 'https://bspsa.cineca.it/'
+    APP_CONTEXT_TAG = 'hhnb'
+
+    sa_content = {'service-account': {}}
+
+    try:
+        r0 = requests.get(SERVICE_ACCOUNT_ROOT_URL + 'hpc/', timeout=30)
+        r1 = requests.get(SERVICE_ACCOUNT_ROOT_URL + 'projects/', timeout=30)
+        import time
+        time.sleep(10)
+        if r0.status_code == 200 and r1.status_code == 200:
+            for hpc in r0.json():
+                h = hpc['id']
+                projects = []
+                for p in r1.json():
+                    if p['hpc'] == h and APP_CONTEXT_TAG in p['name']:
+                        projects.append(p['name'])
+                sa_content['service-account'].update({h: projects})
+        
+    except requests.RequestException as e:
+        logger.error('Service-Account connection error: "%s".' % str(e))
+        sa_content = {'service-account': False}
+
+    return ResponseUtil.ok_json_response(sa_content, True)

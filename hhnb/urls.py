@@ -102,4 +102,7 @@ urlpatterns = [
     path('hhf-get-model-key/<exc:exc>', views.hhf_get_model_key),
     path('hhf-apply-model-key/<exc:exc>', views.hhf_apply_model_key),
     path('hhf-save-config-file/<folder:folder>/<config_file:config_file>/<exc:exc>', views.hhf_save_config_file),
+
+    # get service-account content
+    path('get-service-account-content', views.get_service_account_content),
 ]
