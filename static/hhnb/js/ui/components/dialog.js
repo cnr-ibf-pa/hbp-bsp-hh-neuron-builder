@@ -170,69 +170,71 @@ class OptimizationSettingsDialog {
             }
         }
         this.populateServiceAccountSettings(jObj["service-account"]);
-        let jObjS = jObj.settings;
+        let settings = jObj.settings;
+        Log.debug(settings);
         
-        if (!$.isEmptyObject(jObjS)) {    
+        if (!$.isEmptyObject(settings)) {    
             $(".accordion-button.hpc").removeClass("active").addClass("collapsed");
             $(".accordion-collapse").removeClass("show");
-            if (jObjS.hpc == "DAINT-CSCS") {
+            if (settings.hpc == "DAINT-CSCS") {
                 $("#accordionDaint").addClass("active");
                 $("#daintCollapse").addClass("show");
-                $("#daint_project_id").val(jObjS.project);
-                $("#daint-gen-max").val(jObjS["gen-max"]);
-                $("#daint-offspring").val(jObjS.offspring);
-                $("#daint-node-num").val(jObjS["node-num"]);
-                $("#daint-core-num").val(jObjS["core-num"]);
-                $("#daint-runtime").val(jObjS.runtime);
-            } else if (jObjS.hpc == "NSG") {
+                $("#daint_project_id").val(settings.project);
+                $("#daint-gen-max").val(settings["gen-max"]);
+                $("#daint-offspring").val(settings.offspring);
+                $("#daint-node-num").val(settings["node-num"]);
+                $("#daint-core-num").val(settings["core-num"]);
+                $("#daint-runtime").val(settings.runtime);
+            } else if (settings.hpc == "NSG") {
                 $("#accordionNSG").addClass("active");
                 $("#nsgCollapse").addClass("show");
-                $("#nsg-gen-max").val(jObjS["gen-max"])
-                $("#nsg-offspring").val(jObjS.offspring);
-                $("#nsg-node-num").val(jObjS["node-num"]);
-                $("#nsg-core-num").val(jObjS["core-num"]);
-                $("#nsg-runtime").val(jObjS.runtime);
-                /* $("#username_submit").val(jObjS["username_submit"]).addClass("is-valid");
-                $("#password_submit").val(jObjS["password_submit"]).addClass("is-valid"); */
-                if (jObjS["username_submit"]) {
+                $("#nsg-gen-max").val(settings["gen-max"])
+                $("#nsg-offspring").val(settings.offspring);
+                $("#nsg-node-num").val(settings["node-num"]);
+                $("#nsg-core-num").val(settings["core-num"]);
+                $("#nsg-runtime").val(settings.runtime);
+                if (settings["username_submit"]) {
                     $("#username_submit").addClass("is-valid").removeClass("is-invalid");
                 } else { 
                     $("#username_submit").addClass("is-invalid").removeClass("is-valid");
                 }
-                if (jObjS["password_submit"]) {
+                if (settings["password_submit"]) {
                     $("#password_submit").addClass("is-valid").removeClass("is-invalid");
                 } else { 
                     $("#password_submit").addClass("is-invalid").removeClass("is-valid");
                 }
-            } else if (jObjS.hpc == "SA") {
+            } else if (settings.hpc == "SA") {
+                Log.debug("SETTINGS SERVICEACCOUNT")
                 $("#accordionSA").addClass("active");
                 $("#saCollapse").addClass("show");
-                $("#sa-gen-max").val(jObjS["gen-max"]);
-                $("#sa-offspring").val(jObjS.offspring);
-                $("#sa-node-num").val(jObjS["node-num"]);
-                $("#sa-core-num").val(jObjS["core-num"]);
-                $("#sa-runtime").val(jObjS.runtime);
-                if ("sa-hpc" in Object.keys(jObjS)) {
-                    $("#sa-hpc-dropdown-btn").html(jObjS["sa-hpc"].toUpperCase());
-                    $("#sa-project-dropdown-btn").html(jObjS["sa-project"]).prop("disabled", false);
-                    $(".dropdown-item.project." + jObjS["sa-hpc"]).removeClass("gone");
+                $("#sa-gen-max").val(settings["gen-max"]);
+                $("#sa-offspring").val(settings.offspring);
+                $("#sa-node-num").val(settings["node-num"]);
+                $("#sa-core-num").val(settings["core-num"]);
+                $("#sa-runtime").val(settings.runtime);
+                Log.debug(Object.keys(settings));
+                if (Object.keys(settings).includes("sa-hpc")) {
+                    Log.debug(settings["sa-hpc"]);
+                    Log.debug($(".dropdown-item.project." + settings["sa-hpc"]));
+                    $("#sa-hpc-dropdown-optset > button").html(settings["sa-hpc"].toUpperCase());
+                    $("#sa-project-dropdown-optset > button").html(settings["sa-project"]).prop("disabled", false);
+                    $(".dropdown-item.project." + settings["sa-hpc"]).removeClass("gone");
                 }
             }
         }
-        // load service account hpc
     }
 
     static populateServiceAccountSettings(jObj) {
-        $("#sa-hpc-dropdown-menu").empty();
-        $("#sa-project-dropdown-menu").empty();
+        $("#sa-hpc-dropdown-optset > ul").empty();
+        $("#sa-project-dropdown-optset > ul").empty();
 
         let saHPC = Object.keys(jObj);
         let dividerNum = saHPC.length - 1;
         
         for (let i=0; i < saHPC.length; i++) {
-            $("#sa-hpc-dropdown-menu").append("<li><a id='dropdown-item-hpc-"+ saHPC[i].toLowerCase() +"' class='dropdown-item hpc' onclick='setServiceAccountHPC(this.innerText);'>" + saHPC[i] + "</a></li>");
+            $("#sa-hpc-dropdown-optset > ul").append("<li><a id='dropdown-item-hpc-"+ saHPC[i].toLowerCase() +"' class='dropdown-item hpc' onclick='setServiceAccountHPC(this.innerText);'>" + saHPC[i] + "</a></li>");
             if (dividerNum > 0) {
-                $("#sa-hpc-dropdown-menu").append("<li><hr class='dropdown-divider'></li>");
+                $("#sa-hpc-dropdown-optset > ul").append("<li><hr class='dropdown-divider'></li>");
                 dividerNum -= 1;
             } 
         }
@@ -242,9 +244,9 @@ class OptimizationSettingsDialog {
             let dividerNum = projects.length - 1;
 
             for (let i=0; i < projects.length; i++) {
-                $("#sa-project-dropdown-menu").append("<li><a class='dropdown-item project "+ hpc.toLowerCase() +" gone' onclick='setServiceAccountProject(this.innerText);'>"+ projects[i] +"</a></li>");
+                $("#sa-project-dropdown-optset > ul").append("<li><a class='dropdown-item project "+ hpc.toLowerCase() +" gone' onclick='setServiceAccountProject(this.innerText);'>"+ projects[i] +"</a></li>");
                 if (dividerNum > 0) {
-                    $("#sa-project-dropdown-menu").append("<li><hr class='dropdown-divider'></li>");
+                    $("#sa-project-dropdown-optset > ul").append("<li><hr class='dropdown-divider'></li>");
                     dividerNumm -= 1;
                 } 
             }
@@ -304,12 +306,12 @@ class OptimizationSettingsDialog {
             }             
         }
         if (hpc == "SA") {
-            if ($("#sa-hpc-dropdown-btn").text().toLowerCase() == "select hpc") {
-                $("#sa-hpc-dropdown-btn").html("Select HPC");
-                $("#sa-project-dropdown-btn").html("Select Project").prop("disabled", true);
+            if ($("#sa-hpc-dropdown-optset > button").text().toLowerCase() == "select hpc") {
+                $("#sa-hpc-dropdown-optset > button").html("Select HPC");
+                $("#sa-project-dropdown-optset > button").html("Select Project").prop("disabled", true);
             } else {
-                data["sa-hpc"] = $("#sa-hpc-dropdown-btn").text().toLowerCase();
-                data["sa-project"] = $("#sa-project-dropdown-btn").text().toLowerCase();
+                data["sa-hpc"] = $("#sa-hpc-dropdown-optset > button").text().toLowerCase();
+                data["sa-project"] = $("#sa-project-dropdown-optset > button").text().toLowerCase();
             }
             data["gen-max"] = $("#sa-gen-max").val();
             data["offspring"] = $("#sa-offspring").val();
@@ -349,9 +351,9 @@ class OptimizationSettingsDialog {
             }
         }
         if (hpc == "SA") {
-            if ($("#sa-hpc-dropdown-btn").text().toLowerCase() != "select hpc") {
-                formData.append("sa-hpc", $("#sa-hpc-dropdown-btn").text().toLowerCase());
-                formData.append("sa-project", $("#sa-project-dropdown-btn").text().toLowerCase());
+            if ($("#sa-hpc-dropdown-optset > button").text().toLowerCase() != "select hpc") {
+                formData.append("sa-hpc", $("#sa-hpc-dropdown-optset > button").text().toLowerCase());
+                formData.append("sa-project", $("#sa-project-dropdown-optset > button").text().toLowerCase());
             }
             formData.append("gen-max", $("#sa-gen-max").val());
             formData.append("offspring", $("#sa-offspring").val());
@@ -372,9 +374,6 @@ class OptimizationSettingsDialog {
         Log.debug("open settings dialog");
         $("#overlayparam").css("display", "block");
         $("#overlaywrapper").css("display", "block");
-        // $("#username_submit").removeClass("is-invalid");
-        // $("#password_submit").removeClass("is-invalid");
-        // $("#daint_project_id").removeClass("is-invalid");
     }
 
     static close() {

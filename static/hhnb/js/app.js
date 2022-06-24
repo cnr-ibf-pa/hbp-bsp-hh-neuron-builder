@@ -231,7 +231,6 @@ $(".download-btn").on("click", (button) => {
 $("#opt-set-btn").on("click", () => {
     Log.debug("Set parameters button clicked");
     let settings = workflow.getOptimizationSettings();
-    Log.debug(settings);
     OptimizationSettingsDialog.loadSettings(settings);
     OptimizationSettingsDialog.open();
 })
@@ -524,17 +523,23 @@ $(".jobs-unicore").on("click", (button) => {
     if (jButton.hasClass("clicked")) {
         return false;
     }
+    jButton.addClass("clicked");
     resetJobFetchDiv();
     $.get("/hh-neuron-builder/get-authentication")
         .done(() => {
-            jButton.addClass("clicked");
+            jButton.addClass("active");
             if (button.currentTarget.id == "jobsDaint") {
                 displayJobList(jButton);
             } else if (button.currentTarget.id == "jobsSA") {
-                jButton.addClass("active");
-                $("#tableRow").css("display", "none");
-                $("#saChoiseRow").css("display", "flex");
-                jButton.addClass("clicked");
+                $.getJSON("/hh-neuron-builder/get-service-account-content")
+                    .done((data) => {
+                        $("#tableRow").css("display", "none");
+                        $("#saChoiseRow").css("display", "flex");
+
+                    })
+                    .fail((error) => {
+                        
+                    })
             }
         })
         .fail((error) => { 

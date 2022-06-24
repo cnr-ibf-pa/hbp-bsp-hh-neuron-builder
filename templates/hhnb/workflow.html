@@ -357,9 +357,9 @@
                                             <div class="card input-card">
                                                 <div class="card-header input-card-header">HPC System</div>
                                                 <div class="card-body">
-                                                    <div id="sa-hpc-dropdown" class="dropdown">
-                                                        <button class="btn btn-secondary dropdown-toggle sa-dropdown" type="button" id="sa-hpc-dropdown-btn" data-bs-toggle="dropdown" aria-expanded="false">Select HPC</button>
-                                                        <ul id="sa-hpc-dropdown-menu" class="dropdown-menu sa-dropdown-menu" aria-labelledby="sa-hpc-dropdown-btn"></ul>
+                                                    <div id="sa-hpc-dropdown-optset" class="dropdown">
+                                                        <button class="btn btn-secondary dropdown-toggle sa-dropdown" type="button" data-bs-toggle="dropdown" aria-expanded="false">Select HPC</button>
+                                                        <ul class="dropdown-menu sa-dropdown-menu" aria-labelledby="sa-hpc-dropdown-btn"></ul>
                                                       </div>
                                                 </div>
                                             </div>
@@ -368,12 +368,12 @@
                                             <div class="card input-card">
                                                 <div class="card-header input-card-header">Service Account Project</div>
                                                 <div class="card-body">
-                                                    <div id="sa-project-dropdown" class="dropdown">
-                                                        <button class="btn btn-secondary dropdown-toggle sa-dropdown" type="button" id="sa-project-dropdown-btn" data-bs-toggle="dropdown" aria-expanded="false" disabled>
+                                                    <div id="sa-project-dropdown-optset" class="dropdown">
+                                                        <button class="btn btn-secondary dropdown-toggle sa-dropdown" type="button" data-bs-toggle="dropdown" aria-expanded="false" disabled>
                                                           Select Project
                                                         </button>
-                                                        <ul id="sa-project-dropdown-menu" class="dropdown-menu sa-dropdown-menu" aria-labelledby="sa-project-dropdown-btn"></ul>
-                                                      </div>
+                                                        <ul class="dropdown-menu sa-dropdown-menu" aria-labelledby="sa-project-dropdown-btn"></ul>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -474,34 +474,37 @@
                 </div>
             </div>
             <div id="saChoiseRow" class="row">
-                <div class="card" style="border-radius: .5rem; padding: 10px;">
-                <div class="row">
-                    <div class="col">
-                        <div class="card input-card">
-                            <div class="card-header input-card-header">HPC System</div>
-                            <div class="card-body">
-                                <div id="sa-hpc-dropdown" class="dropdown">
-                                    <button class="btn btn-secondary dropdown-toggle sa-dropdown" type="button" id="sa-hpc-dropdown-btn" data-bs-toggle="dropdown" aria-expanded="false">Select HPC</button>
-                                    <ul id="sa-hpc-dropdown-menu" class="dropdown-menu sa-dropdown-menu" aria-labelledby="sa-hpc-dropdown-btn"></ul>
-                                  </div>
+                <div class="card" style="border-radius: .5rem; padding: 0px;">
+                    <div class="card-header input-card-header">Service Account</div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col">
+                                <div class="card input-card">
+                                    <div class="card-header input-card-header">HPC System</div>
+                                    <div class="card-body">
+                                        <div id="sa-hpc-dropdown-jobs" class="dropdown">
+                                            <button class="btn btn-secondary dropdown-toggle sa-dropdown" type="button" data-bs-toggle="dropdown" aria-expanded="false">Select HPC</button>
+                                            <ul class="dropdown-menu sa-dropdown-menu" aria-labelledby="sa-hpc-dropdown-btn"></ul>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                    </div>
-                    <div class="col">
-                        <div class="card input-card">
-                            <div class="card-header input-card-header">Service Account Project</div>
-                            <div class="card-body">
-                                <div id="sa-project-dropdown" class="dropdown">
-                                    <button class="btn btn-secondary dropdown-toggle sa-dropdown" type="button" id="sa-project-dropdown-btn" data-bs-toggle="dropdown" aria-expanded="false" disabled>
-                                      Select Project
-                                    </button>
-                                    <ul id="sa-project-dropdown-menu" class="dropdown-menu sa-dropdown-menu" aria-labelledby="sa-project-dropdown-btn"></ul>
-                                  </div>
+                            <div class="col">
+                                <div class="card input-card">
+                                    <div class="card-header input-card-header">Service Account Project</div>
+                                    <div class="card-body">
+                                        <div id="sa-project-dropdown-jobs" class="dropdown">
+                                            <button class="btn btn-secondary dropdown-toggle sa-dropdown" type="button" data-bs-toggle="dropdown" aria-expanded="false" disabled>
+                                            Select Project
+                                            </button>
+                                            <ul class="dropdown-menu sa-dropdown-menu" aria-labelledby="sa-project-dropdown-btn"></ul>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
             </div>
             <div id="spinnerRow" class="row">
                 <div id="jobSpinner" class="text-center">

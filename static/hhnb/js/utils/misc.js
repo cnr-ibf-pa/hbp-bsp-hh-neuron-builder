@@ -91,13 +91,14 @@ $("#modelPrivate").on("click", (button) => {
 
 
 function setServiceAccountHPC(hpc) {
-    // let hpc = b.innerText
-    if ($("#sa-hpc-dropdown-btn").text() == hpc) {
+    let hpcButton = $("#sa-hpc-dropdown-optset > button");
+    let projectButton = $("#sa-project-dropdown-optset > button") 
+    if (hpcButton.text() == hpc) {
         return false;
     }
-    $("#sa-hpc-dropdown-btn").html(hpc);
-    $("#sa-project-dropdown-btn").prop("disabled", false);
-    $("#sa-project-dropdown-btn").html("Select Project");
+    hpcButton.html(hpc);
+    projectButton.prop("disabled", false).html("Select Project");
+    
     $(".dropdown-item.project").addClass("gone");
     $(".dropdown-item.project." + hpc.toLowerCase()).removeClass("gone");
     
@@ -110,5 +111,5 @@ function setServiceAccountHPC(hpc) {
 }
 
 function setServiceAccountProject(project) {
-    $("#sa-project-dropdown-btn").html(project);
+    $("#sa-project-dropdown-optset > button").html(project);
 }

@@ -673,6 +673,7 @@ def optimization_settings(request, exc=None):
 
         try:
             settings['settings'].update(workflow.get_optimization_settings())
+            print(settings)
             return ResponseUtil.ok_json_response(settings)
         except FileNotFoundError as e:
             return ResponseUtil.ok_json_response(settings)
@@ -703,12 +704,14 @@ def optimization_settings(request, exc=None):
                     request.session['nsg_password'] = nsg_password
                     request.session.save()
                         
-                workflow.set_optimization_settings(optimization_settings)
+        workflow.set_optimization_settings(optimization_settings)
 
-            if optimization_settings['username_submit'] and optimization_settings['password_submit']:
-                return ResponseUtil.ok_json_response()
-            else:
+        if optimization_settings['hpc'] == 'NSG':
+            if not optimization_settings['username_submit'] and not optimization_settings['password_submit']:
                 return ResponseUtil.ko_response(messages.AUTHENTICATION_INVALID_CREDENTIALS)
+
+        return ResponseUtil.ok_json_response()
+
     else:
         return ResponseUtil.method_not_allowed()
 
