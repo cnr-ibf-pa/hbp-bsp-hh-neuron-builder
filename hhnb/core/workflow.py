@@ -5,7 +5,6 @@ Workspace utils classes
 from hh_neuron_builder.settings import MEDIA_ROOT, HHF_TEMPLATE_DIR, TMP_DIR, LOG_ROOT_PATH
 
 from hhnb.core.conf.exec_files_conf import ExecFileConf
-from hhnb.core.conf import get_default_optimization_values
 
 from hhnb.core.lib.exception.workflow_exception import *
 from hhnb.core.model import *
