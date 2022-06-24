@@ -531,10 +531,8 @@ $(".jobs-unicore").on("click", (button) => {
             if (button.currentTarget.id == "jobsDaint") {
                 displayJobList(jButton);
             } else if (button.currentTarget.id == "jobsSA") {
-                jButton.addClass("active");
-                $("#tableRow").css("display", "none");
-                $("#saChoiseRow").css("display", "flex");
-                jButton.addClass("clicked");
+                jButton.addClass("active clicked");
+                loadSAContent();
             }
         })
         .fail((error) => { 
@@ -542,6 +540,27 @@ $(".jobs-unicore").on("click", (button) => {
             $("#jobsAuthAlert").addClass("show");
         });
 });
+
+
+function loadSAContent() {
+    $("#spinnerRow").css("display", "flex");
+    $.getJSON("/hh-neuron-builder/get-service-account-content")
+        .done((data) => {
+            Log.debug(data);
+            if (!data["service-account"]) {
+                $("#saAlert").addClass("show");
+                $("#jobsSA").removeClass("clicked active").blur();
+                return;
+            }
+            $("#tableRow").css("display", "none");
+            $("#saChoiseRow").css("display", "flex");
+            // $("#")
+        })
+        .then(() => {
+            $("#spinnerRow").css("display", "none");
+        })
+}
+
 
 $("#jobsNSG").on("click", (button) => {
     let jButton = $("#" + button.currentTarget.id);
