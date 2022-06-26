@@ -12,6 +12,7 @@ const workflow = new Workflow(exc, hhf_dict);
 function checkRefreshSession(response) {
     console.log(response);
     if (response.status === 403 && response.responseJSON.refresh_url) {
+        $("#overlaywrapper").css("display", "none");
         showLoadingAnimation("Session expired.<br>Refreshing session automatically...");
         $.ajax({
             url: "/hh-neuron-builder/session-refresh/" + exc,
@@ -513,6 +514,8 @@ function resetJobFetchDiv() {
     $("#checkNsgSpinnerButton").css("opacity", "0");
     $("#usernameNsg").removeClass("is-invalid");
     $("#passwordNsg").removeClass("is-invalid");
+    $("#sa-project-dropdown-jobs-btn").prop("disabled", true);
+    $("#sa-fetch-jobs").prop("disabled", true);
     resetProgressBar();
 }
 
@@ -523,11 +526,11 @@ $(".jobs-unicore").on("click", (button) => {
     if (jButton.hasClass("clicked")) {
         return false;
     }
-    jButton.addClass("clicked");
     resetJobFetchDiv();
+    $("#spinnerRow").css("display", "flex");
+    jButton.addClass("clicked active");
     $.get("/hh-neuron-builder/get-authentication")
         .done(() => {
-            jButton.addClass("active");
             if (button.currentTarget.id == "jobsDaint") {
                 displayJobList(jButton);
             } else if (button.currentTarget.id == "jobsSA") {
@@ -552,14 +555,26 @@ function loadSAContent() {
                 $("#jobsSA").removeClass("clicked active").blur();
                 return;
             }
+            populateServiceAccountSettings(data["service-account"], "jobs");
             $("#tableRow").css("display", "none");
             $("#saChoiseRow").css("display", "flex");
-            // $("#")
+            if ($("#sa-hpc-dropdown-jobs-btn").text().toLowerCase() != "select hpc") {
+                $(".dropdown-item.project." + $("#sa-hpc-dropdown-jobs-btn").text().toLowerCase()).removeClass("gone");
+                $("#sa-project-dropdown-jobs-btn").prop("disabled", false);
+                $("#sa-fetch-jobs").prop("disabled", false);
+            }
         })
         .then(() => {
             $("#spinnerRow").css("display", "none");
         })
 }
+
+
+$("#sa-fetch-jobs").on("click", () => {
+    // resetJobFetchDiv();
+    $("#saChoiseRow").css("display", "none");
+    displayJobList($("#jobsSA"));
+}) 
 
 
 $("#jobsNSG").on("click", (button) => {
@@ -568,10 +583,9 @@ $("#jobsNSG").on("click", (button) => {
         return false;
     }
     resetJobFetchDiv();
-    $("#jobsNSG").addClass("active");
+    $("#jobsNSG").addClass("active clicked");
     $("#tableRow").css("display", "none");
     $("#nsgLoginRow").css("display", "flex");
-    jButton.addClass("clicked");
 });
 
 
@@ -588,7 +602,13 @@ function displayJobList(button) {
     button.attr("aria-disabled", "false").removeClass("disabled").addClass("active");
     let hpc = button.attr("name");
 
-    $.getJSON("/hh-neuron-builder/fetch-jobs/" + exc, { hpc })
+    let saHPC, saProject;
+    if (hpc == "SA") {
+        saHPC = $("#sa-hpc-dropdown-jobs-btn").text().toLowerCase();
+        saProject = $("#sa-project-dropdown-jobs-btn").text().toLowerCase();
+    }
+
+    $.getJSON("/hh-neuron-builder/fetch-jobs/" + exc, { hpc, saHPC, saProject })
         .done((results) => {
             let jobs = results.jobs;
             Log.debug(jobs);

@@ -169,7 +169,7 @@ class OptimizationSettingsDialog {
                 $("#accordionSA").append("&emsp;<b>*( temporarily unreachable )</b>");
             }
         }
-        this.populateServiceAccountSettings(jObj["service-account"]);
+        populateServiceAccountSettings(jObj["service-account"], "submit");
         let settings = jObj.settings;
         Log.debug(settings);
         
@@ -224,34 +224,7 @@ class OptimizationSettingsDialog {
         }
     }
 
-    static populateServiceAccountSettings(jObj) {
-        $("#sa-hpc-dropdown-optset > ul").empty();
-        $("#sa-project-dropdown-optset > ul").empty();
-
-        let saHPC = Object.keys(jObj);
-        let dividerNum = saHPC.length - 1;
-        
-        for (let i=0; i < saHPC.length; i++) {
-            $("#sa-hpc-dropdown-optset > ul").append("<li><a id='dropdown-item-hpc-"+ saHPC[i].toLowerCase() +"' class='dropdown-item hpc' onclick='setServiceAccountHPC(this.innerText);'>" + saHPC[i] + "</a></li>");
-            if (dividerNum > 0) {
-                $("#sa-hpc-dropdown-optset > ul").append("<li><hr class='dropdown-divider'></li>");
-                dividerNum -= 1;
-            } 
-        }
-
-        for (var hpc in jObj) {
-            let projects = jObj[hpc];
-            let dividerNum = projects.length - 1;
-
-            for (let i=0; i < projects.length; i++) {
-                $("#sa-project-dropdown-optset > ul").append("<li><a class='dropdown-item project "+ hpc.toLowerCase() +" gone' onclick='setServiceAccountProject(this.innerText);'>"+ projects[i] +"</a></li>");
-                if (dividerNum > 0) {
-                    $("#sa-project-dropdown-optset > ul").append("<li><hr class='dropdown-divider'></li>");
-                    dividerNumm -= 1;
-                } 
-            }
-        }
-    }
+    
 
     static getJsonData() {
         const data = new Object();

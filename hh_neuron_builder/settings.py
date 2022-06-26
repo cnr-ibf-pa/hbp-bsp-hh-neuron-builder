@@ -224,7 +224,6 @@ LOGOUT_REDIRECT_URL = "/hh-neuron-builder"
 
 LOGIN_URL = 'oidc_authentication_init'
 
-
 # Logging
 
 # Set LOG_ROOT_PATH for logging files

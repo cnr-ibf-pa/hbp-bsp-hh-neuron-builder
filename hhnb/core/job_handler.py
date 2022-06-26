@@ -91,6 +91,8 @@ class JobHandler:
 
     def __init__(self):
         self._SA_ROOT_URL = 'https://bspsa.cineca.it/'
+        self._SA_JOBS_URL = self._SA_ROOT_URL + 'jobs/{}/{}/'
+        
         self._SA_DAINT_JOB_URL = self._SA_ROOT_URL + 'jobs/pizdaint/hhnb_daint_cscs/'
         self._SA_DAINT_FILES_URL = self._SA_ROOT_URL + 'files/pizdaint/hhnb_daint_cscs/'
         self._SA_NSG_JOB_URL = self._SA_ROOT_URL + 'jobs/nsg/hhnb_nsg/'
@@ -99,6 +101,7 @@ class JobHandler:
         self._DAINT_URL = 'https://brissago.cscs.ch:8080/DAINT-CSCS/rest/core'
         
         self._DAINT_CSCS = 'DAINT-CSCS'
+        self._SA = 'SA'
         self._SA_CSCS = 'SA-CSCS'
         self._NSG = 'NSG'
         self._SA_NSG = 'SA-NSG'
@@ -638,7 +641,7 @@ class JobHandler:
             message = messages.JOB_SUBMITTED.format('SA-NSG') 
         return ResponseUtil.ok_response(message)
 
-    def _get_service_account_jobs(self, hpc, token):
+    def _get_service_account_jobs(self, hpc, project, token):
         """
         Returns a list of all jobs submitted using the Service Account
         by the user to the selected HPC system.
@@ -661,11 +664,14 @@ class JobHandler:
             if something happens on the Service Account side
         """
         headers = self._get_service_account_headers(token)
-        if hpc == self._SA_CSCS:
-            sa_endpoint = self._SA_DAINT_JOB_URL
-        elif hpc == self._SA_NSG:
-            sa_endpoint = self._SA_NSG_JOB_URL
+        # if hpc == self._SA_CSCS:
+        #     sa_endpoint = self._SA_DAINT_JOB_URL
+        # elif hpc == self._SA_NSG:
+        #     sa_endpoint = self._SA_NSG_JOB_URL
+        sa_endpoint = self._SA_JOBS_URL.format(hpc, project)
+        print(sa_endpoint)
         r = requests.get(url=sa_endpoint, headers=headers)
+        print(r.content)
         logger.debug(f'requests: {r.url} with headers: {r.headers}')
         if r.status_code != 200:
             logger.error(f'CODE: {r.status_code}, CONTENT: {r.content}')
@@ -763,7 +769,7 @@ class JobHandler:
         return ResponseUtil.ko_response(messages.GENERAL_ERROR)
        
     @classmethod
-    def fetch_jobs_list(cls, hpc, user):
+    def fetch_jobs_list(cls, hpc, user, sa_hpc=None, sa_project=None):
         """
         A static method to easly fetch the jobs list from the selected HPC system.
         
@@ -800,8 +806,9 @@ class JobHandler:
                 }
                 jobs.update(job)
 
-        elif hpc == job_handler._SA_CSCS or hpc == job_handler._SA_NSG:
-            raw_jobs = job_handler._get_service_account_jobs(hpc, user.get_token())
+        # elif hpc == job_handler._SA_CSCS or hpc == job_handler._SA_NSG:
+        elif hpc == job_handler._SA:
+            raw_jobs = job_handler._get_service_account_jobs(sa_hpc, sa_project, user.get_token())
             for raw_job in raw_jobs:
                 job = {raw_job['job_id']: {
                     'workflow_id': raw_job['title'],
@@ -860,14 +867,15 @@ class JobHandler:
                 'password': user.get_nsg_user().get_password()
             }
         
-        if hpc == job_handler._DAINT_CSCS:
+        elif hpc == job_handler._DAINT_CSCS:
             raw_file_list = job_handler._get_unicore_job_results(hpc, user.get_token(), job_id)
             file_list = {
                 'root_url': 'unicore', 
                 'file_list': raw_file_list
             }
         
-        if hpc == job_handler._SA_CSCS or hpc == job_handler._SA_NSG:
+        # if hpc == job_handler._SA_CSCS or hpc == job_handler._SA_NSG:
+        elif hpc == job_handler._SA:
             raw_file_list = job_handler._get_service_account_job_results(hpc, user.get_token(), job_id)
             if hpc == job_handler._SA_CSCS:
                 root_url = job_handler._SA_DAINT_FILES_URL + job_id

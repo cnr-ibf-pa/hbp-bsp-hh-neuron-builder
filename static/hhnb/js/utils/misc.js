@@ -90,9 +90,10 @@ $("#modelPrivate").on("click", (button) => {
 });
 
 
-function setServiceAccountHPC(hpc) {
-    let hpcButton = $("#sa-hpc-dropdown-optset > button");
-    let projectButton = $("#sa-project-dropdown-optset > button") 
+function setServiceAccountHPC(hpc, context) {
+    let hpcButton = $("#sa-hpc-dropdown-" + context + " > button");
+    let projectButton = $("#sa-project-dropdown-" + context + " > button");
+    
     if (hpcButton.text() == hpc) {
         return false;
     }
@@ -104,12 +105,44 @@ function setServiceAccountHPC(hpc) {
     
     // automatically set the project if there is only one project for the selecte HPC system
     if ($(".dropdown-item.project." + hpc.toLowerCase()).length == 1) {
-        setServiceAccountProject(
-            $(".dropdown-item.project." + hpc.toLowerCase()).text()
-        )
+        setServiceAccountProject($(".dropdown-item.project." + hpc.toLowerCase()).text(), context)
     }
 }
 
-function setServiceAccountProject(project) {
-    $("#sa-project-dropdown-optset > button").html(project);
+function setServiceAccountProject(project, context) {
+    $("#sa-project-dropdown-" + context + " > button").html(project);
+    if (context == "jobs") {
+        $("#sa-fetch-jobs").prop("disabled", false);
+    }
+}
+
+function populateServiceAccountSettings(jObj, context) {
+    var hpcList = $("#sa-hpc-dropdown-" + context + " > ul"); 
+    var projectList = $("#sa-project-dropdown-" + context + " > ul");
+
+    hpcList.empty();
+    projectList.empty();
+
+    let saHPC = Object.keys(jObj);
+    let dividerNum = saHPC.length - 1;
+
+    for (let i=0; i < saHPC.length; i++) {
+        hpcList.append("<li><a id='dropdown-item-hpc-"+ saHPC[i].toLowerCase() +"' class='dropdown-item hpc' onclick='setServiceAccountHPC(this.innerText, \"" + context + "\");'>" + saHPC[i] + "</a></li>");
+        if (dividerNum > 0) {
+            hpcList.append("<li><hr class='dropdown-divider'></li>");
+            dividerNum -= 1;
+        } 
+    }
+
+    for (var hpc in jObj) {
+        let projects = jObj[hpc];
+        let dividerNum = projects.length - 1;
+        for (let i=0; i < projects.length; i++) {
+            projectList.append("<li><a class='dropdown-item project "+ hpc.toLowerCase() +" gone' onclick='setServiceAccountProject(this.innerText,\"" + context + "\");'>"+ projects[i] +"</a></li>");
+            if (dividerNum > 0) {
+                projectList.append("<li><hr class='dropdown-divider'></li>");
+                dividerNumm -= 1;
+            } 
+        }
+    }
 }
