@@ -634,6 +634,9 @@ def fetch_jobs(request, exc):
         return ResponseUtil.no_exc_code_response()
 
     hpc = request.GET.get('hpc')
+    sa_hpc = request.GET.get('saHPC')
+    sa_project = request.GET.get('saProject')
+
     if not hpc:
         return ResponseUtil.ko_response(messages.NO_HPC_SELECTED)
 
@@ -641,7 +644,7 @@ def fetch_jobs(request, exc):
     logger.info(LOG_ACTION.format(hhnb_user, 'fetch all %s jobs' % hpc))
 
     try:
-        data = JobHandler.fetch_jobs_list(hpc, hhnb_user)
+        data = JobHandler.fetch_jobs_list(hpc, hhnb_user, sa_hpc, sa_project)
         return ResponseUtil.ok_json_response(data)
     except JobHandler.ServiceAccountException as e:
         logger.error(e)
@@ -1064,8 +1067,6 @@ def get_service_account_content(request):
     try:
         r0 = requests.get(SERVICE_ACCOUNT_ROOT_URL + 'hpc/', timeout=30)
         r1 = requests.get(SERVICE_ACCOUNT_ROOT_URL + 'projects/', timeout=30)
-        import time
-        time.sleep(10)
         if r0.status_code == 200 and r1.status_code == 200:
             for hpc in r0.json():
                 h = hpc['id']
