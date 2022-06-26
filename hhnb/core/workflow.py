@@ -492,10 +492,18 @@ class Workflow(_WorkflowBase):
                 ['mechanisms', 'morphology', 'checkpoints']:
                 analysis_flag = True
 
+        optset_flag = False
+        if os.path.exists(self._optimization_settings):
+            with open(self._optimization_settings, 'r') as fd:
+                jj = json.load(fd)
+            if jj.get('hpc') == 'SA':
+                if jj.get('sa-hpc') and jj.get('sa-project'):
+                    optset_flag = True
+
         props = {
             'id': self._id,
             'model': self._model.get_properties(), 
-            'optimization_settings': os.path.exists(self._optimization_settings),
+            'optimization_settings': optset_flag,
             'etraces': any(os.scandir(self._etraces_dir)),
             'job_submitted': job_submitted,
             'results': any(os.scandir(self._results_dir)),

@@ -165,6 +165,7 @@ export default class Workflow {
 
     #updateSettingsBlock() {
         let bar = $("#opt-param-bar");
+        console.log(this.#props.optimization_settings);
         if (this.#props.optimization_settings) {
             bar.addClass("green").removeClass("red");
             bar.text("");

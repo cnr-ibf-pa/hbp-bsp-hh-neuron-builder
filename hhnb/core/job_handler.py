@@ -585,7 +585,7 @@ class JobHandler:
             headers.update({'payload': json.dumps(payload)})
         return headers
 
-    def _submit_on_service_account(self, hpc, token, zip_file, settings):
+    def _submit_on_service_account(self, hpc, project, token, zip_file, settings):
         """
         Submit a job behind the Service Account in the selected HPC 
         system. To submit a job, an available HPC system must be choose
@@ -613,8 +613,8 @@ class JobHandler:
         """
         zip_name = os.path.split(zip_file)[1]
         payload = self._get_service_account_payload(
-            command=self._get_unicore_command(zip_name) if hpc=='SA-CSCS' else None,
-            tool=self._NSG_TOOL if hpc=='SA-NSG' else None,
+            command=self._get_unicore_command(zip_name) if hpc=='pizdaint' else None,
+            tool=self._NSG_TOOL if hpc=='nsg' else None,
             node_num=settings['node-num'],
             core_num=settings['core-num'],
             runtime=settings['runtime'],
@@ -624,21 +624,16 @@ class JobHandler:
         headers = self._get_service_account_headers(token, zip_name, payload)
         job_file = {'file': open(zip_file, 'rb')}
         
-        if hpc == self._SA_CSCS:
-            sa_endpoint = self._SA_DAINT_JOB_URL
-        elif hpc == self._SA_NSG:
-            sa_endpoint =self._SA_NSG_JOB_URL
+        sa_endpoint = self._SA_JOBS_URL.format(hpc, project)
+
         r = requests.post(url=sa_endpoint, headers=headers, files=job_file)
         logger.debug(f'requests: {r.url} with headers: {r.headers} and files: {job_file}')
         if r.status_code >= 400:
             logger.error(f'CODE: {r.status_code}, CONTENT: {r.content}')
             return ResponseUtil.ko_response(r.text)
 
-        message = 'Job submitted'
-        if hpc == self._SA_CSCS:
-            message = messages.JOB_SUBMITTED.format('SA-CSCS')
-        elif hpc == self._SA_NSG:
-            message = messages.JOB_SUBMITTED.format('SA-NSG') 
+        message = messages.JOB_SUBMITTED.format(
+            '<b>' + hpc.upper() + '</b> using the Service Account project <b>' + project + '</b>')
         return ResponseUtil.ok_response(message)
 
     def _get_service_account_jobs(self, hpc, project, token):
@@ -763,9 +758,10 @@ class JobHandler:
         elif settings['hpc'] == job_handler._DAINT_CSCS:
             return job_handler._submit_on_unicore(job_handler._DAINT_CSCS, user.get_token(),
                                                   zip_file, settings)
-        elif settings['hpc'] == job_handler._SA_CSCS or settings['hpc'] == job_handler._SA_NSG:
-            return job_handler._submit_on_service_account(settings['hpc'], user.get_token(),
-                                                          zip_file, settings)
+        # elif settings['hpc'] == job_handler._SA_CSCS or settings['hpc'] == job_handler._SA_NSG:
+        elif settings['hpc'] == job_handler._SA:
+            return job_handler._submit_on_service_account(settings['sa-hpc'], settings['sa-project'],
+                                                          user.get_token(), zip_file, settings)
         return ResponseUtil.ko_response(messages.GENERAL_ERROR)
        
     @classmethod

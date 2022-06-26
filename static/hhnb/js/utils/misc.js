@@ -99,7 +99,14 @@ function setServiceAccountHPC(hpc, context) {
     }
     hpcButton.html(hpc);
     projectButton.prop("disabled", false).html("Select Project");
-    
+    if (hpc == "PIZDAINT") {
+        $("#sa-node-num").val(3);
+        $("#sa-core-num").val(24);
+    } else if (hpc == "NSG") {
+        $("#sa-node-num").val(1);
+        $("#sa-core-num").val(2);
+    }
+
     $(".dropdown-item.project").addClass("gone");
     $(".dropdown-item.project." + hpc.toLowerCase()).removeClass("gone");
     
@@ -111,9 +118,11 @@ function setServiceAccountHPC(hpc, context) {
 
 function setServiceAccountProject(project, context) {
     $("#sa-project-dropdown-" + context + " > button").html(project);
-    if (context == "jobs") {
+    if (context == "optset") {
+        $("#apply-param").prop("disabled", false);
+    } else if (context == "jobs") {
         $("#sa-fetch-jobs").prop("disabled", false);
-    }
+    } 
 }
 
 function populateServiceAccountSettings(jObj, context) {
