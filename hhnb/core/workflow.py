@@ -248,7 +248,6 @@ class Workflow(_WorkflowBase):
             'etraces': any(os.scandir(self._etraces_dir)),
             'job_submitted': job_submitted,
             'results': any(os.scandir(self._results_dir)),
-            # 'analysis': any(os.scandir(self._analysis_dir)),
             'analysis': analysis_flag
         }
         return props
@@ -552,13 +551,13 @@ class WorkflowUtil:
         
         curr_dir = os.getcwd()
        
-        # log_file_path = os.path.join(LOG_ROOT_PATH, 'analysis', workflow.get_user())
-        # if not os.path.exists(log_file_path):
-        #     os.makedirs(log_file_path)
-        # log_file = os.path.join(log_file_path, workflow.get_id() + '.log')
+        log_file_path = os.path.join(LOG_ROOT_PATH, 'analysis', workflow.get_user())
+        if not os.path.exists(log_file_path):
+            os.makedirs(log_file_path)
+        log_file = os.path.join(log_file_path, workflow.get_id() + '.log')
         
-        build_mechanisms_command = f'source {env_prefix}/bin/activate; nrnivmodl mechanisms'# > {log_file}'
-        opt_neuron_analysis_command = f'source {env_prefix}/bin/activate; python ./opt_neuron.py --analyse --checkpoint ./checkpoints'# > {log_file}' 
+        build_mechanisms_command = f'source {env_prefix}/bin/activate; nrnivmodl mechanisms > {log_file}'
+        opt_neuron_analysis_command = f'source {env_prefix}/bin/activate; python ./opt_neuron.py --analyse --checkpoint ./checkpoints > {log_file}'
         
         os.chdir(output_dir)
         p0 = subprocess.call(build_mechanisms_command, shell=True, executable='/bin/bash')
