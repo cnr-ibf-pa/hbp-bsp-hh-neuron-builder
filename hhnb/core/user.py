@@ -154,7 +154,6 @@ class NsgUser:
                          auth=(self._username, self._password), 
                          headers={'cipres-appkey': NSG_KEY},
                          verify=False)
-        print(r.status_code, r.content)
         if r.status_code == 200:
             return True
         return False

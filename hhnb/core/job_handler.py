@@ -92,11 +92,7 @@ class JobHandler:
     def __init__(self):
         self._SA_ROOT_URL = 'https://bspsa.cineca.it/'
         self._SA_JOBS_URL = self._SA_ROOT_URL + 'jobs/{}/{}/'
-        
-        self._SA_DAINT_JOB_URL = self._SA_ROOT_URL + 'jobs/pizdaint/hhnb_daint_cscs/'
-        self._SA_DAINT_FILES_URL = self._SA_ROOT_URL + 'files/pizdaint/hhnb_daint_cscs/'
-        self._SA_NSG_JOB_URL = self._SA_ROOT_URL + 'jobs/nsg/hhnb_nsg/'
-        self._SA_NSG_FILES_URL = self._SA_ROOT_URL + 'files/nsg/hhnb_nsg/'
+        self._SA_FILES_URL = self._SA_ROOT_URL + 'files/{}/{}/'
         self._NSG_URL = 'https://nsgr.sdsc.edu:8443/cipresrest/v1'
         self._DAINT_URL = 'https://brissago.cscs.ch:8080/DAINT-CSCS/rest/core'
         
@@ -201,7 +197,7 @@ class JobHandler:
             if not r.status_code == 200:
                 return ResponseUtil.ko_response(r.text)
 
-            return ResponseUtil.ok_response(messages.JOB_SUBMITTED.format('NSG'))            
+            return ResponseUtil.ok_response(messages.JOB_SUBMITTED.format('<b>NSG</b>'))            
 
         return ResponseUtil.ko_response(r.text)
 
@@ -467,7 +463,7 @@ class JobHandler:
         client = self._initialize_unicore_client(hpc, token)        
         job = client.new_job(job_description=job_description, inputs=[zip_file])
         logger.info(f'job submitted on UNICORE Client: {job}')
-        return ResponseUtil.ok_response(messages.JOB_SUBMITTED.format(hpc))
+        return ResponseUtil.ok_response(messages.JOB_SUBMITTED.format('<b>' + hpc + '</b>'))
 
     def _get_unicore_jobs(self, hpc, token):
         """
@@ -659,21 +655,15 @@ class JobHandler:
             if something happens on the Service Account side
         """
         headers = self._get_service_account_headers(token)
-        # if hpc == self._SA_CSCS:
-        #     sa_endpoint = self._SA_DAINT_JOB_URL
-        # elif hpc == self._SA_NSG:
-        #     sa_endpoint = self._SA_NSG_JOB_URL
         sa_endpoint = self._SA_JOBS_URL.format(hpc, project)
-        print(sa_endpoint)
         r = requests.get(url=sa_endpoint, headers=headers)
-        print(r.content)
         logger.debug(f'requests: {r.url} with headers: {r.headers}')
         if r.status_code != 200:
             logger.error(f'CODE: {r.status_code}, CONTENT: {r.content}')
             raise self.ServiceAccountException(r.content, r.status_code)
         return r.json()
 
-    def _get_service_account_job_results(self, hpc, token, job_id):
+    def _get_service_account_job_results(self, hpc, project, token, job_id):
         """
         Returns a list of the files once the job ends.
         The list is formed by a json object per file 
@@ -703,12 +693,9 @@ class JobHandler:
         """
         headers = self._get_service_account_headers(token)
         
-        if hpc == self._SA_CSCS:
-            sa_endpoint = self._SA_DAINT_FILES_URL + job_id + '/'
-        elif hpc == self._SA_NSG:
-            sa_endpoint = self._SA_NSG_FILES_URL + job_id + '/'
+        sa_endpoint = self._SA_FILES_URL.format(hpc, project)
         
-        r = requests.get(url=sa_endpoint, headers=headers)
+        r = requests.get(url=sa_endpoint + job_id + '/', headers=headers)
 
         logger.debug(f'requests: {r.url} with headers: {r.headers}')
         if r.status_code >= 400:
@@ -720,9 +707,9 @@ class JobHandler:
         
         file_list = []
         for f in r.json():
-            if hpc == self._SA_CSCS:
+            if hpc == 'pizdaint':
                 file_list.append({'id': f, 'name': f})
-            elif hpc == self._SA_NSG:
+            elif hpc == 'nsg':
                 file_list.append({'id': f['fileid'], 'name': f['filename']})
         return file_list
           
@@ -758,7 +745,6 @@ class JobHandler:
         elif settings['hpc'] == job_handler._DAINT_CSCS:
             return job_handler._submit_on_unicore(job_handler._DAINT_CSCS, user.get_token(),
                                                   zip_file, settings)
-        # elif settings['hpc'] == job_handler._SA_CSCS or settings['hpc'] == job_handler._SA_NSG:
         elif settings['hpc'] == job_handler._SA:
             return job_handler._submit_on_service_account(settings['sa-hpc'], settings['sa-project'],
                                                           user.get_token(), zip_file, settings)
@@ -802,7 +788,6 @@ class JobHandler:
                 }
                 jobs.update(job)
 
-        # elif hpc == job_handler._SA_CSCS or hpc == job_handler._SA_NSG:
         elif hpc == job_handler._SA:
             raw_jobs = job_handler._get_service_account_jobs(sa_hpc, sa_project, user.get_token())
             for raw_job in raw_jobs:
@@ -823,7 +808,7 @@ class JobHandler:
 
 
     @classmethod
-    def fetch_job_files(cls, hpc, job_id, user):
+    def fetch_job_files(cls, hpc, job_id, user, sa_hpc=None, sa_project=None):
         """
         A static method to easly fetch the job's files that are produced
         once the HPC ends to process the job. To fetch the list a 
@@ -870,16 +855,15 @@ class JobHandler:
                 'file_list': raw_file_list
             }
         
-        # if hpc == job_handler._SA_CSCS or hpc == job_handler._SA_NSG:
         elif hpc == job_handler._SA:
-            raw_file_list = job_handler._get_service_account_job_results(hpc, user.get_token(), job_id)
-            if hpc == job_handler._SA_CSCS:
-                root_url = job_handler._SA_DAINT_FILES_URL + job_id
-            elif hpc == job_handler._SA_NSG:
-                root_url = job_handler._SA_NSG_FILES_URL + job_id + '/'
+            raw_file_list = job_handler._get_service_account_job_results(sa_hpc, sa_project, user.get_token(), job_id)
+            root_url = job_handler._SA_FILES_URL.format(sa_hpc, sa_project) + job_id
+            if sa_hpc == 'nsg':
+                root_url += '/'
             file_list = {
                 'root_url': root_url, 
                 'file_list': raw_file_list,
                 'headers': {'Authorization': 'Bearer ' + user.get_token()}
             }
+        
         return file_list

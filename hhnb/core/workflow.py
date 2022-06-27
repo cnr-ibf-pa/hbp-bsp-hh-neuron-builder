@@ -499,6 +499,11 @@ class Workflow(_WorkflowBase):
             if jj.get('hpc') == 'SA':
                 if jj.get('sa-hpc') and jj.get('sa-project'):
                     optset_flag = True
+            elif jj.get('hpc') == 'DAINT-CSCS':
+                if jj.get('project'):
+                    optset_flag = True
+            elif jj.get('hpc') == 'NSG':
+                optset_flag = True
 
         props = {
             'id': self._id,
@@ -778,11 +783,13 @@ class WorkflowUtil:
             pass
 
         settings = workflow.get_optimization_settings()
-        if settings['hpc'] == 'NSG' or settings['hpc'] == 'SA-NSG':
+        if settings['hpc'] == 'NSG' or \
+            (settings['hpc'] == 'SA' and settings['sa-hpc'] == 'nsg'):
             ExecFileConf.write_nsg_exec(dst_dir=tmp_model_dir,
                                         max_gen=settings['gen-max'],
                                         offspring=settings['offspring'])
-        elif settings['hpc'] == 'DAINT-CSCS' or settings['hpc'] == 'SA-CSCS':
+        elif settings['hpc'] == 'DAINT-CSCS' or \
+            (settings['hpc'] == 'SA' and settings['sa-hpc'] == 'pizdaint'):
             ExecFileConf.write_daint_exec(dst_dir=tmp_model_dir,
                                           folder_name=workflow.get_model().get_key(),
                                           offspring=settings['offspring'],
@@ -1032,13 +1039,13 @@ class WorkflowUtil:
         
         curr_dir = os.getcwd()
        
-        log_file_path = os.path.join(LOG_ROOT_PATH, 'analysis', workflow.get_user())
-        if not os.path.exists(log_file_path):
-            os.makedirs(log_file_path)
-        log_file = os.path.join(log_file_path, workflow.get_id() + '.log')
+        # log_file_path = os.path.join(LOG_ROOT_PATH, 'analysis', workflow.get_user())
+        # if not os.path.exists(log_file_path):
+        #     os.makedirs(log_file_path)
+        # log_file = os.path.join(log_file_path, workflow.get_id() + '.log')
         
-        build_mechanisms_command = f'source {env_prefix}/bin/activate; nrnivmodl mechanisms > {log_file}'
-        opt_neuron_analysis_command = f'source {env_prefix}/bin/activate; python ./opt_neuron.py --analyse --checkpoint ./checkpoints > {log_file}' 
+        build_mechanisms_command = f'source {env_prefix}/bin/activate; nrnivmodl mechanisms'# > {log_file}'
+        opt_neuron_analysis_command = f'source {env_prefix}/bin/activate; python ./opt_neuron.py --analyse --checkpoint ./checkpoints'# > {log_file}' 
         
         os.chdir(output_dir)
         p0 = subprocess.call(build_mechanisms_command, shell=True, executable='/bin/bash')
