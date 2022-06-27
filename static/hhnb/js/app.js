@@ -708,7 +708,12 @@ function closeJobProcessingDiv() {
 async function downloadJobOnly(jobId) {
     Log.debug("Downloading " + jobId);
     // disable all buttons
-    const data = { "job_id": jobId, "hpc": $("button.fetch-jobs.active").attr("name") }
+    const data = {
+        "job_id": jobId,
+        "hpc": $("button.fetch-jobs.active").attr("name"),
+        "saHPC": $("#sa-hpc-dropdown-jobs-btn").text().toLowerCase(),
+        "saProject": $("#sa-project-dropdown-jobs-btn").text().toLowerCase() 
+    }
 
     $("#jobProcessingTitle").html("Downloading job:<br>" + jobId.toUpperCase() + "<br>");
 
@@ -739,7 +744,12 @@ async function downloadJobOnly(jobId) {
 async function downloadJobAndRunAnalysis(jobId) {
     Log.debug("Downloading " + jobId);
     // disable all buttons
-    const data = { "job_id": jobId, "hpc": $("button.fetch-jobs.active").attr("name") }
+    const data = {
+        "job_id": jobId,
+        "hpc": $("button.fetch-jobs.active").attr("name"),
+        "saHPC": $("#sa-hpc-dropdown-jobs-btn").text().toLowerCase(),
+        "saProject": $("#sa-project-dropdown-jobs-btn").text().toLowerCase() 
+    }
 
     $("#jobProcessingTitle").html("Downloading job:<br>" + jobId.toUpperCase() + "<br>");
 

@@ -238,7 +238,6 @@ class ModelUtil:
 
     @staticmethod
     def write_to_workflow(model, workflow_id):
-        print("==========================================================")
         if not os.path.exists(workflow_id):
             raise FileNotFoundError('%s path not found' % workflow_id)
         model_dir = os.path.join(workflow_id, 'model')

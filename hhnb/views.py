@@ -76,9 +76,6 @@ def index_docs(request):
 
 def home_page(request):
     hhnb_user = HhnbUser.get_user_from_request(request)
-    print(hhnb_user)
-    print(request.user)
-    print(request.user.is_authenticated)
     context = {}
 
     logger.info(LOG_ACTION.format(hhnb_user, 'access HOME page'))
@@ -552,12 +549,10 @@ def optimization_settings(request, exc=None):
         settings = {'settings': {}, 'service-account': {}}
         
         # fetch service account hpc and projects
-        print(json.loads(get_service_account_content(request).content))
         settings.update(json.loads(get_service_account_content(request).content))
 
         try:
             settings['settings'].update(workflow.get_optimization_settings())
-            print(settings)
             return ResponseUtil.ok_json_response(settings)
         except FileNotFoundError as e:
             return ResponseUtil.ok_json_response(settings)
@@ -665,8 +660,10 @@ def fetch_job_results(request, exc):
     if exc not in request.session.keys():
         return ResponseUtil.no_exc_code_response()
 
-    hpc = request.GET.get('hpc')
     job_id = request.GET.get('job_id')
+    hpc = request.GET.get('hpc')
+    sa_hpc = request.GET.get('saHPC')
+    sa_project = request.GET.get('saProject')
 
     if not hpc:
         return ResponseUtil.ko_response(messages.NO_HPC_SELECTED)
@@ -679,7 +676,7 @@ def fetch_job_results(request, exc):
     ))
 
     try:
-        file_list = JobHandler.fetch_job_files(hpc, job_id, hhnb_user)
+        file_list = JobHandler.fetch_job_files(hpc, job_id, hhnb_user, sa_hpc, sa_project)
         WorkflowUtil.download_job_result_files(workflow, file_list)
 
         return ResponseUtil.ok_response()
@@ -946,7 +943,6 @@ def hhf_list_files_new(request, exc):
     
     workflow, _ = get_workflow_and_user(request, exc)
     model_files = WorkflowUtil.list_model_files(workflow)
-    print(json.dumps(model_files, indent=4))
     return ResponseUtil.ok_json_response(model_files)
 
 
@@ -1045,10 +1041,8 @@ def hhf_save_config_file(request, folder, config_file, exc):
             json.dump(file_content, fd, indent=4)
         return ResponseUtil.ok_response('')
     except json.JSONDecodeError:
-        print('Malformed json')
         return ResponseUtil.ko_response(messages.MARLFORMED_FILE.format(config_file + '.json')) 
     except FileNotFoundError:
-        print('File not found')
         return ResponseUtil.ko_response(404, messages.CRITICAL_ERROR)
     except Exception as e:
         print(str(e))

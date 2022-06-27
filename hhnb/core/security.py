@@ -12,7 +12,6 @@ class Cypher:
 
     @staticmethod
     def encrypt(plain_text, at_time=None):
-        print(plain_text)
         if type(plain_text) == str:
             data = bytes(plain_text, 'utf-8')
         f = Fernet(FERNET_KEY)
