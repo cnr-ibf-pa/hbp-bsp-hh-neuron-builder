@@ -540,6 +540,7 @@ $(".jobs-unicore").on("click", (button) => {
         })
         .fail((error) => { 
             checkRefreshSession(error);
+            $("#spinnerRow").css("display", "none");
             $("#jobsAuthAlert").addClass("show");
         });
 });
