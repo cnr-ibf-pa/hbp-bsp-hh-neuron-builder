@@ -47,7 +47,7 @@
 
 .loading-animation.text {
     text-align: center;
-    /* font-size: 1.5rem; */
+    font-size: 1.2em;
     font-weight: bold;
     /* color: rgb(11, 0, 109); */
     margin: auto;
@@ -80,18 +80,4 @@
     /* visibility: hidden; */
     display: none;
     animation-play-state: unset;
-}
-
-@keyframes loading-animation {
-    0%  {background-image: url('frame_0.png');}
-    10%  {background-image: url('frame_1.png');}
-    20%  {background-image: url('frame_2.png');}
-    30%  {background-image: url('frame_3.png');}
-    40%  {background-image: url('frame_4.png');}
-    50%  {background-image: url('frame_5.png');}
-    60%  {background-image: url('frame_6.png');}
-    70%  {background-image: url('frame_7.png');}
-    80%  {background-image: url('frame_8.png');}
-    90%  {background-image: url('frame_9.png');}
-    100% {background-image: url('frame_0.png');}
 }
