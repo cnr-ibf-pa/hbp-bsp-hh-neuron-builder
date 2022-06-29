@@ -185,6 +185,8 @@
             <button type="button" id="run-sim-btn" class="btn main-panel-btn extends"disabled>Run Simulation</button>
         </div>
     </div>
+
+    <img src="{% static 'assets/animation/neuron_animation_compressed.svg' %}">
 </div>
 
 <div id="overlaywrapper" class="overlay-wrapper">
@@ -898,15 +900,6 @@
             <button id="dialog-btn" class="btn workflow-btn"></button>
         </div>
     </div>
- </div>
-
-<div class="loading-animation sublayer show">
-    <div class="loading-animation container-glass show">
-        <div id="loading-text-div" class="loading-animation text show">
-            Loading workspace...
-        </div>
-        <div class="loading-animation frames show"></div>
-    </div>
 </div>
 
 <script>
@@ -921,6 +914,5 @@
 <!-- Highlighter library -->
 <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.1/styles/default.min.css">
 <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.1/highlight.min.js"></script>
-
 
 {% endblock %}
