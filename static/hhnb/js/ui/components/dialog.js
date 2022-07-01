@@ -377,7 +377,6 @@ class ModelRegistrationDialog {
         showLoadingAnimation("Loading options...");
         let modelName = $("#wf-title").text().split("Workflow ID: ")[1];
         
-
         $.ajax({
             url: "/hh-neuron-builder/get-model-catalog-attribute-options",
             method: "GET",

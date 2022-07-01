@@ -30,7 +30,7 @@ function checkRefreshSession(response) {
 }
 
 
-$(document).ready(() => {
+$(document).on("load", () => {
     if (workflow.getProps().hhf_flag) {
         $("#modalHHF").modal("show");
     }
@@ -252,8 +252,9 @@ $("#apply-param").on("click", () => {
                 workflow.uploadOptimizationSettings(formData);
             }).fail((error) => {
                 checkRefreshSession(error);
-                $("#hpcAuthAlert").addClass("show");        
-            }).always(() => { hideLoadingAnimation() });
+                $("#hpcAuthAlert").addClass("show");
+                hideLoadingAnimation();        
+            })
     } else {
         OptimizationSettingsDialog.close();
         workflow.uploadOptimizationSettings(formData);
@@ -297,8 +298,9 @@ $("#save-feature-files").on("click", () => {
             $("#modalNFEContainer").removeClass("show");
             workflow.updateProperties();
         }).fail((error) => {
+            hideLoadingAnimation();
             alert("Something goes wrong. Please download the Features files and upload them manually.");
-        }).always(() => { hideLoadingAnimation() });
+        });
 });
 
 /* **** */
@@ -378,7 +380,8 @@ function chooseOptModel() {
                     }).fail((error) => {
                         checkRefreshSession(error);
                         Log.error(error);
-                    }).always(() => { hideLoadingAnimation() })
+                        hideLoadingAnimation()
+                    });
             }
         });
     }).done(() => {
@@ -817,7 +820,7 @@ $("#checkNsgLoginButton").on("click", () => {
 var blueNaasModel = "";
 $("#run-sim-btn").on("click", () => {
     showLoadingAnimation("Uploading to BlueNaas...");
-    $("#run-sim-btn").prop("disabled", true);
+    $("#run-sim-btn").prop("disabled", true).blur();
     $.get("/hh-neuron-builder/upload-to-naas/" + exc)
         .done((data) => {
             if (blueNaasModel != data) {

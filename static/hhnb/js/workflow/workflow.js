@@ -66,12 +66,12 @@ export default class Workflow {
         }
     }
 
-    updateProperties() {
+    async updateProperties(async=true) {
         showLoadingAnimation("Loading...");
         $.ajax({
             url: GET_PROPS_BASE_URL + this.#exc,
             method: "GET",
-            async: false,
+            async: async,
             success: (props) => {
                 this.#props = props;
                 $("#wf-title").html("Workflow ID: <b>" + this.#props.id + "</b>");
@@ -278,8 +278,9 @@ export default class Workflow {
             error: (error) => {
                 Log.error("Status: " + error.status + " > " + error.responseText);
                 MessageDialog.openErrorDialog(error.responseText);
+                hideLoadingAnimation()
             },
-        }).always(() => { hideLoadingAnimation() });
+        });
     }
 
     setUploadFileType(fileType) {
@@ -307,8 +308,9 @@ export default class Workflow {
             error: (error) => {
                 Log.error("Status: " + error.status + " > " + error.responseText);
                 MessageDialog.openErrorDialog(error.responseText);
+                hideLoadingAnimation();
             },
-        }).always(() => { hideLoadingAnimation(); });
+        });
     }
 
 
@@ -355,6 +357,7 @@ export default class Workflow {
                 this.updateProperties();
             },
             error: (error) => {
+                hideLoadingAnimation();
                 Log.error("Status: " + error.status + " > " + error.responseText);
                 MessageDialog.openErrorDialog(error.responseText);
                 if (error.responseText == "Invalid credentials.") {
@@ -362,7 +365,7 @@ export default class Workflow {
                     $("#password_submit").removeClass("is-valid").addClass("is-invalid");
                 }
             }
-        }).always(() => { hideLoadingAnimation() });
+        });
     }
 
     runOptimization() {
@@ -374,14 +377,15 @@ export default class Workflow {
             async: false,
             success: (result) => {
                 Log.debug(result);
+                this.updateProperties(false);
                 MessageDialog.openSuccessDialog(result);
-                this.updateProperties();
             },
             error: (error) => {
                 Log.error("Status: " + error.status + " > " + error.responseText);
                 MessageDialog.openErrorDialog(error.responseText);
+                hideLoadingAnimation();
             }
-        }).always(() => { hideLoadingAnimation() });
+        });
     }
 
     registerModel(formData) {
