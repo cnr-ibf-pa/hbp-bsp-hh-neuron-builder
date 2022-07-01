@@ -3,8 +3,10 @@ var isRunning = false;
 function showLoadingAnimation(message="") {
     
     setLoadingAnimationText(message);
-    $(".loading-animation").removeClass("hide").addClass("show");
-    startAnimation();
+    if ($(".loading-animation").hasClass("hide")) {
+        $(".loading-animation").removeClass("hide").addClass("show");
+        startAnimation();
+    }
 }
 
 function hideLoadingAnimation() {
