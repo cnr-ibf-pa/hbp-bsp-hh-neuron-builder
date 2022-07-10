@@ -1,4 +1,7 @@
+var isRunning = false;
+
 function showLoadingAnimation(message="") {
+    
     setLoadingAnimationText(message);
     $(".loading-animation").removeClass("hide").addClass("show");
     startAnimation();
@@ -14,6 +17,10 @@ function setLoadingAnimationText(message) {
 }
 
 function startAnimation() {
+    if (window.isRunning) {
+        return;
+    }
+    window.isRunning = true;
     let anims = ["o1", "o2", "o3", "o4", "o5", "o6", "o7", "o8", "o9"]
     $("#o1").attr("dur", "3s").attr("begin", "click;o1.end+0.3s");
     for (let i = 1; i < anims.length; i++) {
@@ -23,6 +30,10 @@ function startAnimation() {
 }
 
 function stopAnimation() {
+    if (!window.isRunning) {
+        return;
+    }
+    window.isRunning = false;
     console.log("stopping animation");
     $("#o1").attr("begin", "unset");
     [
