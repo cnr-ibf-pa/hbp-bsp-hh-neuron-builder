@@ -219,6 +219,10 @@ OIDC_OP_AUTHORIZATION_ENDPOINT = 'https://iam.ebrains.eu/auth/realms/hbp/protoco
 OIDC_OP_TOKEN_ENDPOINT = 'https://iam.ebrains.eu/auth/realms/hbp/protocol/openid-connect/token'
 OIDC_OP_USER_ENDPOINT = 'https://iam.ebrains.eu/auth/realms/hbp/protocol/openid-connect/userinfo'
 
+
+# OIDC_TIMEOUT = 1
+
+
 LOGIN_REDIRECT_URL = "/hh-neuron-builder"
 LOGOUT_REDIRECT_URL = "/hh-neuron-builder"
 

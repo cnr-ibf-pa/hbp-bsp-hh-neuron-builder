@@ -9,7 +9,6 @@ import shutil
 import time
 
 
-
 class InvalidArchiveError(Exception):
     pass
 
@@ -59,9 +58,7 @@ def validate_archive(archive):
     # read zip data and validate the sign
     with open(archive_path, 'rb') as fd:
         Sign.verify_data_sign(signature, fd.read())
-    
     return archive_path
-
 
 
 def get_signed_archive(arch_file):
@@ -96,4 +93,3 @@ def get_signed_archive(arch_file):
     # remove tmp dir
     shutil.rmtree(tmp_dir)
     return signed_archive
-
