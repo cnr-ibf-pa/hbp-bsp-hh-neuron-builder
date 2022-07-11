@@ -136,15 +136,18 @@ $("#deleteFileButton").click(function() {
     if ($(this).hasClass("disabled")) {
         return false;
     }
-    if ($(".file-item.active").length == 0 && $("editor-item.active").length == 0) {
+
+    if ((editorMode && $(".editor-item.active").length == 0) ||
+        (!editorMode && $(".file-item.active").length == 0)) {
         return false;
     }
 
-    if ($(".file-item.active").length > 1) {
+    if (!editorMode && $(".file-item.active").length > 1) {
         $("#confirmationDialogModalTitle").text("Are you sure to delete these files ?");
     } else {
         $("#confirmationDialogModalTitle").text("Are you sure to delete this file ?");
     }
+
     $("#confirmationDialogModalCancelButton").text("Cancel");
     $("#confirmationDialogModalOkButton").text("Yes").attr("onclick", "deleteHHFFiles()");
     $("#confirmationDialogModal").modal("show");
@@ -301,13 +304,30 @@ $("#uploadFileButton").click(function() {
 
 
 $("#selectAllButton").click(function() {
-    if ($(this).hasClass("active")) {
-        $(this).removeClass("active");
-        $(".file-item").removeClass("active");
-    } else {
-        $(this).addClass("active");
-        $(".file-group.active").children().addClass("active");
+    let files = $(".file-group.active").children();
+    let isActive = files.hasClass("active");
+    let alreadyChanged = false;
+
+    for (let i=0; i < files.length; i++) {
+        if (isActive != files[i].classList.contains("active")) {
+            if (isActive) {
+                files.addClass("active");
+            } else {
+                files.removeClass("active");
+            }
+            alreadyChanged = true;
+            break;
+        }
     }
+
+    if (!alreadyChanged) {
+        if (!isActive) {
+            files.addClass("active");
+        } else {
+            files.removeClass("active");
+        }
+    }
+
 })
 
 
