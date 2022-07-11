@@ -1,6 +1,5 @@
 """ Views """
 
-from telnetlib import SE
 from django.shortcuts import render, redirect
 from django.views.decorators.csrf import csrf_exempt
 
@@ -464,6 +463,33 @@ def upload_files(request, exc):
                 fd.write(chunk)
         else:
             fd.write(uploaded_file.read())
+
+    print(full_path)
+    # check the uploaded file if it is a json file 
+    if full_path.endswith('.json'):
+        fd = open(full_path, 'r')
+        try:
+            jj = json.load(fd)
+            fd.close()
+
+            if full_path.endswith('parameters.json'):
+                # check for wf_id key as main key
+                if len(jj.keys()) == 1:
+                    main_key = list(jj.keys())[0]
+                    jj = jj[main_key]
+                # check for distribution and add an empty field if not exists
+                if not 'distributions' in jj.keys():
+                    jj.update({'distributions': {}})
+
+                os.remove(full_path)
+                fd = open(full_path, 'w')
+                json.dump({main_key: jj} if main_key else jj, fd)
+                fd.close()
+
+        except json.decoder.JSONDecodeError as e:
+            # remove it and return an error
+            os.remove(full_path)    
+            return ResponseUtil.ko_response('<b>JSON Decode Error:</b><br><br>' + str(e) + '.')
 
     return ResponseUtil.ok_response('')
 
@@ -992,21 +1018,27 @@ def hhf_get_files_content(request, folder, exc):
     if not exc in request.session.keys():
         return ResponseUtil.no_exc_code_response()
 
-    workflow, _ = get_workflow_and_user(request, exc)
+    workflow, user = get_workflow_and_user(request, exc)
     if not os.path.join(workflow.get_model_dir(), folder):
         return ResponseUtil.ko_response()
 
     folder = folder.split('Folder')[0]
     hhf_files_content = {}
 
-    for f in os.listdir(os.path.join(workflow.get_model_dir(), folder)):
-        with open(os.path.join(workflow.get_model_dir(), folder, f), 'r') as fd:
+    file_path = os.path.join(workflow.get_model_dir(), folder)
+    for f in os.listdir(file_path):
+        with open(os.path.join(file_path, f), 'r') as fd:
             if f.endswith('.json'):
-                jj = json.load(fd)
-                hhf_files_content[f] = json.dumps(jj, indent=8)
-            else:
+                try:
+                    jj = json.load(fd)
+                    hhf_files_content[f] = json.dumps(jj, indent=8)
+                except json.decoder.JSONDecodeError as e:
+                    logger.warning(LOG_ACTION.format(user, 'JSON Decode error on file: "%s".' % os.path.join(file_path, f)))
+                    fd.seek(0)
                     hhf_files_content[f] = fd.read()
-    
+            else:
+                hhf_files_content[f] = fd.read()
+
     return ResponseUtil.ok_json_response(hhf_files_content)
 
 
@@ -1039,6 +1071,26 @@ def hhf_save_config_file(request, folder, config_file, exc):
                                  config_file)
         with open(file_path, 'w') as fd:
             json.dump(file_content, fd, indent=4)
+        
+        # automatically add empty distributions field in parameters.json
+        if file_path.endswith('parameters.json'):
+            fd = open(file_path, 'r')
+            jj = json.load(fd)
+            fd.close()
+
+            # check if there is only the wf_id key
+            if len(jj.keys()) == 1:
+                main_key = list(jj.keys())[0]
+                jj = jj[main_key]
+
+            # check for distributions key and add an empty field if there isn't
+            if not 'distributions' in jj.keys():
+                jj.update({'distributions': {}})
+
+            fd = open(file_path, 'w')
+            json.dump({main_key: jj} if main_key else jj, fd)
+            fd.close()
+
         return ResponseUtil.ok_response('')
     except json.JSONDecodeError:
         return ResponseUtil.ko_response(messages.MARLFORMED_FILE.format(config_file + '.json')) 
