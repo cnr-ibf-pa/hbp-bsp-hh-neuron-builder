@@ -215,15 +215,17 @@ $("#downloadFileButton").click(function() {
         } else {
             $(".file-item.active").each(function(i) {
                 jj_ids.path.push($(".folder-item.active").attr("id").split("Folder")[0] + "/" + $(this).attr("id"));
-
+                
             });
         }
     } else {
         if ($(".editor-item.active").length == 0) {
             return false;
         }
-        jj_ids.path.push($(".editor-item.active").attr("name"));
+        jj_ids.path.push($(".folder-item.active").attr("id").split("Folder")[0] + "/" + $(".editor-item.active").attr("name"));
     }
+
+    console.log(jj_ids);
 
     showLoadingAnimation("Downloading files...");
 
@@ -427,13 +429,17 @@ $("#editFileButton").mouseout(function() {
 
 function resetEditorMode() {
     editorMode = false;
+ 
     $("#folderselector").css("display", "block").removeClass("fade-out fade-in");
     $("#editorselector").css("display", "none").removeClass("fade-out fade-in");
+ 
     $("#fileselector").css("display", "block").removeClass("fade-out fade-in");
     $("#fileeditor").css("display", "none").removeClass("fade-out fade-in");
-    $("#editFileButtonImage").removeClass("show zoomout").css("top", "8px").css("left", "2px").attr("src", "/static/assets/img/open-file-white.svg");
+ 
+    $("#editFileButtonImage").attr("src", "/static/assets/img/open-file-white.svg").removeClass("show zoomout back-arrow").css("top", "8px").css("left", "2px");
     $("#editFileButton").attr("title", "Open/Edit files");
     $("#editorfilelist").empty();
+    console.log("RESET BACK BUTTON")
     $("#saveFileButton").removeClass("show disabled");
     $("#saveFileButtonSpinner").css("display", "none");
     $("#saveFileButtonImage").css("display", "inline");        
@@ -441,8 +447,6 @@ function resetEditorMode() {
 
 
 function switchMode() {
-    console.log("CIAONE SWITCH")
-
 
     let folderSelector = $("#folderselector");
     let editorSelector = $("#editorselector");
