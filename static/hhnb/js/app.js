@@ -380,8 +380,8 @@ function chooseOptModel() {
                     }).fail((error) => {
                         checkRefreshSession(error);
                         Log.error(error);
-                        hideLoadingAnimation()
-                    });
+                        MessageDialog.openInfoDialog(error.responseText);
+                    }).always( () => hideLoadingAnimation() );
             }
         });
     }).done(() => {

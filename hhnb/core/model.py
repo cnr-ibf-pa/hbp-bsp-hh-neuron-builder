@@ -276,24 +276,67 @@ class Model(ModelBase):
         FileNotFoundError
             if any optimization file is not found 
         """
+        
+        config_dir = os.path.join(model_dir, 'config')
+        morph_dir = os.path.join(model_dir, 'morphology')
+        mechans_dir = os.path.join(model_dir, 'mechanisms')
+        
         try:
-            # parameters
-            parameters = shutil.copy(os.path.join(model_dir, 'config', 'parameters.json'),
-                                     os.path.join(self._model_dir, 'config'))
-            self.set_parameters(parameters)
+            # paramenters
+            if os.path.exists(config_dir) and \
+                os.path.exists(os.path.join(config_dir, 'parameters.json')):
+                parameters = shutil.copy(os.path.join(config_dir, 'parameters.json'),
+                                         os.path.join(self._model_dir, 'config'))
+                self.set_parameters(parameters)
+
             # morphology
-            for m in os.listdir(os.path.join(model_dir, 'morphology')):
-                morph = shutil.copy(os.path.join(model_dir, 'morphology', m),
-                                    os.path.join(self._model_dir, 'morphology'))
-                conf_file = shutil.copy(os.path.join(model_dir, 'config', 'morph.json'),
-                                        os.path.join(self._model_dir, 'config'))
-            self.set_morphology(morphology=morph)
+            if os.path.exists(morph_dir) and len(os.listdir(morph_dir)) == 1:
+                shutil.rmtree(os.path.join(self._model_dir, 'morphology'))
+                try:
+                    os.remove(os.path.join(self._model_dir, 'config', 'morph.json'))
+                except FileNotFoundError:
+                    pass
+                shutil.copytree(morph_dir, self._model_dir)
+                self.set_morphology(
+                    os.listdir(os.path.join(self._model_dir, 'morphology')[0])
+                )
+                # with open(os.path.join(self._model_dir, 'config'), 'w') as morph_conf:
+                #     json.dump(self.get_morphology().get_config(), morph_conf)
+
+
             # mechanisms
-            for m in os.listdir(os.path.join(model_dir, 'mechanisms')):
-                shutil.copy(os.path.join(model_dir, 'mechanisms', m),
-                            os.path.join(self._model_dir, 'mechanisms'))
-            self.set_mechanisms(os.path.join(self._model_dir, 'mechanisms'))
-            # python's files
+            if os.path.exists(mechans_dir) and len(os.listdir(mechans_dir)) > 0:
+                shutil.rmtree(os.path.join(self._model_dir, 'mechanisms'))
+                shutil.copytree(mechans_dir, self._model_dir)
+                self.set_mechanisms(os.path.join(self._model_dir, 'mechanisms'))
+
+            # # for m in os.listdir(os.path.join(model_dir, 'morphology')):
+            # #     morph = shutil.copy(os.path.join(model_dir, 'morphology', m),
+            # #                         os.path.join(self._model_dir, 'morphology'))
+            # shutil.rmtree(os.path.join(self._model_dir, 'morphology'))
+            # shutil.copytree(os.path.join(model_dir, 'morphology'),
+            #                 os.path.join(self._model_dir, 'morphology'))
+            
+            # conf_file = shutil.copy(os.path.join(model_dir, 'config', 'morph.json'),
+            #                         os.path.join(self._model_dir, 'config'))
+                                
+            # self.set_morphology(morphology=morph)
+            
+            # # mechanisms
+            
+            # # for m in os.listdir(os.path.join(model_dir, 'mechanisms')):
+            # #     shutil.copy(os.path.join(model_dir, 'mechanisms', m),
+            # #                 os.path.join(self._model_dir, 'mechanisms'))
+
+            # shutil.rmtree(os.path.join(self._model_dir, 'mechanisms'))
+            # shutil.copytree(os.path.join(model_dir, ''))
+
+            # self.set_mechanisms(os.path.join(self._model_dir, 'mechanisms'))
+            # # python's files
+
+            # parameters
+            pass
+
         except FileNotFoundError as e:
             raise FileNotFoundError(e)
 

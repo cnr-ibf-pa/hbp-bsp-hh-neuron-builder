@@ -291,6 +291,7 @@ $("#uploadFileButton").click(function() {
 
     const onSelectFile = async function(x) {        
         files = input.files.length;
+
         $(".file-group").css("display", "none");
         $("#fileItemSpinner").css("display", "flex");
         showLoadingAnimation('Uploading files...');
@@ -423,7 +424,6 @@ function hideFloatingOpenFileButton() {
 }
 
 var editorMode = false;
-
 
 
 $("#editFileButton").mousedown(function() {
