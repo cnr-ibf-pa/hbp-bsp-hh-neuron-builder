@@ -277,9 +277,11 @@ def fetch_models(request, exc):
                 logger.info(LOG_ACTION.format(hhnb_user, 'downloaded model %s on %s' % (model, workflow)))
 
     except ResponseError as e:
+        print(e)
         logger.error(e)
         return ResponseUtil.ko_response(messages.MODEL_CATALOG_NOT_AVAILABLE)
     except EnvironmentError as e:
+        print(e)
         logger.error(e)
         return ResponseUtil.ko_response(messages.MODEL_CATALOG_INVALID_CREDENTIALS)
 
@@ -444,10 +446,10 @@ def upload_files(request, exc):
     uploaded_file = request.FILES.get('file')
 
     if folder == 'morphology/':
-        if not uploaded_file.endswith('.asc'):
+        if not uploaded_file.name.endswith('.asc'):
             return ResponseUtil.ko_response('Morphology must be "<b>.asc</b>" file.')
     elif folder == 'mechanisms/':
-        if not uploaded_file.endswith('.mod'):
+        if not uploaded_file.name.endswith('.mod'):
             return ResponseUtil.ko_response('Mechanisms must be "<b>.mod</b>" file.')
     elif folder == 'config/':
         if not uploaded_file.name in ['features.json', 'protocols.json', 'parameters.json']:
@@ -464,7 +466,6 @@ def upload_files(request, exc):
         else:
             fd.write(uploaded_file.read())
 
-    print(full_path)
     # check the uploaded file if it is a json file 
     if full_path.endswith('.json'):
         fd = open(full_path, 'r')
@@ -490,6 +491,8 @@ def upload_files(request, exc):
             # remove it and return an error
             os.remove(full_path)    
             return ResponseUtil.ko_response('<b>JSON Decode Error:</b><br><br>' + str(e) + '.')
+
+
 
     return ResponseUtil.ok_response('')
 

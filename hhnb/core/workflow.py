@@ -574,8 +574,6 @@ class WorkflowUtil:
                     break
             raise AnalysisProcessError(error)#p1.returncode, opt_neuron_analysis_command, stderr=p1.stderr)
 
-
-
     @staticmethod
     def make_naas_archive(workflow):
 

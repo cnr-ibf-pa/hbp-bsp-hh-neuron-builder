@@ -66,7 +66,7 @@ export default class Workflow {
         }
     }
 
-    async updateProperties(async=true) {
+    updateProperties(async=true) {
         showLoadingAnimation("Loading...");
         $.ajax({
             url: GET_PROPS_BASE_URL + this.#exc,
