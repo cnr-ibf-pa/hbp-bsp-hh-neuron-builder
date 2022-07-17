@@ -62,7 +62,6 @@ class Model(ModelBase):
         super().__init__(key, **kwargs)
         self._ETRACES = False
 
-
     def _check_if_file_exists(self, **kwargs):
         if len(kwargs) > 1:
             raise TypeError(f'{__name__} takes only 1 keyword argument')
@@ -85,45 +84,6 @@ class Model(ModelBase):
         except FileNotFoundError:
             return False
         return c
-
-    # def set_features(self, features=None, protocols=None):
-        # f = self._features.get_features()
-        # if not self._check_if_file_exists(features=f):
-            # shutil.copy(f)
-        # super().set_features(features=features, protocols=protocols)
-
-    # def set_features(self, features=None, protocols=None):
-    #     if not features and not protocols:
-    #         if os 
-
-    # def set_morphology(self, morphology=None):
-    #     if not morphology:
-    #         morphology = os.path.join(
-    #             self._model_dir, 
-    #             os.listdir(os.path.join(self._model_dir, 'morphology'))[0]
-    #         )
-
-    #     super().set_morphology(morphology)
-
-    # def set_mechanisms(self, mechansisms=None):
-    #     if not mechansisms:
-    #         mechansisms = os.path.join(self._model_dir, 'mechanisms')
-    #     super().set_mechanisms(mechansisms=mechansisms)
-
-    # def set_parameters(self, parameters=None):
-    #     if not parameters:
-    #         parameters = os.path.join(self._model_dir, 'config', 'parameters.json')
-    #     super().set_parameters(parameters=parameters)
-
-
-    # @classmethod
-    # def from_zip(cls, zip_model):
-    #     model = cls()
-    #     # TODO: to be complete
-    #     tmp_unzip_model = os.path.join(TMP_DIR, datetime.datetime.now())
-    #     shutil.unpack_archive(zip_model, tmp_unzip_model)
-    #     pass
-
 
     @classmethod
     def from_dir(cls, model_dir, key):
@@ -182,64 +142,51 @@ class Model(ModelBase):
 
     def update_optimization_files(self, model_dir):
         
-        config_dir = os.path.join(model_dir, 'config')
-        morph_dir = os.path.join(model_dir, 'morphology')
-        mechans_dir = os.path.join(model_dir, 'mechanisms')
+        src_config_dir = os.path.join(model_dir, 'config')
+        src_morph_dir = os.path.join(model_dir, 'morphology')
+        src_mechans_dir = os.path.join(model_dir, 'mechanisms')
         
+        dst_config_dir = os.path.join(self._model_dir, 'config')
+        dst_morph_dir = os.path.join(self._model_dir, 'morphology')
+        dst_mechans_dir = os.path.join(self._model_dir, 'mechanisms')
+
         try:
             # paramenters
-            if os.path.exists(config_dir) and \
-                os.path.exists(os.path.join(config_dir, 'parameters.json')):
-                parameters = shutil.copy(os.path.join(config_dir, 'parameters.json'),
-                                         os.path.join(self._model_dir, 'config'))
+            if os.path.exists(src_config_dir) and \
+                os.path.exists(os.path.join(src_config_dir, 'parameters.json')):
+                parameters = shutil.copy(os.path.join(src_config_dir, 'parameters.json'),
+                                         dst_config_dir)
                 self.set_parameters(parameters)
 
             # morphology
-            if os.path.exists(morph_dir) and len(os.listdir(morph_dir)) == 1:
-                shutil.rmtree(os.path.join(self._model_dir, 'morphology'))
+            if os.path.exists(src_morph_dir) and len(os.listdir(src_morph_dir)) == 1:
+                for m in os.listdir(dst_morph_dir):
+                    os.remove(os.path.join(dst_morph_dir, m))
                 try:
-                    os.remove(os.path.join(self._model_dir, 'config', 'morph.json'))
+                    os.remove(os.path.join(dst_config_dir, 'morph.json'))
                 except FileNotFoundError:
                     pass
-                shutil.copytree(morph_dir, self._model_dir)
-                self.set_morphology(
-                    os.listdir(os.path.join(self._model_dir, 'morphology')[0])
-                )
-                # with open(os.path.join(self._model_dir, 'config'), 'w') as morph_conf:
-                #     json.dump(self.get_morphology().get_config(), morph_conf)
+                
+                for m in os.listdir(src_morph_dir):
+                    morph = shutil.copy(os.path.join(src_morph_dir, m),
+                                        os.path.join(dst_morph_dir, m))
+
+                self.set_morphology(morph)
+                with open(os.path.join(dst_config_dir, 'morph.json'), 'w') as morph_conf:
+                    json.dump(self.get_morphology().get_config(), morph_conf)
 
 
             # mechanisms
-            if os.path.exists(mechans_dir) and len(os.listdir(mechans_dir)) > 0:
-                shutil.rmtree(os.path.join(self._model_dir, 'mechanisms'))
-                shutil.copytree(mechans_dir, self._model_dir)
-                self.set_mechanisms(os.path.join(self._model_dir, 'mechanisms'))
+            if os.path.exists(src_mechans_dir) and len(os.listdir(src_mechans_dir)) > 0:
+                for m in os.listdir(dst_mechans_dir):
+                    os.remove(os.path.join(dst_mechans_dir, m))
+                
+                for m in os.listdir(src_mechans_dir):
+                    shutil.copy(os.path.join(src_mechans_dir, m),
+                                os.path.join(dst_mechans_dir, m))
 
-            # # for m in os.listdir(os.path.join(model_dir, 'morphology')):
-            # #     morph = shutil.copy(os.path.join(model_dir, 'morphology', m),
-            # #                         os.path.join(self._model_dir, 'morphology'))
-            # shutil.rmtree(os.path.join(self._model_dir, 'morphology'))
-            # shutil.copytree(os.path.join(model_dir, 'morphology'),
-            #                 os.path.join(self._model_dir, 'morphology'))
-            
-            # conf_file = shutil.copy(os.path.join(model_dir, 'config', 'morph.json'),
-            #                         os.path.join(self._model_dir, 'config'))
-                                
-            # self.set_morphology(morphology=morph)
-            
-            # # mechanisms
-            
-            # # for m in os.listdir(os.path.join(model_dir, 'mechanisms')):
-            # #     shutil.copy(os.path.join(model_dir, 'mechanisms', m),
-            # #                 os.path.join(self._model_dir, 'mechanisms'))
+                self.set_mechanisms(dst_mechans_dir)
 
-            # shutil.rmtree(os.path.join(self._model_dir, 'mechanisms'))
-            # shutil.copytree(os.path.join(model_dir, ''))
-
-            # self.set_mechanisms(os.path.join(self._model_dir, 'mechanisms'))
-            # # python's files
-
-            # parameters
             pass
 
         except FileNotFoundError as e:

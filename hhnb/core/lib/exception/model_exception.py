@@ -14,3 +14,9 @@ class MorphologyConfigError(Exception):
 
 class InvalidMorphologyDirectory(Exception):
     pass
+
+class InvalidMorphologyFile(Exception):
+    pass
+
+class InvalidMechanismFile(Exception):
+    pass
