@@ -127,3 +127,29 @@ def get_signed_archive(arch_file):
     # remove tmp dir
     shutil.rmtree(tmp_dir)
     return signed_archive
+
+
+def validate_json_file(file):
+    # check the uploaded file if it is a json file 
+    full_path = os.path.abspath(file)
+    if file.endswith('.json'):
+        fd = open(full_path, 'r')
+        jj = json.load(fd)
+        fd.close()
+
+        if full_path.endswith('parameters.json'):
+            # check for wf_id key as main key
+            if len(jj.keys()) == 1:
+                main_key = list(jj.keys())[0]
+                jj = jj[main_key]
+            # check for distribution and add an empty field if not exists
+            if not 'distributions' in jj.keys():
+                jj.update({'distributions': {}})
+
+            os.remove(full_path)
+            fd = open(full_path, 'w')
+            json.dump({main_key: jj} if main_key else jj, fd)
+            fd.close()
+    
+    # return True if everything is ok, otherwise some exception will be raised
+    return True

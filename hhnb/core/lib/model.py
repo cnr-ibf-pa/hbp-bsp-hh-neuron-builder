@@ -37,10 +37,7 @@ class Features:
         """
         String representation of the Features instance.
         """
-        print('<class Features:')
-        print(f'\tfeatures: {(self._FEATURES), (self._features)}',
-              f'\tprotocols: {(self._PROTOCOLS), (self._protocols)}',
-              '>', sep='\n')
+        return f'<Features (features: "{(self._FEATURES), (self._features)}", protocols: "{(self._PROTOCOLS), (self._protocols)}">'
 
     def set_features(self, features):
         """
@@ -123,7 +120,7 @@ class Morphology:
     """
     An easy way to handle the morphology of the model.  
     """
-
+    
     def __init__(self, morphology=None, key=None):
         """
         Instantiate a Morphology object.
@@ -145,10 +142,7 @@ class Morphology:
         """
         String representation of the Features instance.
         """
-        print('<class Morphology:')
-        print(f'\tmorphology: {self._morphology}',
-              f'\tconf: {self._config}',
-              '>', sep='\n')
+        return f'<Morphology (morphology: "{self._morphology}", conf: "{self._config}")>'
 
     def set_morphology(self, morphology, key=None):
         """
@@ -172,9 +166,12 @@ class Morphology:
             if the path is pointing a directory.
         """
         if not os.path.exists(morphology):
-            raise FileNotFoundError('%s not found' % morphology)
+            raise FileNotFoundError('%s not found.' % morphology)
         if not os.path.isfile(morphology):
-            raise IsADirectoryError('%s is a directory' % morphology)
+            raise IsADirectoryError('%s is a directory.' % morphology)
+        if not morphology.endswith('.asc'):
+            raise InvalidMorphologyFile('%s is not ".asc" morphology format.' % morphology)
+
         self._morphology = morphology
         self._MORPHOLOGY = True
         if not key:
@@ -245,6 +242,7 @@ class ModelBase:
         self._key = key
         self.set_features(Features())
         self.set_morphology(Morphology())
+
         if 'features' in kwargs and kwargs['features']:
             self.set_features(features=kwargs['features'])
         if 'morphology' in kwargs and kwargs['morphology']:
@@ -318,6 +316,7 @@ class ModelBase:
         """
         if type(mechanisms) == list:
             self._mechanisms = mechanisms
+
         if type(mechanisms) == str:
             if os.path.isdir(mechanisms):
                 self._mechanisms = [
@@ -325,11 +324,15 @@ class ModelBase:
                 ]
             else:
                 self._mechanisms = mechanisms
+        
         for m in self._mechanisms:
             if not os.path.exists(m):
                 raise FileNotFoundError('%s not found' % m)
             if not os.path.isfile(m):
                 raise IsADirectoryError('%s is a directory' % m)
+            if not m.endswith('.mod'):
+                raise InvalidMechanismFile('%s is not a valid Mechanism file. \
+                                           Only accept ".mod" extension.' % m)
         if not self._mechanisms:
             self._MECHANISMS = False
         else:
@@ -364,7 +367,7 @@ class ModelBase:
 
     def get_mechanisms(self):
         """ Get the mechanism file list. """
-        return self._mechansisms
+        return self._mechanisms
 
     def get_parameters(self):
         """ Get the parameters file path. """

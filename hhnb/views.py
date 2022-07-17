@@ -6,6 +6,7 @@ from django.views.decorators.csrf import csrf_exempt
 from hh_neuron_builder.settings import MODEL_CATALOG_COLLAB_DIR, MODEL_CATALOG_COLLAB_URL, MODEL_CATALOG_CREDENTIALS, MODEL_CATALOG_FILTER, TMP_DIR
 
 from hhnb.core.lib.exception.workflow_exception import AnalysisProcessError, MechanismsProcessError, WorkflowExists
+from hhnb.core.lib.exception.model_exception import *
 from hhnb.core.response import ResponseUtil
 from hhnb.core.workflow import Workflow, WorkflowUtil
 from hhnb.core.user import * 
@@ -522,19 +523,7 @@ def upload_files(request, exc):
     folder = request.POST.get('folder')
     uploaded_file = request.FILES.get('file')
 
-    if folder == 'morphology/':
-        if not uploaded_file.name.endswith('.asc'):
-            return ResponseUtil.ko_response('Morphology must be "<b>.asc</b>" file.')
-    elif folder == 'mechanisms/':
-        if not uploaded_file.name.endswith('.mod'):
-            return ResponseUtil.ko_response('Mechanisms must be "<b>.mod</b>" file.')
-    elif folder == 'config/':
-        if not uploaded_file.name in ['features.json', 'protocols.json', 'parameters.json']:
-            return ResponseUtil.ko_response(
-                'Config file must be one of the fallowing files:<br>\
-                "<b>protocols.json</b>", "<b>features.json</b>", <b>"parameters.json</b>"'
-            )
- 
+    # store the uploaded file
     full_path = os.path.join(workflow.get_model_dir(), folder, uploaded_file.name)
     with open(full_path, 'wb') as fd:
         if uploaded_file.multiple_chunks(chunk_size=4096):
@@ -543,33 +532,31 @@ def upload_files(request, exc):
         else:
             fd.write(uploaded_file.read())
 
-    # check the uploaded file if it is a json file 
-    if full_path.endswith('.json'):
-        fd = open(full_path, 'r')
-        try:
-            jj = json.load(fd)
-            fd.close()
+    try:
+        if folder == 'morphology/':
+            workflow.get_model().set_morphology(full_path)
+            with open(os.path.join(workflow.get_model_dir(), 'config', 'morph.json'), 'w') as fd:
+                json.dump(workflow.get_model().get_morphology().get_config(), fd)
 
-            if full_path.endswith('parameters.json'):
-                # check for wf_id key as main key
-                if len(jj.keys()) == 1:
-                    main_key = list(jj.keys())[0]
-                    jj = jj[main_key]
-                # check for distribution and add an empty field if not exists
-                if not 'distributions' in jj.keys():
-                    jj.update({'distributions': {}})
+        elif folder == 'mechanisms/':
+            if not uploaded_file.name.endswith('.mod'):
+                return ResponseUtil.ko_response('Mechanisms must be "<b>.mod</b>" file.')
 
-                os.remove(full_path)
-                fd = open(full_path, 'w')
-                json.dump({main_key: jj} if main_key else jj, fd)
-                fd.close()
-
-        except json.decoder.JSONDecodeError as e:
-            # remove it and return an error
-            os.remove(full_path)    
-            return ResponseUtil.ko_response('<b>JSON Decode Error:</b><br><br>' + str(e) + '.')
-
-
+        elif folder == 'config/':
+            if not uploaded_file.name in ['features.json', 'protocols.json', 'parameters.json']:
+                return ResponseUtil.ko_response(
+                    'Config file must be one of the fallowing files:<br>\
+                    "<b>protocols.json</b>", "<b>features.json</b>", <b>"parameters.json</b>"'
+                )    
+            validate_json_file(full_path)
+    
+    except InvalidMorphologyFile as e:
+        os.remove(full_path)
+        return ResponseUtil.ko_response('<b>File Format Error</b><br><br>' + str(e))
+    
+    except json.decoder.JSONDecodeError as e:
+        os.remove(full_path)    
+        return ResponseUtil.ko_response('<b>JSON Decode Error:</b><br><br>' + str(e) + '.')
 
     return ResponseUtil.ok_response('')
 
