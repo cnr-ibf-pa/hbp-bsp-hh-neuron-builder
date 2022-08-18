@@ -2,9 +2,26 @@ import os
 
 
 class ExecFileConf:
+    """
+    This class provide two useful static method to build the execution script that run the job on the HPC.
+    """
+
 
     @staticmethod
     def write_nsg_exec(dst_dir, max_gen, offspring):
+        """
+        Write the excecution script for the NSG system.
+
+        Parameters
+        ----------
+        dst_dir : str
+                  destination folder where the file will be writen.
+        max_gen : int
+                  maximum number of generations used by opt_neuron.
+        offspring : int
+                    number of individuals in offspring useb by opt_neuron.
+        """
+
         buffer = \
 f"""
 import os
@@ -21,6 +38,20 @@ os.system('python3 opt_neuron.py --max_ngen={max_gen} --offspring_size={offsprin
 
     @staticmethod
     def write_daint_exec(dst_dir, folder_name, offspring, max_gen, ):
+        """
+        Write the excecution script for the Piz-Daint (UNICORE) system.
+
+        Parameters
+        ----------
+        dst_dir : str
+                  destination folder where the file will be writen.
+        folder_name : str
+                      the model root folder name.
+        max_gen : int
+                  maximum number of generations used by opt_neuron.
+        offspring : int
+                    number of individuals in offspring useb by opt_neuron.
+        """
         buffer_zipfolder = \
 f"""
 import os

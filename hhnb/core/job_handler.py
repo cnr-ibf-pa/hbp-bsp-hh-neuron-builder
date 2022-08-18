@@ -19,6 +19,22 @@ LOG_ACTION = 'User: {}\tAction: {}'
 
 
 def str_to_datetime(datetime_string, format=None):
+    """
+    Convert data string to datetime object.
+
+    Parameters
+    ----------
+    datetime_string : str
+        string to be converted.
+    format : _type_, optional
+        datetime format to convert the string. Can be
+        "%Y-%m-%dT%H:%M:%S%z" or "%Y-%m-%dT%H:%M:%SZ".
+
+    Returns
+    -------
+    datetime.datetime
+        The string converted in datetime object.
+    """
 
     date_re = '\d{4}(-\d{2}){2}'
     time_re = '(\d{2}:){2}\d{2}'
@@ -35,6 +51,7 @@ def str_to_datetime(datetime_string, format=None):
 
 
 def get_expiration_time():
+    """ Returns the expiration time calculated from now to thirty days."""
     return\
         datetime.datetime.strftime(
             datetime.datetime.now() + datetime.timedelta(days=30),
@@ -43,6 +60,7 @@ def get_expiration_time():
 
 
 def is_job_expired(job_details):
+    """ Return true if the job is expired or false otherwise. """
     job_init_date = job_details['date']
     if job_init_date + datetime.timedelta(days=30) <\
         datetime.datetime.now().replace(microsecond=0):
@@ -51,6 +69,9 @@ def is_job_expired(job_details):
 
 
 class JobHandler:
+    """
+    Useful class to handle easly job on the HPC system.
+    """
 
     class UnicoreClientException(Exception):
         pass
@@ -81,11 +102,32 @@ class JobHandler:
         self._TAGS = ['hhnb']
 
     def _get_nsg_headers(self):
+        """ Returns NSG headers. """
         return {
             'cipres-appkey': NSG_KEY
         }
 
     def _get_nsg_payload(self, job_name, core_num, node_num, runtime):
+        """
+        Returns NSG payload.
+
+        Parameters
+        ----------
+        job_name : str
+            set the job id
+        core_num : int
+            set the HPC core number
+        node_num : int
+            set the HPC node number
+        runtime : float
+            set the job maximum runtime
+
+        Returns
+        -------
+        payload
+            returns the job descriptor as payload.
+        """
+        
         payload = {
             'tool': self._NSG_TOOL,
             'metadata.statusEmail': 'false',
@@ -99,6 +141,25 @@ class JobHandler:
         return payload
 
     def _submit_on_nsg(self, username, password, zip_file, settings):
+        """
+        Submitg the job on NSG system.
+
+        Parameters
+        ----------
+        username : str
+            username.
+        password : str
+            password.
+        zip_file : str
+            zip file path.
+        settings : dict
+            job settings
+
+        Returns
+        -------
+        ResponseUtil
+            returns a ResponseUtil object as result of the HPC response.
+        """
         zip_name = os.path.split(zip_file)[1]
         payload = self._get_nsg_payload(job_name=zip_name.split('.')[0],
                                         core_num=settings['core-num'],
@@ -135,6 +196,26 @@ class JobHandler:
         return ResponseUtil.ko_response(r.text)
 
     def _get_nsg_jobs(self, username, password):
+        """
+        Returns a list of all jobs.
+
+        Parameters
+        ----------
+        username : str
+            username.
+        password : str
+            password.
+
+        Returns
+        -------
+        dict
+            a dictionaire of all submitted jobs. 
+
+        Raises
+        ------
+        self.HPCException
+            if something happens on the HPC side.
+        """
         r = requests.get(url=f'{self._NSG_URL}/job/{username}',
                          auth=(username, password),
                          headers=self._get_nsg_headers())
@@ -199,6 +280,28 @@ class JobHandler:
         return jobs
 
     def _get_nsg_job_results(self, username, password, job_id):
+        """
+        Returns a file 
+
+        Parameters
+        ----------
+        username : _type_
+            _description_
+        password : _type_
+            _description_
+        job_id : _type_
+            _description_
+
+        Returns
+        -------
+        _type_
+            _description_
+
+        Raises
+        ------
+        self.HPCException
+            _description_
+        """
         r = requests.get(url=f'{self._NSG_URL}/job/{username}/{job_id}/output',
                          auth=(username, password),
                          headers=self._get_nsg_headers())

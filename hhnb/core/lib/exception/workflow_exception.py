@@ -1,7 +1,7 @@
+# Workflow exception definition
+
 from subprocess import CalledProcessError
 
-
-# Workflow exception definition
 
 class WorkflowExists(Exception):
     pass
