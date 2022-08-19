@@ -281,26 +281,26 @@ class JobHandler:
 
     def _get_nsg_job_results(self, username, password, job_id):
         """
-        Returns a file 
+        Returns the results of the job as a list of files.
 
         Parameters
         ----------
-        username : _type_
-            _description_
-        password : _type_
-            _description_
-        job_id : _type_
-            _description_
+        username : str
+            username.
+        password : str
+            password.
+        job_id : str
+            job id.
 
         Returns
         -------
-        _type_
-            _description_
+        dict
+            list of files.
 
         Raises
         ------
         self.HPCException
-            _description_
+            if something happens on the HPC side.
         """
         r = requests.get(url=f'{self._NSG_URL}/job/{username}/{job_id}/output',
                          auth=(username, password),
@@ -321,12 +321,48 @@ class JobHandler:
         return file_list
 
     def _get_unicore_command(self, zip_name):
+        """
+        Returns the UNICORE command to run the job.
+
+        Parameters
+        ----------
+        zip_name : str
+            zip file name of the job.
+
+        Returns
+        -------
+        str
+            UNICORE command.
+        """
         command = 'unzip ' + zip_name + '; cd ' + zip_name.split('.zip')[0] \
                 + '; chmod +rx *.sbatch; ./ipyparallel.sbatch'
         return command
 
     def _get_unicore_job_description(self, command, job_name, node_num, 
                                      core_num, runtime, project):
+        """
+        Returns the UNICORE job description.
+
+        Parameters
+        ----------
+        command : str
+            UNICORE command to run the job.
+        job_name : str
+            job title
+        node_num : int
+            node number to pass to opt_neuron.py.
+        core_num : int
+            core number to pass to opt_neuron.py.
+        runtime : int
+            maximum job runtime.
+        project : str
+            project.
+
+        Returns
+        -------
+        dict
+            job description.
+        """
         return {
             'Executable': command,
             'Name': job_name,
@@ -341,6 +377,28 @@ class JobHandler:
         }
 
     def _initialize_unicore_client(self, hpc, token):
+        """
+        Initilize the UNICORE client.
+
+        Parameters
+        ----------
+        hpc : str
+            hpc in which the job will be submitted.
+        token : str
+            user token
+
+        Returns
+        -------
+        pyunicore.client.Client
+            UNICORE client instance.
+
+        Raises
+        ------
+        self.HPCException
+            if something happens to the HPC side.
+        self.UnicoreClientException
+            if something happens when the client is initializated.
+        """
         transport = unicore_client.Transport(token)
         if hpc == self._DAINT_CSCS:
             client = unicore_client.Client(transport, self._DAINT_URL)
@@ -359,6 +417,25 @@ class JobHandler:
         return client
 
     def _submit_on_unicore(self, hpc, token, zip_file, settings):
+        """
+        Submit the job on UNICORE system.
+
+        Parameters
+        ----------
+        hpc : str
+            select which HPC to use.
+        token : str
+            user token.
+        zip_file : str
+            job input file as zip file path
+        settings : dict
+            job settings
+
+        Returns
+        -------
+        ResponseUtil
+            the result of the submission as ResponseUtil object. 
+        """
         zip_name = os.path.split(zip_file)[1]
         job_description = self._get_unicore_job_description(
             command=self._get_unicore_command(zip_name),
@@ -374,10 +451,42 @@ class JobHandler:
         return ResponseUtil.ok_response(messages.JOB_SUBMITTED.format(hpc))
 
     def _get_unicore_jobs(self, hpc, token):
+        """
+        Returns a list of submitted jobs.
+
+        Parameters
+        ----------
+        hpc : str
+            from where the jobs are fetched.
+        token : str
+            user token.
+
+        Returns
+        -------
+        list[Job]
+            list of all jobs submitted
+        """
         client = self._initialize_unicore_client(hpc, token)
         return client.get_jobs(tags=self._TAGS)
 
     def _get_unicore_job_results(self, hpc, token, job_id):
+        """
+        Returns the output of the job as a list of files and directories.
+
+        Parameters
+        ----------
+        hpc : str
+            in which hpc the job was processed.
+        token : str
+            user token.
+        job_id : str
+            job id.
+
+        Returns
+        -------
+        list
+            a list of a files and directories.
+        """
         client = self._initialize_unicore_client(hpc, token)
         job_url = client.links['jobs'] + '/' + job_id
         job = unicore_client.Job(client.transport, job_url)
@@ -385,6 +494,29 @@ class JobHandler:
         return storage.listdir()
 
     def _get_service_account_payload(self, node_num, core_num, runtime, title, command=None, tool=None):
+        """
+        Returns the payload for the Service Account. 
+
+        Parameters
+        ----------
+        node_num : int
+            
+        core_num : int
+            _description_
+        runtime : float
+            _description_
+        title : str
+            _description_
+        command : str, optional
+            _description_, by default None
+        tool : str, optional
+            _description_, by default None
+
+        Returns
+        -------
+        _type_
+            _description_
+        """
         payload = {
             'node_number': node_num,
             'core_number': core_num,
