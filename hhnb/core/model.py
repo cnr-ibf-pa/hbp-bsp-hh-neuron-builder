@@ -1,5 +1,10 @@
 # Model class
 
+"""
+This package contains all the stuff to build up a Neuron Model object.
+"""
+
+
 import datetime
 from hhnb.core.lib.exception.model_exception import *
 from hhnb.core.lib.model import *
@@ -19,6 +24,7 @@ _TMP_DIR = os.path.join(TMP_DIR, 'model')
 
 
 def _read_file(f):
+    """ Private method that take a file and returns its content. """
     f = os.path.split(f)[1]
     f_name, f_ext = os.path.splitext(f)
     with open(f, 'r') as fd:
@@ -30,16 +36,18 @@ def _read_file(f):
 
 
 def _write_file_to_directory(src_file, dst_dir, dst_file=None):
-        if not dst_file:
-            dst_file = os.path.split(src_file)[1]
-        f_name, f_ext = os.path.splitext(dst_file)
-        with open(os.path.join(dst_dir, dst_file), 'w') as fd:
-            if f_ext == '.json':
-                j_src = json.load(open(src_file, 'r'))
-                json.dump(j_src, fd, indent=4)
-            else:
-                buffer = open(src_file, 'r').read()
-                fd.write(buffer)
+    """ Private method that copy a  
+    """
+    if not dst_file:
+        dst_file = os.path.split(src_file)[1]
+    f_name, f_ext = os.path.splitext(dst_file)
+    with open(os.path.join(dst_dir, dst_file), 'w') as fd:
+        if f_ext == '.json':
+            j_src = json.load(open(src_file, 'r'))
+            json.dump(j_src, fd, indent=4)
+        else:
+            buffer = open(src_file, 'r').read()
+            fd.write(buffer)
 
 
 def _create_subdir(cls, model_dir):
