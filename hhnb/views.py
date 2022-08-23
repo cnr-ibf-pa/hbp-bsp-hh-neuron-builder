@@ -35,10 +35,12 @@ LOG_ACTION = 'User: "{}"\t Action: {}'
 
 
 def status(request):
+    """ Returns the status of the service if is up. """
     return ResponseUtil.ok_json_response({'hh-neuron-builder-status': 1})
 
 
 def session_refresh(request, exc):
+    """ Refresh the user session to get a living user oidc_access_token. """
     logger.debug('refreshing session')
     if request.method == 'POST':
         refresh_url = request.POST.get('refresh_url')
@@ -50,6 +52,10 @@ def session_refresh(request, exc):
 
 
 def generate_exc_code(request):
+    """
+    Generate an "exc" code to identify each user session. 
+    The "exc" code is based on the current time.
+    """
     exc = 'tab_' + datetime.datetime.now().strftime('%Y%m%d%H%M%S')
     logger.debug(f'generating exc code: {exc}')
     request.session[exc] = {}
@@ -58,6 +64,10 @@ def generate_exc_code(request):
 
 
 def get_workflow_and_user(request, exc):
+    """
+    Returns the workflow and the user of the session identified by
+    the "exc" code.
+    """
     hhnb_user = HhnbUser.get_user_from_request(request)
     workflow = Workflow.get_user_workflow_by_id(hhnb_user.get_sub(),
                                                 request.session[exc]['workflow_id'])
@@ -66,17 +76,18 @@ def get_workflow_and_user(request, exc):
 
 
 def index_docs(request):
-    """
-    Render Guidebook main page
-    """
+    """ Render Guidebook main page. """
     return render(request, 'hhnb/docs/index.html')
 
 
 def home_page(request):
+    """ 
+    By default the home page is redered, but if the "old_workflow_path"
+    is found in the session stored keys, the old workflow is restored
+    and the workflow page is rendered.
+    """
+
     hhnb_user = HhnbUser.get_user_from_request(request)
-    print(hhnb_user)
-    print(request.user)
-    print(request.user.is_authenticated)
     context = {}
 
     logger.info(LOG_ACTION.format(hhnb_user, 'access HOME page'))
@@ -95,6 +106,10 @@ def home_page(request):
 
 
 def workflow_page(request, exc):
+    """
+    Render the workflow page if everything is ok, otherwise the home page
+    is rendered.
+    """
     if not exc in request.session.keys():
         return home_page(request)
     
@@ -105,6 +120,14 @@ def workflow_page(request, exc):
 
 
 def initialize_workflow(request):
+    """
+    Initialize a new workflow for the current session and store its
+    relative "exc" key.
+
+    A WorkflowExists error will be raised if the new workflow tree
+    is already preset in the file system, or a PermissionError
+    will be raised if any else error occurred.
+    """
     hhnb_user = HhnbUser.get_user_from_request(request)
     logger.debug(f'initializing workflow for "{hhnb_user}"')
     
@@ -126,6 +149,9 @@ def initialize_workflow(request):
 
 
 def store_workflow_in_session(request, exc):
+    """
+    Store the workflow root folder in the session.
+    """
     if not exc in request.session.keys():
         return ResponseUtil.no_exc_code_response()
 
@@ -140,6 +166,10 @@ def store_workflow_in_session(request, exc):
 
 @csrf_exempt
 def upload_workflow(request):
+    """
+    Allow to upload a zip file contains a whole workflow
+    and continue to work with it. 
+    """
 
     if request.method != 'POST':
         return ResponseUtil.method_not_allowed()
@@ -177,6 +207,9 @@ def upload_workflow(request):
 
 
 def clone_workflow(request, exc):
+    """
+    Clone a workflow.
+    """
     if not exc in request.session.keys():
         return ResponseUtil.no_exc_code_response()
 
@@ -194,6 +227,9 @@ def clone_workflow(request, exc):
 
 
 def download_workflow(request, exc):
+    """
+    Download the whole workflow after zipped and signed it.
+    """
     if not exc in request.session.keys():
         return ResponseUtil.no_exc_code_response()
         
@@ -210,6 +246,9 @@ def download_workflow(request, exc):
 
 
 def get_workflow_properties(request, exc):
+    """
+    Returns the workflow properties using a JsonResponse object.
+    """
     if not exc in request.session.keys():
         return ResponseUtil.no_exc_code_response()    
 
@@ -231,6 +270,20 @@ def get_workflow_properties(request, exc):
 
 
 def fetch_models(request, exc):
+    """
+    This API is used to fetch the model list from the model catalog
+    or to download one of it.
+
+    This can be used by passing a json object containing the "model" key.
+    
+    If the value is "all" (i.e. "{model: 'all'}"), then all the models are 
+    fetched from the ModelCatalog and filtered using the 
+    MODEL_CATALOG_FILTER imported from the settings project.
+    Otherwise if the value is a model id (i.e "{model: 1}"), then the 
+    model will be downloaded from the ModelCatalog and extracted into the
+    current workflow.
+    """
+
     if not exc in request.session.keys():
         return ResponseUtil.no_exc_code_response()
 
@@ -290,6 +343,10 @@ def fetch_models(request, exc):
 
 
 def upload_features(request, exc):
+    """
+    Allow to upload the features and/or protocols and write 
+    it/them to the current workflow.
+    """
     if not exc in request.session.keys():
         return ResponseUtil.no_exc_code_response()
 
@@ -328,6 +385,10 @@ def upload_features(request, exc):
 
 
 def upload_model(request, exc):
+    """
+    Allow to upload a model zip if the zip file is not corrupted 
+    and the its signature is valid.
+    """
     if request.method != 'POST':
         return ResponseUtil.method_not_allowed('POST') 
     if not exc in request.session.keys():
@@ -369,6 +430,12 @@ def upload_model(request, exc):
 
 # TODO: optimize this function 
 def upload_analysis(request, exc):
+    """
+    Allow to upload the analysis zip to run the simulation in the frontend, 
+    or the results job zip file can be uploaded and then the analysis process
+    will be executed over the uploaded results files once the uploaded zip 
+    is validated.  
+    """
     if request.method != 'POST':
         return ResponseUtil.method_not_allowed('POST') 
     if not exc in request.session.keys():
@@ -434,6 +501,13 @@ def upload_analysis(request, exc):
 
 
 def upload_files(request, exc):
+    """
+    Allow to upload some model's file and to write it in the
+    model used by the current workflow.
+
+    The accepted files are one of the following type: 
+    morphology, mechanisms, features, protocols and parameters.
+    """
     if not exc in request.session.keys():
         return ResponseUtil.no_exc_code_response()
     if request.method != 'POST':
@@ -470,6 +544,22 @@ def upload_files(request, exc):
 
 
 def download_files(request, exc):
+    """
+    This download API can works in two different ways depending
+    on wich parameter is passed through the GET request. 
+
+    If the key "pack" is found in the GET request, then an archive zip 
+    will be downloaded depends on what the relative value is. The accepted
+    "pack" values are:
+    "model": that allows to download the whole model in the workflow,
+    "results": that allows to dowload the all results of a downloaded job,
+    "analysis": that allows to download the files that are required by the
+                blue naas to run the simulation.
+    
+    Otherwise the key "file_list" can be used to download a list of files 
+    instead of a whole package.
+    """
+
     if not exc in request.session.keys():
         return ResponseUtil.no_exc_code_response()
     
@@ -516,6 +606,9 @@ def download_files(request, exc):
 
 
 def delete_files(request, exc):
+    """
+    Allows to delete a list of files from the current workflow.
+    """
     if request.method != 'POST':
         return ResponseUtil.method_not_allowed('POST')
     if not exc in request.session.keys():
@@ -540,6 +633,17 @@ def delete_files(request, exc):
 
 
 def optimization_settings(request, exc=None):
+    """
+    The GET method allows to fetch the json object containing the
+    workflow optimization settings.
+
+    The POST method allows to write the optimization settings for
+    the current workflow.
+    If the NSG credentials are passed, they are checked if work before
+    to store them in the current session instead of store them 
+    in the optimization settings file.
+
+    """
     if not exc in request.session.keys():
         return ResponseUtil.no_exc_code_response()
     workflow, hhnb_user = get_workflow_and_user(request, exc)
@@ -573,6 +677,11 @@ def optimization_settings(request, exc=None):
 
 
 def run_optimization(request, exc):
+    """
+    Execute the optimization by submitting the job to the HPC system
+    according to the stored optimization settings of the current 
+    workflow.
+    """
     if exc not in request.session.keys():
         return ResponseUtil.no_exc_code_response()
 
@@ -602,6 +711,10 @@ def run_optimization(request, exc):
 
 
 def fetch_jobs(request, exc):
+    """
+    Fetch all the jobs from the selected HPC system passed through
+    the GET request data.
+    """
     if exc not in request.session.keys():
         return ResponseUtil.no_exc_code_response()
 
@@ -631,6 +744,11 @@ def fetch_jobs(request, exc):
 
 
 def fetch_job_results(request, exc):
+    """
+    Download all the results files of the job id, from the HPC system
+    to the current workflow.
+    """
+
     if exc not in request.session.keys():
         return ResponseUtil.no_exc_code_response()
 
@@ -664,6 +782,11 @@ def fetch_job_results(request, exc):
 
 
 def run_analysis(request, exc):
+    """
+    Execute the analysis process for the results job present in the
+    current workflow.
+    """
+
     if not exc in request.session.keys():
         return ResponseUtil.no_exc_code_response()
 
@@ -699,6 +822,12 @@ def run_analysis(request, exc):
 
 
 def upload_to_naas(request, exc):
+    """
+    Upload the zip files containing all the required files to run the
+    simulation in the blue naas application and if everything works
+    without errors, it returns the link of the relative simulation.
+    """
+
     if not exc in request.session.keys():
         return ResponseUtil.no_exc_code_response()
 
@@ -732,6 +861,9 @@ def upload_to_naas(request, exc):
 
 
 def get_model_catalog_attribute_options(request):
+    """
+    Returns the attribute options list required by the ModelCatalog.
+    """
     if request.method != 'GET':
         return ResponseUtil.method_not_allowed('GET')
     mc_username, mc_password = MODEL_CATALOG_CREDENTIALS
@@ -745,6 +877,10 @@ def get_model_catalog_attribute_options(request):
 
 
 def register_model(request, exc):
+    """
+    Store a new model in the ModelCatalog by setting all the required
+    parameters and returns its relative link to the ModelCatalog.
+    """
     if request.method != 'POST':
         return ResponseUtil.method_not_allowed('POST')
     if not exc in request.session.keys():
@@ -846,28 +982,28 @@ def register_model(request, exc):
 
 
 def get_user_avatar(request):
+    """
+    Returns the user avatar image.
+    """
     logger.debug('get_user_avatar() called')
     hhnb_user = HhnbUser.get_user_from_request(request)
     return ResponseUtil.raw_response(content=hhnb_user.get_user_avatar(),
                                      content_type='image/png',
                                      charset='UTF-8')
 
-    # url = 'https://wiki.ebrains.eu/bin/download/XWiki/' + request.user.username \
-    #     + '/avatar.png?width=36&height=36&keepAspectRatio=true'
-    # r = requests.get(url, verify=False)
-
-    # return ResponseUtil.raw_response(content=r.content,
-    #                                  content_type='image/png;',
-    #                                  charset='UTF-8')
-
 
 def get_user_page(request):
-    # return redirect('https://wiki.ebrains.eu/bin/view/Identity/#/users/' + request.user.username)
+    """
+    Redirect to the Ebrains user page.
+    """
     hhnb_user = HhnbUser.get_user_from_request(request)
     return redirect(hhnb_user.get_ebrains_user().get_user_page())
 
 
 def get_authentication(request):
+    """
+    Returns 200 if the stored NSG credential are valid or 400 if not.
+    """
     logger.debug('get_authentication() called')
     if request.method == 'GET':
         if request.user.is_authenticated:
@@ -884,6 +1020,10 @@ def get_authentication(request):
 
 
 def hhf_comm(request):
+    """
+    Loads the json that comes from the HippocampusHub, download all the
+    files in it and then initialize a new workflow with all these files.
+    """
     hhf_comm = json.loads(request.GET.get('hhf_dict')).get('HHF-Comm')
     logger.debug('got dictionary from HHF')
     if not hhf_comm:
@@ -901,6 +1041,10 @@ def hhf_comm(request):
 
 
 def hhf_etraces_dir(request, exc):
+    """
+    Returns the folder where the eTraces, from the HippocampusHub,
+    have been downloaded.
+    """
     if not exc in request.session.keys():
         return ResponseUtil.no_exc_code_response()
     if request.method != 'GET':
@@ -910,17 +1054,23 @@ def hhf_etraces_dir(request, exc):
 
 
 def hhf_list_files_new(request, exc):
+    """
+    Returns a list of the all model files inside the workflow.
+    """
     if not exc in request.session.keys():
         return ResponseUtil.no_exc_code_response()
     
     workflow, _ = get_workflow_and_user(request, exc)
     model_files = WorkflowUtil.list_model_files(workflow)
-    print(json.dumps(model_files, indent=4))
     return ResponseUtil.ok_json_response(model_files)
 
 
-# TODO: the functions below will be deprecated
+# TODO: the functions below will be deprecated, use the above one
 def hhf_list_files(request, exc):
+    """
+    Returns a list of the all model files inside the workflow.
+    This API is deprecated, please use "hhf_list_files_new()".
+    """
     if not exc in request.session.keys():
         return ResponseUtil.no_exc_code_response()
 
@@ -961,7 +1111,9 @@ def hhf_list_files(request, exc):
 
 
 def hhf_get_files_content(request, folder, exc):
-
+    """
+    Returns a json with the content of the all files contained in the folder.
+    """
     if not exc in request.session.keys():
         return ResponseUtil.no_exc_code_response()
 
@@ -984,6 +1136,9 @@ def hhf_get_files_content(request, folder, exc):
 
 
 def hhf_get_model_key(request, exc):
+    """
+    Returns the model global key of the current workflow.
+    """
     if not exc in request.session.keys():
         return ResponseUtil.no_exc_code_response()
     workflow, _ = get_workflow_and_user(request, exc)
@@ -991,6 +1146,9 @@ def hhf_get_model_key(request, exc):
 
 
 def hhf_apply_model_key(request, exc):
+    """
+    Overwrite the model global key for the current workflow.
+    """
     if not exc in request.session.keys():
         return ResponseUtil.no_exc_code_response()
     workflow, _ = get_workflow_and_user(request, exc)
@@ -1000,6 +1158,9 @@ def hhf_apply_model_key(request, exc):
 
 @csrf_exempt
 def hhf_save_config_file(request, folder, config_file, exc):
+    """
+    Save the content of the "config_file" by overwriting it.
+    """
     if not exc in request.session.keys():
         return ResponseUtil.no_exc_code_response()
     

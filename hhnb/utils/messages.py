@@ -1,4 +1,3 @@
-
 # General error messages
 CRITICAL_ERROR = '<b>Critical Error !</b><br><br>Please contact the <a href="https://ebrains.eu/support" target="_blank">EBRAINS support</a> if the problem persists.'
 MODEL_CATALOG_CREDENTIALS_NOT_FOUND = '<b>Error !</b><br><br>Invalid Model Catalog credentials. Set them in your configuraztion file under "/hh_neuron_builder/conf".'
