@@ -1,3 +1,8 @@
+"""
+This script is used to create a a metadata file for a etrace.
+"""
+
+
 import os
 import json
 

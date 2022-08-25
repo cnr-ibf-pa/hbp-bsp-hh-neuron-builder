@@ -1,5 +1,10 @@
 #! /usr/bin/python3
 
+"""
+This python script is used to create a local OIDC client for the
+Hodgkin-Huxley Neuron Builder web application in order to perform
+the authentication process with the EBRAINS platform.
+"""
 
 import requests
 import getpass
@@ -9,6 +14,24 @@ import argparse
 
 
 def get_dev_token(username, password):
+    """
+    Returns the developer token used to create the OIDC client. 
+    This is got by making a request to the EBRAINS platform providing
+    the user's username and password passed as argoument of this function.
+
+    Parameters
+    ----------
+    username : str
+        username
+    password : str
+        password
+
+    Returns
+    -------
+    str
+        the user developer token
+    """
+
     r = requests.post(
         url='https://iam.ebrains.eu/auth/realms/hbp/protocol/openid-connect/token',
         auth=('developer', ''),
@@ -31,6 +54,23 @@ def get_dev_token(username, password):
 
 
 def create_hhnb_dev_client(username, dev_token):
+    """
+    Create an EBRAINS OIDC client to perform the authentication process
+    for the Hodgkin-Huxley Neuron Builder web application. The client
+    parameters are set by default for a local environment.  
+
+    Parameters
+    ----------
+    username : str
+        username 
+    dev_token : str
+        the user developer token
+
+    Returns
+    -------
+    dict
+        the client in a json format 
+    """
 
     client = {
         'clientId': 'hhnb-%s-dev-local-client' % username,

@@ -12,6 +12,9 @@ logger = logging.getLogger(__name__)
 
 # generate hash md5 code for the filename passed as parameter
 def md5(filename):
+    """
+    Returns the md5 hash for the file.
+    """
     hash_md5 = hashlib.md5()
     
     with open(filename, "rb") as f:
@@ -21,7 +24,9 @@ def md5(filename):
 
 
 def get_traces_abf(filename):
-
+    """
+    Returns a tuple of features extracted from the ".abf" trace and its metadata. 
+    """
     data = neo.io.AxonIO(filename)
     metadata = get_metadata(filename)
    
@@ -73,6 +78,9 @@ def get_traces_abf(filename):
 
 # read metadata file into a json dictionary
 def get_metadata(filename):
+    """
+    Returns the metadata dictionaire by reading the metadata file.
+    """
     filepath, name = os.path.split(filename)
     name_no_ext, extension = os.path.splitext(name)
     metadata_file = os.path.join(filepath, name_no_ext + '_metadata.json')
@@ -85,6 +93,9 @@ def get_metadata(filename):
 
 # perform units conversions
 def perform_conversions_json(data):
+    """
+    Convert some features values.
+    """
     if ("stimulus_unit" in data) and (not data["stimulus_unit"].lower() in ["na", "unknown"]):
         a_pow = 1
         stimlus_unit = data["stimulus_unit"].lower()
@@ -131,6 +142,9 @@ def perform_conversions_json(data):
 
 
 def extract_data(filepath, metadata_dict=None):
+    """
+    Returns the trace data in a json format.
+    """
     if filepath.endswith(".abf"):
         sampling_rate, tonoff, traces, voltage_unit, stimulus_unit, voltage_correction, voltage_correction_unit = get_traces_abf(filepath)
         data = {
@@ -188,6 +202,9 @@ def extract_data(filepath, metadata_dict=None):
 
 
 def create_file_name(data):
+    """
+    Generate a file name for the relative cell.
+    """
     filename_keys = [
         "animal_species", "brain_structure", "cell_soma_location", "cell_type", "etype", "cell_id", "filename"
     ]
@@ -195,6 +212,9 @@ def create_file_name(data):
 
 
 def update_file_name(data, metadata_dict):
+    """
+    Update the file name for the relative cell.
+    """
     metadata_keys = metadata_dict.keys()
     data["cell_id"] = metadata_dict["cell_name"] if "cell_name" in metadata_keys else metadata_dict["cell_id"]
     data["contributors_affiliations"] = metadata_dict["contributors"] if "contributors" in metadata_keys else metadata_dict["contributors_affiliations"]
