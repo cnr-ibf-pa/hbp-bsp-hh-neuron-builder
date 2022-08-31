@@ -609,7 +609,7 @@ def index_docs(request):
     """
     Render Guidebook main page
     """
-    logger.info(LOG_ACTION.format(request.session['username'], 'access INDEX_DOCS page'))
+    logger.info(LOG_ACTION.format(request.session.get('username', 'anonymous'), 'access INDEX_DOCS page'))
 
     return render(request, 'efelg/docs/index.html')
 
