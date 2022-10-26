@@ -171,7 +171,7 @@ if not os.path.exists(HHF_TEMPLATE_DIR):
     
 TMP_DIR = os.path.join(MEDIA_ROOT, 'hhnb', 'tmp')
 if not os.path.exists(TMP_DIR):
-    os.mkdir(TMP_DIR) 
+    os.makedirs(TMP_DIR) 
 
 
 MODEL_CATALOG_FILTER = {
