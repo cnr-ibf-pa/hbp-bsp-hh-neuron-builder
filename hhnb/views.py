@@ -751,6 +751,23 @@ def run_optimization(request, exc):
     return response
 
 
+def reoptimize_model(request, exc):
+    if exc not in request.session.keys():
+        return ResponseUtil.no_exc_code_response()
+
+    job_id = request.POST.get('job_id')
+    job_name = request.POST.get('job_name')
+    hpc = request.POST.get('hpc')
+
+    if not job_id or not job_name or not hpc:
+        return ResponseUtil.ko_response()
+
+    user = HhnbUser.get_user_from_request(request)
+    response = JobHandler.reoptimize_model(job_id, job_name, hpc, user)
+
+    return response
+
+
 def fetch_jobs(request, exc):
     """
     Fetch all the jobs from the selected HPC system passed through

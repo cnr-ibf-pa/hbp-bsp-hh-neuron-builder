@@ -937,9 +937,24 @@ td {
     vertical-align: middle;
 }
 
-.job-download-button {
-    width: auto;
+.job-button {
+    width: 48px;
+    height: 48px;
     margin: auto;
+    padding: 0px;
+}
+
+.job-button.left {
+    border-bottom-right-radius: 0px;
+    border-top-right-radius: 0px;
+    margin-right: 0px;
+    border-right-width: 0px;
+}
+.job-button.right {
+    border-bottom-left-radius: 0px;
+    border-top-left-radius: 0px;
+    margin-left: -2px;
+    border-left-width: 1px;
 }
 
 .alert {
@@ -1775,8 +1790,8 @@ i.disabled:hover {
 
 #overlayjobs {
     transition: unset;
-    max-width: 1300px;
-    width: 1000px;
+    /* max-width: 1300px; */
+    min-width: 1000px;
 }
 
 #overlaycontentdialog {

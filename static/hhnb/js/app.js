@@ -615,7 +615,6 @@ function displayJobList(button) {
     $.getJSON("/hh-neuron-builder/fetch-jobs/" + exc, { hpc, saHPC, saProject })
         .done((results) => {
             let jobs = results.jobs;
-            Log.debug(jobs);
             if ($.isEmptyObject(jobs)) {
                 closeJobFetchDiv();
                 MessageDialog.openInfoDialog("No jobs on <b>" + hpc + "</b> system");
@@ -624,40 +623,60 @@ function displayJobList(button) {
             for (let job_id of Object.keys(jobs)) {
                 let job = jobs[job_id];
                 let statusColor = "";
-                let disabled = "disabled";
-                if (job.status == "COMPLETED" || job.status == "SUCCESSFUL" || job.status == "FAILED") {
+                let downloadDisabled = "disabled";
+                let reoptDisabled = "disabled" ;
+                if (job.status == "COMPLETED" || job.status == "SUCCESSFUL") {
                     statusColor = "#00802b"
-                    disabled = "";
-                    if (job.status == "FAILED") {
-                        statusColor = "#DD9900";
-                    }
+                    downloadDisabled = "";
+                    reoptDisabled = "";
+                } else if (job.status == "FAILED") {
+                    statusColor = "#DF0000";
+                    downloadDisabled = ""
                 } else {
                     statusColor = "#DD9900";
-                    disabled = "disabled";
                 }
+                $("#overlayjobs").removeClass("scroll-long-content");
 
-                $("#job-list-body").append(
-                    "<tr>"
-                    + "<td>" + job.workflow_id + "</td>"
-                    + "<td>" + job_id.toUpperCase() + "</td>"
-                    + "<td style='font-weight: bold; color: " + statusColor + "'>" + job.status + "</td>"
-                    + "<td>" + job.date + "</td>"
-                    + "<td>"
-                    + "<button type='button' id='" + job_id + "' class='btn workflow-btn job-download-button'" + disabled + ">Download</button>"
-                    + "</td>"
-                    + "</tr>"
-                )
+                if (hpc == "DAINT-CSCS") {
+                    $("#job-list-body").append(
+                        "<tr>"
+                        + "<td>" + job.workflow_id + "</td>"
+                        + "<td>" + job_id.toUpperCase() + "</td>"
+                        + "<td style='font-weight: bold; color: " + statusColor + "'>" + job.status + "</td>"
+                        + "<td>" + job.date + "</td>"
+                        + "<td>"
+                        + "<div id='" + job_id + "' class='row g-0'>"
+                        + "<div class='col'>" 
+                        + "<button type='button' class='btn workflow-btn job-button download left' title='Download' " + downloadDisabled + "><i class='fas fa-cloud-download-alt fa-lg'></i></button>"
+                        + "</div>"
+                        + "<div class='col'>" 
+                        + "<button type='button' class='btn workflow-btn job-button reoptimize right' title='Re-optimize the model from the checkpoint' " + reoptDisabled + "><i class='fas fa-redo-alt fa-lg'></i></button>"
+                        + "</div>"
+                        + "</div>"
+                        + "</td>"
+                        + "</tr>"
+                    );
+                } else {
+                    $("#job-list-body").append(
+                        "<tr>"
+                        + "<td>" + job.workflow_id + "</td>"
+                        + "<td>" + job_id.toUpperCase() + "</td>"
+                        + "<td style='font-weight: bold; color: " + statusColor + "'>" + job.status + "</td>"
+                        + "<td>" + job.date + "</td>"
+                        + "<td>"
+                        + "<div id='" + job_id + "' class='row g-0'>"
+                        + "<div class='col'>" 
+                        + "<button type='button' class='btn workflow-btn job-button download' title='Download' " + downloadDisabled + "><i class='fas fa-cloud-download-alt fa-lg'></i></button>"
+                        + "</div>"
+                        + "</div>"
+                        + "</td>"
+                        + "</tr>"
+                    );
+                }
             }
 
-            $(".job-download-button").on("click", (button) => {
-                var jobId = button.target.id;
-                var jobStatus = jobs[jobId].status
-                if (jobStatus == "SUCCESSFUL" || jobStatus == "COMPLETED") {
-                    downloadJobAndRunAnalysis(jobId);
-                } else {
-                    downloadJobOnly(jobId);
-                }
-            });
+            $(".job-button.download").on("click", downloadJobButtonCallback);
+            $(".job-button.reoptimize").on("click", reoptimizeJobButtonCallback);
 
             $("#spinnerRow").css("display", "none");
             $("#progressRow").css("display", "none");
@@ -678,6 +697,46 @@ function displayJobList(button) {
             MessageDialog.openErrorDialog(error.responseText);
         });
     jobListButtonClicked = false;
+}
+
+function downloadJobButtonCallback(button) {
+    let rowElement = button.currentTarget.parentElement.parentElement.parentElement.parentElement;
+    let jobId = button.currentTarget.parentElement.parentElement.id;
+    let jobStatus = rowElement.children[2].innerText;
+    if (jobStatus == "SUCCESSFUL" || jobStatus == "COMPLETED") {
+        downloadJobAndRunAnalysis(jobId);
+    } else {
+        downloadJobOnly(jobId);
+    }
+}
+
+function reoptimizeJobButtonCallback(button) {
+    let rowElement = button.currentTarget.parentElement.parentElement.parentElement.parentElement;
+    let jobId = button.currentTarget.parentElement.parentElement.id;
+    let jobStatus = rowElement.children[2].innerText;
+    let jobName = rowElement.children[0].innerText;
+    let hpc = $(".fetch-jobs.active").attr("name");
+
+    $("#tableRow").css("display", "none");
+    $("#overlayjobs").removeClass("scroll-long-content");
+    $("#spinnerRow").css("display", "flex");
+    $("#refresh-job-list-btn").prop("disabled", true);
+    $("#cancel-job-list-btn").prop("disabled", true);
+
+
+    if (jobStatus == "SUCCESSFUL" || jobStatus == "COMPLETED") {
+        $.ajax({
+            url: "/hh-neuron-builder/reoptimize-model/" + exc,
+            method: "POST",
+            data: { "job_id": jobId, "job_name": jobName, "hpc": hpc},
+            success: response => {
+                $("#refresh-job-list-btn").trigger("click");
+            },
+            error: error => {
+                console.log(error);
+            }
+        });
+    }
 }
 
 function animateProgressBar(progress) {
