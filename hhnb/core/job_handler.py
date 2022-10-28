@@ -273,7 +273,9 @@ class JobHandler:
         job_description = {
             'User precommand': f'cp -r /scratch/snx3000/unicore/FILESPACE/{job_id}/{job_name}/ .',
             'Executable': f'/apps/hbp/ich002/cnr-software-utils/hhnb/reoptimize_model.sh {job_name}',
-            'User postcommand': f'',
+            'User postcommand': f'mv {job_name} reopt_{job_name}; cd reopt_{job_name}; ' + \
+                                f'sed -i "s/{job_name}/reopt_{job_name}/" zipfolder.py; ' + \
+                                f'python ./zipfolder.py',
             'Name': 'reopt_' + job_name,
             'Resources': {
                 'Nodes': 2,
