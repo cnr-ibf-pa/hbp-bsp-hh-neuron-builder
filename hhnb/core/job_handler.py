@@ -269,6 +269,29 @@ class JobHandler:
         logger.info(f'job submitted on UNICORE Client: {job}')
         return ResponseUtil.ok_response(messages.JOB_SUBMITTED.format('<b>' + hpc + '</b>'))
 
+    def _reoptimize_model_on_unicore(self, job_id, job_name, hpc, token):
+        job_description = {
+            'User precommand': f'cp -r /scratch/snx3000/unicore/FILESPACE/{job_id}/{job_name}/ .',
+            'Executable': f'/apps/hbp/ich002/cnr-software-utils/hhnb/reoptimize_model.sh {job_name}',
+            'User postcommand': f'',
+            'Name': 'reopt_' + job_name,
+            'Resources': {
+                'Nodes': 2,
+                'CPUsPerNode': 12,
+                'Runtime': '20m',
+                'NodeConstraints': 'mc',
+                'Project': 'ich002'
+            },
+            'Tags': self._TAGS,
+            "haveClientStageIn": "false",
+        }
+        client = self._initialize_unicore_client(hpc, token)
+        job = client.new_job(job_description=job_description)
+        job.start
+        logger.info(f'reoptimize model job {job_id} submitted on UNICORE Client')
+        return ResponseUtil.ok_response(messages.JOB_SUBMITTED.format('<b>' + hpc + '</b>'))
+
+
     def _get_unicore_jobs(self, hpc, token):
         client = self._initialize_unicore_client(hpc, token)
         return client.get_jobs(tags=self._TAGS)
@@ -456,3 +479,14 @@ class JobHandler:
             }
         
         return file_list
+
+
+    @classmethod
+    def reoptimize_model(cls, job_id, job_name, hpc, user):
+        logger.info(LOG_ACTION.format(user, 'reoptimize model of the job: %s in %s', (job_id, hpc)))
+        job_handler = cls()
+
+        if hpc == job_handler._DAINT_CSCS:
+            response = job_handler._reoptimize_model_on_unicore(job_id, job_name, hpc, user.get_token())
+        
+        return response
