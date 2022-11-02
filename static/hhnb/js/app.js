@@ -668,7 +668,7 @@ function displayJobList(button) {
                         "<tr>"
                         + "<td>" + job.workflow_id + "</td>"
                         + "<td>" + job_id.toUpperCase() + "</td>"
-                        + "<td style='font-weight: bold; color: " + statusColor + ">" + job.status + "</td>"
+                        + "<td style='font-weight: bold; color: " + statusColor + "'>" + job.status + "</td>"
                         + "<td>" + job.date + "</td>"
                         + "<td>"
                         + "<div id='" + job_id + "' class='row g-0'>"
