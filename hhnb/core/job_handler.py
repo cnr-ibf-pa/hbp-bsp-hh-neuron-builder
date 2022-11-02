@@ -1,3 +1,4 @@
+from contextlib import nullcontext
 from hh_neuron_builder.settings import NSG_KEY
 from hhnb.core.response import ResponseUtil
 from hhnb.utils import messages
@@ -269,18 +270,19 @@ class JobHandler:
         logger.info(f'job submitted on UNICORE Client: {job}')
         return ResponseUtil.ok_response(messages.JOB_SUBMITTED.format('<b>' + hpc + '</b>'))
 
-    def _reoptimize_model_on_unicore(self, job_id, job_name, hpc, token):
+    def _reoptimize_model_on_unicore(self, job_id, job_name, hpc, max_gen,
+                                     node_num, core_num, runtime, token):
         job_description = {
             'User precommand': f'cp -r /scratch/snx3000/unicore/FILESPACE/{job_id}/{job_name}/ .',
-            'Executable': f'/apps/hbp/ich002/cnr-software-utils/hhnb/reoptimize_model.sh {job_name}',
+            'Executable': f'/apps/hbp/ich002/cnr-software-utils/hhnb/reoptimize_model.sh {job_name} {max_gen}',
             'User postcommand': f'mv {job_name} reopt_{job_name}; cd reopt_{job_name}; ' + \
                                 f'sed -i "s/{job_name}/reopt_{job_name}/" zipfolder.py; ' + \
                                 f'python ./zipfolder.py',
             'Name': 'reopt_' + job_name,
             'Resources': {
-                'Nodes': 2,
-                'CPUsPerNode': 12,
-                'Runtime': '20m',
+                'Nodes': node_num,
+                'CPUsPerNode': core_num,
+                'Runtime': runtime,
                 'NodeConstraints': 'mc',
                 'Project': 'ich002'
             },
@@ -442,6 +444,7 @@ class JobHandler:
         ordered_jobs = OrderedDict(sorted(jobs.items(),
                                           key=lambda x: x[1]['date'],
                                           reverse=True))
+
         logger.info(LOG_ACTION.format(user, 'jobs list: %s' % ordered_jobs))
         return {'jobs': ordered_jobs}
 
@@ -484,11 +487,14 @@ class JobHandler:
 
 
     @classmethod
-    def reoptimize_model(cls, job_id, job_name, hpc, user):
-        logger.info(LOG_ACTION.format(user, 'reoptimize model of the job: %s in %s', (job_id, hpc)))
+    def reoptimize_model(cls, data, user):
+        logger.info(LOG_ACTION.format(user, 'reoptimize model of the job: %s in %s', (data['job_id'], data['hpc'])))
         job_handler = cls()
 
-        if hpc == job_handler._DAINT_CSCS:
-            response = job_handler._reoptimize_model_on_unicore(job_id, job_name, hpc, user.get_token())
+        if data['hpc'] == job_handler._DAINT_CSCS:
+            response = job_handler._reoptimize_model_on_unicore(
+                data['job_id'], data['job_name'], data['hpc'],
+                data['max-gen'], data['node-num'], data['core-num'],
+                data['runtime'], user.get_token())
         
         return response

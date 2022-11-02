@@ -529,12 +529,63 @@
                     <tbody id="job-list-body" class="job-list-body"></tbody>
                 </table>
             </div>
+            
             <div class="row">
                 <div class="col">
                     <button type="button" id="cancel-job-list-btn" class="btn workflow-btn fill-background extends">Cancel</button>
                 </div>
                 <div class="col">
                     <button type="button" id="refresh-job-list-btn" class="btn workflow-btn fill-background extends" disabled>Refresh</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="shadow-layer"></div>
+    <div id="reopt-parameters" class="card">
+        <div class="card-body">
+            <h5 id="reopt-job-id" class="card-subtitle mb-2 text-muted"></h5>
+            <div class="row g-0">
+                <div class="card input-card">
+                    <div class="card-header input-card-header ">Algorithm Parameters</div>
+                    <div class="card-body ">
+                        <div class="input-group">
+                            <span class="input-group-text" title="Number of generation (max 60)"># Gen</span>
+                            <input type="number" class="form-control small-placeholder" name="gen-max" id="reopt-gen-max" title="Number of generation (max 60)" placeholder="Number of generation (max 60)" step="1" min="1" max="60">
+                        </div>
+                        <br>
+                    </div>
+                </div>
+            </div>
+            <div class="row-separator"></div>
+            <div class="row g-0">
+                <div class="card input-card">
+                    <div class="card-header input-card-header">Optimization Run Parameters</div>
+                    <div class="card-body">
+                        <div class="input-group">
+                            <span class="input-group-text" title="Number of nodes"># Nodes</span>
+                            <input type="number" class="form-control small-placeholder" name="node-num" id="reopt-node-num" title="Number of nodes" placeholder="Number of nodes" default="6" step="1" min="1" required>
+                        </div>
+                        <br>
+                        <div class="input-group">
+                            <span class="input-group-text" title="Number of cores"># Cores</span>
+                            <input type="number" class="form-control small-placeholder" name="core-num" id="reopt-core-num" title="Number of cores" placeholder="Number of cores" value="24" step="1" min="1" required>
+                        </div>
+                        <br>
+                        <div class="input-group">
+                            <span class="input-group-text" title="Runtime">Runtime</span>
+                            <input type="text" class="form-control small-placeholder" name="runtime" id="reopt-runtime" title="Runtime" placeholder="Runtime" value="120m" required>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row-separator"></div>
+            <div class="row">
+                <div class="col">
+                    <button id="reopt-parameters-cancel-button" class="btn workflow-btn fill-background">Cancel</button>
+                </div>
+                <div class="col">
+                    <button id="reopt-parameters-ok-button" class="btn workflow-btn fill-background">Reoptimize</i></button>
                 </div>
             </div>
         </div>
