@@ -576,6 +576,7 @@ def optimization_settings(request, exc=None):
     elif request.method == 'POST':
         logger.info(LOG_ACTION.format(hhnb_user, 'set optimization settings from %s' % workflow))
         optimization_settings = json.loads(request.body)
+        print(optimization_settings)
 
         if optimization_settings['hpc'] == 'NSG':
             nsg_username = optimization_settings.get('username_submit')
