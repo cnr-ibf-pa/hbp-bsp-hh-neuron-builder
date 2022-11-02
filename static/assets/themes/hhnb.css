@@ -1890,3 +1890,22 @@ i.disabled:hover {
 #tableRow {
     overflow: auto;
 }
+
+.input-group > span {
+    justify-content: center;
+}
+
+.input-group.job-name{
+    height: 3rem;
+    margin-bottom: 1rem;
+}
+.input-group.job-name > span {
+    font-weight: bold;
+    background-color: #37474f;
+    color: white;
+}
+.input-group.job-name > input {
+    font-weight: bold;
+    /* background-color: #37474f; */
+    /* color: white; */
+}

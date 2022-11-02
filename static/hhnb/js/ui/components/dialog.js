@@ -158,11 +158,13 @@ class OptimizationSettingsDialog {
         $("#sa-offspring").val(10)
         $("#sa-runtime").val(2);
 
+        $("#job-name").val($("#wf-title").text().split("Workflow ID: ")[1]);
     }
 
     static loadSettings(jObj) {
         Log.debug("settings value");
         this.#setDefaultValue();
+
 
         if (!jObj["service-account"]) {
             $("#accordionSA").addClass("disabled").prop("disabled", true);
@@ -174,7 +176,8 @@ class OptimizationSettingsDialog {
         let settings = jObj.settings;
         Log.debug(settings);
         
-        if (!$.isEmptyObject(settings)) {    
+        if (!$.isEmptyObject(settings)) {
+            $("#job-name").val(settings.job_name);
             $(".accordion-button.hpc").removeClass("active").addClass("collapsed");
             $(".accordion-collapse").removeClass("show");
             if (settings.hpc == "DAINT-CSCS") {
@@ -232,7 +235,9 @@ class OptimizationSettingsDialog {
     static getJsonData() {
         const data = new Object();
         let hpc = $(".accordion-button.active").attr("name");
+        let job_name = $("#job-name").val();
         data["hpc"] = hpc;
+        data["job_name"] = job_name;
         if (hpc == "DAINT-CSCS") {
             if ($("#daint_project_id").val() == "") {
                 $("#daint_project_id").removeClass("is-valid").addClass("is-invalid");
@@ -302,7 +307,10 @@ class OptimizationSettingsDialog {
     static getFomData() {
         const formData = new FormData();
         let hpc = $(".accordion-button.active").attr("name");
+        let job_name = $("#job-name").val();
+        console.log("JOB_NAME ", job_name);
         formData.append("csrfmiddlewaretoken", $("input[name=csrfmiddlewaretoken]").val());
+        formData.append("job_name", $("#job-name").text());
         formData.append("hpc", hpc);
 
         if (hpc == "DAINT-CSCS") {
@@ -337,6 +345,7 @@ class OptimizationSettingsDialog {
             formData.append("core-num", $("#sa-core-num").val());
             formData.append("runtime", $("#sa-runtime").val());
         }
+
 
         if (Log.enabled) {
             for (let v of formData.values()) {

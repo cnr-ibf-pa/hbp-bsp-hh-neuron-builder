@@ -214,6 +214,13 @@
             {% csrf_token %}
             <div class="container">
                 <div class="row">
+                    <div class="input-group job-name">
+                        <span class="input-group-text">Job Name</span>
+                        <input type="text" class="form-control" id="job-name" placeholder="Set the job name">
+                    </div>
+                </div>
+                <div class="row-separator"></div>
+                <div class="row">
                     <div id="hpcChooserParams" class="accordion">
                         <div class="accordion-item">
                             <h2 id="DAINT-CSCS" class="accordion-header">
