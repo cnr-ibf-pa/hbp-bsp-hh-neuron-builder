@@ -519,6 +519,8 @@ function resetJobFetchDiv() {
     $("#passwordNsg").removeClass("is-invalid");
     $("#sa-project-dropdown-jobs-btn").prop("disabled", true);
     $("#sa-fetch-jobs").prop("disabled", true);
+    $("#shadow-layer").css("display", "none").removeClass("show");
+    $("#reopt-parameters").css("display", "none").removeClass("show");
     resetProgressBar();
 }
 
@@ -620,7 +622,12 @@ function displayJobList(button) {
                 MessageDialog.openInfoDialog("No jobs on <b>" + hpc + "</b> system");
                 return false;
             }
+            // jobs = $.extend({'-1': {}, '-2': {}, '-3': {}}, jobs);
             for (let job_id of Object.keys(jobs)) {
+                if (job_id < 0) {
+                    $("#job-list-body").append("<tr><td style='color: rgba(255, 255, 255, .5)'>1</td></tr>");
+                    continue;
+                }
                 let job = jobs[job_id];
                 let statusColor = "";
                 let downloadDisabled = "disabled";
@@ -661,7 +668,7 @@ function displayJobList(button) {
                         "<tr>"
                         + "<td>" + job.workflow_id + "</td>"
                         + "<td>" + job_id.toUpperCase() + "</td>"
-                        + "<td style='font-weight: bold; color: " + statusColor + "'>" + job.status + "</td>"
+                        + "<td style='font-weight: bold; color: " + statusColor + ">" + job.status + "</td>"
                         + "<td>" + job.date + "</td>"
                         + "<td>"
                         + "<div id='" + job_id + "' class='row g-0'>"
@@ -685,10 +692,9 @@ function displayJobList(button) {
             $("#cancel-job-list-btn").prop("disabled", false);
             $(".list-group-item.fetch-jobs").attr("aria-disabled", "false").removeClass("disabled clicked");
             
-            let windowHeight = $(window).height();
-            let overlayJobsHeight = $("#overlayjobs").height();
-            if (overlayJobsHeight > (windowHeight - (windowHeight / 10))) {
-                $("#overlayjobs").addClass("scroll-long-content");
+            let maxHeight = $(window).height() - $(window).height() * 30 / 100;
+            if ($("#tableRow").height() > maxHeight) {
+                $("#tableRow").css("max-height", maxHeight.toString() + "px");
             }
         }).fail((error) => {
             checkRefreshSession(error);
@@ -710,34 +716,115 @@ function downloadJobButtonCallback(button) {
     }
 }
 
-function reoptimizeJobButtonCallback(button) {
-    let rowElement = button.currentTarget.parentElement.parentElement.parentElement.parentElement;
-    let jobId = button.currentTarget.parentElement.parentElement.id;
-    let jobStatus = rowElement.children[2].innerText;
-    let jobName = rowElement.children[0].innerText;
+$("#reopt-parameters-ok-button").on("click", () => {
     let hpc = $(".fetch-jobs.active").attr("name");
+    let jobId = $("#reopt-job-id").text();
+    let jobName = $("#reopt-job-id").attr("name");
+    let maxgen = $("#reopt-gen-max").val();
+    let nodes = $("#reopt-node-num").val();
+    let cores = $("#reopt-core-num").val();
+    let runtime = $("#reopt-runtime").val();
 
+    let isValide = true;
+    if (!maxgen) {
+        isValide = false;
+        $("#reopt-gen-max").addClass("is-invalid");
+    }
+    if (!nodes) {
+        isValide = false;
+        $("#reopt-node-num").addClass("is-invalid");
+    }
+    if (!cores) {
+        isValide = false;
+        $("#reopt-core-num").addClass("is-invalid");
+    }
+    if (!runtime) {
+        isValide = false;
+        $("#reopt-runtime").addClass("is-invalid");
+    }
+    if (!isValide) {
+        return false;
+    }
+
+    $("#shadow-layer").trigger("click");
     $("#tableRow").css("display", "none");
     $("#overlayjobs").removeClass("scroll-long-content");
     $("#spinnerRow").css("display", "flex");
     $("#refresh-job-list-btn").prop("disabled", true);
     $("#cancel-job-list-btn").prop("disabled", true);
 
+    $.ajax({
+        url: "/hh-neuron-builder/reoptimize-model/" + exc,
+        method: "POST",
+        data: { 
+            "job_id": jobId, 
+            "hpc": hpc, 
+            "job_name": jobName, 
+            "max-gen": maxgen,
+            "node-num": nodes,
+            "core-num": cores,
+            "runtime": runtime
+        },
+        success: response => {
+            $("#refresh-job-list-btn").trigger("click");
+        },
+        error: error => {
+            closeJobFetchDiv();
+            MessageDialog.openErrorDialog(error.responseText);
+        }
+    });
+})
+
+$("#reopt-parameters-cancel-button").on("click", toggleReoptParametersPopup);
+$("#shadow-layer").on("click", toggleReoptParametersPopup);
+
+async function toggleReoptParametersPopup(jobId="", jobName="") {
+    let reoptParameters = $("#reopt-parameters");
+    let shadowLayer = $("#shadow-layer");
+    $("#reopt-job-id").text(jobId).attr("name", jobName);
+
+    let pageHeight = document.documentElement.scrollHeight;
+    let windowHeight = window.innerHeight;
+    console.log(pageHeight);
+    console.log(windowHeight);
+
+    let mode = reoptParameters.hasClass("show") ? "close" : "open";
+    if (mode == "open") {
+        shadowLayer.css("display", "block");
+        reoptParameters.css("display", "block");
+        await sleep(0);
+        shadowLayer.addClass("show");
+        reoptParameters.addClass("show");
+    } else if (mode == "close") {
+        shadowLayer.removeClass("show");
+        reoptParameters.removeClass("show");
+    }
+
+    reoptParameters[0].addEventListener("transitionend", event => {
+        if (event.target.id == reoptParameters.attr("id")) {
+            if (!reoptParameters.hasClass("show")) {
+                reoptParameters.css("display", "none");
+                shadowLayer.css("display", "none");
+            }
+        }
+    });
+
+}
+
+function reoptimizeJobButtonCallback(event) {
+    let button = $(event.currentTarget);
+    let rowElement = button.parents("tr");
+    let jobStatus = rowElement.children()[2].innerText;
 
     if (jobStatus == "SUCCESSFUL" || jobStatus == "COMPLETED") {
-        $.ajax({
-            url: "/hh-neuron-builder/reoptimize-model/" + exc,
-            method: "POST",
-            data: { "job_id": jobId, "job_name": jobName, "hpc": hpc},
-            success: response => {
-                $("#refresh-job-list-btn").trigger("click");
-            },
-            error: error => {
-                console.log(error);
-            }
-        });
+        let jobId = rowElement.children()[1].innerText;
+        let jobName = rowElement.children()[0].innerText;    
+        toggleReoptParametersPopup(jobId, jobName);
     }
+
 }
+
+
 
 function animateProgressBar(progress) {
     let current_progress = parseFloat($(".progress-bar").attr("aria-valuenow"));

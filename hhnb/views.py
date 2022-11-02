@@ -27,7 +27,7 @@ import json
 import shutil
 import logging
 
-from hhnb.utils.misc import InvalidArchiveError, get_signed_archive, validate_archive
+from hhnb.utils.misc import InvalidArchiveError, get_signed_archive, validate_archive, validate_json_file
 logger = logging.getLogger(__name__)
 
 
@@ -754,16 +754,14 @@ def run_optimization(request, exc):
 def reoptimize_model(request, exc):
     if exc not in request.session.keys():
         return ResponseUtil.no_exc_code_response()
-
-    job_id = request.POST.get('job_id')
-    job_name = request.POST.get('job_name')
-    hpc = request.POST.get('hpc')
-
-    if not job_id or not job_name or not hpc:
-        return ResponseUtil.ko_response()
+    
+    data = request.POST.dict()
 
     user = HhnbUser.get_user_from_request(request)
-    response = JobHandler.reoptimize_model(job_id, job_name, hpc, user)
+    try:
+        response = JobHandler.reoptimize_model(data, user)
+    except:
+        return ResponseUtil.ko_response("<b>Something went wrong !</b>")
 
     return response
 
