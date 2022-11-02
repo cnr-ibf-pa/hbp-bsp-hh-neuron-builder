@@ -99,8 +99,7 @@ class JobHandler:
         return payload
 
     def _submit_on_nsg(self, username, password, zip_file, settings):
-        zip_name = os.path.split(zip_file)[1]
-        payload = self._get_nsg_payload(job_name=zip_name.split('.')[0],
+        payload = self._get_nsg_payload(job_name=settings['job_name'],
                                         core_num=settings['core-num'],
                                         node_num=settings['node-num'],
                                         runtime=settings['runtime'])
@@ -259,7 +258,7 @@ class JobHandler:
         zip_name = os.path.split(zip_file)[1]
         job_description = self._get_unicore_job_description(
             command=self._get_unicore_command(zip_name),
-            job_name=zip_name.split('.')[0],
+            job_name=settings['job_name'],
             node_num=settings['node-num'],
             core_num=settings['core-num'],
             runtime=settings['runtime'],
@@ -339,7 +338,7 @@ class JobHandler:
             node_num=settings['node-num'],
             core_num=settings['core-num'],
             runtime=settings['runtime'],
-            title=zip_name.split('.')[0]
+            title=settings['job_name']
         ) 
 
         headers = self._get_service_account_headers(token, zip_name, payload)
