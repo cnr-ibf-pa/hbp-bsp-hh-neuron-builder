@@ -667,6 +667,29 @@
                     </div>
                     <div id="fileselector" class="col-8 file-selector">
                         <div id="fileItemSpinner" class="spinner-border file-item-spinner" role="status"></div>
+                        <div id="parametersTemplateChooser" class="container">
+                            <div class="row g-0">
+                                <h6>Parameters not found.<br>Please choose one of the following templates and modify it properly or upload it.</h6>
+                            </div>
+                            <div class="row g-0">
+                                <div class="col">
+                                    <div class="card" style="width: 18rem;">
+                                        <img src="{% static 'assets/img/pyramidal.jpeg' %}" class="card-img-top" alt="ciao">
+                                        <div class="card-body">
+                                            <p class="card-text">Pyramical cell</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="card" style="width: 18rem;">
+                                        <img src="{% static 'assets/img/interneuron.jpeg' %}" class="card-img-top" alt="ciao">
+                                        <div class="card-body">
+                                            <p class="card-text">Interneuron cell</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div> 
+                        </div>
                         <ul id="morphologyFileList" class="list-group file-manager-group file-group" style="display: none;"></ul>
                         <ul id="mechanismsFileList" class="list-group file-manager-group file-group" style="display: none"></ul>
                         <ul id="configFileList" class="list-group file-manager-group file-group" style="display: none"></ul>
@@ -676,6 +699,7 @@
                     <div id="fileeditor" class="col-8 file-selector"></div>
                 </div>
             </div>
+            
             <div id="saveFileButton" class="save-floating-btn" title="Save file" draggable="false" ondragstart="return false;">
                 <img id="saveFileButtonImage" src="{% static 'assets/img/save-file-white.svg' %}" draggable="false" ondragstart="return false;">
                 <div id="saveFileButtonSpinner" class="spinner-border" role="status"></div>

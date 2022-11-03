@@ -362,6 +362,7 @@ function showFileList(folder) {
     } else if (currFolder == "configFolder") {
         currList = $("#configFileList"); 
         showFloatingOpenFileButton();
+        $("#addFileButton").addClass("show");
     } else if (currFolder == "modelFolder") {
         currList = $("#modelFileList"); 
         $("#uploadFileButton").addClass("disabled");
@@ -421,6 +422,7 @@ function showFloatingOpenFileButton() {
 function hideFloatingOpenFileButton() {
     $("#editFileButton").removeClass("show");
     $("#saveFileButton").removeClass("show");
+    $("#addFileButton").removeClass("show");
 }
 
 var editorMode = false;

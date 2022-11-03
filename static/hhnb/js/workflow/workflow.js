@@ -38,7 +38,7 @@ function disable(jObj) {
 export default class Workflow {
 
     #exc = null;
-    #props = null;
+    #props = {};
 
     #uploadFileType = null;
 
@@ -50,7 +50,7 @@ export default class Workflow {
 
     constructor(exc) {
         this.#exc = exc;
-        this.updateProperties();
+        this.updateProperties(false);
     }
 
     getProps() {

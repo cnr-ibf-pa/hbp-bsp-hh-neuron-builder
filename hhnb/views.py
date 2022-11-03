@@ -467,6 +467,7 @@ def upload_files(request, exc):
 
         elif folder == 'config/':
             if not uploaded_file.name in ['features.json', 'protocols.json', 'parameters.json']:
+                os.remove(full_path)
                 return ResponseUtil.ko_response(
                     'Config file must be one of the fallowing files:<br>\
                     "<b>protocols.json</b>", "<b>features.json</b>", <b>"parameters.json</b>"'
