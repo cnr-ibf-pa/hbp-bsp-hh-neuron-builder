@@ -2,7 +2,7 @@
 Workspace utils classes
 """
 
-from hh_neuron_builder.settings import MEDIA_ROOT, HHF_TEMPLATE_DIR, TMP_DIR, LOG_ROOT_PATH
+from hh_neuron_builder.settings import MEDIA_ROOT, HHF_TEMPLATE_DIR, HHF_PARAMETERS_TEMPLATE_DIR, TMP_DIR, LOG_ROOT_PATH
 
 from hhnb.core.conf.exec_files_conf import ExecFileConf
 
@@ -610,3 +610,13 @@ class WorkflowUtil:
 
         # moving naas archive to tmp dir
         return shutil.move(naas_archive, workflow.get_tmp_dir())
+
+    @staticmethod
+    def load_parameters_template(workflow, template_type):
+        if template_type not in ['pyramidal', 'interneuron']:
+            raise UnknownParametersTemplate
+        
+        shutil.copy(
+            os.path.join(HHF_PARAMETERS_TEMPLATE_DIR, template_type, 'parameters.json'),
+            os.path.join(workflow.get_model_dir(), 'config')
+        )

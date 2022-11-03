@@ -667,29 +667,6 @@
                     </div>
                     <div id="fileselector" class="col-8 file-selector">
                         <div id="fileItemSpinner" class="spinner-border file-item-spinner" role="status"></div>
-                        <div id="parametersTemplateChooser" class="container">
-                            <div class="row g-0">
-                                <h6>Parameters not found.<br>Please choose one of the following templates and modify it properly or upload it.</h6>
-                            </div>
-                            <div class="row g-0">
-                                <div class="col">
-                                    <div class="card" style="width: 18rem;">
-                                        <img src="{% static 'assets/img/pyramidal.jpeg' %}" class="card-img-top" alt="ciao">
-                                        <div class="card-body">
-                                            <p class="card-text">Pyramical cell</p>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col">
-                                    <div class="card" style="width: 18rem;">
-                                        <img src="{% static 'assets/img/interneuron.jpeg' %}" class="card-img-top" alt="ciao">
-                                        <div class="card-body">
-                                            <p class="card-text">Interneuron cell</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div> 
-                        </div>
                         <ul id="morphologyFileList" class="list-group file-manager-group file-group" style="display: none;"></ul>
                         <ul id="mechanismsFileList" class="list-group file-manager-group file-group" style="display: none"></ul>
                         <ul id="configFileList" class="list-group file-manager-group file-group" style="display: none"></ul>
@@ -708,6 +685,32 @@
                 <img id="editFileButtonImage" src="{% static 'assets/img/open-file-white.svg' %}" draggable="false" ondragstart="return false;">
             </div>
             <div id="editorAlert" class="editor-alert"><div id="editorAlertText">Some text blablablabla</div></div>
+        </div>
+    </div>
+
+    <div id="overlayparameterstemplate" class="overlay-content">
+        <div id="parametersTemplateChooser" class="container">
+            <div class="row g-0">
+                <p><b>Parameters not found !</b><br>Please choose one of the following templates and modify it according to your needs.<br>You can also delete it from the file manager and upload a new one.</p>
+            </div>
+            <div class="row g-0">
+                <div class="col">
+                    <div class="card parametersTemplate" style="width: 18rem;" name="pyramidal">
+                        <img src="{% static 'assets/img/pyramidal.jpeg' %}" class="card-img-top" alt="pyramidal"  draggable="false" ondragstart="return false;">
+                        <div class="card-body">
+                            <p class="card-text">Pyramical cell</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="card parametersTemplate" style="width: 18rem;" name="interneuron">
+                        <img src="{% static 'assets/img/interneuron.jpeg' %}" class="card-img-top" alt="interneuron"  draggable="false" ondragstart="return false;">
+                        <div class="card-body">
+                            <p class="card-text">Interneuron cell</p>
+                        </div>
+                    </div>
+                </div>
+            </div> 
         </div>
     </div>
 
@@ -891,7 +894,7 @@
                 The single cell model optimization process of the <b>Hodgkin Huxley Neuron Builder</b> relies on the Python-based <a href="https://pypi.org/project/bluepyopt/">BluePyOpt</a> optimization suite.<br><br>The model to be optimized is made up of several files and folders relative to both the <i>NEURON</i> model itself and the <i>BluePyOpt</i> optimization process.<br><br>More specifically, the <i>NEURON</i> model comprises the <i>mechanisms</i> (i.e., <i>NEURON .mod</i> files) and a morphology file (in <i>.asc</i> format). These files combines with the <i>BluePyOpt</i> specific routines (needed to finalize the model optimization) that are implemented following this workflow: the <i>opt_neuron.py</i> script is launched and imports the <i>template.py</i> and <i>evaluator.py</i> modules, which in turn read the <i>parameters.json</i>, <i>features.json</i> and <i>protocols.json</i> files.<br><br><b>In order to customize the model to be optimized, you can click on 'Manage files' in the 'Optimization files' panel and upload your own files (a filter is applied to exclusively allow the upload of relevant files -based on their extension- and prevent users to modify sensitive scripts) and/or modifying them when possible. From the same GUI, you will also be able to download any model file.</b><br><br>Please bear in mind that these are advanced functionalities for power users. If you have any doubt on how to use these features, do not hesitate to contact us at <a href="mailto:support@ebrains.eu">support@ebrains.eu</a>.
             </div>
             <div class="modal-footer">
-                <button id="modalHHFCloseButton" type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="openFileManager(showConfig=true)">Close</button>
+                <button id="modalHHFCloseButton" type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
     </div>

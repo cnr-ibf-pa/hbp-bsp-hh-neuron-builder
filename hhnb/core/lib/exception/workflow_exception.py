@@ -22,5 +22,10 @@ class EmptyWorkflow(Exception):
 class MechanismsProcessError(Exception): # CalledProcessError):
     pass
 
+
 class AnalysisProcessError(Exception): # CalledProcessError):
+    pass
+
+
+class UnknownParametersTemplate(Exception):
     pass

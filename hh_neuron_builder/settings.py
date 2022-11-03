@@ -166,6 +166,7 @@ STATICFILES_DIRS = [
 MEDIA_ROOT = conf.MEDIA_ROOT
 
 HHF_TEMPLATE_DIR = os.path.join(BASE_DIR, 'hh_neuron_builder', 'config', 'hhf_template', 'hhf')
+HHF_PARAMETERS_TEMPLATE_DIR = os.path.join(BASE_DIR, 'hh_neuron_builder', 'config', 'hhf_template', 'parameters')
 if not os.path.exists(HHF_TEMPLATE_DIR):
     os.makedirs(HHF_TEMPLATE_DIR)
     

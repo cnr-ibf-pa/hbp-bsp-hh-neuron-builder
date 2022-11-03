@@ -362,7 +362,6 @@ function showFileList(folder) {
     } else if (currFolder == "configFolder") {
         currList = $("#configFileList"); 
         showFloatingOpenFileButton();
-        $("#addFileButton").addClass("show");
     } else if (currFolder == "modelFolder") {
         currList = $("#modelFileList"); 
         $("#uploadFileButton").addClass("disabled");
@@ -422,7 +421,6 @@ function showFloatingOpenFileButton() {
 function hideFloatingOpenFileButton() {
     $("#editFileButton").removeClass("show");
     $("#saveFileButton").removeClass("show");
-    $("#addFileButton").removeClass("show");
 }
 
 var editorMode = false;
@@ -461,7 +459,6 @@ function resetEditorMode() {
     $("#editFileButtonImage").attr("src", "/static/assets/img/open-file-white.svg").removeClass("show zoomout back-arrow").css("top", "8px").css("left", "2px");
     $("#editFileButton").attr("title", "Open/Edit files");
     $("#editorfilelist").empty();
-    console.log("RESET BACK BUTTON")
     $("#saveFileButton").removeClass("show disabled");
     $("#saveFileButtonSpinner").css("display", "none");
     $("#saveFileButtonImage").css("display", "inline");        
