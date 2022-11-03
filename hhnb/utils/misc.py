@@ -7,6 +7,7 @@ from hhnb.utils import messages
 import os
 import shutil
 import time
+import json
 
 
 class InvalidArchiveError(Exception):
