@@ -1242,7 +1242,7 @@ td {
     background-color: #daa5204d;
 }
 
-.edit-floating-btn, .save-floating-btn {
+.edit-floating-btn, .save-floating-btn, .add-floating-btn {
     border-radius: 64px;
     width: 48px;
     height: 48px;
@@ -1257,11 +1257,12 @@ td {
     cursor: pointer;
     z-index: 2;
 }
-.save-floating-btn {
+.save-floating-btn, .add-floating-btn {
     transition-duration: .3s;
     bottom: 5%;
     z-index: 1;
 }
+
 #saveFileButtonSpinner {
     display: none;
     width: 1.5rem;
@@ -1271,7 +1272,7 @@ td {
     margin-left: 12px;
 }
 
-.edit-floating-btn > img, .save-floating-btn > img {
+.edit-floating-btn > img, .save-floating-btn > img, .add-floating-btn > img {
     width: 24px;
     height: 24px;
     top: 8px;
@@ -1291,8 +1292,12 @@ td {
     bottom: 5%;
     opacity: 1;
 }
+.add-floating-btn.show {
+    bottom: 13%;
+    opacity: 1;
+}
 .save-floating-btn.show {
-    bottom: 15%;
+    bottom: 21%;
     opacity: 1;
 }
 
@@ -1908,4 +1913,13 @@ i.disabled:hover {
     font-weight: bold;
     /* background-color: #37474f; */
     /* color: white; */
+}
+
+#parametersTemplateChooser {
+    background-color: white;
+    position: relative;
+    top: 50%;
+    width: 90%;
+    padding: 0.5rem;
+    border-radius: 20px;;
 }

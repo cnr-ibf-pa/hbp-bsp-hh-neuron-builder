@@ -8,7 +8,6 @@ const exc = sessionStorage.getItem("exc");
 const hhf_dict = sessionStorage.getItem("hhf_dict");
 const workflow = new Workflow(exc, hhf_dict);
 
-
 function checkRefreshSession(response) {
     console.log(response);
     if (response.status === 403 && response.responseJSON.refresh_url) {
@@ -29,8 +28,7 @@ function checkRefreshSession(response) {
     } 
 }
 
-
-$(document).on("load", () => {
+$(window).on("load", () => {
     if (workflow.getProps().hhf_flag) {
         $("#modalHHF").modal("show");
     }
