@@ -1271,6 +1271,23 @@ def hhf_save_config_file(request, folder, config_file, exc):
         return ResponseUtil.ko_response(400, messages.GENERAL_ERROR)
 
 
+def hhf_load_parameters_template(request, exc):
+    if request.method != 'POST':
+        return ResponseUtil.method_not_allowed('POST')
+
+    if not exc in request.session.keys():
+        return ResponseUtil.no_exc_code_response()
+
+    workflow, _ = get_workflow_and_user(request, exc)
+    
+    parameters_type = request.POST.get('type')
+    if not parameters_type in ['pyramidal', 'interneuron']:
+        return ResponseUtil.ko_response(f"Parameters type {parameters_type} unknown")
+
+    WorkflowUtil.load_parameters_template(workflow, parameters_type)
+    return ResponseUtil.ok_response()
+
+
 def get_service_account_content(request):
     if request.method != 'GET':
         return ResponseUtil.method_not_allowed('GET')

@@ -1032,3 +1032,27 @@ $("#register-model-btn").on("click", () => {
 
 
 /* ************************************* */
+
+
+$("#modalHHFCloseButton").on("click", () => {
+    // console.log(workflow.getProps().model.optimization_files.parameters)
+    if (workflow.getProps().model.optimization_files.parameters !== "") {
+        $("#overlaywrapper").css("display", "block");
+        $("#overlayparameterstemplate").css("display", "block");
+    } else {
+        openFileManager(true);
+    }
+})
+
+$(".parametersTemplate").on("click", (event) => {
+    let parametersType = $(event.currentTarget).attr("name");
+    $.post("/hh-neuron-builder/hhf-load-parameters-template/" + exc, {type: parametersType})
+        .fail((error) => {
+            console.log(error);
+            MessageDialog.openErrorDialog("<b>Something went wrong!</b><br>Please upload a parameters file manually.");
+        }).always(() => {
+            $("#overlaywrapper").css("display", "none");
+            $("#overlayparameterstemplate").css("display", "none");
+            workflow.updateProperties();
+        })
+})
