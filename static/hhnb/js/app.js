@@ -113,7 +113,7 @@ $("#uploadForm").submit(function (e) {
     for (let v of formFileData.values()) {
         Log.debug(v);
     }
-
+    
     workflow.uploadFile(formFileData);
 });
 
