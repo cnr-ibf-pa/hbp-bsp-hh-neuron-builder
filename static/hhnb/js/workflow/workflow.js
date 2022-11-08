@@ -300,7 +300,6 @@ export default class Workflow {
             data: formFileData,
             contentType: false, // need to upload files correctly
             processData: false,
-            async: false,
             success: (result) => {
                 Log.debug(result);
                 this.updateProperties();
@@ -362,7 +361,6 @@ export default class Workflow {
             data: JSON.stringify(jData),
             processData: false,
             contentType: false,
-            // async: false,
             success: (result) => {
                 if (jData.hpc == "NSG") {
                     $("#username_submit").removeClass("is-invalid").addClass("is-valid");
@@ -388,7 +386,6 @@ export default class Workflow {
         $.ajax({
             url: "/hh-neuron-builder/run-optimization/" + this.#exc,
             method: "GET",
-            // async: false,
             success: (result) => {
                 Log.debug(result);
                 this.updateProperties(false);
@@ -407,7 +404,6 @@ export default class Workflow {
         $.ajax({
             url: "/hh-neuron-builder/register-model/" + this.#exc,
             method: "POST",
-            // async: false,
             data: formData,
             processData: false,
             contentType: false,

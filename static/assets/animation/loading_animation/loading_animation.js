@@ -1,8 +1,22 @@
+class Log {
+    
+    static enable = false;
+    
+    static debug(message) {
+        if (this.enable) {
+            console.log(message);
+        }
+    }
+}
+
+if (window.location.href.startsWith("https://127.0.0.1")) {
+    Log.enable = true;
+}
+
 function showLoadingAnimation(message="") {
-    console.log("showLoadingAnimation() called.");
+    Log.debug("showLoadingAnimation(\"" + message + "\") called");
 
     setLoadingAnimationText(message);
-    // $(".loading-animation").css("display", "block");
     $(".loading-animation").addClass("show");
     $(".neuron").addClass("start-animation");
 
@@ -16,8 +30,7 @@ function showLoadingAnimation(message="") {
 }
 
 function hideLoadingAnimation() {
-    console.log("hideLoadingAnimation() called.");
-    // $(".loading-animation").css("display", "none").removeClass("start-animation reverse-animation");
+    Log.debug("hideLoadingAnimation() called");
     $(".loading-animation").removeClass("show");
     $(".neuron").removeClass("start-animation reverse-animation");
 }
