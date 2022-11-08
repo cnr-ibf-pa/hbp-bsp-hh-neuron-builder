@@ -11,7 +11,7 @@ const hhf_dict = sessionStorage.getItem("hhf_dict");
 const workflow = new Workflow(exc, hhf_dict);
 
 function checkRefreshSession(response) {
-    console.log(response);
+    Log.debug(response);
     if (response.status === 403 && response.responseJSON.refresh_url) {
         $("#overlaywrapper").css("display", "none");
         showLoadingAnimation("Session expired.<br>Refreshing session automatically...");
@@ -367,7 +367,6 @@ function chooseOptModel() {
         $("#modalMC").modal("show");
         $("#closeModalMCButton").css("display", "block").addClass("show");
         $(".mc-model").on("click", (button) => {
-            console.log(button.target.getAttribute("id"));
             if (button.target.getAttribute("id") != "external_link") {
                 closeModelCatalog();
                 let optimization_id = button.currentTarget.getAttribute("id");
@@ -453,7 +452,6 @@ function formatDescription(meta = "") {
 
 $("#launch-opt-btn").on("click", () => {
     workflow.runOptimization();
-
 })
 
 $("#closeFileManagerButton").on("click", () => {
@@ -463,11 +461,7 @@ $("#closeFileManagerButton").on("click", () => {
 })
 
 
-
-
-
 /* FETCH JOBS */
-
 
 $("#opt-fetch-btn").on("click", () => {
     Log.debug('Fetch job');
@@ -496,12 +490,6 @@ $("#refresh-job-list-btn").on("click", () => {
     displayJobList($(".list-group-item.fetch-jobs.active"));
 });
 
-
-// var is_user_authenticated = sessionStorage.getItem("isUserAuthenticated");
-
-function dismissAlert(el) {
-    console.log($(el).parent().removeClass("show"));
-}
 
 function resetJobFetchDiv() {
     $("#overlayjobs").removeClass("scroll-long-content");
@@ -786,8 +774,6 @@ async function toggleReoptParametersPopup(jobId="", jobName="") {
 
     let pageHeight = document.documentElement.scrollHeight;
     let windowHeight = window.innerHeight;
-    console.log(pageHeight);
-    console.log(windowHeight);
 
     let mode = reoptParameters.hasClass("show") ? "close" : "open";
     if (mode == "open") {
@@ -1033,12 +1019,9 @@ $("#register-model-btn").on("click", () => {
     workflow.registerModel(formData);
 })
 
-
 /* ************************************* */
 
-
 $("#modalHHFCloseButton").on("click", () => {
-    // console.log(workflow.getProps().model.optimization_files.parameters)
     if (workflow.getProps().model.optimization_files.parameters !== "") {
         $("#overlaywrapper").css("display", "block");
         $("#overlayparameterstemplate").css("display", "block");
@@ -1051,7 +1034,7 @@ $(".parametersTemplate").on("click", (event) => {
     let parametersType = $(event.currentTarget).attr("name");
     $.post("/hh-neuron-builder/hhf-load-parameters-template/" + exc, {type: parametersType})
         .fail((error) => {
-            console.log(error);
+            Log.error(error);
             MessageDialog.openErrorDialog("<b>Something went wrong!</b><br>Please upload a parameters file manually.");
         }).always(() => {
             $("#overlaywrapper").css("display", "none");
