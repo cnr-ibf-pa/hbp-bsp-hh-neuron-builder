@@ -1,4 +1,4 @@
-import { MessageDialog, ModelRegistrationDialog, OptimizationSettingsDialog } from "../ui/components/dialog.js";
+import { MessageDialog, ModelRegistrationDialog } from "../ui/components/dialog.js";
 import Log from "../utils/logger.js";
 
 
@@ -50,7 +50,7 @@ export default class Workflow {
 
     constructor(exc) {
         this.#exc = exc;
-        this.updateProperties(false);
+        this.updateProperties();
     }
 
     getProps() {
@@ -66,12 +66,12 @@ export default class Workflow {
         }
     }
 
-    updateProperties(async=true) {
+    updateProperties() {
         showLoadingAnimation("Loading...");
         $.ajax({
             url: GET_PROPS_BASE_URL + this.#exc,
             method: "GET",
-            async: async,
+            async: false,
             success: (props) => {
                 this.#props = props;
                 $("#wf-title").html("Workflow ID: <b>" + this.#props.id + "</b>");
@@ -313,7 +313,21 @@ export default class Workflow {
         });
     }
 
+    getOptimizationSettingsAsPromise() {
+        showLoadingAnimation("Getting settings...");
+        return new Promise((resolve, reject) => {
+            $.getJSON("/hh-neuron-builder/optimization-settings/" + this.#exc)
+                .done(results => {
+                    resolve(results);
+                }).fail(error => {
+                    reject(error);
+                }).always(() => {
+                    hideLoadingAnimation();
+                })
+        })
+    }
 
+    // will be deprecated
     getOptimizationSettings() {
         let settings = null;
         showLoadingAnimation("Getting settings...");
@@ -323,12 +337,12 @@ export default class Workflow {
             async: false,
             headers: { "Accept": "application/json" },
             success: (result) => {
-                // Log.debug(result);
                 settings = result;
                 if (settings.hpc == "NSG") {
                     $("#username_submit").removeClass("is-invalid").addClass("is-valid");
                     $("#password_submit").removeClass("is-invalid").addClass("is-valid");
                 }
+                return settings;
             },
             error: (error) => {
                 checkRefreshSession(error);
@@ -348,7 +362,7 @@ export default class Workflow {
             data: JSON.stringify(jData),
             processData: false,
             contentType: false,
-            async: false,
+            // async: false,
             success: (result) => {
                 if (jData.hpc == "NSG") {
                     $("#username_submit").removeClass("is-invalid").addClass("is-valid");
@@ -374,7 +388,7 @@ export default class Workflow {
         $.ajax({
             url: "/hh-neuron-builder/run-optimization/" + this.#exc,
             method: "GET",
-            async: false,
+            // async: false,
             success: (result) => {
                 Log.debug(result);
                 this.updateProperties(false);
@@ -393,7 +407,7 @@ export default class Workflow {
         $.ajax({
             url: "/hh-neuron-builder/register-model/" + this.#exc,
             method: "POST",
-            async: false,
+            // async: false,
             data: formData,
             processData: false,
             contentType: false,

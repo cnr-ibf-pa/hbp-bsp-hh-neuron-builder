@@ -134,7 +134,6 @@ function populateServiceAccountSettings(jObj, context) {
     hpcList.empty();
     projectList.empty();
 
-
     let saHPC = Object.keys(jObj);
     let dividerNum = saHPC.length - 1;
 

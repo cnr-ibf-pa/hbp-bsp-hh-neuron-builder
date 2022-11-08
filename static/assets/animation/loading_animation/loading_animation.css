@@ -49,16 +49,14 @@
     width: 345px;
     margin-bottom: 30px;
 }
-/* 
-.loading-animation.show {
-    display: block;
-    animation-play-state: initial;
+ 
+.loading-animation {
+    display: none;
 }
 
-.loading-animation.hide {
-    display: none;
-    animation-play-state: unset;
-} */
+.loading-animation.show {
+    display: block;
+}
 
 svg > path, svg > circle, svg > ellipse, svg > rect {
     transition: all ease 1s;
