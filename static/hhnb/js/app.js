@@ -2,7 +2,9 @@ import Log from "./utils/logger.js";
 import Workflow from "./workflow/workflow.js";
 import { UploadFileDialog, OptimizationSettingsDialog, MessageDialog, ModelRegistrationDialog } from "./ui/components/dialog.js";
 
-Log.enabled = true;
+if (window.location.href.startsWith("https://127.0.0.1")) {
+    Log.enabled = true;
+}
 
 const exc = sessionStorage.getItem("exc");
 const hhf_dict = sessionStorage.getItem("hhf_dict");
@@ -52,7 +54,6 @@ $("#wf-btn-new-wf").on("click", () => {
 // Clone workflow button callback
 $("#wf-btn-clone-wf").on("click", () => {
     showLoadingAnimation("Cloning current workflow...");
-    let new_exc = null;
     $.ajax({
         url: "/hh-neuron-builder/clone-workflow/" + exc,
         method: "GET",
@@ -227,11 +228,13 @@ $(".download-btn").on("click", (button) => {
 
 
 // display and close settings dialog
-$("#opt-set-btn").on("click", () => {
+$("#opt-set-btn").on("click", async () => {
     Log.debug("Set parameters button clicked");
-    let settings = workflow.getOptimizationSettings();
-    OptimizationSettingsDialog.loadSettings(settings);
-    OptimizationSettingsDialog.open();
+    await workflow.getOptimizationSettingsAsPromise()
+        .then(settings => {
+            OptimizationSettingsDialog.loadSettings(settings);
+            OptimizationSettingsDialog.open();
+        })
 })
 
 $("#cancel-param-btn").on("click", () => {

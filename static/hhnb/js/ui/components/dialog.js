@@ -165,7 +165,6 @@ class OptimizationSettingsDialog {
         Log.debug("settings value");
         this.#setDefaultValue();
 
-
         if (!jObj["service-account"]) {
             $("#accordionSA").addClass("disabled").prop("disabled", true);
             if (!$("#accordionSA").text().includes("unreachable")) {
