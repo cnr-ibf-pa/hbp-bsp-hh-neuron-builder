@@ -234,6 +234,9 @@ $("#opt-set-btn").on("click", async () => {
         .then(settings => {
             OptimizationSettingsDialog.loadSettings(settings);
             OptimizationSettingsDialog.open();
+        }).catch(error => {
+            console.log("ERROR ON GET SETTINGS")
+            console.log(error);
         })
 })
 
@@ -477,11 +480,13 @@ $("#cancel-job-list-btn").on("click", closeJobFetchDiv);
 
 async function closeJobFetchDiv() {
     Log.debug('Close job fetch');
+
     $("#overlayjobs").removeClass("show scroll-long-content");
     $("#overlaywrapper").removeClass("show");
     await sleep(500);
     $("#overlayjobs").css("display", "none");
     $("#overlaywrapper").css("display", "none");
+
     resetJobFetchDiv();
 }
 
@@ -815,7 +820,6 @@ function reoptimizeJobButtonCallback(event) {
 }
 
 
-
 function animateProgressBar(progress) {
     let current_progress = parseFloat($(".progress-bar").attr("aria-valuenow"));
     let next_progress = current_progress + progress;
@@ -823,27 +827,35 @@ function animateProgressBar(progress) {
 }
 
 function setProgressBarValue(value) {
-    $(".progress-bar").css("width", parseInt(value) + "%").attr("aria-valuenow", parseInt(value));
+    $(".progress-bar").width(parseInt(value) + "%").attr("aria-valuenow", parseInt(value));
 }
 
 function resetProgressBar() {
-    $(".progress-bar").css("width", "0%").attr("aria-valuenow", "0");
+    $(".progress-bar").width("0%").attr("aria-valuenow", "0");
 }
 
 function setJobProcessingTitle(message) {
     $("#jobProcessingTitle").html(message);
 }
 
-function openJobProcessingDiv() {
-    $("#overlaywrapper").css("display", "block");
+async function openJobProcessingDiv() {
+    resetJobFetchDiv();
+    $("#overlayjobs").removeClass("show");
+    await sleep(500);
+    $("#overlayjobs").css("display", "none");
     $("#overlayjobprocessing").css("display", "block");
-    setProgressBarValue(0);
+    await sleep(10);
+    $("#overlayjobprocessing").addClass("show");
+    console.log("OPENING JOB PROCESSING DIV ENDS");
 }
 
-function closeJobProcessingDiv() {
+async function closeJobProcessingDiv() {
+    $("#overlayjobprocessing").removeClass("show");
+    $("#overlaywrapper").removeClass("show");
+    await sleep(500);
     $("#overlaywrapper").css("display", "none");
     $("#overlayjobprocessing").css("display", "none");
-    setProgressBarValue(0);
+    resetProgressBar();
 }
 
 async function downloadJobOnly(jobId) {
@@ -858,7 +870,6 @@ async function downloadJobOnly(jobId) {
 
     $("#jobProcessingTitle").html("Downloading job:<br>" + jobId.toUpperCase() + "<br>");
 
-    closeJobFetchDiv();
     openJobProcessingDiv();
 
     await sleep(500);
@@ -894,7 +905,6 @@ async function downloadJobAndRunAnalysis(jobId) {
 
     $("#jobProcessingTitle").html("Downloading job:<br>" + jobId.toUpperCase() + "<br>");
 
-    closeJobFetchDiv();
     openJobProcessingDiv();
 
     await sleep(500);
