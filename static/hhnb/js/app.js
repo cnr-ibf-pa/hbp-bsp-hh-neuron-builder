@@ -463,22 +463,26 @@ $("#closeFileManagerButton").on("click", () => {
 
 /* FETCH JOBS */
 
-$("#opt-fetch-btn").on("click", () => {
+$("#opt-fetch-btn").on("click", async () => {
     Log.debug('Fetch job');
-    $("#overlayjobs").css("display", "block");
-    // $("#overlaywrapper").css("z-index", "100").addClass("show");
     $("#overlaywrapper").css("display", "block");
+    $("#overlayjobs").css("display", "block");
+    await sleep(10);
+    $("#overlaywrapper").addClass("show");
+    $("#overlayjobs").addClass("show");
     $(".list-group-item.fetch-jobs").attr("aria-disabled", "false").removeClass("disabled active");
 });
 
 $("#cancel-job-list-btn").on("click", closeJobFetchDiv);
 
-function closeJobFetchDiv() {
+async function closeJobFetchDiv() {
     Log.debug('Close job fetch');
-    resetJobFetchDiv();
     $("#overlayjobs").removeClass("show scroll-long-content");
+    $("#overlaywrapper").removeClass("show");
+    await sleep(500);
     $("#overlayjobs").css("display", "none");
     $("#overlaywrapper").css("display", "none");
+    resetJobFetchDiv();
 }
 
 $("#refresh-job-list-btn").on("click", () => {

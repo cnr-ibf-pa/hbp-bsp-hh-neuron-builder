@@ -722,7 +722,11 @@ body {
     z-index: 100;
     overflow-y: auto;
     padding: 50px;
-    transition: all ease 0.3s;
+    transition: all ease .5s;
+    opacity: 0;
+}
+.overlay-wrapper.show {
+    opacity: 1;
 }
 
 .overlay-content:before {
@@ -742,9 +746,8 @@ body {
     display: none;
     position: relative;
     margin: auto;
-    top: calc(50%);
+    top: 30%;
     width: max-content;
-    /* min-width: 800px; */
     height: max-content;
     padding: 2rem;
     text-align: center;
@@ -752,30 +755,28 @@ body {
     background-color: rgb(255, 255, 255, 0.8);
     box-shadow: 0 0 1rem 0 rgb(0, 0, 0, .8); 
     z-index: 100;
-    transition: all ease-out 0.3s;
+    transition: all ease .5s;
     transform: translateY(-50%);
+
+    /* adding posterior */
+    opacity: 0; 
 }
+.overlay-content.show {
+    top: 50%;
+    opacity: 1;
+}
+
 
 .overlay-content.overflow {
     overflow-y: auto;
 }
 
 .error-content {
-    /* max-width: 800px; */
     font-size: 1rem;
     font-weight: 600;
     width: 100%;
     padding: 1rem;
 }
-
-/* .info-content > button {
-    border-color: blue;
-    color: bl;
-}
-.info-content > button:hover {
-    background-color: blue;
-    color: white;
-} */
 
 #overlayupload {
     width: 520px;
@@ -1026,7 +1027,6 @@ td {
     border-radius: inherit;
 }
 
-
 .file-manager-container {
     /* min-width: 1084px; */
     line-height: 1.5;
@@ -1117,10 +1117,6 @@ td {
 }
 
 .overlay-content.file-manager-content {
-    /* vertically centered */
-    top: 50%;
-    transform: translateY(-50%);
-    /***********************/
     padding: 0rem;
     width: 100%;
     height: 100%;
@@ -1785,7 +1781,7 @@ i.disabled:hover {
 }
 
 #overlayjobs {
-    transition: unset;
+    /* transition: unset; */
     /* max-width: 1300px; */
     min-width: 1000px;
     /* max-height: 80%; */

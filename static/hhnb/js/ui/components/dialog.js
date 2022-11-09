@@ -10,15 +10,21 @@ class MessageDialog {
     static #dialogButton = $("#dialog-btn");
 
 
-    static #openMessageDialog(msg) {
+    static async #openMessageDialog(msg) {
         if (!msg.startsWith("{\"refresh_url\"")) {
             this.#overlayWrapper.css("display", "block");
             this.#overlayContent.css("display", "block");
+            await sleep(10);
+            this.#overlayWrapper.addClass("show");
+            this.#overlayContent.addClass("show");
             this.#dialogMessage.html(msg);
         }
     }
 
-    static #closeMessageDialog() {
+    static async #closeMessageDialog() {
+        this.#overlayWrapper.removeClass("show");
+        this.#overlayContent.removeClass("show");
+        await sleep(500);
         this.#overlayWrapper.css("display", "none");
         this.#overlayContent.css("display", "none");
     }
@@ -72,15 +78,21 @@ class MessageDialog {
 
 class UploadFileDialog {
 
-    static #open(label) {
-        $("#overlayupload").css("display", "block");
+    static async #open(label) {
         $("#overlaywrapper").css("display", "block");
+        $("#overlayupload").css("display", "block");
+        await sleep(10);
+        $("#overlaywrapper").addClass("show");
+        $("#overlayupload").addClass("show");
         $("#uploadFormLabel").html("<strong>" + label + "<strong>");
         $("#uploadFormButton").prop("disabled", true);
     }
 
-    static close() {
+    static async close() {
         Log.debug("Close upload box")
+        $("#overlayupload").removeClass("show");
+        $("#overlaywrapper").removeClass("show");
+        await sleep(500);
         $("#overlayupload").css("display", "none");
         $("#overlaywrapper").css("display", "none");
     }
@@ -354,14 +366,20 @@ class OptimizationSettingsDialog {
         return formData;
     }
 
-    static open() {
+    static async open() {
         Log.debug("open settings dialog");
-        $("#overlayparam").css("display", "block");
         $("#overlaywrapper").css("display", "block");
+        $("#overlayparam").css("display", "block");
+        await sleep(10);
+        $("#overlaywrapper").addClass("show")
+        $("#overlayparam").addClass("show");
     }
 
-    static close() {
+    static async close() {
         Log.debug("close");
+        $("#overlayparam").removeClass("show");
+        $("#overlaywrapper").removeClass("show");
+        await sleep(500);
         $("#overlayparam").css("display", "none");
         $("#overlaywrapper").css("display", "none");
         $("#hpcAuthAlert").removeClass("show");
