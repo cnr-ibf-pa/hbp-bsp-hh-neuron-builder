@@ -492,18 +492,21 @@ class Workflow(_WorkflowBase):
                 ['mechanisms', 'morphology', 'checkpoints']:
                 analysis_flag = True
 
-        optset_flag = False
+        optset_flag = (False, 'Optimization parameters NOT set')
         if os.path.exists(self._optimization_settings):
             with open(self._optimization_settings, 'r') as fd:
                 jj = json.load(fd)
             if jj.get('hpc') == 'SA':
                 if jj.get('sa-hpc') and jj.get('sa-project'):
-                    optset_flag = True
+                    optset_flag = (True, '')
             elif jj.get('hpc') == 'DAINT-CSCS':
                 if jj.get('project'):
-                    optset_flag = True
+                    optset_flag = (True, '')
             elif jj.get('hpc') == 'NSG':
-                optset_flag = True
+                if not jj.get('username_submit') or not jj.get('password_submit'):
+                    optset_flag = (False, 'NSG credentials required')
+                else: 
+                    optset_flag = (True, '')
 
         props = {
             'id': self._id,

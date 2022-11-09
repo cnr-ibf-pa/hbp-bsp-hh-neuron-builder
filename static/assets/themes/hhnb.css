@@ -643,6 +643,9 @@ body {
 .progress-bar-animated {
     animation-duration: .5s;
 }
+.progress-bar {
+    background-color: #78909c;
+}
 #progressBarFetchJob.s40 {
     transition: width 40s linear;
 }
@@ -903,12 +906,6 @@ body {
     padding-left: 0px;
     padding-right: 0px;
     min-width: 500px;
-}
-
-.progress-bar {
-    background-color: #78909c;
-    animation-duration: 5s;
-    transition-duration: 5s;
 }
 
 .job-list-table {
@@ -1765,7 +1762,6 @@ i.disabled:hover {
 
 #dialogtext {
     min-width: 300px;
-    /* font-weight: bold; */
     padding: 1rem;
 }
 
@@ -1781,10 +1777,13 @@ i.disabled:hover {
 }
 
 #overlayjobs {
-    /* transition: unset; */
-    /* max-width: 1300px; */
     min-width: 1000px;
-    /* max-height: 80%; */
+}
+#overlayjobprocessing {
+    top: 70%;
+}
+#overlayjobprocessing.show {
+    top: 50%;
 }
 
 #overlaycontentdialog {

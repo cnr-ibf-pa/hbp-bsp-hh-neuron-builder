@@ -7,7 +7,7 @@ const UPLOAD_FILES_BASE_URL = "/hh-neuron-builder/upload-files/";
 
 
 function checkRefreshSession(response) {
-    console.log(response);
+    Log.debug(response);
     if (response.status === 403 && response.responseJSON.refresh_url) {
         showLoadingAnimation("Session expired.<br>Refreshing session automatically...");
         $.ajax({
@@ -165,16 +165,15 @@ export default class Workflow {
 
     #updateSettingsBlock() {
         let bar = $("#opt-param-bar");
-        console.log(this.#props.optimization_settings);
-        if (this.#props.optimization_settings) {
+        Log.debug(this.#props.optimization_settings);
+        if (this.#props.optimization_settings[0]) {
             bar.addClass("green").removeClass("red");
-            bar.text("");
             this.#optsettingsBlock = true;
         } else {
             bar.addClass("red").removeClass("green");
-            bar.text("Optimization parameters NOT set");
             this.#optsettingsBlock = false;
         }
+        bar.text(this.#props.optimization_settings[1]);
     }
 
     #updateCellOptimizationBlock() {
