@@ -23,7 +23,7 @@ function sleep(ms) {
 }
 
 
-function openFileManager(showConfig=false) {
+async function openFileManager(showConfig=false) {
     refreshHHFFileList();
     if (showConfig) {
         showFileList($("#configFolder"));
@@ -31,7 +31,11 @@ function openFileManager(showConfig=false) {
 
     $("#overlaywrapper").css("display", "block");
     $("#overlayfilemanager").css("display", "block");
-    $("#overlayfilemanager").addClass("open");
+
+    await sleep(10);
+    $("#overlaywrapper").addClass("show");
+    $("#overlayfilemanager").addClass("open show");
+
     $.ajax({
         url: "/hh-neuron-builder/hhf-get-model-key/" + req_pattern,
         method: "GET",
@@ -118,7 +122,10 @@ function refreshHHFFileList() {
 }
 
 
-function closeFileManager() {
+async function closeFileManager() {
+    $("#overlaywrapper").removeClass("show");
+    $("#overlayfilemanager").removeClass("show");
+    await sleep(500);
     $("#overlaywrapper").css("display", "none");
     $("#overlayfilemanager").css("display", "none");
 
