@@ -15,10 +15,10 @@ WRONG_UPLAODED_FILE = 'The uploaded file/s is wrong.'
 ONLY_ACCEPTED_FILE = 'You can upload only a {} file.'
 INVALID_FILE = '<b>Invalid file !</b><br><br>Upload a correct {} archive.'
 INVALID_SIGNATURE = '<b>Invalid signature !</b><br><br>Uploaded {} archive is corrupted or was modified.'
-MARLFORMED_FILE = '<b>Error !</b><br><br>Malformed {} file.'
+MARLFORMED_FILE = '<b>Error !</b><br>Malformed "{}" file.'
 NO_FILE_TO_DOWNLOAD = 'No file selected to download.' 
 NO_FILE_TO_DELETE = 'No file to delete.'
-FILE_NOT_FOUND_ERROR = '<b>Error !</b><br><br>File not found.'
+FILE_NOT_FOUND_ERROR = '<b>Error !</b><br>File not found.'
 
 
 # Authentication messages

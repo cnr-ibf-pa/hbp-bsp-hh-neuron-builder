@@ -235,8 +235,9 @@ $("#opt-set-btn").on("click", async () => {
             OptimizationSettingsDialog.loadSettings(settings);
             OptimizationSettingsDialog.open();
         }).catch(error => {
-            console.log("ERROR ON GET SETTINGS")
-            console.log(error);
+            checkRefreshSession(error);       
+            Log.error("Error on getting settings");
+            Log.debug(error);
         })
 })
 
@@ -256,7 +257,7 @@ $("#apply-param").on("click", () => {
                 workflow.uploadOptimizationSettings(formData);
             }).fail((error) => {
                 checkRefreshSession(error);
-                $("#hpcAuthAlert").addClass("show");
+                showHpcAuthAlert();
                 hideLoadingAnimation();        
             })
     } else {
@@ -303,7 +304,7 @@ $("#save-feature-files").on("click", () => {
             workflow.updateProperties();
         }).fail((error) => {
             hideLoadingAnimation();
-            alert("Something goes wrong. Please download the Features files and upload them manually.");
+            showErrorAlert(makeAlertText("Error", "Something goes wrong. Please download the Features files and upload them manually."));
         });
 });
 
@@ -508,7 +509,6 @@ function resetJobFetchDiv() {
     $("#progressRow").css("display", "none");
     $("#tableRow").css("display", "none");
     $("#job-list-body").empty();
-    $("#jobsAuthAlert").removeClass("show");
     $("#cancel-job-list-btn").prop("disabled", false);
     $("#refresh-job-list-btn").prop("disabled", true);
     $(".list-group-item.fetch-jobs").removeClass("disabled active clicked").attr("aria-disabled", "false");
@@ -517,7 +517,7 @@ function resetJobFetchDiv() {
     $("#passwordNsg").removeClass("is-invalid");
     $("#sa-project-dropdown-jobs-btn").prop("disabled", true);
     $("#sa-fetch-jobs").prop("disabled", true);
-    $("#shadow-layer").css("display", "none").removeClass("show");
+    $("#shadow-layer-jobs").css("display", "none").removeClass("show");
     $("#reopt-parameters").css("display", "none").removeClass("show");
     resetProgressBar();
 }
@@ -544,7 +544,8 @@ $(".jobs-unicore").on("click", (button) => {
         .fail((error) => { 
             checkRefreshSession(error);
             $("#spinnerRow").css("display", "none");
-            $("#jobsAuthAlert").addClass("show");
+            showJobsAuthAlert();
+            jButton.removeClass("clicked active");
         });
 });
 
@@ -555,7 +556,7 @@ function loadSAContent() {
         .done((data) => {
             Log.debug(data);
             if (!data["service-account"]) {
-                $("#saAlert").addClass("show");
+                showServiceAccountAlert()
                 $("#jobsSA").removeClass("clicked active").blur();
                 return;
             }
@@ -744,7 +745,7 @@ $("#reopt-parameters-ok-button").on("click", () => {
         return false;
     }
 
-    $("#shadow-layer").trigger("click");
+    $("#shadow-layer-jobs").trigger("click");
     $("#tableRow").css("display", "none");
     $("#overlayjobs").removeClass("scroll-long-content");
     $("#spinnerRow").css("display", "flex");
@@ -774,11 +775,15 @@ $("#reopt-parameters-ok-button").on("click", () => {
 })
 
 $("#reopt-parameters-cancel-button").on("click", toggleReoptParametersPopup);
-$("#shadow-layer").on("click", toggleReoptParametersPopup);
+$("#shadow-layer-jobs").on("click", () => {
+    if ($("#reopt-parameters").hasClass("show")) {
+        toggleReoptParametersPopup();
+    }
+});
 
 async function toggleReoptParametersPopup(jobId="", jobName="") {
     let reoptParameters = $("#reopt-parameters");
-    let shadowLayer = $("#shadow-layer");
+    let shadowLayer = $("#shadow-layer-jobs");
     $("#reopt-job-id").text(jobId).attr("name", jobName);
 
     let pageHeight = document.documentElement.scrollHeight;
@@ -847,7 +852,6 @@ async function openJobProcessingDiv() {
     $("#overlayjobprocessing").css("display", "block");
     await sleep(10);
     $("#overlayjobprocessing").addClass("show");
-    console.log("OPENING JOB PROCESSING DIV ENDS");
 }
 
 async function closeJobProcessingDiv() {
@@ -1003,8 +1007,9 @@ $("#back-to-wf-btn").on("click", () => {
 
 /*          Registration Model           */
 
-$("#reg-mod-main-btn").on("click", () => {
+$("#reg-mod-main-btn").on("click", async () => {
     $("#modalBlueNaasContainer").removeClass("show");
+    // await sleep(300);
     ModelRegistrationDialog.open();
 })
 
@@ -1056,3 +1061,7 @@ $(".parametersTemplate").on("click", (event) => {
             workflow.updateProperties();
         })
 })
+
+$("#alertButton").on("click", () => {
+    MessageDialog.openReloadDialog("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.");
+});    

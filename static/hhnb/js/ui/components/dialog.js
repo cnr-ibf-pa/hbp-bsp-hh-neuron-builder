@@ -3,12 +3,86 @@ import Log from "../../utils/logger.js";
 
 class MessageDialog {
 
+    static #createAlertDialog(level, title, msg) {
+        let alert = $("<div id='alert-dialog' role='alert'></>");
+        let classes = "alert alert-dismissable fade ";
+        let button;
+        if (level != "warning") {
+            button = "<button class='btn workflow-btn alert-dialog-button' data-bs-dismiss='alert' onclick='closeAlertDialog()'>Ok</button>";
+        } else {
+            button = "<button class='btn workflow-btn alert-dialog-button' data-bs-dismiss='alert' onclick='window.location.reload();'>Reload</button>";
+        }
+        switch (level) {
+            case "danger":
+                classes += "alert-danger";
+                break;
+
+            case "warning":
+                classes += "alert-warning";
+                break;
+
+            case "success":
+                classes += "alert-success";
+                break;
+
+            case "info":
+            default:
+                classes += "alert-info";
+        }
+        alert.addClass(classes);
+        alert.append("\
+            <h4 class='alert-heading' style='text-align: center;'>" + title + "</h4>\
+            <br>\
+            <p style='text-align: justify'>" + msg + "</p>\
+            <hr>\
+            <div class='row'>" + button + "</div>"
+        );
+        return alert;
+    }
+
+    static async #openDialog(level, title, msg) {
+        if (!msg.startsWith("{\"refresh_url\"")) {
+            $("#shadow-layer").css("display", "block");
+            await sleep(10);
+            $("#shadow-layer").addClass("show");
+            let alertDialog = this.#createAlertDialog(level, title, msg);
+            $("body").append(alertDialog);
+            await sleep(10);
+            alertDialog.addClass("show");
+        }
+    }
+
+    static async closeDialog() {
+        $("#shadow-layer").removeClass("show");
+        await sleep(500);
+        $("#shadow-layer").css("display", "none");
+    } 
+
+    static openSuccessDialog(msg, title="Success !") {
+        this.#openDialog("success", title, msg)
+    }
+
+    static openErrorDialog(msg, title="Error !") {
+        this.#openDialog("danger", title, msg);
+    }
+
+    static openInfoDialog(msg, title="Info") {
+        this.#openDialog("info", title, msg);
+    }
+
+    static openReloadDialog(msg, title="Unexpected behavior occurred !") {
+        this.#openDialog("warning", title, msg);
+    }
+}
+
+/* class MessageDialog {
+
     static #overlayWrapper = $("#overlaywrapperdialog");
     static #overlayContent = $("#overlaycontentdialog");
     static #overlayDialog = $("#overlaydialog");
     static #dialogMessage = $("#dialogtext");
     static #dialogButton = $("#dialog-btn");
-
+    
 
     static async #openMessageDialog(msg) {
         if (!msg.startsWith("{\"refresh_url\"")) {
@@ -73,7 +147,7 @@ class MessageDialog {
         this.#openMessageDialog(msg);
     }
 
-}
+} */
 
 
 class UploadFileDialog {
@@ -129,6 +203,7 @@ $(".accordion-button.hpc").on("click", async (button) => {
     let isAlreadyOpened = $("#" + button.currentTarget.id).hasClass("active");
     $(".accordion-button.hpc").removeClass("active").blur();
     if (!isAlreadyOpened) {
+        console.log("IS ALREADY OPENED: ", isAlreadyOpened);
         $("#" + button.currentTarget.id).addClass("active");
         $("#apply-param").prop("disabled", false);
     } else {
@@ -149,6 +224,7 @@ $("#username_submit").on("input", () => {
 $("#password_submit").on("input", () => {
     $("#password_submit").removeClass("is-valid is-invalid");
 })
+
 
 class OptimizationSettingsDialog {
 
@@ -242,7 +318,6 @@ class OptimizationSettingsDialog {
     }
 
     
-
     static getJsonData() {
         const data = new Object();
         let hpc = $(".accordion-button.active").attr("name");
@@ -252,7 +327,7 @@ class OptimizationSettingsDialog {
         if (hpc == "DAINT-CSCS") {
             if ($("#daint_project_id").val() == "") {
                 $("#daint_project_id").removeClass("is-valid").addClass("is-invalid");
-                alert('Please fill "Project ID" to apply settings');
+                showWarningAlert('Please fill "Project ID" to apply settings and cotinue your workflow.');
                 throw "daint_project empty";
             }
             data["gen-max"] = $("#daint-gen-max").val();
@@ -279,7 +354,7 @@ class OptimizationSettingsDialog {
                 nsgPass.addClass("is-invalid");
             }
             if (nsgUser.val() == "" || nsgPass.val() == "") {
-                alert("Please fill \"username\" and/or \"password\" to apply settings");
+                showWarningAlert("Please fill \"username\" and/or \"password\" to apply settings and continue your workflow.");
                 throw "credentials empty";
             }
             
@@ -289,7 +364,7 @@ class OptimizationSettingsDialog {
                 nsgUser.addClass("is-invalid")
                 
                 if (!nsgUser.hasClass("is-valid") && !nsgPass.hasClass("is-valid")) {
-                    alert("Please fill \"username\" and \"password\" to apply settings");
+                    showWarningAlert("Please fill \"username\" and/or \"password\" to apply settings and continue your workflow.");
                     throw "credentials empty";            
                 }
             } else {
@@ -370,6 +445,7 @@ class OptimizationSettingsDialog {
         Log.debug("open settings dialog");
         $("#overlaywrapper").css("display", "block");
         $("#overlayparam").css("display", "block");
+        $("#apply-params").prop("disabled", true);
         await sleep(10);
         $("#overlaywrapper").addClass("show")
         $("#overlayparam").addClass("show");
@@ -382,7 +458,6 @@ class OptimizationSettingsDialog {
         await sleep(500);
         $("#overlayparam").css("display", "none");
         $("#overlaywrapper").css("display", "none");
-        $("#hpcAuthAlert").removeClass("show");
     }
 
 }
@@ -399,15 +474,11 @@ function replaceWithSelectElement(id, options) {
 
 class ModelRegistrationDialog {
 
-    static open() {
+    static async open() {
         showLoadingAnimation("Loading options...");
         let modelName = $("#wf-title").text().split("Workflow ID: ")[1];
-        
-        $.ajax({
-            url: "/hh-neuron-builder/get-model-catalog-attribute-options",
-            method: "GET",
-            async: false,
-            success: options => {
+        $.getJSON("/hh-neuron-builder/get-model-catalog-attribute-options")
+            .then(async options => {
                 Log.debug(options);
                 for (let key of Object.keys(options)) {
                     switch(key) {
@@ -442,17 +513,26 @@ class ModelRegistrationDialog {
                         default:
                     }
                 }
-            }
-        })
-        Log.debug("modelName " + modelName);
-        $("#modelName").val(modelName)
-    
-        $("#overlaywrapper").css("display", "block");
-        $("#overlaywrapmodreg").css("display", "block"); 
-        hideLoadingAnimation();
+                Log.debug("modelName " + modelName);
+                $("#modelName").val(modelName)
+                
+                $("#overlaywrapper").css("display", "block");
+                $("#overlaywrapmodreg").css("display", "block");
+                await sleep(10);
+                $("#overlaywrapper").addClass("show");
+                $("#overlaywrapmodreg").addClass("show");
+            }).catch(error => {
+                Log.error("Error while getting options from model catalog: ", error);
+                MessageDialog.openErrorDialog(error);
+            }).always(() => {
+                hideLoadingAnimation();
+            })
     }
 
-    static close() {
+    static async close() {
+        $("#overlaywrapmodreg").removeClass("show");
+        $("#overlaywrapper").removeClass("show");
+        await sleep(500);
         $("#overlaywrapper").css("display", "none");
         $("#overlaywrapmodreg").css("display", "none");
     }

@@ -13,6 +13,7 @@ from json.decoder import JSONDecodeError
 from pyunicore.client import PathFile as UnicorePathFile
 from datetime import datetime
 from sys import prefix as env_prefix
+# from pathlib import Path
 
 import shutil
 import os
@@ -992,11 +993,16 @@ class WorkflowUtil:
         """
         analysis_dir = workflow.get_analysis_dir()
         shutil.unpack_archive(job_output, analysis_dir)
+        
+        output_dir = None
         for f in [os.path.join(analysis_dir, f) for f in os.listdir(analysis_dir)]:
             if os.path.isdir(f):
                 output_dir = f
             else:
                 os.remove(f)
+        if not output_dir:
+            raise FileNotFoundError('Output folder not found')
+        
 
         analysis_file = os.path.join(output_dir, 'model', 'analysis.py')
         if not os.path.exists(analysis_file):
@@ -1038,14 +1044,14 @@ class WorkflowUtil:
         compiled_mods_dir = os.path.join(output_dir, 'x86_64')
         if os.path.exists(compiled_mods_dir):
             shutil.rmtree(compiled_mods_dir)
-        
         curr_dir = os.getcwd()
        
         log_file_path = os.path.join(LOG_ROOT_PATH, 'analysis', workflow.get_user())
         if not os.path.exists(log_file_path):
             os.makedirs(log_file_path)
+            
         log_file = os.path.join(log_file_path, workflow.get_id() + '.log')
-        
+
         build_mechanisms_command = f'source {env_prefix}/bin/activate; nrnivmodl mechanisms > {log_file}'
         opt_neuron_analysis_command = f'source {env_prefix}/bin/activate; python ./opt_neuron.py --analyse --checkpoint ./checkpoints > {log_file}'
         
@@ -1094,10 +1100,13 @@ class WorkflowUtil:
                     os.remove(f_path)            
 
         # rename .hoc file
+        hoc_file = None
         checkpoints_dir = os.path.join(tmp_analysis_dir, 'checkpoints')
         for f in os.listdir(checkpoints_dir):
             if f.endswith('.hoc'):
                 hoc_file = f
+        if not hoc_file:
+            raise FileNotFoundError('".hoc" file not found')
         os.rename(
             src=os.path.join(checkpoints_dir, hoc_file),
             dst=os.path.join(checkpoints_dir, 'cell.hoc')

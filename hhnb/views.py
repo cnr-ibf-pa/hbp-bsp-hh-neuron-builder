@@ -1263,7 +1263,7 @@ def hhf_save_config_file(request, folder, config_file, exc):
 
         return ResponseUtil.ok_response('')
     except json.JSONDecodeError:
-        return ResponseUtil.ko_response(messages.MARLFORMED_FILE.format(config_file + '.json')) 
+        return ResponseUtil.ko_response(messages.MARLFORMED_FILE.format(config_file)) 
     except FileNotFoundError:
         return ResponseUtil.ko_response(404, messages.CRITICAL_ERROR)
     except Exception as e:
