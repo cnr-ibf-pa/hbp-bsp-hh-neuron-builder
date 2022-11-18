@@ -9,18 +9,22 @@ function checkRefreshSession(response) {
             .done((result) => {
                 document.location.href = "/hh-neuron-builder/workflow/" + exc;
             }).fail((error) => {
-                alert("Can't refresh session automatically, please refresh page");
+                showAlert(
+                    makeAlertText(
+                        "",
+                        "Can't refresh session automatically.",
+                        "Please refresh the page."
+                    ),
+                    "warning",
+                    true,
+                    true
+                );
             })
     } 
 }
 
 
 $("#show-opt-files-btn").on("click", openFileManager);
-
-
-function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
 
 
 async function openFileManager(showConfig=false) {
@@ -539,7 +543,9 @@ function switchMode() {
         editorSelector.removeClass("fade-in").addClass("fade-out");
         fileEditor.removeClass("fade-in").addClass("fade-out");
         $("#saveFileButton").removeClass("show");
-        $("#selectAllButton").removeClass("disabled");
+        if (!$("#configFileList").hasClass("empty-list")) {
+            $("#selectAllButton").removeClass("disabled");
+        }
     }
 
 };
@@ -725,20 +731,22 @@ function saveCurrentTextAreaVal() {
         url: "/hh-neuron-builder/hhf-save-config-file/" + currFolder + "/" + currFile + "/" + req_pattern,
         method: "POST",
         data: jj,
-        success: function(data) {
+        success: async function(data) {
             originalTextAreaVal = currValue;
             $("#saveFileButton").removeClass("show disabled");
             $("#saveFileButtonSpinner").css("display", "none");
             $("#saveFileButtonImage").css("display", "inline");
             $("#editorAlertText").removeClass("error").addClass("info").html("File saved successfully");
             $("#editorAlert").addClass("show");
+            await sleep(300);
         },
-        error: function(error) {
+        error: async function(error) {
             $("#saveFileButton").removeClass("disabled");
             $("#saveFileButtonSpinner").css("display", "none");
             $("#saveFileButtonImage").css("display", "inline");
             $("#editorAlertText").removeClass("info").addClass("error").html(error.responseText);
             $("#editorAlert").addClass("show");
+            await sleep(300);
         }
     })
 }

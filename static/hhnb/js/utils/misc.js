@@ -75,11 +75,6 @@ $("#modalBlueNaasContainer")[0].addEventListener("transitionstart", function (tr
 })
 
 
-function dismissAlert(el) {
-    console.log($(el).parent().removeClass("show"));
-}
-
-
 $("#modelPrivate").on("click", (button) => {
     console.log(button.target.checked); 
     if (button.target.checked) {
@@ -156,4 +151,141 @@ function populateServiceAccountSettings(jObj, context) {
             } 
         }
     }
+}
+
+
+async function closeAlertDialog() {
+    $("#shadow-layer").removeClass("show");
+    await sleep(500);
+    $("#shadow-layer").css("display", "none");
+} 
+/* Alerts functions */
+
+/**
+ * Show the alert.
+ * 
+ * @param {*} msg           The message to be shown in the alert.
+ * @param {String} level    Optional param. Can be "danger", "warning", "success", "info" (default).
+ */
+async function showAlert(msg, level="", showSymbol=true, showCloseButton=true) {
+    if ($("#alert").length > 0) {
+        return;
+    }
+    let alert = $("<div id='alert' role='alert'></>");
+    let classes = "alert d-flex align-items-center alert-dismissable fade ";
+    let symbol = '<svg id="alert-svg" class="bi flex-shrink-0 me-2" width="24" height="24" role="img" '
+    let button = '<button id="alert-button" type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>';
+    switch (level) {
+        case "danger":
+            classes += "alert-danger";
+            symbol += 'aria-label="Danger:"><use xlink:href="#exclamation-triangle-fill"/></svg>';
+            break;
+
+        case "warning":
+            classes += "alert-warning";
+            symbol += 'aria-label="Danger:"><use xlink:href="#exclamation-triangle-fill"/></svg>';
+            break;
+
+        case "success":
+            classes += "alert-success";
+            symbol += 'aria-label="Success:"><use xlink:href="#check-circle-fill"/></svg>';
+            break;
+
+        case "info":
+        default:
+            classes += "alert-info";
+            symbol += 'aria-label="Info:"><use xlink:href="#info-fill"/></svg>';
+    }
+    alert.addClass(classes);
+    alert.append(symbol);
+    alert.append("<div id='alert-text'>" + msg + "</div>");
+    alert.append(button);
+    $("body").append(alert);
+    if (!msg.includes("alert-heading")) {
+        console.log(msg);
+        console.log(msg.includes("alert-heading"))
+        $("#alert-svg").addClass("center");
+    }
+    if (!showSymbol) {
+        $("#alert-svg").addClass("hidden");
+    }
+    await sleep(10);
+    alert.addClass("show");
+    if (!showCloseButton) {
+        $("#alert-button").addClass("hidden");
+        await sleep(5000);
+        // $("#alert-button").trigger("click");
+    }
+}
+
+
+function makeAlertText(head="", strong="", content="") {
+    let msg = "";
+    if (head) {
+        msg += "<h4 class='alert-heading'>" + head + "</h4><hr>";
+    }
+    if (strong) {
+        msg += "<strong>" + strong + "</strong>";
+    }
+    if (content) {
+        msg += "<p>" + content + "</p>";
+    }
+    console.log(msg);
+    return msg;
+}
+
+
+function showInfoAlert(msg) {
+    showAlert(msg, "info", true, false);
+}
+
+function showSuccessAlert(msg) {
+    showAlert(msg, "success", true, true);
+}
+
+function showErrorAlert(msg) {
+    showAlert(msg, "danger", true, true);
+}
+
+function showWarningAlert(msg) {
+    showAlert(msg, "warning", true, false);
+}
+
+function showHpcAuthAlert() {
+    showAlert(
+        makeAlertText(
+            head="", 
+            strong="You need to be logged in to use this HPC system !",
+            content="Please, click \"Cancel\" and login with the button in the top right corner before doing this operation."
+        ),
+        "warning",
+        true,
+        false,
+    );
+}
+
+function showJobsAuthAlert() {
+    showAlert(
+        makeAlertText(
+            head="",
+            strong="You need to authenticate with Ebrains to fetch jobs on this HPC system !",
+            content="Please, click \"Cancel\" and login with the button in the top right corner before doing this operation."
+        ),
+        "warning",
+        true,
+        false
+    )
+}
+
+function showServiceAccountAlert() {
+    showAlert(
+        makeAlertText(
+            head="",
+            strong="The Service Account is temporarily unreachable !",
+            content="Please, try again later or contact the support if the problem persists."
+        ),
+        "warning",
+        true,
+        false
+    )
 }

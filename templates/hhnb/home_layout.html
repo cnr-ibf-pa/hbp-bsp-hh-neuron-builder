@@ -72,6 +72,7 @@
         {% block content %}{% endblock %}
         
         {% include "hhnb/loading_animation.html" %}
+        {% include "hhnb/alert_symbols.html" %}
 
         <script type="text/javascript" src="{% static 'common/js/moment-with-locales.js' %}"></script>
         <script type="text/javascript" src="{% static 'hhnb-matomo.js' %}"></script>
@@ -79,6 +80,10 @@
         <script> 
             function logout(button) {
                 $("#logout-submit-input-button").trigger('click');
+            }
+
+            function sleep(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
             }
         </script>
     </body>

@@ -17,6 +17,7 @@
 </div>
 
 <div class="page">
+
     <div id="cellOptimizationBlock" class="container main-content workflow-content">
         <nav class="navbar main-content-title">
             <div class="title col">Cell Optimization</div>
@@ -543,7 +544,7 @@
         </div>
     </div>
 
-    <div id="shadow-layer"></div>
+    <div id="shadow-layer-jobs" class="shadow-layer"></div>
     <div id="reopt-parameters" class="card">
         <div class="card-body">
             <h5 id="reopt-job-id" class="card-subtitle mb-2 text-muted"></h5>
@@ -593,21 +594,6 @@
         </div>
     </div>
 
-    <!-- alert if user is trying to set parameters for DAINT-CSCS or SA-CSCS system without being authenticated -->
-    <div id="hpcAuthAlert" class="alert alert-danger alert-dismissible fade" role="alert">
-        <strong>You need to be logged in to use this HPC system !<br>Please, click Cancel and login via the top-right button before doing this operation.</strong>
-        <button type="button" class="btn-close" style="padding: 2rem" onclick="dismissAlert(this)" aria-label="Close"></button>
-    </div>
-    <!-- alert if user is trying to fetch jobs without being authenticated -->
-    <div id="jobsAuthAlert" class="alert alert-danger alert-dismissible fade" role="alert">
-        <strong>You need to authenticate with Ebrains to fetch jobs on this HPC system !<br>Please, click Cancel and login via the top-right button before doing this operation.</strong>
-        <button type="button" class="btn-close" style="padding: 2rem" onclick="dismissAlert(this)" aria-label="Close"></button>
-    </div>
-    <!-- alert if the Service Account is not momentarily reachable -->
-    <div id="saAlert" class="alert alert-danger alert-dismissible fade" role="alert">
-        <strong>The Service Account is temporarily unreachable !<br>Please, try again later or contact the support if the problem persists.</strong>
-        <button type="button" class="btn-close" style="padding: 2rem" onclick="dismissAlert(this)" aria-label="Close"></button>
-    </div>
 
     <div id="overlayjobprocessing" class="overlay-content">
         <div class="container">
@@ -970,7 +956,7 @@
     </div>
 </div>
 
-<div id="overlaywrapperdialog" class="overlay-wrapper">
+{% comment %} <div id="overlaywrapperdialog" class="overlay-wrapper">
     <div id="overlaycontentdialog" class="overlay-content">
         <div id="overlaydialog">
             <div id="dialogtext"></div>
@@ -978,7 +964,9 @@
             <button id="dialog-btn" class="btn workflow-btn"></button>
         </div>
     </div>
-</div>
+</div> {% endcomment %}
+
+<div id="shadow-layer" class="shadow-layer"></div>
 
 <script>
     sessionStorage.setItem("exc", "{{ exc }}");
