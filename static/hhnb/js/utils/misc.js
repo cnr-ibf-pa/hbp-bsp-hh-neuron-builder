@@ -289,3 +289,14 @@ function showServiceAccountAlert() {
         false
     )
 }
+
+function splitTitleAndMessage(message) {
+    let splittedMessage = message.split("</b><br><br>");
+    if (splittedMessage.length == 2) {
+        return {
+            title: splittedMessage[0].replace("<b>", ""),
+            message: splittedMessage[1]
+        };
+    }
+    return null;
+}
