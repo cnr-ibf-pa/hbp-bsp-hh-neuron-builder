@@ -42,20 +42,16 @@ class MessageDialog {
 
     static async #openDialog(level, title, msg) {
         if (!msg.startsWith("{\"refresh_url\"")) {
-            $("#shadow-layer").css("display", "block");
-            await sleep(10);
-            $("#shadow-layer").addClass("show");
+            $("#shadow-layer").css("display", "block").addClass("show");
             let alertDialog = this.#createAlertDialog(level, title, msg);
+            // alertDialog.addClass("show");
             $("body").append(alertDialog);
-            await sleep(10);
-            alertDialog.addClass("show");
         }
     }
 
     static async closeDialog() {
-        $("#shadow-layer").removeClass("show");
-        await sleep(500);
-        $("#shadow-layer").css("display", "none");
+        $("#shadow-layer").removeClass("show").css("display", "none");
+        // await sleep(500);
     } 
 
     static openSuccessDialog(msg, title="Success !") {
