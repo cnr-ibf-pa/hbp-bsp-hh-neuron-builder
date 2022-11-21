@@ -201,7 +201,12 @@ function deleteHHFFiles() {
         contentType: "application/json",
         data: JSON.stringify(data),
         error: (error) => { 
-            // MessageDialog.openErrorDialog(error.responseText);
+            let sm = splitTitleAndMessage(error.responseText);
+            if (sm) {
+                MessageDialog.openErrorDialog(sm.message, sm.title);
+            } else {
+                MessageDialog.openErrorDialog(error.responseText);
+            }
         },
     }).always(() => { 
         hideLoadingAnimation();
@@ -286,9 +291,12 @@ $("#uploadFileButton").click(function() {
             contentType: false,
             processData: false,
             error: error => {
-                let text = error.responseText;
-                console.log(text);
-                openErrorMessage(text);
+                let sm = splitTitleAndMessage(error.responseText);
+                if (sm) {
+                    MessageDialog.openErrorDialog(sm.message, sm.title);
+                } else {
+                    MessageDialog.openErrorDialog(error.responseText);
+                }
             }
         }).always(() => {
             counter += 1;
@@ -758,52 +766,76 @@ $("#editorAlert")[0].addEventListener("transitionend", async function(){
 });
 
 
-function openErrorMessage(msg) {
-    console.log(msg);
-    $("#overlaywrapperdialog").css("display", "block");
-    $("#overlaycontentdialog").css("display", "block").css("box-shadow", "0 0 1rem 1rem rgba(255, 0, 0, .8)")
-        .css("border-color", "red");
-    $("#dialog-btn").text("Ok").addClass("red").removeClass("blue green fill-background")
-        .on("click", closeErrorMessage);
-    $("#dialogtext").html(msg);
-}
-
-function closeErrorMessage() {
-    $("#overlaywrapperdialog").css("display", "none");
-    $("#overlaycontentdialog").css("display", "none");
-    
-}
-
-
 class MessageDialog {
 
-    static #overlayWrapper = $("#overlaywrapperdialog");
-    static #overlayContent = $("#overlaycontentdialog");
-    static #dialogMessage = $("#dialogtext");
-    static #dialogButton = $("#dialog-btn");
+    static #createAlertDialog(level, title, msg) {
+        let alert = $("<div id='alert-dialog' role='alert'></>");
+        let classes = "alert alert-dismissable fade ";
+        let button;
+        if (level != "warning") {
+            button = "<button class='btn workflow-btn alert-dialog-button' data-bs-dismiss='alert' onclick='closeAlertDialog()'>Ok</button>";
+        } else {
+            button = "<button class='btn workflow-btn alert-dialog-button' data-bs-dismiss='alert' onclick='window.location.reload();'>Reload</button>";
+        }
+        switch (level) {
+            case "danger":
+                classes += "alert-danger";
+                break;
 
+            case "warning":
+                classes += "alert-warning";
+                break;
 
-    static #openMessageDialog(msg) {
+            case "success":
+                classes += "alert-success";
+                break;
+
+            case "info":
+            default:
+                classes += "alert-info";
+        }
+        alert.addClass(classes);
+        alert.append("\
+            <h4 class='alert-heading' style='text-align: center;'>" + title + "</h4>\
+            <br>\
+            <p style='text-align: justify'>" + msg + "</p>\
+            <hr>\
+            <div class='row'>" + button + "</div>"
+        );
+        return alert;
+    }
+
+    static async #openDialog(level, title, msg) {
         if (!msg.startsWith("{\"refresh_url\"")) {
-            this.#overlayWrapper.css("display", "block");
-            this.#overlayContent.css("display", "block");
-            this.#dialogMessage.html(msg);
+            $("#shadow-layer").css("display", "block");
+            await sleep(10);
+            $("#shadow-layer").addClass("show");
+            let alertDialog = this.#createAlertDialog(level, title, msg);
+            $("body").append(alertDialog);
+            await sleep(10);
+            alertDialog.addClass("show");
         }
     }
 
-    static #closeMessageDialog() {
-        this.#overlayWrapper.css("display", "none");
-        this.#overlayContent.css("display", "none");
+    static async closeDialog() {
+        $("#shadow-layer").removeClass("show");
+        await sleep(500);
+        $("#shadow-layer").css("display", "none");
+    } 
+
+    static openSuccessDialog(msg, title="Success !") {
+        this.#openDialog("success", title, msg)
     }
 
-    static openErrorDialog(msg) {
-        console.log(msg);
-        this.#overlayContent.css("box-shadow", "0 0 1rem 1rem rgba(255, 0, 0, .8)")
-            .css("border-color", "red");
-        this.#dialogButton.text("Ok")
-            .addClass("red").removeClass("blue green fill-background")
-            .on("click", () => { this.#closeMessageDialog() });
-        this.#openMessageDialog(msg);
+    static openErrorDialog(msg, title="Error !") {
+        this.#openDialog("danger", title, msg);
     }
 
+    static openInfoDialog(msg, title="Info") {
+        this.#openDialog("info", title, msg);
+    }
+
+    static openReloadDialog(msg, title="Unexpected behavior occurred !") {
+        this.#openDialog("warning", title, msg);
+    }
 }

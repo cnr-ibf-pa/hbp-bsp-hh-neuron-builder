@@ -47,7 +47,12 @@ $("#wf-btn-new-wf").on("click", () => {
         }).fail((error) => {
             checkRefreshSession(error);
             Log.error("Status: " + error.status + " > " + error.responseText);
-            MessageDialog.openErrorDialog(error.responseText);
+            let sm = splitTitleAndMessage(error.responseText);
+            if (sm) {
+                MessageDialog.openErrorDialog(sm.message, sm.title);
+            } else {
+                MessageDialog.openErrorDialog(error.responseText);
+            }
         }).always(() => { hideLoadingAnimation() });
 });
 
@@ -65,11 +70,16 @@ $("#wf-btn-clone-wf").on("click", () => {
         error: (error) => {
             checkRefreshSession(error);
             Log.error("Status: " + error.status + " > " + error.responseText);
-            let message = error.responseText;
             if (error.status == 404) {
-                message = "Something goes wrong.<br>Try to reload the application.";
+                MessageDialog.openReloadDialog("Something goes wrong.<br>Try to reload the application.");
+            } else {
+                let sm = splitTitleAndMessage(error.responseText);
+                if (sm) {
+                    MessageDialog.openErrorDialog(sm.message, sm.title);
+                } else {
+                    MessageDialog.openErrorDialog(error.responseText);
+                }
             }
-            MessageDialog.openErrorDialog(message);
         }
     }).always(() => { hideLoadingAnimation() });
 });
@@ -384,7 +394,12 @@ function chooseOptModel() {
                     }).fail((error) => {
                         checkRefreshSession(error);
                         Log.error(error);
-                        MessageDialog.openInfoDialog(error.responseText);
+                        let sm = splitTitleAndMessage(error.responseText);
+                        if (sm) {
+                            MessageDialog.openInfoDialog(sm.message, sm.title);
+                        } else {
+                            MessageDialog.openInfoDialog(error.responseText);
+                        }
                     }).always( () => hideLoadingAnimation() );
             }
         });
@@ -393,7 +408,12 @@ function chooseOptModel() {
     }).fail((error) => {
         checkRefreshSession(error);
         Log.error(error);
-        MessageDialog.openInfoDialog(error.responseText);
+        let sm = splitTitleAndMessage(error.responseText);
+        if (sm) {
+            MessageDialog.openInfoDialog(sm.message, sm.title);
+        } else {
+            MessageDialog.openInfoDialog(error.responseText);
+        }
     }).always(() => { hideLoadingAnimation() });
 }
 
@@ -698,7 +718,12 @@ function displayJobList(button) {
             checkRefreshSession(error);
             closeJobFetchDiv();
             Log.error("Status: " + error.status + " > " + error.responseText);
-            MessageDialog.openErrorDialog(error.responseText);
+            let sm = splitTitleAndMessage(error.responseText);
+            if (sm) {
+                MessageDialog.openErrorDialog(sm.message, sm.title);
+            } else {
+                MessageDialog.openErrorDialog(error.responseText);
+            }
         });
     jobListButtonClicked = false;
 }
@@ -768,7 +793,12 @@ $("#reopt-parameters-ok-button").on("click", () => {
         },
         error: error => {
             closeJobFetchDiv();
-            MessageDialog.openErrorDialog(error.responseText);
+            let sm = splitTitleAndMessage(error.responseText);
+            if (sm) {
+                MessageDialog.openErrorDialog(sm.message, sm.title);
+            } else {
+                MessageDialog.openErrorDialog(error.responseText);
+            }
         }
     });
 })
@@ -892,7 +922,12 @@ async function downloadJobOnly(jobId) {
             checkRefreshSession(downloadError);
             closeJobProcessingDiv();
             Log.error("Status: " + downloadError.status + " > " + downloadError.responseText);
-            MessageDialog.openErrorDialog(downloadError.responseText)
+            let sm = splitTitleAndMessage(downloadError.responseText);
+            if (sm) {
+                MessageDialog.openErrorDialog(sm.message, sm.title);
+            } else {
+                MessageDialog.openErrorDialog(downloadError.responseText);
+            }
             workflow.updateProperties();
         });
 }
@@ -932,14 +967,24 @@ async function downloadJobAndRunAnalysis(jobId) {
                     checkRefreshSession(analysisError);
                     Log.error("Status: " + analysisError.status + " > " + analysisError.responseText);
                     closeJobProcessingDiv();
-                    MessageDialog.openErrorDialog(analysisError.responseText);
+                    let sm = splitTitleAndMessage(analysisError.responseText);
+                    if (sm) {
+                        MessageDialog.openErrorDialog(sm.message, sm.title);
+                    } else {
+                        MessageDialog.openErrorDialog(analysisError.responseText);
+                    }
                     workflow.updateProperties();
                 })
         }).fail((downloadError) => {
             checkRefreshSession(downloadError);
             closeJobProcessingDiv();
             Log.error("Status: " + downloadError.status + " > " + downloadError.responseText);
-            MessageDialog.openErrorDialog(downloadError.responseText)
+            let sm = splitTitleAndMessage(downloadError.responseText);
+            if (sm) {
+                MessageDialog.openErrorDialog(sm.message, sm.title);
+            } else {
+                MessageDialog.openErrorDialog(downloadError.responseText);
+            }
             workflow.updateProperties();
         });
 }
@@ -991,7 +1036,12 @@ $("#run-sim-btn").on("click", () => {
         }).fail((error) => {
             checkRefreshSession(error);
             Log.error("Status: " + error.status + " > " + error.responseText);
-            MessageDialog.openErrorDialog(error.responseText);
+            let sm = splitTitleAndMessage(error.responseText);
+            if (sm) {
+                MessageDialog.openErrorDialog(sm.message, sm.title);
+            } else {
+                MessageDialog.openErrorDialog(error.responseText);
+            }
             hideLoadingAnimation();
         }).always(() => {
             $("#run-sim-btn").prop("disabled", false);
@@ -1053,14 +1103,10 @@ $(".parametersTemplate").on("click", (event) => {
     $.post("/hh-neuron-builder/hhf-load-parameters-template/" + exc, {type: parametersType})
         .fail((error) => {
             Log.error(error);
-            MessageDialog.openErrorDialog("<b>Something went wrong!</b><br>Please upload a parameters file manually.");
+            MessageDialog.openErrorDialog("Please upload a parameters file manually.", "Something went wrong!");
         }).always(() => {
             $("#overlaywrapper").css("display", "none");
             $("#overlayparameterstemplate").css("display", "none");
             workflow.updateProperties();
         })
 })
-
-$("#alertButton").on("click", () => {
-    MessageDialog.openReloadDialog("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.");
-});    
