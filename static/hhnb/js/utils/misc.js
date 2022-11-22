@@ -168,13 +168,15 @@ async function closeAlertDialog() {
  * @param {String} level    Optional param. Can be "danger", "warning", "success", "info" (default).
  */
 async function showAlert(msg, level="", showSymbol=true, showCloseButton=true) {
-    if ($("#alert").length > 0) {
-        return;
+    if ($("#alert-text").html() == msg) {
+        return false;
     }
+
     let alert = $("<div id='alert' role='alert'></>");
     let classes = "alert d-flex align-items-center alert-dismissable fade ";
     let symbol = '<svg id="alert-svg" class="bi flex-shrink-0 me-2" width="24" height="24" role="img" '
     let button = '<button id="alert-button" type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>';
+
     switch (level) {
         case "danger":
             classes += "alert-danger";
@@ -196,14 +198,15 @@ async function showAlert(msg, level="", showSymbol=true, showCloseButton=true) {
             classes += "alert-info";
             symbol += 'aria-label="Info:"><use xlink:href="#info-fill"/></svg>';
     }
+
     alert.addClass(classes);
     alert.append(symbol);
     alert.append("<div id='alert-text'>" + msg + "</div>");
     alert.append(button);
+
     $("body").append(alert);
+
     if (!msg.includes("alert-heading")) {
-        console.log(msg);
-        console.log(msg.includes("alert-heading"))
         $("#alert-svg").addClass("center");
     }
     if (!showSymbol) {
@@ -214,7 +217,7 @@ async function showAlert(msg, level="", showSymbol=true, showCloseButton=true) {
     if (!showCloseButton) {
         $("#alert-button").addClass("hidden");
         await sleep(5000);
-        // $("#alert-button").trigger("click");
+        $("#alert-button").trigger("click");
     }
 }
 
@@ -230,7 +233,6 @@ function makeAlertText(head="", strong="", content="") {
     if (content) {
         msg += "<p>" + content + "</p>";
     }
-    console.log(msg);
     return msg;
 }
 
@@ -260,7 +262,7 @@ function showHpcAuthAlert() {
         ),
         "warning",
         true,
-        false,
+        false
     );
 }
 
