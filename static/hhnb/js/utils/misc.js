@@ -158,9 +158,20 @@ async function closeAlertDialog() {
     $("#shadow-layer").removeClass("show");
     await sleep(500);
     $("#shadow-layer").css("display", "none");
+    $("#alert-dialog").remove();
 } 
 /* Alerts functions */
 
+
+async function closeAlert(counter) {
+    let alert = $("#alert[counter='" + counter.toString() + "']");
+    alert.removeClass("show");
+    await sleep(500);
+    alert.css("display", "none");
+    alert.remove();
+}
+
+var counter = 0;
 /**
  * Show the alert.
  * 
@@ -168,14 +179,14 @@ async function closeAlertDialog() {
  * @param {String} level    Optional param. Can be "danger", "warning", "success", "info" (default).
  */
 async function showAlert(msg, level="", showSymbol=true, showCloseButton=true) {
-    if ($("#alert-text").html() == msg) {
+    if ($("#alert[counter]:last > div#alert-text").html() == msg) {
         return false;
     }
 
-    let alert = $("<div id='alert' role='alert'></>");
+    let alert = $("<div id='alert' role='alert' counter='" + counter.toString() + "'></>");
     let classes = "alert d-flex align-items-center alert-dismissable fade ";
-    let symbol = '<svg id="alert-svg" class="bi flex-shrink-0 me-2" width="24" height="24" role="img" '
-    let button = '<button id="alert-button" type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>';
+    let symbol = '<svg id="alert-svg" class="bi flex-shrink-0 me-2 center" width="24" height="24" role="img" '
+    let button = '<button id="alert-button" type="button" class="btn-close center" aria-label="Close" onclick="closeAlert(' + counter + ')"></button>';
 
     switch (level) {
         case "danger":
@@ -205,20 +216,13 @@ async function showAlert(msg, level="", showSymbol=true, showCloseButton=true) {
     alert.append(button);
 
     $("body").append(alert);
+    alert.css("left", (($(".page").width() - alert.width()) / 2).toString() + "px");
+    counter += 1;
 
-    if (!msg.includes("alert-heading")) {
-        $("#alert-svg").addClass("center");
-    }
-    if (!showSymbol) {
-        $("#alert-svg").addClass("hidden");
-    }
     await sleep(10);
     alert.addClass("show");
-    if (!showCloseButton) {
-        $("#alert-button").addClass("hidden");
-        await sleep(5000);
-        $("#alert-button").trigger("click");
-    }
+    await sleep(10000);
+    $("#alert-button").trigger("click");
 }
 
 
