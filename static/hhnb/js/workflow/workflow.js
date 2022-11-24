@@ -365,7 +365,6 @@ export default class Workflow {
                     $("#username_submit").removeClass("is-invalid").addClass("is-valid");
                     $("#password_submit").removeClass("is-invalid").addClass("is-valid");
                 }
-                // this.updateProperties();
             },
             error: (error) => {
                 hideLoadingAnimation();
@@ -375,7 +374,6 @@ export default class Workflow {
                     $("#username_submit").removeClass("is-valid").addClass("is-invalid");
                     $("#password_submit").removeClass("is-valid").addClass("is-invalid");
                 }
-                // this.updateProperties();
             }
         }).always(() => {
             this.updateProperties();
