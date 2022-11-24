@@ -1,4 +1,4 @@
-import { MessageDialog, ModelRegistrationDialog } from "../ui/components/dialog.js";
+import { MessageDialog, ModelRegistrationDialog, OptimizationSettingsDialog } from "../ui/components/dialog.js";
 import Log from "../utils/logger.js";
 
 
@@ -365,7 +365,7 @@ export default class Workflow {
                     $("#username_submit").removeClass("is-invalid").addClass("is-valid");
                     $("#password_submit").removeClass("is-invalid").addClass("is-valid");
                 }
-                this.updateProperties();
+                // this.updateProperties();
             },
             error: (error) => {
                 hideLoadingAnimation();
@@ -375,7 +375,10 @@ export default class Workflow {
                     $("#username_submit").removeClass("is-valid").addClass("is-invalid");
                     $("#password_submit").removeClass("is-valid").addClass("is-invalid");
                 }
+                // this.updateProperties();
             }
+        }).always(() => {
+            this.updateProperties();
         });
     }
 
