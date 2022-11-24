@@ -14,19 +14,31 @@ class MessageDialog {
         }
         switch (level) {
             case "danger":
+                if (!title) {
+                    title = "Error !";
+                }
                 classes += "alert-danger";
                 break;
 
             case "warning":
+                if (!title) {
+                    title = "Unexpected behavior occurred !"
+                }
                 classes += "alert-warning";
                 break;
 
             case "success":
+                if (!title) {
+                    title = "Success !";
+                }
                 classes += "alert-success";
                 break;
 
             case "info":
             default:
+                if (!title) {
+                    title = "Info:";
+                }
                 classes += "alert-info";
         }
         alert.addClass(classes);
@@ -40,34 +52,36 @@ class MessageDialog {
         return alert;
     }
 
-    static async #openDialog(level, title, msg) {
-        if (!msg.startsWith("{\"refresh_url\"")) {
-            $("#shadow-layer").css("display", "block").addClass("show");
-            let alertDialog = this.#createAlertDialog(level, title, msg);
-            // alertDialog.addClass("show");
-            $("body").append(alertDialog);
+    static async #openDialog(level, text) {
+        if (text.startsWith("{\"refresh_url\"")) {
+            return false;
         }
+        let alertDialog;
+        let sm = splitTitleAndMessage(text);
+        $("#shadow-layer").css("display", "block").addClass("show");
+        if (sm) {
+            alertDialog = this.#createAlertDialog(level, sm.title, sm.message);
+        } else {
+            alertDialog = this.#createAlertDialog(level, undefined, text);
+        }
+        $("body").append(alertDialog);
+        alertDialog.addClass("show");
     }
 
-    static async closeDialog() {
-        $("#shadow-layer").removeClass("show").css("display", "none");
-        // await sleep(500);
-    } 
-
-    static openSuccessDialog(msg, title="Success !") {
-        this.#openDialog("success", title, msg)
+    static openSuccessDialog(msg) {
+        this.#openDialog("success", msg)
     }
 
-    static openErrorDialog(msg, title="Error !") {
-        this.#openDialog("danger", title, msg);
+    static openErrorDialog(msg) {
+        this.#openDialog("danger", msg);
     }
 
-    static openInfoDialog(msg, title="Info") {
-        this.#openDialog("info", title, msg);
+    static openInfoDialog(msg) {
+        this.#openDialog("info", msg);
     }
 
-    static openReloadDialog(msg, title="Unexpected behavior occurred !") {
-        this.#openDialog("warning", title, msg);
+    static openReloadDialog(msg) {
+        this.#openDialog("warning", msg);
     }
 }
 

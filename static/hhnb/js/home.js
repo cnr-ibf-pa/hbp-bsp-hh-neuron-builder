@@ -44,12 +44,7 @@ $("#new-wf").on("click", () => {
             checkRefreshSession(error);
             Log.error("Status: " + error.status + " > " + error.responseText);
             hideLoadingAnimation();
-            let sm = splitTitleAndText(error.responseText);
-            if (sm) {
-                MessageDialog.openErrorDialog(sm.message, sm.title);
-            } else {
-                MessageDialog.openErrorDialog(error.responseText);
-            }
+            MessageDialog.openErrorDialog(error.responseText);
         });
 });
 
@@ -87,12 +82,7 @@ function uploadWorkflow() {
                         window.location.href = "/hh-neuron-builder/workflow/" + data.exc;
                     } else {
                         hideLoadingAnimation();
-                        let sm = splitTitleAndText(data.message);
-                        if (sm) {
-                            MessageDialog.openErrorDialog(sm.message, sm.title);
-                        } else {
-                            MessageDialog.openErrorDialog(data.message);
-                        }
+                        MessageDialog.openErrorDialog(data.message);
                     }        
                 })
             }
