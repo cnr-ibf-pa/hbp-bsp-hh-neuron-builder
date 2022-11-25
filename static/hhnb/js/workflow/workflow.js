@@ -87,7 +87,7 @@ export default class Workflow {
         }).done(() => { this.updateUI() })
             .fail((error) => {
                 if (error.status == 500) {
-                    return MessageDialog.openReloadDialog("/hh-neuron-builder", "<b>A critical error occurred</b>.<br>Please restart the application and if the the problem persists contact us.");
+                    return MessageDialog.openReloadDialog("<b>A critical error occurred !</b><br><br>Please restart the application and if the the problem persists contact us.");
                 }
             })
             .always(() => { hideLoadingAnimation() });
@@ -223,7 +223,7 @@ export default class Workflow {
                 disable(downloadAnalysisLink);
                 enable(deleteLink);
             } else {
-                bar.text("Fetch job results to run analysis or upload it");
+                bar.text("Fetch job results or upload a previously downloaded \"zip\" to run analysis or resume the job");
                 enable(fetchButton);
                 enable(uploadButton);
                 disable(downloadResultLink);
