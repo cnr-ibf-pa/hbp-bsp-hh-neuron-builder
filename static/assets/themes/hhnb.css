@@ -933,7 +933,7 @@ td {
 .job-button {
     width: 48px;
     height: 48px;
-    margin: auto;
+    margin: auto .5rem;
     padding: 0px;
 }
 
@@ -1881,6 +1881,8 @@ i.disabled:hover {
 
 #tableRow {
     overflow: auto;
+    border-radius: .5rem;
+    margin-bottom: 1rem;
 }
 
 .input-group > span {

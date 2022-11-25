@@ -643,7 +643,22 @@ function displayJobList(button) {
                 }
                 $("#overlayjobs").removeClass("scroll-long-content");
 
-                if (hpc == "DAINT-CSCS") {
+                $("#job-list-body").append(
+                    "<tr>"
+                    + "<td>" + job.workflow_id + "</td>"
+                    + "<td>" + job_id.toUpperCase() + "</td>"
+                    + "<td style='font-weight: bold; color: " + statusColor + "'>" + job.status + "</td>"
+                    + "<td>" + job.date + "</td>"
+                    + "<td>"
+                    + "<div id='" + job_id + "' class='row g-0'>"
+                    + "<div class='col'>" 
+                    + "<button type='button' class='btn workflow-btn job-button download' title='Download' " + downloadDisabled + "><i class='fas fa-cloud-download-alt fa-lg'></i></button>"
+                    + "</div>"
+                    + "</div>"
+                    + "</td>"
+                    + "</tr>"
+                );
+                /* if (hpc == "DAINT-CSCS") {
                     $("#job-list-body").append(
                         "<tr>"
                         + "<td>" + job.workflow_id + "</td>"
@@ -678,7 +693,7 @@ function displayJobList(button) {
                         + "</td>"
                         + "</tr>"
                     );
-                }
+                } */
             }
 
             $(".job-button.download").on("click", downloadJobButtonCallback);
@@ -774,6 +789,11 @@ $("#reopt-parameters-ok-button").on("click", () => {
     });
 })
 
+
+$("#resume-job").on("click", () => {
+    console.log("RESUME JOB CALLED");
+})
+
 $("#reopt-parameters-cancel-button").on("click", toggleReoptParametersPopup);
 $("#shadow-layer-jobs").on("click", () => {
     if ($("#reopt-parameters").hasClass("show")) {
@@ -822,7 +842,6 @@ function reoptimizeJobButtonCallback(event) {
         let jobName = rowElement.children()[0].innerText;    
         toggleReoptParametersPopup(jobId, jobName);
     }
-
 }
 
 
@@ -927,8 +946,8 @@ async function downloadJobAndRunAnalysis(jobId) {
                     $("#progressBarFetchJob").addClass("s4").removeClass("s40 s20 s2");
                     setProgressBarValue(100);
                     await sleep(4000);
-                    closeJobProcessingDiv(); 
                     workflow.updateProperties();
+                    closeJobProcessingDiv(); 
                 }).fail((analysisError) => {
                     checkRefreshSession(analysisError);
                     Log.error("Status: " + analysisError.status + " > " + analysisError.responseText);

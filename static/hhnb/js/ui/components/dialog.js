@@ -4,6 +4,7 @@ import Log from "../../utils/logger.js";
 class MessageDialog {
 
     static #createAlertDialog(level, title, msg) {
+        console.log(level, title, msg);
         let alert = $("<div id='alert-dialog' role='alert'></>");
         let classes = "alert alert-dismissable fade ";
         let button;

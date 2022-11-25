@@ -509,6 +509,8 @@ class Workflow(_WorkflowBase):
                 else: 
                     optset_flag = (True, '')
 
+        print(os.path.join(self._analysis_dir, 'checkpoints', 'checkpoint.pkl'))
+        print("RESUME JOB: ", os.path.exists(os.path.join(self._analysis_dir, 'checkpoints', 'checkpoint.pkl')))
         props = {
             'id': self._id,
             'model': self._model.get_properties(), 
@@ -516,6 +518,9 @@ class Workflow(_WorkflowBase):
             'etraces': any(os.scandir(self._etraces_dir)),
             'job_submitted': job_submitted,
             'results': any(os.scandir(self._results_dir)),
+            'resume': os.path.exists(
+                os.path.join(self._analysis_dir, 'checkpoints', 'checkpoint.pkl')
+            ),
             'analysis': analysis_flag
         }
         return props
