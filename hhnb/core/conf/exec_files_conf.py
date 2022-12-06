@@ -1,4 +1,5 @@
 import os
+import json
 
 
 class ExecFileConf:
@@ -8,7 +9,7 @@ class ExecFileConf:
 
 
     @staticmethod
-    def write_nsg_exec(dst_dir, max_gen, offspring):
+    def write_nsg_exec(dst_dir, max_gen, offspring, job_name, mode='start'):
         """
         Write the excecution script for the NSG system.
 
@@ -20,14 +21,20 @@ class ExecFileConf:
                   maximum number of generations used by opt_neuron.
         offspring : int
                     number of individuals in offspring useb by opt_neuron.
+        job_name : str
+                   set job_name
+        mode : str, optional, default='start'
+               select the action mode to run the job on the HPC. Can be 'start' or 'resume'.
         """
 
         buffer = \
 f"""
 import os
+import json
 
-os.system('python3 opt_neuron.py --max_ngen={max_gen} --offspring_size={offspring} --start --checkpoint ./checkpoints/checkpoint.pkl')
-
+os.system('python3 opt_neuron.py --max_ngen={max_gen} --offspring_size={offspring} --{mode} --checkpoint ./checkpoints/checkpoint.pkl')
+with open('resume_job_settings.json', 'w') as fd:
+    json.dump({json.dumps({'offspring_size': offspring, 'max_gen': max_gen, 'job_name': job_name, hpc: 'nsg',})}, fd)
 """
         try:
             with open(os.path.join(dst_dir, 'init.py'), 'w') as fd:
@@ -35,9 +42,8 @@ os.system('python3 opt_neuron.py --max_ngen={max_gen} --offspring_size={offsprin
         except Exception as e:
             raise e
 
-
     @staticmethod
-    def write_daint_exec(dst_dir, folder_name, offspring, max_gen, ):
+    def write_daint_exec(dst_dir, folder_name, offspring, max_gen, job_name, mode='start'):
         """
         Write the excecution script for the Piz-Daint (UNICORE) system.
 
@@ -51,6 +57,10 @@ os.system('python3 opt_neuron.py --max_ngen={max_gen} --offspring_size={offsprin
                   maximum number of generations used by opt_neuron.
         offspring : int
                     number of individuals in offspring useb by opt_neuron.
+        job_name : str
+                   set job_name
+        mode : str, optional, default='start'
+               select the action mode to run the job on the HPC. Can be 'start' or 'resume'.
         """
         buffer_zipfolder = \
 f"""
@@ -115,7 +125,8 @@ ipcontroller --init --sqlitedb --ip='*' --profile=${IPYTHON_PROFILE} &
 sleep 30
 srun ipengine --profile=${IPYTHON_PROFILE} &
 CHECKPOINTS_DIR="checkpoints"
-BLUEPYOPT_SEED=1 python opt_neuron.py --offspring_size={offspring} --max_ngen={max_gen} --start --checkpoint "${CHECKPOINTS_DIR}/checkpoint.pkl"
+BLUEPYOPT_SEED=1 python opt_neuron.py --offspring_size={offspring} --max_ngen={max_gen} --{mode} --checkpoint "${CHECKPOINTS_DIR}/checkpoint.pkl"
+echo '{json.dumps({'offspring_size': offspring, 'max_gen': max_gen, 'job_name': job_name, 'hpc': 'cscs'})}' > resume_job_settings.json
 python zipfolder.py
 """
         try:

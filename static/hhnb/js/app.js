@@ -179,7 +179,20 @@ $(".delete-btn").on("click", (button) => {
                     "config/parameters.json",
                     "config/morph.json",
                     "morphology/*",
-                    "mechanisms/*"
+                    "mechanisms/*",
+                    "x86_64/",
+                    "zipfolder.py",
+                    "job_parameters.json",
+                    "ipyparallel.sbatch",
+                    "checkpoints/",
+                    "mod_nsgportal/",
+                    "figures/",
+                    "resume_job_settings.json",
+                    "makelib.err",
+                    "makelib.out",
+                    "tools/",
+                    "figures/",
+                    "r_seed*/"
                 ]
             });
             break;
@@ -228,18 +241,34 @@ $(".download-btn").on("click", (button) => {
 
 
 // display and close settings dialog
-$("#opt-set-btn").on("click", async () => {
-    Log.debug("Set parameters button clicked");
+$("#opt-set-btn").on("click", openOptimizationSettings);
+
+async function openOptimizationSettings(event) {
+    let btn = event.currentTarget.id;
+    $("#" + btn).blur();
+
+    Log.debug(btn + " clicked, optimization settings opening...");
+    
     await workflow.getOptimizationSettingsAsPromise()
         .then(settings => {
+            console.log(workflow.getProps().resume);
+            console.log(settings);
+            if (!workflow.getProps().resume) {
+                $("#job-action-resume").addClass("disabled");
+            } else {
+                $("#job-action-resume").removeClass("disabled");
+            }
             OptimizationSettingsDialog.loadSettings(settings);
             OptimizationSettingsDialog.open();
+            // if (mode == "resume") {
+                // showInfoAlert("The job was optimized using the <b>" + settings.resume.hpc.toUpperCase() + "</b> HPC system.<br>Note that if you use a different HPC system from the original optimization system, the resume job process could stop.", 20000);
+            // }
         }).catch(error => {
             checkRefreshSession(error);       
             Log.error("Error on getting settings");
             Log.debug(error);
-        })
-})
+        });
+}
 
 $("#cancel-param-btn").on("click", () => {
     Log.debug("Close parameters button clicked");
@@ -248,6 +277,7 @@ $("#cancel-param-btn").on("click", () => {
 
 $("#apply-param").on("click", () => {
     Log.debug("Uploading optimization settings");
+    let mode = $("#overlayparam").attr("mode");
     let formData = OptimizationSettingsDialog.getJsonData();
     if (formData.hpc == "DAINT-CSCS" || formData.hpc == "SA" ) {
         showLoadingAnimation("Checking login...");
@@ -258,7 +288,7 @@ $("#apply-param").on("click", () => {
             }).fail((error) => {
                 checkRefreshSession(error);
                 showHpcAuthAlert();
-                hideLoadingAnimation();        
+                hideLoadingAnimation();  
             })
     } else {
         OptimizationSettingsDialog.close();
@@ -517,8 +547,6 @@ function resetJobFetchDiv() {
     $("#passwordNsg").removeClass("is-invalid");
     $("#sa-project-dropdown-jobs-btn").prop("disabled", true);
     $("#sa-fetch-jobs").prop("disabled", true);
-    $("#shadow-layer-jobs").css("display", "none").removeClass("show");
-    $("#reopt-parameters").css("display", "none").removeClass("show");
     resetProgressBar();
 }
 
@@ -630,11 +658,9 @@ function displayJobList(button) {
                 let job = jobs[job_id];
                 let statusColor = "";
                 let downloadDisabled = "disabled";
-                let reoptDisabled = "disabled" ;
                 if (job.status == "COMPLETED" || job.status == "SUCCESSFUL") {
                     statusColor = "#00802b"
                     downloadDisabled = "";
-                    reoptDisabled = "";
                 } else if (job.status == "FAILED") {
                     statusColor = "#DF0000";
                     downloadDisabled = ""
@@ -658,46 +684,9 @@ function displayJobList(button) {
                     + "</td>"
                     + "</tr>"
                 );
-                /* if (hpc == "DAINT-CSCS") {
-                    $("#job-list-body").append(
-                        "<tr>"
-                        + "<td>" + job.workflow_id + "</td>"
-                        + "<td>" + job_id.toUpperCase() + "</td>"
-                        + "<td style='font-weight: bold; color: " + statusColor + "'>" + job.status + "</td>"
-                        + "<td>" + job.date + "</td>"
-                        + "<td>"
-                        + "<div id='" + job_id + "' class='row g-0'>"
-                        + "<div class='col'>" 
-                        + "<button type='button' class='btn workflow-btn job-button download left' title='Download' " + downloadDisabled + "><i class='fas fa-cloud-download-alt fa-lg'></i></button>"
-                        + "</div>"
-                        + "<div class='col'>" 
-                        + "<button type='button' class='btn workflow-btn job-button reoptimize right' title='Re-optimize the model from the checkpoint' " + reoptDisabled + "><i class='fas fa-redo-alt fa-lg'></i></button>"
-                        + "</div>"
-                        + "</div>"
-                        + "</td>"
-                        + "</tr>"
-                    );
-                } else {
-                    $("#job-list-body").append(
-                        "<tr>"
-                        + "<td>" + job.workflow_id + "</td>"
-                        + "<td>" + job_id.toUpperCase() + "</td>"
-                        + "<td style='font-weight: bold; color: " + statusColor + "'>" + job.status + "</td>"
-                        + "<td>" + job.date + "</td>"
-                        + "<td>"
-                        + "<div id='" + job_id + "' class='row g-0'>"
-                        + "<div class='col'>" 
-                        + "<button type='button' class='btn workflow-btn job-button download' title='Download' " + downloadDisabled + "><i class='fas fa-cloud-download-alt fa-lg'></i></button>"
-                        + "</div>"
-                        + "</div>"
-                        + "</td>"
-                        + "</tr>"
-                    );
-                } */
             }
 
             $(".job-button.download").on("click", downloadJobButtonCallback);
-            $(".job-button.reoptimize").on("click", reoptimizeJobButtonCallback);
 
             $("#spinnerRow").css("display", "none");
             $("#progressRow").css("display", "none");
@@ -722,133 +711,13 @@ function displayJobList(button) {
 function downloadJobButtonCallback(button) {
     let rowElement = button.currentTarget.parentElement.parentElement.parentElement.parentElement;
     let jobId = button.currentTarget.parentElement.parentElement.id;
+    let jobName = rowElement.children[0].innerText;
     let jobStatus = rowElement.children[2].innerText;
     if (jobStatus == "SUCCESSFUL" || jobStatus == "COMPLETED") {
-        downloadJobAndRunAnalysis(jobId);
+        downloadJobAndRunAnalysis(jobId, jobName);
     } else {
         downloadJobOnly(jobId);
     }
-}
-
-$("#reopt-parameters-ok-button").on("click", () => {
-    let hpc = $(".fetch-jobs.active").attr("name");
-    let jobId = $("#reopt-job-id").text();
-    let jobName = $("#reopt-job-id").attr("name");
-    let maxgen = $("#reopt-gen-max").val();
-    let nodes = $("#reopt-node-num").val();
-    let cores = $("#reopt-core-num").val();
-    let runtime = $("#reopt-runtime").val();
-
-    let isValide = true;
-    if (!maxgen) {
-        isValide = false;
-        $("#reopt-gen-max").addClass("is-invalid");
-    }
-    if (!nodes) {
-        isValide = false;
-        $("#reopt-node-num").addClass("is-invalid");
-    }
-    if (!cores) {
-        isValide = false;
-        $("#reopt-core-num").addClass("is-invalid");
-    }
-    if (!runtime) {
-        isValide = false;
-        $("#reopt-runtime").addClass("is-invalid");
-    }
-    if (!isValide) {
-        return false;
-    }
-
-    $("#shadow-layer-jobs").trigger("click");
-    $("#tableRow").css("display", "none");
-    $("#overlayjobs").removeClass("scroll-long-content");
-    $("#spinnerRow").css("display", "flex");
-    $("#refresh-job-list-btn").prop("disabled", true);
-    $("#cancel-job-list-btn").prop("disabled", true);
-
-    $.ajax({
-        url: "/hh-neuron-builder/reoptimize-model/" + exc,
-        method: "POST",
-        data: { 
-            "job_id": jobId, 
-            "hpc": hpc, 
-            "job_name": jobName, 
-            "max-gen": maxgen,
-            "node-num": nodes,
-            "core-num": cores,
-            "runtime": runtime
-        },
-        success: response => {
-            $("#refresh-job-list-btn").trigger("click");
-        },
-        error: error => {
-            closeJobFetchDiv();
-            MessageDialog.openErrorDialog(error.responseText);
-        }
-    });
-})
-
-
-$("#resume-job").on("click", () => {
-    console.log("RESUME JOB CALLED");
-})
-
-$("#reopt-parameters-cancel-button").on("click", toggleReoptParametersPopup);
-$("#shadow-layer-jobs").on("click", () => {
-    if ($("#reopt-parameters").hasClass("show")) {
-        toggleReoptParametersPopup();
-    }
-});
-
-async function toggleReoptParametersPopup(jobId="", jobName="") {
-    let reoptParameters = $("#reopt-parameters");
-    let shadowLayer = $("#shadow-layer-jobs");
-    $("#reopt-job-id").text(jobId).attr("name", jobName);
-
-    let pageHeight = document.documentElement.scrollHeight;
-    let windowHeight = window.innerHeight;
-
-    let mode = reoptParameters.hasClass("show") ? "close" : "open";
-    if (mode == "open") {
-        shadowLayer.css("display", "block");
-        reoptParameters.css("display", "block");
-        await sleep(0);
-        shadowLayer.addClass("show");
-        reoptParameters.addClass("show");
-    } else if (mode == "close") {
-        shadowLayer.removeClass("show");
-        reoptParameters.removeClass("show");
-    }
-
-    reoptParameters[0].addEventListener("transitionend", event => {
-        if (event.target.id == reoptParameters.attr("id")) {
-            if (!reoptParameters.hasClass("show")) {
-                reoptParameters.css("display", "none");
-                shadowLayer.css("display", "none");
-            }
-        }
-    });
-
-}
-
-function reoptimizeJobButtonCallback(event) {
-    let button = $(event.currentTarget);
-    let rowElement = button.parents("tr");
-    let jobStatus = rowElement.children()[2].innerText;
-
-    if (jobStatus == "SUCCESSFUL" || jobStatus == "COMPLETED") {
-        let jobId = rowElement.children()[1].innerText;
-        let jobName = rowElement.children()[0].innerText;    
-        toggleReoptParametersPopup(jobId, jobName);
-    }
-}
-
-
-function animateProgressBar(progress) {
-    let current_progress = parseFloat($(".progress-bar").attr("aria-valuenow"));
-    let next_progress = current_progress + progress;
-    $(".progress-bar").css("width", next_progress + "%").attr("aria-valuenow", next_progress);
 }
 
 function setProgressBarValue(value) {
@@ -917,11 +786,12 @@ async function downloadJobOnly(jobId) {
         });
 }
 
-async function downloadJobAndRunAnalysis(jobId) {
+async function downloadJobAndRunAnalysis(jobId, jobName) {
     Log.debug("Downloading " + jobId);
     // disable all buttons
     const data = {
         "job_id": jobId,
+        "job_name": jobName,
         "hpc": $("button.fetch-jobs.active").attr("name"),
         "saHPC": $("#sa-hpc-dropdown-jobs-btn").text().toLowerCase(),
         "saProject": $("#sa-project-dropdown-jobs-btn").text().toLowerCase() 
@@ -946,13 +816,13 @@ async function downloadJobAndRunAnalysis(jobId) {
                     $("#progressBarFetchJob").addClass("s4").removeClass("s40 s20 s2");
                     setProgressBarValue(100);
                     await sleep(4000);
-                    workflow.updateProperties();
                     closeJobProcessingDiv(); 
                 }).fail((analysisError) => {
                     checkRefreshSession(analysisError);
                     Log.error("Status: " + analysisError.status + " > " + analysisError.responseText);
                     closeJobProcessingDiv();
                     MessageDialog.openErrorDialog(analysisError.responseText);
+                }).always(() => {
                     workflow.updateProperties();
                 })
         }).fail((downloadError) => {
@@ -960,6 +830,7 @@ async function downloadJobAndRunAnalysis(jobId) {
             closeJobProcessingDiv();
             Log.error("Status: " + downloadError.status + " > " + downloadError.responseText);
             MessageDialog.openErrorDialog(downloadError.responseText);
+        }).always(() => {
             workflow.updateProperties();
         });
 }

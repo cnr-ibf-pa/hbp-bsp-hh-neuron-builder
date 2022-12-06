@@ -33,10 +33,7 @@ register_converter(converters.HpcConverter, 'hpc')
 register_converter(converters.JobIdConverter, 'jobid')
 register_converter(converters.FolderConverter, 'folder')
 register_converter(converters.ConfigFileConverter, 'config_file')
-
-
 register_converter(converters.FileTypeConverter, 'file_type')
-
 
 urlpatterns = [
     # session refresh
@@ -85,7 +82,7 @@ urlpatterns = [
     path('run-optimization/<exc:exc>', views.run_optimization),
     path('fetch-jobs/<exc:exc>', views.fetch_jobs),
     path('fetch-job-result/<exc:exc>', views.fetch_job_results),
-    path('reoptimize-model/<exc:exc>', views.reoptimize_model),
+    path('resume-job/<exc:exc>', views.resume_job),
 
     # analysis apis
     path('run-analysis/<exc:exc>', views.run_analysis),

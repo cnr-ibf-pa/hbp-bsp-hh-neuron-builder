@@ -178,7 +178,7 @@ var counter = 0;
  * @param {*} msg           The message to be shown in the alert.
  * @param {String} level    Optional param. Can be "danger", "warning", "success", "info" (default).
  */
-async function showAlert(msg, level="", showSymbol=true, showCloseButton=true) {
+async function showAlert(msg, level="", timeout, showSymbol=true, showCloseButton=true) {
     if ($("#alert[counter]:last > div#alert-text").html() == msg) {
         return false;
     }
@@ -221,7 +221,7 @@ async function showAlert(msg, level="", showSymbol=true, showCloseButton=true) {
 
     await sleep(10);
     alert.addClass("show");
-    await sleep(10000);
+    await sleep(timeout);
     $("#alert-button").trigger("click");
 }
 
@@ -241,23 +241,24 @@ function makeAlertText(head="", strong="", content="") {
 }
 
 
-function showInfoAlert(msg) {
-    showAlert(msg, "info", true, false);
+function showInfoAlert(msg, timeout=10000) {
+    showAlert(msg, "info", timeout, true, false);
 }
 
-function showSuccessAlert(msg) {
-    showAlert(msg, "success", true, true);
+function showSuccessAlert(msg, timeout=10000) {
+    showAlert(msg, "success", timeout, true, true);
 }
 
-function showErrorAlert(msg) {
-    showAlert(msg, "danger", true, true);
+function showErrorAlert(msg, timeout=10000) {
+    showAlert(msg, "danger", timeout, true, true);
 }
 
-function showWarningAlert(msg) {
-    showAlert(msg, "warning", true, false);
+function showWarningAlert(msg, timeout=10000) {
+    showAlert(msg, "warning", timeout, true, false);
 }
 
 function showHpcAuthAlert() {
+    console.log("showHpcAuthAlert() called.");
     showAlert(
         makeAlertText(
             head="", 
@@ -265,6 +266,7 @@ function showHpcAuthAlert() {
             content="Please, click \"Cancel\" and login with the button in the top right corner before doing this operation."
         ),
         "warning",
+        5000,
         true,
         false
     );
@@ -279,6 +281,7 @@ function showJobsAuthAlert() {
         ),
         "warning",
         true,
+        5000,
         false
     )
 }
@@ -291,6 +294,7 @@ function showServiceAccountAlert() {
             content="Please, try again later or contact the support if the problem persists."
         ),
         "warning",
+        5000,
         true,
         false
     )
