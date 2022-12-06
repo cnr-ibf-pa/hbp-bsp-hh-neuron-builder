@@ -146,23 +146,20 @@
                         </div>
                         <div class="col flex-end">
                             <i class="far fa-question-circle fa-lg black"
-                                title="Fetch optimization results from HPC systems by clicking the 'Fetch results' button. Alternative, you can upload a properly formatted .zip file containing the optimized  model folders/files ready for simulation. Once a job was successful downloaded or uploaded, you can resume the job from its checkpoints and providing a new value of generation. For further details, please refer to the HBP Brain Simulation Platform Guidebook">
+                                title="Fetch optimization results from HPC systems by clicking the 'Fetch results' button. Alternative, you can upload a properly formatted .zip file containing the optimized  model folders/files ready for simulation. For further details, please refer to the HBP Brain Simulation Platform Guidebook">
                             </i>
                         </div>
                     </div>
                     <br>
-                    <div class="row" style="padding: 0 1rem">
+                    <div class="row" style="padding: 0 7rem">
                         <div class="col flex-center">
                             <button type="button" id="opt-fetch-btn" class="btn workflow-btn lg">Fetch results</button>
-                        </div>
-                        <div class="col flex-center">
-                            <button type="button" id="resume-job" class="btn workflow-btn lg" title="Re-optimize the model from the checkpoint" disabled>Resume job</button>
                         </div>
                         <div class="col flex-center">
                             <button type="button" id="opt-res-up-btn" class="upload-btn btn workflow-btn lg">Upload optimization/analysis</button>
                         </div>
                     </div>
-                    <div class="row" style="padding: 0 1rem">
+                    <div class="row" style="padding: 0 7rem">
                         <div class="col flex-center">
                             <button id="down-opt-btn" title="Download optimization files" type="button" 
                                 class="download-btn btn btn-link">Download optimization
@@ -216,11 +213,20 @@
     <div id="overlayparam" class="overlay-content">
         <form id="submitJobParamForm" method="POST">
             {% csrf_token %}
-            <div class="container">
+            {% comment %} <div class="container"> {% endcomment %}
                 <div class="row">
                     <div class="input-group job-name">
                         <span class="input-group-text">Job Name</span>
                         <input type="text" class="form-control" id="job-name" placeholder="Set the job name. By default the workflow id will be taken">
+                        <button type="button" id="job-action" class="btn btn-outline-secondary">Start</button>
+                        <button type="button" class="btn btn-outline-secondary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
+                          <span class="visually-hidden">Toggle Dropdown</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                          <li><a class="dropdown-item" id="job-action-start">Start</a></li>
+                          <li><hr class="dropdown-divider"></li>
+                          <li><a class="dropdown-item" id="job-action-resume">Resume</a></li>
+                        </ul>
                     </div>
                 </div>
                 <div class="row-separator"></div>
@@ -447,7 +453,7 @@
                         <button type="button" id="apply-param" class="btn workflow-btn fill-background extends" disabled>Apply</button>
                     </div>
                 </div>
-            </div>
+            {% comment %} </div> {% endcomment %}
         </form>
     </div>
 
@@ -546,57 +552,6 @@
             </div>
         </div>
     </div>
-
-    <div id="shadow-layer-jobs" class="shadow-layer"></div>
-    <div id="reopt-parameters" class="card">
-        <div class="card-body">
-            <h5 id="reopt-job-id" class="card-subtitle mb-2 text-muted"></h5>
-            <div class="row g-0">
-                <div class="card input-card">
-                    <div class="card-header input-card-header ">Algorithm Parameters</div>
-                    <div class="card-body ">
-                        <div class="input-group">
-                            <span class="input-group-text" title="Number of generation (max 60)"># Gen</span>
-                            <input type="number" class="form-control small-placeholder" name="gen-max" id="reopt-gen-max" title="Number of generation (max 60)" placeholder="Number of generation (max 60)" step="1" min="1" max="60">
-                        </div>
-                        <br>
-                    </div>
-                </div>
-            </div>
-            <div class="row-separator"></div>
-            <div class="row g-0">
-                <div class="card input-card">
-                    <div class="card-header input-card-header">Optimization Run Parameters</div>
-                    <div class="card-body">
-                        <div class="input-group">
-                            <span class="input-group-text" title="Number of nodes"># Nodes</span>
-                            <input type="number" class="form-control small-placeholder" name="node-num" id="reopt-node-num" title="Number of nodes" placeholder="Number of nodes" default="6" step="1" min="1" required>
-                        </div>
-                        <br>
-                        <div class="input-group">
-                            <span class="input-group-text" title="Number of cores"># Cores</span>
-                            <input type="number" class="form-control small-placeholder" name="core-num" id="reopt-core-num" title="Number of cores" placeholder="Number of cores" value="24" step="1" min="1" required>
-                        </div>
-                        <br>
-                        <div class="input-group">
-                            <span class="input-group-text" title="Runtime">Runtime</span>
-                            <input type="text" class="form-control small-placeholder" name="runtime" id="reopt-runtime" title="Runtime" placeholder="Runtime" value="120m" required>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="row-separator"></div>
-            <div class="row">
-                <div class="col">
-                    <button id="reopt-parameters-cancel-button" class="btn workflow-btn fill-background">Cancel</button>
-                </div>
-                <div class="col">
-                    <button id="reopt-parameters-ok-button" class="btn workflow-btn fill-background">Reoptimize</i></button>
-                </div>
-            </div>
-        </div>
-    </div>
-
 
     <div id="overlayjobprocessing" class="overlay-content">
         <div class="container">
@@ -958,16 +913,6 @@
         </div>
     </div>
 </div>
-
-{% comment %} <div id="overlaywrapperdialog" class="overlay-wrapper">
-    <div id="overlaycontentdialog" class="overlay-content">
-        <div id="overlaydialog">
-            <div id="dialogtext"></div>
-            <br>
-            <button id="dialog-btn" class="btn workflow-btn"></button>
-        </div>
-    </div>
-</div> {% endcomment %}
 
 <div id="shadow-layer" class="shadow-layer"></div>
 

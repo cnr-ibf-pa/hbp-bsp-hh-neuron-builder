@@ -363,7 +363,7 @@ def upload_model(request, exc):
         workflow.load_model_zip(zip_path)
     except FileNotFoundError as e:
         logger.error(e)
-        return ResponseUtil.ko_response(messages.MARLFORMED_FILE.format('"model.zip"'))
+        return ResponseUtil.ko_response(messages.MARLFORMED_FILE.format('model.zip'))
 
     return ResponseUtil.ok_response()
 
@@ -551,7 +551,9 @@ def delete_files(request, exc):
         except PermissionError as e:
             logger.error(e)
             return ResponseUtil.ko_response(messages.CRITICAL_ERROR)
-    
+        except FileNotFoundError:
+            pass
+        
     return ResponseUtil.ok_json_response()
 
 
@@ -563,13 +565,15 @@ def optimization_settings(request, exc=None):
     
     if request.method == 'GET':
         logger.info(LOG_ACTION.format(hhnb_user, 'get optimization settings from %s' % workflow))
-        settings = {'settings': {}, 'service-account': {}}
+        settings = {'settings': {}, 'service-account': {}, 'resume': {}}
         
         # fetch service account hpc and projects
         settings.update(json.loads(get_service_account_content(request).content))
 
         try:
             settings['settings'].update(workflow.get_optimization_settings())
+            settings['resume'].update(workflow.get_resume_settings())
+
             return ResponseUtil.ok_json_response(settings)
         except FileNotFoundError as e:
             return ResponseUtil.ok_json_response(settings)
@@ -577,6 +581,14 @@ def optimization_settings(request, exc=None):
     elif request.method == 'POST':
         logger.info(LOG_ACTION.format(hhnb_user, 'set optimization settings from %s' % workflow))
         optimization_settings = json.loads(request.body)
+
+        if optimization_settings['mode'] == 'resume' and \
+            not optimization_settings.get('offspring'):
+            offspring = workflow.get_resume_settings().get('offspring_size', '10')
+            optimization_settings.update({'offspring': offspring})
+
+        if not optimization_settings.get('hpc'):
+            return ResponseUtil.ko_response('Invalid settings')
 
         if optimization_settings['hpc'] == 'NSG':
             nsg_username = optimization_settings.get('username_submit')
@@ -586,21 +598,24 @@ def optimization_settings(request, exc=None):
                 nsg_user = NsgUser(nsg_username, nsg_password)
                 
                 # override nsg credentials 
-                if not nsg_user.validate_credentials():
-                    optimization_settings.update({
-                        'username_submit': False,
-                        'password_submit': False
-                    })
-                else:
-                    optimization_settings.update({
-                        'username_submit': True,
-                        'password_submit': True
-                    })
-                    request.session['nsg_username'] = nsg_username
-                    request.session['nsg_password'] = nsg_password
-                    request.session.save()
-                        
-        workflow.set_optimization_settings(optimization_settings)
+                try:
+                    if not nsg_user.validate_credentials():
+                        optimization_settings.update({
+                            'username_submit': False,
+                            'password_submit': False
+                        })
+                    else:
+                        optimization_settings.update({
+                            'username_submit': True,
+                            'password_submit': True
+                        })
+                        request.session['nsg_username'] = nsg_username
+                        request.session['nsg_password'] = nsg_password
+                        request.session.save()
+                except requests.exceptions.ConnectionError:
+                    return ResponseUtil.ko_response(messages.HPC_NOT_AVAILABLE.format('NSG'))
+        
+        workflow.add_optimization_settings(optimization_settings)
 
         if optimization_settings['hpc'] == 'NSG':
             if not optimization_settings['username_submit'] and not optimization_settings['password_submit']:
@@ -613,17 +628,12 @@ def optimization_settings(request, exc=None):
 
 
 def run_optimization(request, exc):
+    
     if exc not in request.session.keys():
         return ResponseUtil.no_exc_code_response()
 
     workflow, hhnb_user = get_workflow_and_user(request, exc)
     logger.info(LOG_ACTION.format(hhnb_user, 'run optimization of %s' % workflow))
-    opt_model_dir = WorkflowUtil.make_optimization_model(workflow)
-    zip_dst_dir = os.path.join(workflow.get_tmp_dir(), 
-                               os.path.split(opt_model_dir)[1])
-    zip_file = shutil.make_archive(base_name=zip_dst_dir,
-                                   format='zip',
-                                   root_dir=os.path.split(opt_model_dir)[0])
 
     optimization_settings = workflow.get_optimization_settings()
 
@@ -631,17 +641,29 @@ def run_optimization(request, exc):
         'nsg_username': request.session.get('nsg_username'),
         'nsg_password': request.session.get('nsg_password'),
     })
-
+    
+    workflow.add_optimization_settings(optimization_settings)
+    
+    if optimization_settings.get('mode') == 'start':
+        WorkflowUtil.clean_model(workflow)
+    
+    opt_model_dir = WorkflowUtil.make_optimization_model(workflow)
+    zip_dst_dir = os.path.join(workflow.get_tmp_dir(), 
+                               os.path.split(opt_model_dir)[1])
+    zip_file = shutil.make_archive(base_name=zip_dst_dir,
+                                   format='zip',
+                                   root_dir=os.path.split(opt_model_dir)[0]) 
+    
     try:
         response = JobHandler.submit_job(hhnb_user, zip_file, optimization_settings)
     except JobHandler.HPCException as e:
         return ResponseUtil.ko_response(str(e))
     if response.status_code == 200:
-        workflow.set_optimization_settings(optimization_settings, job_submitted_flag=True)
+        workflow.add_optimization_settings({'job_submitted': True})
     return response
 
 
-def reoptimize_model(request, exc):
+def resume_job(request, exc):
     if exc not in request.session.keys():
         return ResponseUtil.no_exc_code_response()
     

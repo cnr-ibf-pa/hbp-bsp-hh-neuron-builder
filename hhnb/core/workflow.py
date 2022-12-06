@@ -20,6 +20,7 @@ import os
 import json
 import requests
 import subprocess
+import zipfile
 
 
 class _WorkflowBase:
@@ -39,6 +40,7 @@ class _WorkflowBase:
         
         self._optimization_settings = os.path.join(self._workflow_path,
                                                    'optimization_settings.json')
+        
         if os.path.exists(self._model_dir) and any(os.scandir(self._model_dir)):
             self._model = Model.from_dir(self._model_dir, key=workflow_id)
 
@@ -142,7 +144,7 @@ class Workflow(_WorkflowBase):
         for sub_path in [os.path.join(self._model_dir, f) for f in sub_dir]:
             if not os.path.exists(sub_path):
                 os.mkdir(sub_path)
-      
+
         os.mkdir(self._results_dir)
         os.mkdir(self._analysis_dir)
         os.mkdir(self._tmp_dir)
@@ -171,55 +173,100 @@ class Workflow(_WorkflowBase):
         if os.path.exists(unzipped_tmp_model_dir):
             shutil.rmtree(unzipped_tmp_model_dir)
         os.mkdir(unzipped_tmp_model_dir)
-        shutil.unpack_archive(model_zip, unzipped_tmp_model_dir, 'zip')
-        if len(os.listdir(unzipped_tmp_model_dir)) == 1:
-            unzipped_tmp_model_dir = os.path.join(unzipped_tmp_model_dir,   
-                                                  os.listdir(unzipped_tmp_model_dir)[0])
+        shutil.unpack_archive(model_zip, unzipped_tmp_model_dir)
+        
+        
+        # The ModelCatalog model case
+        # if len(os.listdir(unzipped_tmp_model_dir)) == 1:
+            # unzipped_tmp_model_dir = os.path.join(unzipped_tmp_model_dir,   
+                                                #   os.listdir(unzipped_tmp_model_dir)[0])
+        
+        # The uploaded results case  
+        # else:
+        for f in os.listdir(unzipped_tmp_model_dir):
+            if 'output' in f:
+                shutil.unpack_archive(os.path.join(unzipped_tmp_model_dir, f), 
+                                        unzipped_tmp_model_dir)
+        
+        for model_folder in os.listdir(unzipped_tmp_model_dir):
+            if os.path.isdir(os.path.join(unzipped_tmp_model_dir, model_folder)):
+                print(os.path.join(unzipped_tmp_model_dir, model_folder))
+            else:
+                os.remove(os.path.join(unzipped_tmp_model_dir, model_folder))
+
+        unzipped_tmp_model_dir = os.path.join(unzipped_tmp_model_dir,   
+                                              os.listdir(unzipped_tmp_model_dir)[0])
+
+        shutil.rmtree(self._model_dir)
+        if not os.path.exists(self._model_dir):
+            os.mkdir(self._model_dir)
+        shutil.copytree(unzipped_tmp_model_dir, self._model_dir, dirs_exist_ok=True)
+        
+        # The uploaded origin model case
         self._model.update_optimization_files(unzipped_tmp_model_dir)
         ModelUtil.update_key(model=self._model)
+        
+        
+
+    def _set_optimization_settings(self, optimization_settings):
+        with open(self._optimization_settings, 'w') as fd:
+            json.dump(optimization_settings, fd, indent=4)
 
     def get_optimization_settings(self):
         try:
             with open(self._optimization_settings, 'r') as fd:
                 try:
-                    return json.load(fd)
+                    return json.load(fd)                    
                 except JSONDecodeError:
                     return {}
         except FileNotFoundError:
-            
-            raise FileNotFoundError("%s not found" % self._optimization_settings)
+            return {}
 
-    def set_optimization_settings(self, optimization_settings, job_submitted_flag=False):
-        optimization_settings.update({'job_submitted': job_submitted_flag})
-        with open(self._optimization_settings, 'w') as fd:
-            json.dump(optimization_settings, fd, indent=4)
+    def add_optimization_settings(self, update_json):
+        settings = self.get_optimization_settings()
+        settings.update(update_json)
+        self._set_optimization_settings(settings)
+
+    def get_resume_settings(self):
+        try:
+            with open(os.path.join(self._model_dir, 'resume_job_settings.json'),
+                      'r') as fd:
+                return json.load(fd)
+        except FileNotFoundError:
+            pass
+        except JSONDecodeError:
+            pass
+        return {}
 
     def remove_file(self, file_path):
         directory, filename = os.path.split(file_path)
-
         target_dir = os.path.abspath(os.path.join(self._model_dir, directory))
 
         if os.path.commonpath([os.path.abspath(self._workflow_path), target_dir]) != \
             os.path.abspath(self._workflow_path):
             raise PermissionError('Can\'t delete files on %s' % target_dir)
             
-        if not os.path.exists(target_dir):
-            raise FileNotFoundError('%s directory not exists' % directory)
-
         if filename == '*':
             shutil.rmtree(target_dir)
             os.mkdir(target_dir)
+        
+        elif not filename:
+            if os.path.isdir(target_dir):
+                shutil.rmtree(target_dir)
+            elif directory.endswith("*"):
+                d = directory[:-1] # removed "*" chars
+                for dd in os.listdir(self._model_dir):
+                    if dd.startswith(d):
+                        shutil.rmtree(os.path.join(self._model_dir, dd))
         else:
             full_file_path = os.path.join(self._model_dir, file_path) 
             if os.path.exists(full_file_path):
                 os.remove(full_file_path)
 
+        if not os.path.exists(target_dir):
+            raise FileNotFoundError('%s directory not exists' % directory)
+
     def get_properties(self):
-        
-        try:
-            job_submitted = self.get_optimization_settings()['job_submitted']
-        except FileNotFoundError:
-            job_submitted = False
 
         analysis_flag = False
         if len(os.listdir(self._analysis_dir)) == 1:
@@ -244,19 +291,15 @@ class Workflow(_WorkflowBase):
                     optset_flag = (False, 'NSG credentials required')
                 else: 
                     optset_flag = (True, '')
-
-        print(os.path.join(self._analysis_dir, 'checkpoints', 'checkpoint.pkl'))
-        print("RESUME JOB: ", os.path.exists(os.path.join(self._analysis_dir, 'checkpoints', 'checkpoint.pkl')))
+                    
         props = {
             'id': self._id,
             'model': self._model.get_properties(), 
             'optimization_settings': optset_flag,
             'etraces': any(os.scandir(self._etraces_dir)),
-            'job_submitted': job_submitted,
+            'job_submitted': self.get_optimization_settings().get('job_submitted', False),
             'results': any(os.scandir(self._results_dir)),
-            'resume': os.path.exists(
-                os.path.join(self._analysis_dir, 'checkpoints', 'checkpoint.pkl')
-            ),
+            'resume': os.path.exists(os.path.join(self._model_dir, 'checkpoints', 'checkpoint.pkl')),
             'analysis': analysis_flag
         }
         return props
@@ -391,13 +434,15 @@ class WorkflowUtil:
             (settings['hpc'] == 'SA' and settings['sa-hpc'] == 'nsg'):
             ExecFileConf.write_nsg_exec(dst_dir=tmp_model_dir,
                                         max_gen=settings['gen-max'],
-                                        offspring=settings['offspring'])
+                                        offspring=settings['offspring'],
+                                        mode=settings['mode'])
         elif settings['hpc'] == 'DAINT-CSCS' or \
             (settings['hpc'] == 'SA' and settings['sa-hpc'] == 'pizdaint'):
             ExecFileConf.write_daint_exec(dst_dir=tmp_model_dir,
                                           folder_name=workflow.get_model().get_key(),
                                           offspring=settings['offspring'],
-                                          max_gen=settings['gen-max'])
+                                          max_gen=settings['gen-max'],
+                                          mode=settings['mode'])
         
         return tmp_model_dir 
 
@@ -546,6 +591,9 @@ class WorkflowUtil:
         else:
             raise AnalysisProcessError('Checkpoints folder not found! Maybe the optimization process failed.')
 
+        # Set resume job flag in the optimization settings if the chekpoint control doesn't raise any error.
+        workflow.add_optimization_settings({'resume_job': True})
+
         opt_neuron_file = os.path.join(output_dir, 'opt_neuron.py')
         with open(opt_neuron_file, 'r') as fd:
             buffer = fd.readlines()
@@ -637,3 +685,18 @@ class WorkflowUtil:
             os.path.join(HHF_PARAMETERS_TEMPLATE_DIR, template_type, 'parameters.json'),
             os.path.join(workflow.get_model_dir(), 'config')
         )
+
+    @staticmethod
+    def clean_model(workflow):
+        try:
+            shutil.rmtree(os.path.join(workflow.get_model_dir(), 'checkpoints'))
+            shutil.rmtree(os.path.join(workflow.get_model_dir(), 'tools'))
+            shutil.rmtree(os.path.join(workflow.get_model_dir(), 'figures'))
+            for dd in os.listdir(workflow.get_model_dir()):
+                if dd.startswith('r_seed'):
+                    shutil.rmtree(os.path.join(workflow.get_model_dir(), dd))
+            shutil.rmtree(os.path.join(workflow.get_model_dir(), 'mod_nsgportal'))
+            shutil.rmtree(os.path.join(workflow.get_model_dir(), 'x86_64'))
+        except FileNotFoundError:
+            pass                
+        

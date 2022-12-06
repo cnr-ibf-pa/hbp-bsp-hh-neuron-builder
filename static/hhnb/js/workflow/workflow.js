@@ -87,7 +87,7 @@ export default class Workflow {
         }).done(() => { this.updateUI() })
             .fail((error) => {
                 if (error.status == 500) {
-                    return MessageDialog.openReloadDialog("<b>A critical error occurred !</b><br><br>Please restart the application and if the the problem persists contact us.");
+                    return MessageDialog.openReloadDialog("<b>A critical error occurred !</b><br><br>Please restart the application and try again.<br>If the problem persists try to start a new workflow, otherwise contact us through the <a href='https://ebrains.eu/support' class='alert-link' target='_blank'>EBRAINS support</a>.");
                 }
             })
             .always(() => { hideLoadingAnimation() });
@@ -194,12 +194,19 @@ export default class Workflow {
     #updateSimulationSettingsBlock() {
         let bar = $("#opt-res-bar");
         let fetchButton = $("#opt-fetch-btn");
+        let resumeJobButton = $("#resume-job-btn");
         let uploadButton = $("#opt-res-up-btn");
         let downloadResultLink = $("#down-opt-btn");
         let downloadAnalysisLink = $("#down-sim-btn");
         let deleteLink = $("#del-sim-btn");
         this.#simulationBlock = false;
 
+        console.log(this.#props.resume);
+        if (this.#props.resume) {
+            resumeJobButton.prop("disabled", false);
+        } else {
+            resumeJobButton.prop("disabled", true);
+        }
         if (this.#props.analysis) {
             bar.addClass("green").removeClass("red");
             bar.text("");
@@ -301,18 +308,19 @@ export default class Workflow {
             processData: false,
             success: (result) => {
                 Log.debug(result);
-                this.updateProperties();
             },
             error: (error) => {
                 Log.error("Status: " + error.status + " > " + error.responseText);
                 MessageDialog.openErrorDialog(error.responseText);
                 hideLoadingAnimation();
             },
+        }).always(() => {
+            this.updateProperties();
         });
     }
 
     getOptimizationSettingsAsPromise() {
-        showLoadingAnimation("Getting settings...");
+        showLoadingAnimation("Loading settings...");
         return new Promise((resolve, reject) => {
             $.getJSON("/hh-neuron-builder/optimization-settings/" + this.#exc)
                 .done(results => {
@@ -328,7 +336,7 @@ export default class Workflow {
     // will be deprecated
     getOptimizationSettings() {
         let settings = null;
-        showLoadingAnimation("Getting settings...");
+        showLoadingAnimation("Loading settings...");
         $.ajax({
             url: "/hh-neuron-builder/optimization-settings/" + this.#exc,
             method: "GET",
@@ -413,6 +421,7 @@ export default class Workflow {
             },
             error: (error) => {
                 Log.error("Status: " + error.status + " > " + error.responseText);
+                
                 if (error.status == 500) {
                     // ModelRegistrationDialog.close();
                 }
