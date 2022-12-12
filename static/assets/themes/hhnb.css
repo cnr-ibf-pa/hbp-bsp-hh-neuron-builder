@@ -1846,27 +1846,6 @@ i.disabled:hover {
     display: none;
 }
 
-#reopt-parameters {
-    display: none;
-    position: absolute;
-    width: inherit;
-    z-index: 101;
-    top: 30%;
-    width: 70%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background-color: rgb(255, 255, 255, 0.8);
-    box-shadow: 0 0 1rem 0 rgb(0, 0, 0, .8);
-    transition: all ease .5s;
-    border-radius: 1rem;
-    opacity: 0;
-}
-
-#reopt-parameters.show {
-    top: 50%;
-    opacity: 1;
-}
-
 .card.resume-job {
     background-color: rgba(255, 255, 255, .5);
     border-radius: .5rem;
