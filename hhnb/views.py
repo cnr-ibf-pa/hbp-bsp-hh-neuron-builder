@@ -663,21 +663,6 @@ def run_optimization(request, exc):
     return response
 
 
-def resume_job(request, exc):
-    if exc not in request.session.keys():
-        return ResponseUtil.no_exc_code_response()
-    
-    data = request.POST.dict()
-
-    user = HhnbUser.get_user_from_request(request)
-    try:
-        response = JobHandler.reoptimize_model(data, user)
-    except:
-        return ResponseUtil.ko_response("<b>Something went wrong !</b>")
-
-    return response
-
-
 def fetch_jobs(request, exc):
     if exc not in request.session.keys():
         return ResponseUtil.no_exc_code_response()
@@ -762,17 +747,17 @@ def run_analysis(request, exc):
     except MechanismsProcessError as e:
         logger.error(e)
         workflow.clean_analysis_dir()
-        return ResponseUtil.ko_response(498, messages.MECHANISMS_PROCESS_ERROR)
+        return ResponseUtil.ko_response(498, messages.MECHANISMS_PROCESS_ERROR.format(e.stderr))
     
     except AnalysisProcessError as e:
         logger.error(e)
         workflow.clean_analysis_dir()
-        return ResponseUtil.ko_response(499, messages.ANALYSIS_PROCESS_ERROR.format(e))
+        return ResponseUtil.ko_response(499, messages.ANALYSIS_PROCESS_ERROR.format(e.stderr))
     
     except FileNotFoundError as e:
         logger.error(e)
         workflow.clean_analysis_dir()
-        return ResponseUtil.ko_response(404, str(e))       
+        return ResponseUtil.ko_response(404, messages.ANALYSIS_FILE_NOT_FOUND_ERROR.format(e))       
      
     except Exception as e:
         logger.error(e)

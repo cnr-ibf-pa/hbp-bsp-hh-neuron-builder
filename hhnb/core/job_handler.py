@@ -451,6 +451,7 @@ class JobHandler:
     def fetch_job_files(cls, hpc, job_id, user, sa_hpc=None, sa_project=None):
         logger.info(LOG_ACTION.format(user, 'fetch files of job: %s in %s' % (job_id, hpc)))
         job_handler = cls()
+        file_list = None
         if hpc == job_handler._NSG:
             raw_file_list = job_handler._get_nsg_job_results(user.get_nsg_user().get_username(),
                                                              user.get_nsg_user().get_password(),
@@ -482,17 +483,3 @@ class JobHandler:
             }
         
         return file_list
-
-
-    @classmethod
-    def reoptimize_model(cls, data, user):
-        logger.info(LOG_ACTION.format(user, 'reoptimize model of the job: %s in %s', (data['job_id'], data['hpc'])))
-        job_handler = cls()
-
-        if data['hpc'] == job_handler._DAINT_CSCS:
-            response = job_handler._reoptimize_model_on_unicore(
-                data['job_id'], data['job_name'], data['hpc'],
-                data['max-gen'], data['node-num'], data['core-num'],
-                data['runtime'], user.get_token())
-        
-        return response

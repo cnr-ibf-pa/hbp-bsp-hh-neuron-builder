@@ -380,9 +380,9 @@ body {
     cursor: help;
 }
 
-.workflow-content > .row > .col {
-    /* padding: 0 4px; */
-}
+/* .workflow-content > .row > .col {
+    padding: 0 4px;
+} */
 
 .secondary-content {
     border: solid 1px #cfd8dc;

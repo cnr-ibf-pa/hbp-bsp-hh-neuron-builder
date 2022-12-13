@@ -39,9 +39,10 @@ HPC_NOT_AVAILABLE = '<b>HPC not available</b><br><br><b>{}</b> system not availa
 
 
 # Analysis error messages
-ANALYSIS_ERROR = '<b>Error !</b><br><br>Something went wrong while the analysis process was running.<br>Please contact the <a href="https://ebrains.eu/support" class="alert-link" target="_blank">EBRAINS support</a> if the problem persists.'
-MECHANISMS_PROCESS_ERROR = '<b>Error !</b><br><br>Something went wrong while mechanisms files were building.<br>Please, take a look on the files and if the problem persists contact the <a href="https://ebrains.eu/support" class="alert-link" target="_blank">EBRAINS support</a>.'
-ANALYSIS_PROCESS_ERROR = '<b>Error !</b><br><br>Analysis process was stopped due to the following error:<br><br><i>{}</i><br><br>If the problem persists contact the <a href="https://ebrains.eu/support" class="alert-link" target="_blank">EBRAINS support</a>.'
+ANALYSIS_ERROR = '<b>Analysis Error !</b><br><br>Something went wrong while the analysis process was running.<br>Please contact the <a href="https://ebrains.eu/support" class="alert-link" target="_blank">EBRAINS support</a> if the problem persists.'
+MECHANISMS_PROCESS_ERROR = '<b>Analysis Error !</b><br><br>The mechanisms building process was stopped due to the following error<br><br><i>{}</i><br><br>If the problem persists contact the <a href="https://ebrains.eu/support" class="alert-link" target="_blank">EBRAINS support</a>.'
+ANALYSIS_PROCESS_ERROR = '<b>Analysis Error !</b><br><br>the analysis process was stopped due to the following error:<br><br><i>{}</i><br><br>If the problem persists contact the <a href="https://ebrains.eu/support" class="alert-link" target="_blank">EBRAINS support</a>.'
+ANALYSIS_FILE_NOT_FOUND_ERROR = '<b>Analysis Error !</b><br><br>The analysis process could\'t start due to the following missing file:<br><br><i>{}</i><br><br>Download the optimization, check the <i>stderr</i> file, fix the optimization error and run the optimization again to go ahead.<br><br>If the problem persists contact the <a href="https://ebrains.eu/support" class="alert-link" target="_blank">EBRAINS support</a>.'
 BLUE_NAAS_NOT_AVAILABLE = 'The BlueNaas is temporarily not available.<br>Please, try again later.'
 
 
