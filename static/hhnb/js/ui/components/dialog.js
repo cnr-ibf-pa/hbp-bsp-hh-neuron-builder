@@ -224,6 +224,7 @@ class OptimizationSettingsDialog {
     }
 
     static loadSettings(jObj, mode="start") {
+        console.log("Load settings ", mode);
         window.localStorage.setItem("job_settings", JSON.stringify(jObj));
 
         if (!jObj["service-account"]) {
@@ -244,8 +245,8 @@ class OptimizationSettingsDialog {
                 this.#setDefaultValue();
             } else {
                 $("#apply-param").prop("disabled", false)
-                $(".accordion-button.hpc").removeClass("active").addClass("collapsed");
-                $(".accordion-collapse").removeClass("show");
+                // $(".accordion-button.hpc").removeClass("active").addClass("collapsed");
+                // $(".accordion-collapse").removeClass("show");
                 if (settings.hpc == "DAINT-CSCS") {
                     $("#accordionDaint").addClass("active");
                     $("#daintCollapse").addClass("show");
@@ -302,8 +303,8 @@ class OptimizationSettingsDialog {
                 $("#sa-gen-max").val("").attr("placeholder", "Last gen: " + resume["max_gen"].toString());
                 $("#nsg-gen-max").val("").attr("placeholder", "Last gen: " + resume["max_gen"].toString());
                 $("#daint-gen-max").val("").attr("placeholder", "Last gen: " + resume["max_gen"].toString());
-                $(".accordion-button").removeClass("active");
-                $(".accordion-collapse").removeClass("show");
+                // $(".accordion-button").removeClass("active");
+                // $(".accordion-collapse").removeClass("show");
             }
             $("#job-name").val(resume.job_name ? resume.job_name + "_resume" : $("#job-name").val() + "_resume");
         }
