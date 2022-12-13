@@ -2,12 +2,9 @@ import os
 import sys
 import json
 import collections
-import neo
 import pprint
 from datetime import datetime
-import requests
 import logging
-import bluepyefe.formats.axon as fa
 
 # set logging up
 logging.basicConfig(stream=sys.stdout)
