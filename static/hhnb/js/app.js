@@ -260,9 +260,6 @@ async function openOptimizationSettings(event) {
             }
             OptimizationSettingsDialog.loadSettings(settings);
             OptimizationSettingsDialog.open();
-            // if (mode == "resume") {
-                // showInfoAlert("The job was optimized using the <b>" + settings.resume.hpc.toUpperCase() + "</b> HPC system.<br>Note that if you use a different HPC system from the original optimization system, the resume job process could stop.", 20000);
-            // }
         }).catch(error => {
             checkRefreshSession(error);       
             Log.error("Error on getting settings");
@@ -801,20 +798,21 @@ async function downloadJobAndRunAnalysis(jobId, jobName) {
     openJobProcessingDiv();
 
     await sleep(500);
-    $("#progressBarFetchJob").addClass("s40").removeClass("s20 s4 s2");
+    $("#progressBarFetchJob").addClass("s20").removeClass("s40 s4 s2");
     setProgressBarValue(40);
 
     $.get("/hh-neuron-builder/fetch-job-result/" + exc, data)
         .done((downloadResult) => {
             Log.debug(downloadResult);
             setJobProcessingTitle("Running Analysis...<br> ");
+            $("#progressBarFetchJob").addClass("s40").removeClass("s20 s4 s2");
             setProgressBarValue(80);
             $.get("/hh-neuron-builder/run-analysis/" + exc)
                 .done(async (analysisResult) => {
                     setJobProcessingTitle("Completing...<br>");
-                    $("#progressBarFetchJob").addClass("s4").removeClass("s40 s20 s2");
+                    $("#progressBarFetchJob").addClass("s2").removeClass("s40 s20 s4");
                     setProgressBarValue(100);
-                    await sleep(4000);
+                    await sleep(2000);
                     closeJobProcessingDiv(); 
                 }).fail((analysisError) => {
                     checkRefreshSession(analysisError);
@@ -829,9 +827,8 @@ async function downloadJobAndRunAnalysis(jobId, jobName) {
             closeJobProcessingDiv();
             Log.error("Status: " + downloadError.status + " > " + downloadError.responseText);
             MessageDialog.openErrorDialog(downloadError.responseText);
-        }).always(() => {
             workflow.updateProperties();
-        });
+        })
 }
 
 $("#checkNsgLoginButton").on("click", () => {

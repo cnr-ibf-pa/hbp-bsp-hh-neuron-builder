@@ -266,7 +266,6 @@ class Workflow(_WorkflowBase):
             raise FileNotFoundError('%s directory not exists' % directory)
 
     def get_properties(self):
-
         analysis_flag = False
         if len(os.listdir(self._analysis_dir)) == 1:
             analysis_model_dir = os.path.join(self._analysis_dir,
@@ -591,9 +590,6 @@ class WorkflowUtil:
                                   os.path.join(checkpoint_dir, 'checkpoint.pkl'))
         else:
             raise FileNotFoundError('checkpoint.pkl')
-
-        # Set resume job flag in the optimization settings if the chekpoint control doesn't raise any error.
-        workflow.add_optimization_settings({'resume_job': True})
 
         opt_neuron_file = os.path.join(output_dir, 'opt_neuron.py')
         with open(opt_neuron_file, 'r') as fd:
