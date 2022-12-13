@@ -194,19 +194,12 @@ export default class Workflow {
     #updateSimulationSettingsBlock() {
         let bar = $("#opt-res-bar");
         let fetchButton = $("#opt-fetch-btn");
-        let resumeJobButton = $("#resume-job-btn");
         let uploadButton = $("#opt-res-up-btn");
         let downloadResultLink = $("#down-opt-btn");
         let downloadAnalysisLink = $("#down-sim-btn");
         let deleteLink = $("#del-sim-btn");
         this.#simulationBlock = false;
 
-        console.log(this.#props.resume);
-        if (this.#props.resume) {
-            resumeJobButton.prop("disabled", false);
-        } else {
-            resumeJobButton.prop("disabled", true);
-        }
         if (this.#props.analysis) {
             bar.addClass("green").removeClass("red");
             bar.text("");
@@ -230,7 +223,7 @@ export default class Workflow {
                 disable(downloadAnalysisLink);
                 enable(deleteLink);
             } else {
-                bar.text("Fetch job results or upload a previously downloaded \"zip\" to run analysis or resume the job");
+                bar.text("Fetch job results or upload a previously downloaded \"zip\" to run analysis");
                 enable(fetchButton);
                 enable(uploadButton);
                 disable(downloadResultLink);

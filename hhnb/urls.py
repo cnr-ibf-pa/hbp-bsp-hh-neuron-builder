@@ -82,7 +82,6 @@ urlpatterns = [
     path('run-optimization/<exc:exc>', views.run_optimization),
     path('fetch-jobs/<exc:exc>', views.fetch_jobs),
     path('fetch-job-result/<exc:exc>', views.fetch_job_results),
-    path('resume-job/<exc:exc>', views.resume_job),
 
     # analysis apis
     path('run-analysis/<exc:exc>', views.run_analysis),

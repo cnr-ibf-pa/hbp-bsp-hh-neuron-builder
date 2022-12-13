@@ -13,14 +13,13 @@ from json.decoder import JSONDecodeError
 from pyunicore.client import PathFile as UnicorePathFile
 from datetime import datetime
 from sys import prefix as env_prefix
-# from pathlib import Path
+from pathlib import Path
 
 import shutil
 import os
 import json
 import requests
 import subprocess
-import zipfile
 
 
 class _WorkflowBase:
@@ -844,14 +843,16 @@ class WorkflowUtil:
             ExecFileConf.write_nsg_exec(dst_dir=tmp_model_dir,
                                         max_gen=settings['gen-max'],
                                         offspring=settings['offspring'],
-                                        mode=settings['mode'])
+                                        mode=settings['mode'],
+                                        job_name=settings['job_name'])
         elif settings['hpc'] == 'DAINT-CSCS' or \
             (settings['hpc'] == 'SA' and settings['sa-hpc'] == 'pizdaint'):
             ExecFileConf.write_daint_exec(dst_dir=tmp_model_dir,
                                           folder_name=workflow.get_model().get_key(),
                                           offspring=settings['offspring'],
                                           max_gen=settings['gen-max'],
-                                          mode=settings['mode'])
+                                          mode=settings['mode'],
+                                          job_name=settings['job_name'])
         
         return tmp_model_dir 
 
@@ -1056,16 +1057,16 @@ class WorkflowUtil:
             else:
                 os.remove(f)
         if not output_dir:
-            raise FileNotFoundError('Output folder not found')
+            raise FileNotFoundError('Output folder')
         
 
         analysis_file = os.path.join(output_dir, 'model', 'analysis.py')
         if not os.path.exists(analysis_file):
-            raise FileNotFoundError('"analysis.py" not found')
+            raise FileNotFoundError('analysis.py')
 
         evaluator_file = os.path.join(output_dir, 'model', 'evaluator.py')
         if not os.path.exists(evaluator_file):
-            raise FileNotFoundError('"evaluator.py" not found')
+            raise FileNotFoundError('evaluator.py')
 
         figures_dir = os.path.join(output_dir, 'figures')
         if os.path.exists(figures_dir):
@@ -1081,7 +1082,7 @@ class WorkflowUtil:
                         os.rename(os.path.join(checkpoint_dir, f),
                                   os.path.join(checkpoint_dir, 'checkpoint.pkl'))
         else:
-            raise AnalysisProcessError('Checkpoints folder not found! Maybe the optimization process failed.')
+            raise FileNotFoundError('checkpoint.pkl')
 
         # Set resume job flag in the optimization settings if the chekpoint control doesn't raise any error.
         workflow.add_optimization_settings({'resume_job': True})
@@ -1102,31 +1103,33 @@ class WorkflowUtil:
         compiled_mods_dir = os.path.join(output_dir, 'x86_64')
         if os.path.exists(compiled_mods_dir):
             shutil.rmtree(compiled_mods_dir)
-        curr_dir = os.getcwd()
-       
+        curr_dir = os.getcwd()  
+        
         log_file_path = os.path.join(LOG_ROOT_PATH, 'analysis', workflow.get_user())
         if not os.path.exists(log_file_path):
             os.makedirs(log_file_path)
-            
-        log_file = os.path.join(log_file_path, workflow.get_id() + '.log')
+        log_file = os.path.join(log_file_path, workflow.get_id() + '_.log')    
+        Path(log_file).touch()
 
+        os.chdir(output_dir)        
+        
         build_mechanisms_command = f'source {env_prefix}/bin/activate; nrnivmodl mechanisms > {log_file}'
         opt_neuron_analysis_command = f'source {env_prefix}/bin/activate; python ./opt_neuron.py --analyse --checkpoint ./checkpoints > {log_file}'
-        
-        os.chdir(output_dir)
-        p0 = subprocess.call(build_mechanisms_command, shell=True, executable='/bin/bash')
-        p1 = subprocess.call(opt_neuron_analysis_command, shell=True, executable='/bin/bash')
+        p0 = subprocess.run(build_mechanisms_command, shell=True, capture_output=True, text=True)
+        p1 = subprocess.run(opt_neuron_analysis_command, shell=True, capture_output=True, text=True)
+            
         os.chdir(curr_dir)
 
-        if p0 > 0:
-            raise MechanismsProcessError()#p0.returncode, build_mechanisms_command, stderr=p0.stderr)
-        if p1 > 0:
-            error = 'Can\'t identify the error.'
-            for f in os.listdir(os.path.join(output_dir, 'checkpoints')):
-                if not f.endswith('.pkl'):
-                    error = 'Checkpoint not found! Maybe the optimization process failed.'
-                    break
-            raise AnalysisProcessError(error)#p1.returncode, opt_neuron_analysis_command, stderr=p1.stderr)
+        if p0.returncode > 0:
+            raise MechanismsProcessError(p0.returncode, build_mechanisms_command, stderr=p0.stderr)
+        if p1.returncode > 0:
+            print(p1)
+            # error = 'Can\'t identify the error.'
+            # for f in os.listdir(os.path.join(output_dir, 'checkpoints')):
+            #     if not f.endswith('.pkl'):
+            #         error = 'Checkpoint not found! Maybe the optimization process failed.'
+            #         break
+            raise AnalysisProcessError(p1.returncode, opt_neuron_analysis_command, stderr=p1.stderr)
 
     @staticmethod
     def make_naas_archive(workflow):

@@ -273,6 +273,7 @@ function showHpcAuthAlert() {
 }
 
 function showJobsAuthAlert() {
+    console.log("showJobsAuthAlert()");
     showAlert(
         makeAlertText(
             head="",
@@ -280,8 +281,8 @@ function showJobsAuthAlert() {
             content="Please, click \"Cancel\" and login with the button in the top right corner before doing this operation."
         ),
         "warning",
-        true,
         5000,
+        true,
         false
     )
 }
