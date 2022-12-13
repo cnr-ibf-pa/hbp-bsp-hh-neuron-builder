@@ -555,7 +555,6 @@ class WorkflowUtil:
 
     @staticmethod
     def run_analysis(workflow, job_output):
-        print("RUN ANALYSIS ************")
         analysis_dir = workflow.get_analysis_dir()
         shutil.unpack_archive(job_output, analysis_dir)
         
@@ -617,27 +616,21 @@ class WorkflowUtil:
         log_file_path = os.path.join(LOG_ROOT_PATH, 'analysis', workflow.get_user())
         if not os.path.exists(log_file_path):
             os.makedirs(log_file_path)
-        log_file = os.path.join(log_file_path, workflow.get_id() + '_.log')    
+        log_file = os.path.join(log_file_path, workflow.get_id() + '.log')    
         Path(log_file).touch()
 
         os.chdir(output_dir)        
         
         build_mechanisms_command = f'source {env_prefix}/bin/activate; nrnivmodl mechanisms > {log_file}'
         opt_neuron_analysis_command = f'source {env_prefix}/bin/activate; python ./opt_neuron.py --analyse --checkpoint ./checkpoints > {log_file}'
-        p0 = subprocess.run(build_mechanisms_command, shell=True, capture_output=True, text=True)
-        p1 = subprocess.run(opt_neuron_analysis_command, shell=True, capture_output=True, text=True)
+        p0 = subprocess.run(build_mechanisms_command, shell=True, executable='/bin/bash', capture_output=True, text=True)
+        p1 = subprocess.run(opt_neuron_analysis_command, shell=True, executable='/bin/bash', capture_output=True, text=True)
             
         os.chdir(curr_dir)
 
         if p0.returncode > 0:
             raise MechanismsProcessError(p0.returncode, build_mechanisms_command, stderr=p0.stderr)
         if p1.returncode > 0:
-            print(p1)
-            # error = 'Can\'t identify the error.'
-            # for f in os.listdir(os.path.join(output_dir, 'checkpoints')):
-            #     if not f.endswith('.pkl'):
-            #         error = 'Checkpoint not found! Maybe the optimization process failed.'
-            #         break
             raise AnalysisProcessError(p1.returncode, opt_neuron_analysis_command, stderr=p1.stderr)
 
     @staticmethod
