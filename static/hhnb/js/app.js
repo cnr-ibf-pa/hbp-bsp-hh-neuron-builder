@@ -248,11 +248,9 @@ async function openOptimizationSettings(event) {
     $("#" + btn).blur();
 
     Log.debug(btn + " clicked, optimization settings opening...");
-    
+
     await workflow.getOptimizationSettingsAsPromise()
         .then(settings => {
-            console.log(workflow.getProps().resume);
-            console.log(settings);
             if (!workflow.getProps().resume) {
                 $("#job-action-resume").addClass("disabled");
             } else {
@@ -274,8 +272,7 @@ $("#cancel-param-btn").on("click", () => {
 
 $("#apply-param").on("click", () => {
     Log.debug("Uploading optimization settings");
-    let mode = $("#overlayparam").attr("mode");
-    let formData = OptimizationSettingsDialog.getJsonData();
+    let formData = OptimizationSettingsDialog.getJsonData();    
     if (formData.hpc == "DAINT-CSCS" || formData.hpc == "SA" ) {
         showLoadingAnimation("Checking login...");
         $.get("/hh-neuron-builder/get-authentication")
