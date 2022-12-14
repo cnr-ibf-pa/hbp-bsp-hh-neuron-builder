@@ -182,17 +182,19 @@ $("#password_submit").on("input", () => {
 
 $("#job-action-start").on("click", () => {
     $("#job-action").text("Start");
+
     let jobName = $("#job-name").val().toString();
     if (jobName.endsWith("_resume")) {
         $("#job-name").val($("#job-name").val().toString().split("_resume")[0]);
     }
-    let jObj = JSON.parse(window.localStorage.getItem("job_settings"));
+    
+    let jObj = JSON.parse(window.sessionStorage.getItem("job_settings"));
     OptimizationSettingsDialog.loadSettings(jObj, "start");
 })  
 
 $("#job-action-resume").on("click", () => {
     $("#job-action").text("Resume");
-    let jObj = JSON.parse(window.localStorage.getItem("job_settings"));
+    let jObj = JSON.parse(window.sessionStorage.getItem("job_settings"));
     OptimizationSettingsDialog.loadSettings(jObj, "resume");
 })  
 
@@ -224,8 +226,8 @@ class OptimizationSettingsDialog {
     }
 
     static loadSettings(jObj, mode="start") {
-        console.log("Load settings ", mode);
-        window.localStorage.setItem("job_settings", JSON.stringify(jObj));
+        window.sessionStorage.setItem("job_settings", JSON.stringify(jObj));
+        Log.debug(jObj);        
 
         if (!jObj["service-account"]) {
             $("#accordionSA").addClass("disabled").prop("disabled", true);
@@ -464,6 +466,7 @@ class OptimizationSettingsDialog {
         $("#overlayparam").css("display", "none");
         $("#overlaywrapper").css("display", "none");
         $("#apply-param").prop("disabled", true);
+        this.#resetSettingsDialog();
     }
 }
 
