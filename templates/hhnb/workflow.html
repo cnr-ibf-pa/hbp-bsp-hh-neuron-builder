@@ -821,13 +821,10 @@
 
 <!-- Modal -->
 <div id="modalHHF" class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="false">
-    <div class="modal-dialog" style="max-width: 650px">![Screenshot from 2021-12-16 10-49-09](https://user-images.githubusercontent.com/44343476/146348432-fdb4a866-de34-4175-bfd5-7dca51c14596.png)
-
+    <div class="modal-dialog" style="max-width: 650px">
         <div class="modal-content">
             <div class="modal-header">
-                <!-- <h5 class="modal-title" id="staticBackdropLabel">HippocampusHub - Optimization file manager</h5> -->
-                <h5 class="modal-title" id="staticBackdropLabel">Model file manager</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <h3 class="modal-title" id="staticBackdropLabel">Model file manager</h3>
             </div>
             <div class="modal-body">
                 The single cell model optimization process of the <b>Hodgkin Huxley Neuron Builder</b> relies on the Python-based <a href="https://pypi.org/project/bluepyopt/">BluePyOpt</a> optimization suite.<br><br>The model to be optimized is made up of several files and folders relative to both the <i>NEURON</i> model itself and the <i>BluePyOpt</i> optimization process.<br><br>More specifically, the <i>NEURON</i> model comprises the <i>mechanisms</i> (i.e., <i>NEURON .mod</i> files) and a morphology file (in <i>.asc</i> format). These files combines with the <i>BluePyOpt</i> specific routines (needed to finalize the model optimization) that are implemented following this workflow: the <i>opt_neuron.py</i> script is launched and imports the <i>template.py</i> and <i>evaluator.py</i> modules, which in turn read the <i>parameters.json</i>, <i>features.json</i> and <i>protocols.json</i> files.<br><br><b>In order to customize the model to be optimized, you can click on 'Manage files' in the 'Optimization files' panel and upload your own files (a filter is applied to exclusively allow the upload of relevant files -based on their extension- and prevent users to modify sensitive scripts) and/or modifying them when possible. From the same GUI, you will also be able to download any model file.</b><br><br>Please bear in mind that these are advanced functionalities for power users. If you have any doubt on how to use these features, do not hesitate to contact us at <a href="mailto:support@ebrains.eu">support@ebrains.eu</a>.

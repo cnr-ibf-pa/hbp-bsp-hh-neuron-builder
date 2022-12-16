@@ -321,6 +321,7 @@ class WorkflowUtil:
 
         ModelUtil.update_key(workflow.get_model(), key)
 
+    # deprecated method
     @staticmethod
     def set_default_parameters(workflow):
         src_params = os.path.join(HHF_TEMPLATE_DIR, '..', 'parameters.json') 
@@ -448,8 +449,6 @@ class WorkflowUtil:
 
     @staticmethod
     def download_from_hhf(workflow, hhf_dict):
-        WorkflowUtil.set_default_parameters(workflow)
-
         morph = hhf_dict.get('morphology')
         etraces = hhf_dict.get('electrophysiologies', [])
         mechanisms = hhf_dict.get('modFiles', [])
@@ -465,7 +464,7 @@ class WorkflowUtil:
                 for chunk in r.iter_content(chunk_size=4096):
                     fd.write(chunk)
             workflow.get_model().set_morphology(morphology=file_path)
-        
+
         for etrace in etraces:
             file_path = os.path.join(workflow.get_etraces_dir(), etrace['name'])
             r = requests.get(url=etrace['url'], verify=False)

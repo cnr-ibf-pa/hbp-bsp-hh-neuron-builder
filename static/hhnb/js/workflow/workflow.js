@@ -83,6 +83,7 @@ export default class Workflow {
                 if (error.status == 404) {
                     MessageDialog.openReloadDialog();
                 }
+                MessageDialog.openErrorDialog(error.responseText);
             }
         }).done(() => { this.updateUI() })
             .fail((error) => {
