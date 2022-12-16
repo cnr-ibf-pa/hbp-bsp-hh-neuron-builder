@@ -7,7 +7,7 @@ const UPLOAD_FILES_BASE_URL = "/hh-neuron-builder/upload-files/";
 
 
 function checkRefreshSession(response) {
-    console.log(response);
+    Log.debug(response);
     if (response.status === 403 && response.responseJSON.refresh_url) {
         showLoadingAnimation("Session expired.<br>Refreshing session automatically...");
         $.ajax({
@@ -38,7 +38,7 @@ function disable(jObj) {
 export default class Workflow {
 
     #exc = null;
-    #props = null;
+    #props = {};
 
     #uploadFileType = null;
 
@@ -66,12 +66,12 @@ export default class Workflow {
         }
     }
 
-    updateProperties(async=true) {
+    updateProperties() {
         showLoadingAnimation("Loading...");
         $.ajax({
             url: GET_PROPS_BASE_URL + this.#exc,
             method: "GET",
-            async: async,
+            async: false,
             success: (props) => {
                 this.#props = props;
                 $("#wf-title").html("Workflow ID: <b>" + this.#props.id + "</b>");
@@ -87,7 +87,7 @@ export default class Workflow {
         }).done(() => { this.updateUI() })
             .fail((error) => {
                 if (error.status == 500) {
-                    return MessageDialog.openReloadDialog("/hh-neuron-builder", "<b>A critical error occurred</b>.<br>Please restart the application and if the the problem persists contact us.");
+                    return MessageDialog.openReloadDialog("<b>A critical error occurred !</b><br><br>Please restart the application and try again.<br>If the problem persists try to start a new workflow, otherwise contact us through the <a href='https://ebrains.eu/support' class='alert-link' target='_blank'>EBRAINS support</a>.");
                 }
             })
             .always(() => { hideLoadingAnimation() });
@@ -165,16 +165,15 @@ export default class Workflow {
 
     #updateSettingsBlock() {
         let bar = $("#opt-param-bar");
-        console.log(this.#props.optimization_settings);
-        if (this.#props.optimization_settings) {
+        Log.debug(this.#props.optimization_settings);
+        if (this.#props.optimization_settings[0]) {
             bar.addClass("green").removeClass("red");
-            bar.text("");
             this.#optsettingsBlock = true;
         } else {
             bar.addClass("red").removeClass("green");
-            bar.text("Optimization parameters NOT set");
             this.#optsettingsBlock = false;
         }
+        bar.text(this.#props.optimization_settings[1]);
     }
 
     #updateCellOptimizationBlock() {
@@ -224,7 +223,7 @@ export default class Workflow {
                 disable(downloadAnalysisLink);
                 enable(deleteLink);
             } else {
-                bar.text("Fetch job results to run analysis or upload it");
+                bar.text("Fetch job results or upload a previously downloaded \"zip\" to run analysis");
                 enable(fetchButton);
                 enable(uploadButton);
                 disable(downloadResultLink);
@@ -300,35 +299,49 @@ export default class Workflow {
             data: formFileData,
             contentType: false, // need to upload files correctly
             processData: false,
-            async: false,
             success: (result) => {
                 Log.debug(result);
-                this.updateProperties();
             },
             error: (error) => {
                 Log.error("Status: " + error.status + " > " + error.responseText);
                 MessageDialog.openErrorDialog(error.responseText);
                 hideLoadingAnimation();
             },
+        }).always(() => {
+            this.updateProperties();
         });
     }
 
+    getOptimizationSettingsAsPromise() {
+        showLoadingAnimation("Loading settings...");
+        return new Promise((resolve, reject) => {
+            $.getJSON("/hh-neuron-builder/optimization-settings/" + this.#exc)
+                .done(results => {
+                    resolve(results);
+                }).fail(error => {
+                    reject(error);
+                }).always(() => {
+                    hideLoadingAnimation();
+                })
+        })
+    }
 
+    // will be deprecated
     getOptimizationSettings() {
         let settings = null;
-        showLoadingAnimation("Getting settings...");
+        showLoadingAnimation("Loading settings...");
         $.ajax({
             url: "/hh-neuron-builder/optimization-settings/" + this.#exc,
             method: "GET",
             async: false,
             headers: { "Accept": "application/json" },
             success: (result) => {
-                // Log.debug(result);
                 settings = result;
                 if (settings.hpc == "NSG") {
                     $("#username_submit").removeClass("is-invalid").addClass("is-valid");
                     $("#password_submit").removeClass("is-invalid").addClass("is-valid");
                 }
+                return settings;
             },
             error: (error) => {
                 checkRefreshSession(error);
@@ -348,13 +361,11 @@ export default class Workflow {
             data: JSON.stringify(jData),
             processData: false,
             contentType: false,
-            async: false,
             success: (result) => {
                 if (jData.hpc == "NSG") {
                     $("#username_submit").removeClass("is-invalid").addClass("is-valid");
                     $("#password_submit").removeClass("is-invalid").addClass("is-valid");
                 }
-                this.updateProperties();
             },
             error: (error) => {
                 hideLoadingAnimation();
@@ -365,6 +376,8 @@ export default class Workflow {
                     $("#password_submit").removeClass("is-valid").addClass("is-invalid");
                 }
             }
+        }).always(() => {
+            this.updateProperties();
         });
     }
 
@@ -374,7 +387,6 @@ export default class Workflow {
         $.ajax({
             url: "/hh-neuron-builder/run-optimization/" + this.#exc,
             method: "GET",
-            async: false,
             success: (result) => {
                 Log.debug(result);
                 this.updateProperties(false);
@@ -393,7 +405,6 @@ export default class Workflow {
         $.ajax({
             url: "/hh-neuron-builder/register-model/" + this.#exc,
             method: "POST",
-            async: false,
             data: formData,
             processData: false,
             contentType: false,
@@ -403,6 +414,7 @@ export default class Workflow {
             },
             error: (error) => {
                 Log.error("Status: " + error.status + " > " + error.responseText);
+                
                 if (error.status == 500) {
                     // ModelRegistrationDialog.close();
                 }

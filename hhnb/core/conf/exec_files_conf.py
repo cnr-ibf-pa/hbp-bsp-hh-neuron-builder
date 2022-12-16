@@ -1,16 +1,19 @@
 import os
+import json
 
 
 class ExecFileConf:
 
     @staticmethod
-    def write_nsg_exec(dst_dir, max_gen, offspring):
+    def write_nsg_exec(dst_dir, max_gen, offspring, job_name, mode='start'):
         buffer = \
 f"""
 import os
+import json
 
-os.system('python3 opt_neuron.py --max_ngen={max_gen} --offspring_size={offspring} --start --checkpoint ./checkpoints/checkpoint.pkl')
-
+os.system('python3 opt_neuron.py --max_ngen={max_gen} --offspring_size={offspring} --{mode} --checkpoint ./checkpoints/checkpoint.pkl')
+with open('resume_job_settings.json', 'w') as fd:
+    json.dump({json.dumps({'offspring_size': offspring, 'max_gen': max_gen, 'job_name': job_name, 'hpc': 'nsg',})}, fd)
 """
         try:
             with open(os.path.join(dst_dir, 'init.py'), 'w') as fd:
@@ -18,9 +21,8 @@ os.system('python3 opt_neuron.py --max_ngen={max_gen} --offspring_size={offsprin
         except Exception as e:
             raise e
 
-
     @staticmethod
-    def write_daint_exec(dst_dir, folder_name, offspring, max_gen, ):
+    def write_daint_exec(dst_dir, folder_name, offspring, max_gen, job_name, mode='start'):
         buffer_zipfolder = \
 f"""
 import os
@@ -84,7 +86,8 @@ ipcontroller --init --sqlitedb --ip='*' --profile=${IPYTHON_PROFILE} &
 sleep 30
 srun ipengine --profile=${IPYTHON_PROFILE} &
 CHECKPOINTS_DIR="checkpoints"
-BLUEPYOPT_SEED=1 python opt_neuron.py --offspring_size={offspring} --max_ngen={max_gen} --start --checkpoint "${CHECKPOINTS_DIR}/checkpoint.pkl"
+BLUEPYOPT_SEED=1 python opt_neuron.py --offspring_size={offspring} --max_ngen={max_gen} --{mode} --checkpoint "${CHECKPOINTS_DIR}/checkpoint.pkl"
+echo '{json.dumps({'offspring_size': offspring, 'max_gen': max_gen, 'job_name': job_name, 'hpc': 'cscs'})}' > resume_job_settings.json
 python zipfolder.py
 """
         try:

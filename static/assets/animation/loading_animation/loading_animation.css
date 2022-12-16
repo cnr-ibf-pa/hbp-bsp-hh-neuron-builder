@@ -1,5 +1,4 @@
 .loading-animation.sublayer {
-    /* display: none; */
     position: absolute;
     top: 0;
     left: 0;
@@ -23,19 +22,16 @@
     bottom: 0;
     box-shadow: inset 0 0 200px rgba(255, 255, 255, 0.822);
     filter: blur(100px);
-    /* margin: -20px; */
     padding: 50px;
 }
 
 .loading-animation.container-glass {
-    /* display: none; */
     position: relative;
     margin: auto;
     top: 50%;
     transform: translateY(-50%);
     width: max-content;
     height: max-content;
-    /* background-color: rgba(255, 255, 255, 0.144); */
     border: solid 1px black;
     padding: 50px;
     text-align: center;
@@ -49,35 +45,190 @@
     text-align: center;
     font-size: 1.2em;
     font-weight: bold;
-    /* color: rgb(11, 0, 109); */
     margin: auto;
     width: 345px;
     margin-bottom: 30px;
-    /* margin-top: 25px; */
 }
-
-.loading-animation.frames {
-    /* display: block; */
-    /* visibility: hidden; */
-    position: relative;
-    margin: auto;
-    /* margin-top: 10px; */
-    height: 84px;
-    width: 345px;
-    z-index: 100;
-    animation: loading-animation;
-    animation-duration: 3s;
-    animation-iteration-count: infinite;
+ 
+.loading-animation {
+    display: none;
 }
 
 .loading-animation.show {
-    /* visibility: visible; */
     display: block;
-    animation-play-state: initial;
 }
 
-.loading-animation.hide {
-    /* visibility: hidden; */
-    display: none;
-    animation-play-state: unset;
+svg > path, svg > circle, svg > ellipse, svg > rect {
+    transition: all ease 1s;
 }
+
+.start-animation {
+    fill: #ffd4b7;
+    animation: loading ease-in-out 0.3s forwards; 
+}
+#termination.start-animation {
+    fill: #ff5a5a;
+    animation-name: termination-loading;
+}
+
+#head {
+    animation-delay: 0.3s;
+}
+
+#axon-0 {
+    animation-delay: 0.6s;
+}
+
+#axon-1 {
+    animation-delay: 0.9s;
+}
+
+#axon-2 {
+    animation-delay: 1.2s;
+}
+
+#axon-3 {
+    animation-delay: 1.5s;
+}
+
+#axon-4 {
+    animation-delay: 1.8s;
+}
+
+#axon-5 {
+    animation-delay: 2.1s;
+}
+
+#axon-6 {
+    animation-delay: 2.4s;
+}
+
+#termination {
+    animation-delay: 2.7s;
+}
+
+.reverse-animation {
+    fill: #ffff00;
+    animation-delay: 0s !important;
+    animation: reverse-loading ease-in-out 0.3s forwards;
+}
+#termination.reverse-animation {
+    fill: #ffff00;
+    animation-name: reverse-termination-loading;
+}
+
+@keyframes loading {
+    from { fill: #ffd4b7;}
+    to {fill: #ffff00;}
+}
+@keyframes reverse-loading {
+    from {fill: #ffff00;}
+    to { fill: #ffd4b7;}
+}
+
+
+@keyframes termination-loading {
+    from {fill: #ff5a5a;}
+    to {fill: #ffff00;}
+}
+@keyframes reverse-termination-loading {
+    from {fill: #ffff00;}
+    to {fill: #ff5a5a;}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+/* .neuron-loader {
+    height: 4rem;
+    display: inline-block;
+    width: 100%;
+} *//*
+
+.line {
+    /* position: relative; *//*
+    width: 80%;
+    margin: auto;
+    top: 1.75rem;
+    border: solid .25rem black;  
+    border-radius: 1rem;
+    z-index: 1;
+}
+
+
+.neuron-loader.container > .row {
+    align-self: center;
+    border: 1px blue solid;
+}
+.neuron-loader.container > .row > .col {
+    border: 1px red solid;
+    align-self: center;
+    padding: 0 .2rem;
+    height: 2rem;
+}
+
+.neuron {
+    /* position: relative; *//*
+    z-index: 2;
+    border: .25rem black solid;
+    background-color: rgb(255, 90, 90);
+}
+
+.neuron > .core {
+    background-color: rgb(255, 212, 183);
+    border: .2rem black solid;
+    position: relative;
+    top: 0.25rem;
+    margin: auto;
+}
+
+.root {
+    height: 3rem;
+    width: 3.2rem;
+    border-radius: 1.5rem;
+}
+.root > .core {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 1rem;
+    left: 0.25rem
+}
+
+.line {
+    /* position: relative; *//*
+    height: 0.25rem;
+    width: 120%;
+    left: -10%;
+    top: 1rem;
+    /* margin: auto; *//*
+}
+
+.axon {
+    height: 1.5rem;
+    background-color: rgb(255, 212, 183);
+    border-radius: 1rem;
+    margin: auto;
+    /* top: 0.5rem; *//*
+}
+
+.termination {
+    height: 2.5rem;
+    width: 2.5rem;
+    border-radius: 2rem;
+    top: 0.175rem;
+    margin: auto;
+} */

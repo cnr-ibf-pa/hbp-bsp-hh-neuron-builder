@@ -27,7 +27,7 @@ import json
 import shutil
 import logging
 
-from hhnb.utils.misc import InvalidArchiveError, get_signed_archive, validate_archive
+from hhnb.utils.misc import InvalidArchiveError, get_signed_archive, validate_archive, validate_json_file
 logger = logging.getLogger(__name__)
 
 
@@ -363,7 +363,7 @@ def upload_model(request, exc):
         workflow.load_model_zip(zip_path)
     except FileNotFoundError as e:
         logger.error(e)
-        return ResponseUtil.ko_response(messages.MARLFORMED_FILE.format('"model.zip"'))
+        return ResponseUtil.ko_response(messages.MARLFORMED_FILE.format('model.zip'))
 
     return ResponseUtil.ok_response()
 
@@ -467,6 +467,7 @@ def upload_files(request, exc):
 
         elif folder == 'config/':
             if not uploaded_file.name in ['features.json', 'protocols.json', 'parameters.json']:
+                os.remove(full_path)
                 return ResponseUtil.ko_response(
                     'Config file must be one of the fallowing files:<br>\
                     "<b>protocols.json</b>", "<b>features.json</b>", <b>"parameters.json</b>"'
@@ -550,7 +551,9 @@ def delete_files(request, exc):
         except PermissionError as e:
             logger.error(e)
             return ResponseUtil.ko_response(messages.CRITICAL_ERROR)
-    
+        except FileNotFoundError:
+            pass
+        
     return ResponseUtil.ok_json_response()
 
 
@@ -562,13 +565,15 @@ def optimization_settings(request, exc=None):
     
     if request.method == 'GET':
         logger.info(LOG_ACTION.format(hhnb_user, 'get optimization settings from %s' % workflow))
-        settings = {'settings': {}, 'service-account': {}}
+        settings = {'settings': {}, 'service-account': {}, 'resume': {}}
         
         # fetch service account hpc and projects
         settings.update(json.loads(get_service_account_content(request).content))
 
         try:
             settings['settings'].update(workflow.get_optimization_settings())
+            settings['resume'].update(workflow.get_resume_settings())
+
             return ResponseUtil.ok_json_response(settings)
         except FileNotFoundError as e:
             return ResponseUtil.ok_json_response(settings)
@@ -576,6 +581,14 @@ def optimization_settings(request, exc=None):
     elif request.method == 'POST':
         logger.info(LOG_ACTION.format(hhnb_user, 'set optimization settings from %s' % workflow))
         optimization_settings = json.loads(request.body)
+
+        if optimization_settings['mode'] == 'resume' and \
+            not optimization_settings.get('offspring'):
+            offspring = workflow.get_resume_settings().get('offspring_size', '10')
+            optimization_settings.update({'offspring': offspring})
+
+        if not optimization_settings.get('hpc'):
+            return ResponseUtil.ko_response('Invalid settings')
 
         if optimization_settings['hpc'] == 'NSG':
             nsg_username = optimization_settings.get('username_submit')
@@ -585,21 +598,24 @@ def optimization_settings(request, exc=None):
                 nsg_user = NsgUser(nsg_username, nsg_password)
                 
                 # override nsg credentials 
-                if not nsg_user.validate_credentials():
-                    optimization_settings.update({
-                        'username_submit': False,
-                        'password_submit': False
-                    })
-                else:
-                    optimization_settings.update({
-                        'username_submit': True,
-                        'password_submit': True
-                    })
-                    request.session['nsg_username'] = nsg_username
-                    request.session['nsg_password'] = nsg_password
-                    request.session.save()
-                        
-        workflow.set_optimization_settings(optimization_settings)
+                try:
+                    if not nsg_user.validate_credentials():
+                        optimization_settings.update({
+                            'username_submit': False,
+                            'password_submit': False
+                        })
+                    else:
+                        optimization_settings.update({
+                            'username_submit': True,
+                            'password_submit': True
+                        })
+                        request.session['nsg_username'] = nsg_username
+                        request.session['nsg_password'] = nsg_password
+                        request.session.save()
+                except requests.exceptions.ConnectionError:
+                    return ResponseUtil.ko_response(messages.HPC_NOT_AVAILABLE.format('NSG'))
+        
+        workflow.add_optimization_settings(optimization_settings)
 
         if optimization_settings['hpc'] == 'NSG':
             if not optimization_settings['username_submit'] and not optimization_settings['password_submit']:
@@ -612,17 +628,12 @@ def optimization_settings(request, exc=None):
 
 
 def run_optimization(request, exc):
+    
     if exc not in request.session.keys():
         return ResponseUtil.no_exc_code_response()
 
     workflow, hhnb_user = get_workflow_and_user(request, exc)
     logger.info(LOG_ACTION.format(hhnb_user, 'run optimization of %s' % workflow))
-    opt_model_dir = WorkflowUtil.make_optimization_model(workflow)
-    zip_dst_dir = os.path.join(workflow.get_tmp_dir(), 
-                               os.path.split(opt_model_dir)[1])
-    zip_file = shutil.make_archive(base_name=zip_dst_dir,
-                                   format='zip',
-                                   root_dir=os.path.split(opt_model_dir)[0])
 
     optimization_settings = workflow.get_optimization_settings()
 
@@ -630,13 +641,27 @@ def run_optimization(request, exc):
         'nsg_username': request.session.get('nsg_username'),
         'nsg_password': request.session.get('nsg_password'),
     })
-
+    
+    workflow.add_optimization_settings(optimization_settings)
+    
+    if optimization_settings.get('mode') == 'start':
+        WorkflowUtil.clean_model(workflow)
+    
+    opt_model_dir = WorkflowUtil.make_optimization_model(workflow)
+    zip_dst_dir = os.path.join(workflow.get_tmp_dir(), 
+                               os.path.split(opt_model_dir)[1])
+    zip_file = shutil.make_archive(base_name=zip_dst_dir,
+                                   format='zip',
+                                   root_dir=os.path.split(opt_model_dir)[0]) 
+    
     try:
         response = JobHandler.submit_job(hhnb_user, zip_file, optimization_settings)
     except JobHandler.HPCException as e:
         return ResponseUtil.ko_response(str(e))
+    except JobHandler.ServiceAccountException as e:
+        return ResponseUtil.ko_response(messages.HPC_NOT_AVAILABLE.format('SERVICE ACCOUNT'))
     if response.status_code == 200:
-        workflow.set_optimization_settings(optimization_settings, job_submitted_flag=True)
+        workflow.add_optimization_settings({'job_submitted': True})
     return response
 
 
@@ -724,17 +749,17 @@ def run_analysis(request, exc):
     except MechanismsProcessError as e:
         logger.error(e)
         workflow.clean_analysis_dir()
-        return ResponseUtil.ko_response(498, messages.MECHANISMS_PROCESS_ERROR)
+        return ResponseUtil.ko_response(498, messages.MECHANISMS_PROCESS_ERROR.format(e.stderr))
     
     except AnalysisProcessError as e:
         logger.error(e)
         workflow.clean_analysis_dir()
-        return ResponseUtil.ko_response(499, messages.ANALYSIS_PROCESS_ERROR.format(e))
+        return ResponseUtil.ko_response(499, messages.ANALYSIS_PROCESS_ERROR.format(e.stderr))
     
     except FileNotFoundError as e:
         logger.error(e)
         workflow.clean_analysis_dir()
-        return ResponseUtil.ko_response(404, str(e))       
+        return ResponseUtil.ko_response(404, messages.ANALYSIS_FILE_NOT_FOUND_ERROR.format(e))       
      
     except Exception as e:
         logger.error(e)
@@ -1083,12 +1108,29 @@ def hhf_save_config_file(request, folder, config_file, exc):
 
         return ResponseUtil.ok_response('')
     except json.JSONDecodeError:
-        return ResponseUtil.ko_response(messages.MARLFORMED_FILE.format(config_file + '.json')) 
+        return ResponseUtil.ko_response(messages.MARLFORMED_FILE.format(config_file)) 
     except FileNotFoundError:
         return ResponseUtil.ko_response(404, messages.CRITICAL_ERROR)
     except Exception as e:
         print(str(e))
         return ResponseUtil.ko_response(400, messages.GENERAL_ERROR)
+
+
+def hhf_load_parameters_template(request, exc):
+    if request.method != 'POST':
+        return ResponseUtil.method_not_allowed('POST')
+
+    if not exc in request.session.keys():
+        return ResponseUtil.no_exc_code_response()
+
+    workflow, _ = get_workflow_and_user(request, exc)
+    
+    parameters_type = request.POST.get('type')
+    if not parameters_type in ['pyramidal', 'interneuron']:
+        return ResponseUtil.ko_response(f"Parameters type {parameters_type} unknown")
+
+    WorkflowUtil.load_parameters_template(workflow, parameters_type)
+    return ResponseUtil.ok_response()
 
 
 def get_service_account_content(request):

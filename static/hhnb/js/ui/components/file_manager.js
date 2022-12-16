@@ -9,7 +9,16 @@ function checkRefreshSession(response) {
             .done((result) => {
                 document.location.href = "/hh-neuron-builder/workflow/" + exc;
             }).fail((error) => {
-                alert("Can't refresh session automatically, please refresh page");
+                showAlert(
+                    makeAlertText(
+                        "",
+                        "Can't refresh session automatically.",
+                        "Please refresh the page."
+                    ),
+                    "warning",
+                    true,
+                    true
+                );
             })
     } 
 }
@@ -18,12 +27,7 @@ function checkRefreshSession(response) {
 $("#show-opt-files-btn").on("click", openFileManager);
 
 
-function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-
-function openFileManager(showConfig=false) {
+async function openFileManager(showConfig=false) {
     refreshHHFFileList();
     if (showConfig) {
         showFileList($("#configFolder"));
@@ -31,7 +35,11 @@ function openFileManager(showConfig=false) {
 
     $("#overlaywrapper").css("display", "block");
     $("#overlayfilemanager").css("display", "block");
-    $("#overlayfilemanager").addClass("open");
+
+    await sleep(10);
+    $("#overlaywrapper").addClass("show");
+    $("#overlayfilemanager").addClass("open show");
+
     $.ajax({
         url: "/hh-neuron-builder/hhf-get-model-key/" + req_pattern,
         method: "GET",
@@ -118,7 +126,10 @@ function refreshHHFFileList() {
 }
 
 
-function closeFileManager() {
+async function closeFileManager() {
+    $("#overlaywrapper").removeClass("show");
+    $("#overlayfilemanager").removeClass("show");
+    await sleep(500);
     $("#overlaywrapper").css("display", "none");
     $("#overlayfilemanager").css("display", "none");
 
@@ -190,7 +201,12 @@ function deleteHHFFiles() {
         contentType: "application/json",
         data: JSON.stringify(data),
         error: (error) => { 
-            // MessageDialog.openErrorDialog(error.responseText);
+            let sm = splitTitleAndMessage(error.responseText);
+            if (sm) {
+                MessageDialog.openErrorDialog(sm.message, sm.title);
+            } else {
+                MessageDialog.openErrorDialog(error.responseText);
+            }
         },
     }).always(() => { 
         hideLoadingAnimation();
@@ -275,9 +291,12 @@ $("#uploadFileButton").click(function() {
             contentType: false,
             processData: false,
             error: error => {
-                let text = error.responseText;
-                console.log(text);
-                openErrorMessage(text);
+                let sm = splitTitleAndMessage(error.responseText);
+                if (sm) {
+                    MessageDialog.openErrorDialog(sm.message, sm.title);
+                } else {
+                    MessageDialog.openErrorDialog(error.responseText);
+                }
             }
         }).always(() => {
             counter += 1;
@@ -459,7 +478,6 @@ function resetEditorMode() {
     $("#editFileButtonImage").attr("src", "/static/assets/img/open-file-white.svg").removeClass("show zoomout back-arrow").css("top", "8px").css("left", "2px");
     $("#editFileButton").attr("title", "Open/Edit files");
     $("#editorfilelist").empty();
-    console.log("RESET BACK BUTTON")
     $("#saveFileButton").removeClass("show disabled");
     $("#saveFileButtonSpinner").css("display", "none");
     $("#saveFileButtonImage").css("display", "inline");        
@@ -533,7 +551,9 @@ function switchMode() {
         editorSelector.removeClass("fade-in").addClass("fade-out");
         fileEditor.removeClass("fade-in").addClass("fade-out");
         $("#saveFileButton").removeClass("show");
-        $("#selectAllButton").removeClass("disabled");
+        if (!$("#configFileList").hasClass("empty-list")) {
+            $("#selectAllButton").removeClass("disabled");
+        }
     }
 
 };
@@ -719,20 +739,22 @@ function saveCurrentTextAreaVal() {
         url: "/hh-neuron-builder/hhf-save-config-file/" + currFolder + "/" + currFile + "/" + req_pattern,
         method: "POST",
         data: jj,
-        success: function(data) {
+        success: async function(data) {
             originalTextAreaVal = currValue;
             $("#saveFileButton").removeClass("show disabled");
             $("#saveFileButtonSpinner").css("display", "none");
             $("#saveFileButtonImage").css("display", "inline");
             $("#editorAlertText").removeClass("error").addClass("info").html("File saved successfully");
             $("#editorAlert").addClass("show");
+            await sleep(300);
         },
-        error: function(error) {
+        error: async function(error) {
             $("#saveFileButton").removeClass("disabled");
             $("#saveFileButtonSpinner").css("display", "none");
             $("#saveFileButtonImage").css("display", "inline");
             $("#editorAlertText").removeClass("info").addClass("error").html(error.responseText);
             $("#editorAlert").addClass("show");
+            await sleep(300);
         }
     })
 }
@@ -744,52 +766,76 @@ $("#editorAlert")[0].addEventListener("transitionend", async function(){
 });
 
 
-function openErrorMessage(msg) {
-    console.log(msg);
-    $("#overlaywrapperdialog").css("display", "block");
-    $("#overlaycontentdialog").css("display", "block").css("box-shadow", "0 0 1rem 1rem rgba(255, 0, 0, .8)")
-        .css("border-color", "red");
-    $("#dialog-btn").text("Ok").addClass("red").removeClass("blue green fill-background")
-        .on("click", closeErrorMessage);
-    $("#dialogtext").html(msg);
-}
-
-function closeErrorMessage() {
-    $("#overlaywrapperdialog").css("display", "none");
-    $("#overlaycontentdialog").css("display", "none");
-    
-}
-
-
 class MessageDialog {
 
-    static #overlayWrapper = $("#overlaywrapperdialog");
-    static #overlayContent = $("#overlaycontentdialog");
-    static #dialogMessage = $("#dialogtext");
-    static #dialogButton = $("#dialog-btn");
+    static #createAlertDialog(level, title, msg) {
+        let alert = $("<div id='alert-dialog' role='alert'></>");
+        let classes = "alert alert-dismissable fade ";
+        let button;
+        if (level != "warning") {
+            button = "<button class='btn workflow-btn alert-dialog-button' data-bs-dismiss='alert' onclick='closeAlertDialog()'>Ok</button>";
+        } else {
+            button = "<button class='btn workflow-btn alert-dialog-button' data-bs-dismiss='alert' onclick='window.location.reload();'>Reload</button>";
+        }
+        switch (level) {
+            case "danger":
+                classes += "alert-danger";
+                break;
 
+            case "warning":
+                classes += "alert-warning";
+                break;
 
-    static #openMessageDialog(msg) {
+            case "success":
+                classes += "alert-success";
+                break;
+
+            case "info":
+            default:
+                classes += "alert-info";
+        }
+        alert.addClass(classes);
+        alert.append("\
+            <h4 class='alert-heading' style='text-align: center;'>" + title + "</h4>\
+            <br>\
+            <p style='text-align: justify'>" + msg + "</p>\
+            <hr>\
+            <div class='row'>" + button + "</div>"
+        );
+        return alert;
+    }
+
+    static async #openDialog(level, title, msg) {
         if (!msg.startsWith("{\"refresh_url\"")) {
-            this.#overlayWrapper.css("display", "block");
-            this.#overlayContent.css("display", "block");
-            this.#dialogMessage.html(msg);
+            $("#shadow-layer").css("display", "block");
+            await sleep(10);
+            $("#shadow-layer").addClass("show");
+            let alertDialog = this.#createAlertDialog(level, title, msg);
+            $("body").append(alertDialog);
+            await sleep(10);
+            alertDialog.addClass("show");
         }
     }
 
-    static #closeMessageDialog() {
-        this.#overlayWrapper.css("display", "none");
-        this.#overlayContent.css("display", "none");
+    static async closeDialog() {
+        $("#shadow-layer").removeClass("show");
+        await sleep(500);
+        $("#shadow-layer").css("display", "none");
+    } 
+
+    static openSuccessDialog(msg, title="Success !") {
+        this.#openDialog("success", title, msg)
     }
 
-    static openErrorDialog(msg) {
-        console.log(msg);
-        this.#overlayContent.css("box-shadow", "0 0 1rem 1rem rgba(255, 0, 0, .8)")
-            .css("border-color", "red");
-        this.#dialogButton.text("Ok")
-            .addClass("red").removeClass("blue green fill-background")
-            .on("click", () => { this.#closeMessageDialog() });
-        this.#openMessageDialog(msg);
+    static openErrorDialog(msg, title="Error !") {
+        this.#openDialog("danger", title, msg);
     }
 
+    static openInfoDialog(msg, title="Info") {
+        this.#openDialog("info", title, msg);
+    }
+
+    static openReloadDialog(msg, title="Unexpected behavior occurred !") {
+        this.#openDialog("warning", title, msg);
+    }
 }

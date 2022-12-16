@@ -98,8 +98,7 @@ class JobHandler:
         return payload
 
     def _submit_on_nsg(self, username, password, zip_file, settings):
-        zip_name = os.path.split(zip_file)[1]
-        payload = self._get_nsg_payload(job_name=zip_name.split('.')[0],
+        payload = self._get_nsg_payload(job_name=settings['job_name'],
                                         core_num=settings['core-num'],
                                         node_num=settings['node-num'],
                                         runtime=settings['runtime'])
@@ -258,7 +257,7 @@ class JobHandler:
         zip_name = os.path.split(zip_file)[1]
         job_description = self._get_unicore_job_description(
             command=self._get_unicore_command(zip_name),
-            job_name=zip_name.split('.')[0],
+            job_name=settings['job_name'],
             node_num=settings['node-num'],
             core_num=settings['core-num'],
             runtime=settings['runtime'],
@@ -268,6 +267,32 @@ class JobHandler:
         job = client.new_job(job_description=job_description, inputs=[zip_file])
         logger.info(f'job submitted on UNICORE Client: {job}')
         return ResponseUtil.ok_response(messages.JOB_SUBMITTED.format('<b>' + hpc + '</b>'))
+
+    def _reoptimize_model_on_unicore(self, job_id, job_name, hpc, max_gen,
+                                     node_num, core_num, runtime, token):
+        job_description = {
+            'User precommand': f'cp -r /scratch/snx3000/unicore/FILESPACE/{job_id}/{job_name}/ .',
+            'Executable': f'/apps/hbp/ich002/cnr-software-utils/hhnb/reoptimize_model.sh {job_name} {max_gen}',
+            'User postcommand': f'mv {job_name} reopt_{job_name}; cd reopt_{job_name}; ' + \
+                                f'sed -i "s/{job_name}/reopt_{job_name}/" zipfolder.py; ' + \
+                                f'python ./zipfolder.py',
+            'Name': 'reopt_' + job_name,
+            'Resources': {
+                'Nodes': node_num,
+                'CPUsPerNode': core_num,
+                'Runtime': runtime,
+                'NodeConstraints': 'mc',
+                'Project': 'ich002'
+            },
+            'Tags': self._TAGS,
+            "haveClientStageIn": "false",
+        }
+        client = self._initialize_unicore_client(hpc, token)
+        job = client.new_job(job_description=job_description)
+        job.start
+        logger.info(f'reoptimize model job {job_id} submitted on UNICORE Client')
+        return ResponseUtil.ok_response(messages.JOB_SUBMITTED.format('<b>' + hpc + '</b>'))
+
 
     def _get_unicore_jobs(self, hpc, token):
         client = self._initialize_unicore_client(hpc, token)
@@ -312,7 +337,7 @@ class JobHandler:
             node_num=settings['node-num'],
             core_num=settings['core-num'],
             runtime=settings['runtime'],
-            title=zip_name.split('.')[0]
+            title=settings['job_name']
         ) 
 
         headers = self._get_service_account_headers(token, zip_name, payload)
@@ -322,8 +347,11 @@ class JobHandler:
 
         r = requests.post(url=sa_endpoint, headers=headers, files=job_file)
         logger.debug(f'requests: {r.url} with headers: {r.headers} and files: {job_file}')
+        print(f"SERVICE ACCOUNT RESPONSE: {r.status_code}, {r.content}")
         if r.status_code >= 400:
             logger.error(f'CODE: {r.status_code}, CONTENT: {r.content}')
+            if r.status_code == 500:
+                raise self.ServiceAccountException(r.content, r.status_code)
             return ResponseUtil.ko_response(r.text)
 
         message = messages.JOB_SUBMITTED.format(
@@ -417,6 +445,7 @@ class JobHandler:
         ordered_jobs = OrderedDict(sorted(jobs.items(),
                                           key=lambda x: x[1]['date'],
                                           reverse=True))
+
         logger.info(LOG_ACTION.format(user, 'jobs list: %s' % ordered_jobs))
         return {'jobs': ordered_jobs}
 
@@ -425,6 +454,7 @@ class JobHandler:
     def fetch_job_files(cls, hpc, job_id, user, sa_hpc=None, sa_project=None):
         logger.info(LOG_ACTION.format(user, 'fetch files of job: %s in %s' % (job_id, hpc)))
         job_handler = cls()
+        file_list = None
         if hpc == job_handler._NSG:
             raw_file_list = job_handler._get_nsg_job_results(user.get_nsg_user().get_username(),
                                                              user.get_nsg_user().get_password(),
