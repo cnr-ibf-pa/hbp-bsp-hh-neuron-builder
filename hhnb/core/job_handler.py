@@ -649,8 +649,11 @@ class JobHandler:
 
         r = requests.post(url=sa_endpoint, headers=headers, files=job_file)
         logger.debug(f'requests: {r.url} with headers: {r.headers} and files: {job_file}')
+        print(f"SERVICE ACCOUNT RESPONSE: {r.status_code}, {r.content}")
         if r.status_code >= 400:
             logger.error(f'CODE: {r.status_code}, CONTENT: {r.content}')
+            if r.status_code == 500:
+                raise self.ServiceAccountException(r.content, r.status_code)
             return ResponseUtil.ko_response(r.text)
 
         message = messages.JOB_SUBMITTED.format(
