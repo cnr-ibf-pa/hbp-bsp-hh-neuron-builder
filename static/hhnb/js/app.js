@@ -924,24 +924,33 @@ $("#register-model-btn").on("click", () => {
 
 /* ************************************* */
 
-$("#modalHHFCloseButton").on("click", () => {
+$("#modalHHFCloseButton").on("click", async () => {
     if (workflow.getProps().model.optimization_files.parameters !== "") {
         $("#overlaywrapper").css("display", "block");
         $("#overlayparameterstemplate").css("display", "block");
+        await sleep(200);
+        $("#overlaywrapper").addClass("show");
+        $("#overlayparameterstemplate").addClass("show");
     } else {
         openFileManager(true);
     }
 })
 
 $(".parametersTemplate").on("click", (event) => {
+    showLoadingAnimation("Loading paramteres template...");
     let parametersType = $(event.currentTarget).attr("name");
     $.post("/hh-neuron-builder/hhf-load-parameters-template/" + exc, {type: parametersType})
         .fail((error) => {
             Log.error(error);
             MessageDialog.openErrorDialog("Please upload a parameters file manually.", "Something went wrong!");
-        }).always(() => {
+        }).always(async () => {
+            workflow.updateProperties();
+            hideLoadingAnimation();
+            $("#overlaywrapper").removeClass("show");
+            $("#overlayparameterstemplate").removeClass("show");
+            await sleep(500);
             $("#overlaywrapper").css("display", "none");
             $("#overlayparameterstemplate").css("display", "none");
-            workflow.updateProperties();
+            openFileManager(true);
         })
 })

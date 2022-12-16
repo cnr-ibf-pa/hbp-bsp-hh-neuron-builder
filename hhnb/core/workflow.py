@@ -601,6 +601,7 @@ class WorkflowUtil:
         """
         ModelUtil.update_key(workflow.get_model(), key)
 
+    # deprecated method
     @staticmethod
     def set_default_parameters(workflow):
         """
@@ -882,7 +883,7 @@ class WorkflowUtil:
                 for chunk in r.iter_content(chunk_size=4096):
                     fd.write(chunk)
             workflow.get_model().set_morphology(morphology=file_path)
-        
+
         for etrace in etraces:
             file_path = os.path.join(workflow.get_etraces_dir(), etrace['name'])
             r = requests.get(url=etrace['url'], verify=False)

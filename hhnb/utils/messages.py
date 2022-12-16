@@ -2,6 +2,8 @@
 CRITICAL_ERROR = '<b>Critical Error !</b><br><br>Please contact the <a href="https://ebrains.eu/support" class="alert-link" target="_blank">EBRAINS support</a> if the problem persists.'
 MODEL_CATALOG_CREDENTIALS_NOT_FOUND = '<b>Error !</b><br><br>Invalid Model Catalog credentials. Set them in your configuration file under "/hh_neuron_builder/conf".'
 GENERAL_ERROR = '<b>Error !<b>'
+UNABLE_TO_FETCH_FILES = '<b>Something went wrong !</b><br><br>Unable to fetch files you choosed in the <i>HippocampusHub</i> from their source.<br>Please try again later and if the problem persists over the day please contact the <a href="https://ebrains.eu/support" class="alert-link" target="_blank">EBRAINS support</a>.'
+
 
 #  Model Catalog error messages
 MODEL_CATALOG_INVALID_CREDENTIALS = '<b>Error !</b><br><br>Invalid Model Catalog credentials.<br><br>Please, contanct the <a href="https://ebrains.eu/support" class="alert-link" target="_blank">EBRAINS support</a>.'

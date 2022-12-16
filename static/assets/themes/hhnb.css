@@ -1922,6 +1922,7 @@ i.disabled:hover {
     z-index: 101;
     position: relative;
 }
+
 #parametersTemplateChooser > div.row > div.col {
     padding: 1rem;
 }

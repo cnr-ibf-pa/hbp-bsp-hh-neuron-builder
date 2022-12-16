@@ -257,7 +257,11 @@ def get_workflow_properties(request, exc):
     workflow, _ = get_workflow_and_user(request, exc)
     if request.session[exc].get('hhf_dict') and \
         not request.session[exc]['hhf_already_downloaded']:
-        WorkflowUtil.download_from_hhf(workflow, request.session[exc]['hhf_dict'])
+        try:
+            WorkflowUtil.download_from_hhf(workflow, request.session[exc]['hhf_dict'])
+        except requests.exceptions.ConnectionError as e:
+            logger.error(e)
+            return ResponseUtil.ko_response(messages.UNABLE_TO_FETCH_FILES)
         request.session[exc]['hhf_already_downloaded'] = True
         request.session.save()
 
@@ -334,11 +338,9 @@ def fetch_models(request, exc):
                 logger.info(LOG_ACTION.format(hhnb_user, 'downloaded model %s on %s' % (model, workflow)))
 
     except ResponseError as e:
-        print(e)
         logger.error(e)
         return ResponseUtil.ko_response(messages.MODEL_CATALOG_NOT_AVAILABLE)
     except EnvironmentError as e:
-        print(e)
         logger.error(e)
         return ResponseUtil.ko_response(messages.MODEL_CATALOG_INVALID_CREDENTIALS)
 
