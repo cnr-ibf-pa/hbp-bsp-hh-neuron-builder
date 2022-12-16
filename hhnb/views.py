@@ -658,6 +658,8 @@ def run_optimization(request, exc):
         response = JobHandler.submit_job(hhnb_user, zip_file, optimization_settings)
     except JobHandler.HPCException as e:
         return ResponseUtil.ko_response(str(e))
+    except JobHandler.ServiceAccountException as e:
+        return ResponseUtil.ko_response(messages.HPC_NOT_AVAILABLE.format('SERVICE ACCOUNT'))
     if response.status_code == 200:
         workflow.add_optimization_settings({'job_submitted': True})
     return response

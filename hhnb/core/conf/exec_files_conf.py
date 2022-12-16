@@ -13,7 +13,7 @@ import json
 
 os.system('python3 opt_neuron.py --max_ngen={max_gen} --offspring_size={offspring} --{mode} --checkpoint ./checkpoints/checkpoint.pkl')
 with open('resume_job_settings.json', 'w') as fd:
-    json.dump({json.dumps({'offspring_size': offspring, 'max_gen': max_gen, 'job_name': job_name, hpc: 'nsg',})}, fd)
+    json.dump({json.dumps({'offspring_size': offspring, 'max_gen': max_gen, 'job_name': job_name, 'hpc': 'nsg',})}, fd)
 """
         try:
             with open(os.path.join(dst_dir, 'init.py'), 'w') as fd:
