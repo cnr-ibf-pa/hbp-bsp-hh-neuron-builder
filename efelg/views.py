@@ -606,7 +606,7 @@ def index_docs(request):
     """
     Render Guidebook main page
     """
-    logger.info(LOG_ACTION.format(request.session['username'], 'access INDEX_DOCS page'))
+    #logger.info(LOG_ACTION.format(request.session['username'], 'access INDEX_DOCS page'))
 
     return render(request, 'efelg/docs/index.html')
 
@@ -615,7 +615,7 @@ def file_formats_docs(request):
     """
     Render Guidebook file formats page
     """
-    logger.info(LOG_ACTION.format(request.session['username'], 'access FILE_FORMATS page'))
+    #logger.info(LOG_ACTION.format(request.session['username'], 'access FILE_FORMATS page'))
 
     return render(request, 'efelg/docs/file_formats.html')
 
@@ -635,7 +635,7 @@ def dataset(request):
     """
     Return Guidebook dataset page
     """
-    logger.info(LOG_ACTION.format(request.session['username'], 'access DATASET page'))
+    #logger.info(LOG_ACTION.format(request.session['username'], 'access DATASET page'))
 
     return render(request, 'efelg/docs/dataset.html')
 
