@@ -9,9 +9,28 @@ class InvalidSign(Exception):
 
 
 class Cypher:
+    """
+    This class is used to encrypt and decrypt data through
+    two static simple methods.
+    The encryption and decryption use the same key.
+    """
 
     @staticmethod
     def encrypt(plain_text, at_time=None):
+        """
+        Encrypt a message using the Fernet method. 
+
+        Parameters
+        ----------
+        plain_text : str
+            the plain message to encrypt
+        at_time : int, optional
+
+        Returns
+        -------
+        str
+            the encrypted message
+        """
         if type(plain_text) == str:
             data = bytes(plain_text, 'utf-8')
         f = Fernet(FERNET_KEY)
@@ -24,6 +43,20 @@ class Cypher:
 
     @staticmethod
     def decrypt(cipher_text, at_time=None):
+        """
+        Decrypt a cipher message previously encrypted using the encrypt method.
+
+        Parameters
+        ----------
+        cipher_text : str
+            the cipher message
+        at_time : int, optional
+
+        Returns
+        -------
+        str
+            the plain message
+        """
         if type(cipher_text) == str:
             token = bytes(cipher_text, 'utf-8')
         f = Fernet(FERNET_KEY)
@@ -35,8 +68,15 @@ class Cypher:
 
 
 class Sign:
+    """
+    This class is used to sign a file and to verify the integrity of the file
+    by verifying its sign. 
+    """
     
     def __init__(self):
+        """
+        Initialize the hash function to create/verify the sign.
+        """
         if type(SECRET_KEY) != bytes:
             key = bytes(SECRET_KEY, 'utf-8')
         else:
@@ -51,11 +91,45 @@ class Sign:
 
     @classmethod
     def get_data_sign(cls, data):
+        """
+        Create the hash sign for the data.
+
+        Parameters
+        ----------
+        data : any
+            data to sign
+
+        Returns
+        -------
+        bytes
+            the sign
+        """
         s = cls()
         return s._get_hash(data)
 
     @classmethod
     def verify_data_sign(cls, sign, data):
+        """
+        Verify if the sign is valid for the data.
+
+        Parameters
+        ----------
+        sign : bytes
+            the sign 
+        data : any
+            the data to verify
+
+        Returns
+        -------
+        bool
+            True if the sign is verified for the data, 
+            otherwise an InvalidSignError will be raised
+
+        Raises
+        ------
+        InvalidSign
+            This error is raised if the sign is not valid for the data
+        """
         s = cls()
         if s._get_hash(data) == sign:
             return True

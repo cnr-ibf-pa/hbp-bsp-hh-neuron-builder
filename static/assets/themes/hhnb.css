@@ -880,7 +880,6 @@ body {
 
 .list-group-item:hover {
     background-color: #cfd8dc;
-    color: white;
 }
 .list-group-item.disabled {
     background-color: rgba(220, 220, 220, .5);
@@ -1098,6 +1097,8 @@ td {
 .file-group {
     background-color: none;
 }
+
+.file-group > .list-group-item.active,
 .file-group > .list-group-item:hover {
     background-color: #cfd8dc;
     color: #212529;
@@ -1106,9 +1107,9 @@ td {
 .file-selector > .list-group > .list-group-item:hover {
     background-color:#cfd8dc;
 }
-.file-group > .list-group-item.active,
+
 .file-group > .list-group-item.active:hover  {
-    background-color: #cfd8dc;
+    background-color: #adb4b7;
     color: #212529;
 }
 
@@ -1165,12 +1166,7 @@ td {
     display: flex;
     justify-content: center;
     cursor: default;
-}/*
-.file-item.empty:hover, .file-item.empty.active {
-    background-color: unset;
-    border: unset;
-    color: rgb(180, 180, 180);
-}*/
+}
 
 .spinner-border.file-item-spinner {
     display: none;

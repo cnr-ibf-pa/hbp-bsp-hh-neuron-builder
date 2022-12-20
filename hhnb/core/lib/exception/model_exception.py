@@ -1,5 +1,6 @@
 # Model exception definition
 
+
 class NoModelInstance(Exception):
     pass
 

@@ -1,4 +1,3 @@
-from re import A
 from hh_neuron_builder.settings import TMP_DIR
 
 from hhnb.core.security import Sign
@@ -30,7 +29,31 @@ def _get_tmp_dir():
 
 def validate_archive(archive):
     """
-    Validate archive by checking its sign.
+    Validate a zip file previously download from the Hodgkin-Huxley
+    Neuron Builder. This function ensures that the file is not 
+    corrupted or modified with a malicious intention by verifying
+    its sign.
+
+    The validation process is done by recalculating the hash of the 
+    original zip archive. If it matches with the provided one within
+    the archive, then the archive will be accepted and its path 
+    will be returned from the function, otherwise an 
+    InvalidSign error will be generated.
+
+    Parameters
+    ----------
+    archive : str
+        the archive path to validate
+
+    Returns
+    -------
+    str
+        the validated archive path
+
+    Raises
+    ------
+    InvalidArchiveError
+        if the archive is corrupted or not contains a needed file
     """
     tmp_dir = _get_tmp_dir()
 
@@ -43,7 +66,7 @@ def validate_archive(archive):
         if f.endswith('.zip'):
             archive_name = f 
     
-    # check if the archive zip is malfomed
+    # check if the archive zip is malformed
     if not archive_name:
         raise InvalidArchiveError(f'{archive} not valid.')
 
@@ -64,9 +87,20 @@ def validate_archive(archive):
 
 def get_signed_archive(arch_file):
     """
-    Sign archive and return a new archive contening the archive itself,
-    the signature and a README file.
+    Returns a new archive that include the archive itself and its sign.
+
+
+    Parameters
+    ----------
+    arch_file : str
+        the path to the archive to sign
+
+    Returns
+    -------
+    str
+        the path to the signed archive
     """
+
     tmp_dir = _get_tmp_dir() 
 
     zip_name = os.path.split(arch_file)[1]

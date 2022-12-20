@@ -559,6 +559,7 @@ $(".jobs-unicore").on("click", (button) => {
             if (button.currentTarget.id == "jobsDaint") {
                 displayJobList(jButton);
             } else if (button.currentTarget.id == "jobsSA") {
+                jButton.addClass("active clicked");
                 loadSAContent();
             }
         })

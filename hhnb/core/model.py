@@ -1,6 +1,10 @@
 # Model class
 
-import datetime
+"""
+This package contains all the stuff to build up a Neuron Model object.
+"""
+
+
 from hhnb.core.lib.exception.model_exception import *
 from hhnb.core.lib.model import *
 
@@ -19,6 +23,7 @@ _TMP_DIR = os.path.join(TMP_DIR, 'model')
 
 
 def _read_file(f):
+    """ Private function that take a file and returns its content. """
     f = os.path.split(f)[1]
     f_name, f_ext = os.path.splitext(f)
     with open(f, 'r') as fd:
@@ -30,29 +35,61 @@ def _read_file(f):
 
 
 def _write_file_to_directory(src_file, dst_dir, dst_file=None):
-        if not dst_file:
-            dst_file = os.path.split(src_file)[1]
-        f_name, f_ext = os.path.splitext(dst_file)
-        with open(os.path.join(dst_dir, dst_file), 'w') as fd:
-            if f_ext == '.json':
-                j_src = json.load(open(src_file, 'r'))
-                json.dump(j_src, fd, indent=4)
-            else:
-                buffer = open(src_file, 'r').read()
-                fd.write(buffer)
+    """
+    Private function that copies a source file to the destination dir.
+    The destination file can be also a json file and in this case,
+    the output will be formatted as json. In the other case the
+    source file will be treated as a binary file. Furthermore
+    the copy can be explicitly named using the "dst_file" parameter
+    otherwise the source file name will be used.   
+
+    Parameters
+    ----------
+    src_file : str
+        the source file path
+    dst_dir : str
+        the destination directory path where to copy the file
+    dst_file : str, optional
+        to be set if you want to overwrite the file name, by default None
+    """
+    if not dst_file:
+        dst_file = os.path.split(src_file)[1]
+    f_name, f_ext = os.path.splitext(dst_file)
+    with open(os.path.join(dst_dir, dst_file), 'w') as fd:
+        if f_ext == '.json':
+            j_src = json.load(open(src_file, 'r'))
+            json.dump(j_src, fd, indent=4)
+        else:
+            buffer = open(src_file, 'r').read()
+            fd.write(buffer)
 
 
 def _create_subdir(cls, model_dir):
-        os.mkdir(os.path.join(model_dir, 'config'))
-        os.mkdir(os.path.join(model_dir, 'mechanisms'))
-        os.mkdir(os.path.join(model_dir, 'morphology'))
-        os.mkdir(os.path.join(model_dir, 'template'))
-
+    """ Private function that make the subtree folder for the Neuron Model. """
+    os.mkdir(os.path.join(model_dir, 'config'))
+    os.mkdir(os.path.join(model_dir, 'mechanisms'))
+    os.mkdir(os.path.join(model_dir, 'morphology'))
+    os.mkdir(os.path.join(model_dir, 'template'))
 
 
 class Model(ModelBase):
+    """
+    This Model extends the ModelBase class and offers some useful
+    methods to handle the Model object automatically for
+    the HHNB Workflow.
+    """
 
     def __init__(self, model_dir, **kwargs):
+        """
+        Initialize the Model object by reading all the files present
+        in the "model_dir" folder.
+        For keyword arguments read the hhnb.core.model.Model doc.
+
+        Parameters
+        ----------
+        model_dir : str
+            the root folder of the Model
+        """
         self._model_dir = model_dir
         key = os.path.split(self._model_dir)
         if 'key' in kwargs:
@@ -63,10 +100,24 @@ class Model(ModelBase):
         self._ETRACES = False
 
     def _check_if_file_exists(self, **kwargs):
+        """
+        Private method that checks if a file already exists
+        in the Model folder subtree.
+
+        Returns
+        -------
+        bool
+            True if the file exists, False otherwise
+
+        Raises
+        ------
+        TypeError
+            if the argument passed is wrong
+        """
         if len(kwargs) > 1:
             raise TypeError(f'{__name__} takes only 1 keyword argument')
         
-        keyword_list = ['paramters', 'protocols', 'features', 'morphology']
+        keyword_list = ['parameters', 'protocols', 'features', 'morphology']
         key = list(kwargs.keys())[0]
         
         if key not in keyword_list:
@@ -87,6 +138,32 @@ class Model(ModelBase):
 
     @classmethod
     def from_dir(cls, model_dir, key):
+        """
+        This method is used to initialize automatically a Model object
+        by passing the model root folder as parameter, reads all the 
+        files and the structure of the folder subtree and return a 
+        Model object with the "key" set as the model global key. 
+
+        Parameters
+        ----------
+        model_dir : str
+            the model root folder
+        key : str
+            the model global key
+
+        Returns
+        -------
+        hhnb.core.model.Model
+            the model object
+
+        Raises
+        ------
+        FileNotFoundError
+            if the "model_dir" does not exist
+        NotADirectoryError
+            if the "model_dir" is not a directory
+        """
+
         model = cls(model_dir, key=key)
         
         if not os.path.exists(model_dir):
@@ -141,6 +218,23 @@ class Model(ModelBase):
         return model
 
     def update_optimization_files(self, model_dir):
+        """
+        This method update the current model optimization files using 
+        the new ones in the "model_dir" folder passed as argument.
+        
+        With "optimization files" is intended any files that belong to 
+        the following categories: ["parameters", "morphology", "mechanisms"].  
+
+        Parameters
+        ----------
+        model_dir : str
+            the model root folder from where get the new optimization files
+
+        Raises
+        ------
+        FileNotFoundError
+            if any optimization file is not found 
+        """
         
         src_config_dir = os.path.join(model_dir, 'config')
         src_morph_dir = os.path.join(model_dir, 'morphology')
@@ -151,7 +245,7 @@ class Model(ModelBase):
         dst_mechans_dir = os.path.join(self._model_dir, 'mechanisms')
 
         try:
-            # paramenters
+            # parameters
             if os.path.exists(src_config_dir) and \
                 os.path.exists(os.path.join(src_config_dir, 'parameters.json')):
                 parameters = shutil.copy(os.path.join(src_config_dir, 'parameters.json'),
@@ -193,6 +287,10 @@ class Model(ModelBase):
             raise FileNotFoundError(e)
 
     def get_optimization_files_raw_status(self):
+        """
+        Returns a dictionary with the optimization files as keys and 
+        their status (True if present, False otherwise) as a boolean value.
+        """
         return {
             'morphology': self.get_morphology().get_raw_status(),
             'parameters': self._PARAMETERS,
@@ -200,6 +298,10 @@ class Model(ModelBase):
         }
 
     def get_optimization_files_status(self):
+        """
+        Returns a dictionary with the optimization files as keys and
+        their status as a message.
+        """
         return {
             'morphology': self.get_morphology().get_status(),
             'parameters': '' if self._PARAMETERS else '"parameters.json" file NOT present',
@@ -207,6 +309,9 @@ class Model(ModelBase):
         }
 
     def get_properties(self):
+        """
+        Returns the status of the Model properties. 
+        """
         return {
             'features': self.get_features().get_status(),
             'optimization_files': self.get_optimization_files_status(),
@@ -215,10 +320,26 @@ class Model(ModelBase):
     
 
 class ModelUtil:
+    """
+    This is a class composed by all static method that handle a Model object.
+    """
 
     @staticmethod
     def clone(model):
-        return Model(
+        """
+        Static method that clone a Model object passed as argument.
+
+        Parameters
+        ----------
+        model : hhnb.core.model.Model
+            the Model object to clone
+
+        Returns
+        -------
+        hhnb.core.model.Model
+            a new Model object with the same files and properties of the cloned one
+        """
+        return ModelBase(
             features=model.get_features(),
             parameters=model.get_parameters(),
             morphology=model.get_morphology(),
@@ -227,13 +348,57 @@ class ModelUtil:
         )
 
     @staticmethod
+    def create_model_tree(model_dir):
+        """
+        Create model tree folder by passing the model_dir path.
+
+        Parameters
+        ----------
+        model_dir : str
+            the path of where to create the model tree.
+
+        Raise
+        -----
+        FileExistError
+            if any subfolder already exists.
+        """
+        
+        if not os.path.exists(model_dir):
+            os.mkdir(model_dir)
+        os.mkdir(os.path.join(model_dir, 'config'))
+        os.mkdir(os.path.join(model_dir, 'morphology'))
+        os.mkdir(os.path.join(model_dir, 'mechanisms'))
+        os.mkdir(os.path.join(model_dir, 'template'))
+
+    @staticmethod
     def write_to_workflow(model, workflow_id):
+        """
+        Write the whole Model object to the disk in the "workflow_id" subfolder
+        and returns the new Model root folder. 
+
+        Parameters
+        ----------
+        model : hhnb.core.model.Model
+            the Model object to store
+        workflow_id : str
+            the workflow where to store the Model.
+
+        Returns
+        -------
+        str
+            the model root folder 
+
+        Raises
+        ------
+        FileNotFoundError
+            if the "workflow_id" folder does not exist
+        """
         if not os.path.exists(workflow_id):
             raise FileNotFoundError('%s path not found' % workflow_id)
         model_dir = os.path.join(workflow_id, 'model')
         if os.path.exists(model_dir):
-            os.rmtree(model_dir)
-        ModelUtil.create_model_subdir(model_dir)
+            shutil.rmtree(model_dir)
+        ModelUtil.create_model_tree(model_dir)      
         _write_file_to_directory(model.get_features().get_features(), 
                    os.path.join(model_dir, 'config'), 'features.json')
         _write_file_to_directory(model.get_features().get_protocols(),
@@ -250,6 +415,23 @@ class ModelUtil:
     @staticmethod
     @dispatch(str, str, str)
     def zip_model(src_dir, dst_dir=None, zip_name=None):
+        """
+        This static method zip a Model object.
+        It takes the Model root folder as source dir and the optional
+        destination dir to write the zipped model and an optional
+        zip file name.
+
+        Parameters
+        ----------
+        src_dir : str
+            the model root folder
+        dst_dir : str, optional
+            where to write the zipped model, by default the source folder is used as destination
+        zip_name : str, optional
+            the zip file name, by default the source folder name is used
+        """
+        if not dst_dir: 
+            dst_dir = src_dir
         if not zip_name:
             zip_name = src_dir.split('/')[-1]
         shutil.make_archive(os.path.join(dst_dir, zip_name), 'zip', src_dir)
@@ -258,6 +440,21 @@ class ModelUtil:
     @staticmethod
     @dispatch(Model, str, str)
     def zip_model(model, dst_dir=None, zip_name=None):
+        """
+        This static method zip a Model object.
+        It takes the Model object directly as model and the optional
+        destination dir to write the zipped model and an optional
+        zip file name.
+
+        Parameters
+        ----------
+        model : hhnb.core.model.Model
+            the model object
+        dst_dir : str, optional
+            where to write the zipped model, by default the source folder is used as destination
+        zip_name : str, optional
+            the zip file name, by default the source folder name is used
+        """
         if not dst_dir:
             dst_dir = os.path.join(_TMP_DIR, str(uuid()))
             while True:
@@ -276,6 +473,26 @@ class ModelUtil:
 
     @staticmethod
     def update_key(model, key=None):
+        """
+        This static method update the key of all Model's files with the 
+        new one passed as argument and then it will be set as the Model
+        global key. Otherwise the files' keys are updated using the current
+        Model global key.
+
+        Parameters
+        ----------
+        model : hhnb.core.model.Model
+            the model to update
+        key : str, optional
+            the new global key, by default the current model global key is used
+
+        Raises
+        ------
+        TypeError
+            if the model object passed is not an instance of hhnb.core.model.Model
+        shutil.Error
+            is any error occurred when trying to update the files' key
+        """
         if type(model) != Model:
             raise TypeError('%s is not a model instance' % model)
         if key:

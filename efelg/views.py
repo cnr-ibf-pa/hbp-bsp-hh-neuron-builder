@@ -218,7 +218,7 @@ def get_data(request, cellname=""):
 
 def extract_features(request):
     """
-    Extract features from the selected traces
+    Extract features from the selected traces. 
     """
 
     # if not enough space is left on disk display error page
@@ -514,6 +514,9 @@ def features_dict(request):
 
 @csrf_exempt
 def upload_files(request):
+    """
+    Uploads a custom etraces from which to extract the features.
+    """
 
     if not request.session.get("is_free_space_enough"):
         return redirect('/efelg/error_space_left/')
@@ -657,6 +660,9 @@ def hhf_etraces(request, exc):
 
 @csrf_exempt
 def load_hhf_etraces(request):
+    """
+    Loads the etraces that have been previously downloaded from the HippocampusHub.
+    """
 
     # if not enough space is left on disk display error page
     if EfelStorage.isThereEnoughFreeSpace():

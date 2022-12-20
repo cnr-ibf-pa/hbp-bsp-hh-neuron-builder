@@ -1,24 +1,23 @@
-
 # General error messages
 CRITICAL_ERROR = '<b>Critical Error !</b><br><br>Please contact the <a href="https://ebrains.eu/support" class="alert-link" target="_blank">EBRAINS support</a> if the problem persists.'
 MODEL_CATALOG_CREDENTIALS_NOT_FOUND = '<b>Error !</b><br><br>Invalid Model Catalog credentials. Set them in your configuration file under "/hh_neuron_builder/conf".'
 GENERAL_ERROR = '<b>Error !<b>'
-UNABLE_TO_FETCH_FILES = '<b>Something went wrong !</b><br><br>Unable to fetch files you choosed in the <i>HippocampusHub</i> from their source.<br>Please try again later and if the problem persists over the day please contact the <a href="https://ebrains.eu/support" class="alert-link" target="_blank">EBRAINS support</a>.'
+UNABLE_TO_FETCH_FILES = '<b>Something went wrong !</b><br><br>Unable to fetch files you choose in the <i>HippocampusHub</i> from their source.<br>Please try again later and if the problem persists over the day please contact the <a href="https://ebrains.eu/support" class="alert-link" target="_blank">EBRAINS support</a>.'
 
 
 #  Model Catalog error messages
-MODEL_CATALOG_INVALID_CREDENTIALS = '<b>Error !</b><br><br>Invalid Model Catalog credentials.<br><br>Please, contanct the <a href="https://ebrains.eu/support" class="alert-link" target="_blank">EBRAINS support</a>.'
+MODEL_CATALOG_INVALID_CREDENTIALS = '<b>Error !</b><br><br>Invalid Model Catalog credentials.<br><br>Please, contact the <a href="https://ebrains.eu/support" class="alert-link" target="_blank">EBRAINS support</a>.'
 MODEL_CATALOG_NOT_AVAILABLE = 'The Model Catalog is temporarily not available.<br>Please, try again later.'
 
 
-# Files error messsages
+# Files error messages
 NO_FILE_UPLOADED = 'No file was uploaded.'
 NO_MORE_THEN = 'You can upload only {}.'
-WRONG_UPLAODED_FILE = 'The uploaded file/s is/are wrong.'
+WRONG_UPLOADED_FILE = 'The uploaded file/s is/are wrong.'
 ONLY_ACCEPTED_FILE = 'You can upload only a {} file.'
 INVALID_FILE = '<b>Invalid file !</b><br><br>Upload a correct {} archive.'
 INVALID_SIGNATURE = '<b>Invalid signature !</b><br><br>Uploaded {} archive is corrupted or was modified.'
-MARLFORMED_FILE = '<b>Error !</b><br><br>Malformed "{}" file.'
+MALFORMED_FILE = '<b>Error !</b><br><br>Malformed "{}" file.'
 NO_FILE_TO_DOWNLOAD = 'No file selected to download.' 
 NO_FILE_TO_DELETE = 'No file to delete.'
 FILE_NOT_FOUND_ERROR = '<b>Error !</b><br><br>File not found.'
@@ -34,7 +33,7 @@ USER_LOGIN_ERROR = 'Unable to logged in the user.'
 NO_HPC_SELECTED = 'No HPC was selected.'
 NO_JOB_SELECTED = 'No job was selected.'
 JOB_FETCH_ERROR = '<b>Error !</b><br><br>Some error occurred while fetching jobs on {}.<br>Please contact the <a href="https://ebrains.eu/support" class="alert-link" target="_blank">EBRAINS support</a> if the problem persists.'
-JOB_RESULTS_FETCH_ERRROR = '<b>Error !</b><br><br>Error while fetching job results.'
+JOB_RESULTS_FETCH_ERROR = '<b>Error !</b><br><br>Error while fetching job results.'
 JOB_SUBMITTED = 'Job submitted on {}.'
 JOB_EXPIRED = 'Job {} has expired and no file is present'
 HPC_NOT_AVAILABLE = '<b>HPC not available</b><br><br><b>{}</b> system not available at this moment.<br>Please, try again later...<br><br>If the problem persists contact the <a href="https://ebrains.eu/support" class="alert-link" target="_blank">EBRAINS support</a>.'
@@ -55,6 +54,6 @@ MODEL_ALREADY_EXISTS = 'Model already exists on the Model Catalog.'
 SIGNATURE_README_DESCRIPTION = \
 """
 The "signature" file provides the ".zip" file sign generated from the Hodgikin-Huxley NeuronBuilder.
-This signature is unique and is generated using the ".zip" file readed bitwise. 
+This signature is unique and is generated using the ".zip" file read bitwise. 
 If you want to upload a previously downloaded ".zip" file, you must provide the original "signature.txt" otherwise the file will be rejected.
 """
