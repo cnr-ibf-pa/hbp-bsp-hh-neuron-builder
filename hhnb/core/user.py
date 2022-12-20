@@ -48,7 +48,7 @@ class EbrainsUser:
 
     def _get_user_info(self):
         """
-        Returns a json containing all the user informations.
+        Returns a json containing all the user information.
         If any error occurred an UserInfoError will be raised.
         """
         r = requests.get(url=OIDC_OP_USER_ENDPOINT,

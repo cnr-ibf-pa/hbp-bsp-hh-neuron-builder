@@ -30,10 +30,7 @@ import logging
 from hhnb.utils.misc import InvalidArchiveError, get_signed_archive, validate_archive, validate_json_file
 logger = logging.getLogger(__name__)
 
-
 LOG_ACTION = 'User: "{}"\t Action: {}'
-
-
 
 
 def status(request):
@@ -84,7 +81,7 @@ def index_docs(request):
 
 def home_page(request):
     """ 
-    By default the home page is redered, but if the "old_workflow_path"
+    By default the home page is rendered, but if the "old_workflow_path"
     is found in the session stored keys, the old workflow is restored
     and the workflow page is rendered.
     """
@@ -184,7 +181,7 @@ def upload_workflow(request):
         fd.write(wf)
 
     try:
-        valide_wf_zip = validate_archive(wf_zip)
+        valid_wf_zip = validate_archive(wf_zip)
     except InvalidArchiveError:
         return ResponseUtil.ko_json_response({'response': 'KO',
                                               'message': messages.INVALID_FILE.format(filename)})
@@ -198,7 +195,7 @@ def upload_workflow(request):
 
     try:
         workflow = Workflow.generate_user_workflow_from_zip(hhnb_user.get_sub(),
-                                                            valide_wf_zip)
+                                                            valid_wf_zip)
     except WorkflowExists as e:
         logger.error(e)
         return ResponseUtil.ko_json_response({'response': 'KO', 'message': str(e)})
@@ -216,14 +213,14 @@ def clone_workflow(request, exc):
         return ResponseUtil.no_exc_code_response()
 
     old_workflow, hhnb_user = get_workflow_and_user(request, exc)
-    new_worfklow = WorkflowUtil.clone_workflow(old_workflow)
+    new_workflow = WorkflowUtil.clone_workflow(old_workflow)
     new_exc = generate_exc_code(request)
 
     logger.info(LOG_ACTION.format(
-        hhnb_user, 'cloning old workflow %s to %s' % (old_workflow, new_worfklow))
+        hhnb_user, 'cloning old workflow %s to %s' % (old_workflow, new_workflow))
     )
 
-    request.session[new_exc]['workflow_id'] = new_worfklow.get_id()
+    request.session[new_exc]['workflow_id'] = new_workflow.get_id()
     request.session.save()
     return ResponseUtil.ok_json_response({'exc': new_exc})
 
@@ -381,7 +378,7 @@ def upload_features(request, exc):
     
     for uploaded_file in uploaded_files:
         if uploaded_file.name != 'features.json' and uploaded_file.name != 'protocols.json':
-            return ResponseUtil.ko_response(messages.WRONG_UPLAODED_FILE)
+            return ResponseUtil.ko_response(messages.WRONG_UPLOADED_FILE)
         if uploaded_file.name == 'features.json':
             workflow.write_features(uploaded_file)
         elif uploaded_file.name == 'protocols.json':
@@ -429,7 +426,7 @@ def upload_model(request, exc):
         workflow.load_model_zip(zip_path)
     except FileNotFoundError as e:
         logger.error(e)
-        return ResponseUtil.ko_response(messages.MARLFORMED_FILE.format('model.zip'))
+        return ResponseUtil.ko_response(messages.MALFORMED_FILE.format('model.zip'))
 
     return ResponseUtil.ok_response()
 
@@ -503,7 +500,7 @@ def upload_analysis(request, exc):
         print(e)
         logger.error(e)
 
-    return ResponseUtil.ko_response(messages.MARLFORMED_FILE.format(f'"{uploaded_file.name}"'))
+    return ResponseUtil.ko_response(messages.MALFORMED_FILE.format(f'"{uploaded_file.name}"'))
 
 
 def upload_files(request, exc):
@@ -567,13 +564,13 @@ def upload_files(request, exc):
 def download_files(request, exc):
     """
     This download API can works in two different ways depending
-    on wich parameter is passed through the GET request. 
+    on which parameter is passed through the GET request. 
 
     If the key "pack" is found in the GET request, then an archive zip 
     will be downloaded depends on what the relative value is. The accepted
     "pack" values are:
     "model": that allows to download the whole model in the workflow,
-    "results": that allows to dowload the all results of a downloaded job,
+    "results": that allows to download the all results of a downloaded job,
     "analysis": that allows to download the files that are required by the
                 blue naas to run the simulation.
     
@@ -851,7 +848,7 @@ def fetch_job_results(request, exc):
     except Exception as e:
         logger.error(e)
 
-    return ResponseUtil.ko_response(messages.JOB_RESULTS_FETCH_ERRROR)
+    return ResponseUtil.ko_response(messages.JOB_RESULTS_FETCH_ERROR)
 
 
 def run_analysis(request, exc):
@@ -945,7 +942,7 @@ def get_model_catalog_attribute_options(request):
         options = mc.get_attribute_options()
         return ResponseUtil.ok_json_response(options)
     except Exception as e:
-        logger.error('get_model_catalog_attriute_options(): %s' % e)
+        logger.error('get_model_catalog_attribute_options(): %s' % e)
         return ResponseUtil.ko_response(messages.GENERAL_ERROR)
 
 
@@ -1033,10 +1030,8 @@ def register_model(request, exc):
         return ResponseUtil.ok_response(messages.MODEL_SUCCESSFULLY_REGISTERED.format(model_path_on_mc))
 
     except EbrainsDriveClientError as e:
-        code = e.code
-        message = e.message
         logger.error(e)
-        return ResponseUtil.ko_response(code, message)
+        return ResponseUtil.ko_response(e.code, e.message)
 
     except FileExistsError as e:
         logger.error(e)
@@ -1274,7 +1269,7 @@ def hhf_save_config_file(request, folder, config_file, exc):
 
         return ResponseUtil.ok_response('')
     except json.JSONDecodeError:
-        return ResponseUtil.ko_response(messages.MARLFORMED_FILE.format(config_file)) 
+        return ResponseUtil.ko_response(messages.MALFORMED_FILE.format(config_file)) 
     except FileNotFoundError:
         return ResponseUtil.ko_response(404, messages.CRITICAL_ERROR)
     except Exception as e:
@@ -1283,6 +1278,9 @@ def hhf_save_config_file(request, folder, config_file, exc):
 
 
 def hhf_load_parameters_template(request, exc):
+    """
+    Load parameters template.
+    """
     if request.method != 'POST':
         return ResponseUtil.method_not_allowed('POST')
 
@@ -1300,6 +1298,9 @@ def hhf_load_parameters_template(request, exc):
 
 
 def get_service_account_content(request):
+    """
+    Get Service Account HPC and relative projects.
+    """
     if request.method != 'GET':
         return ResponseUtil.method_not_allowed('GET')
 

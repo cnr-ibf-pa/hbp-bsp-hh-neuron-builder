@@ -11,16 +11,16 @@ class ExecFileConf:
     @staticmethod
     def write_nsg_exec(dst_dir, max_gen, offspring, job_name, mode='start'):
         """
-        Write the excecution script for the NSG system.
+        Write the execution script for the NSG system.
 
         Parameters
         ----------
         dst_dir : str
-                  destination folder where the file will be writen.
+                  destination folder where the file will be written.
         max_gen : int
                   maximum number of generations used by opt_neuron.
         offspring : int
-                    number of individuals in offspring useb by opt_neuron.
+                    number of individuals in offspring used by opt_neuron.
         job_name : str
                    set job_name
         mode : str, optional, default='start'
@@ -45,18 +45,18 @@ with open('resume_job_settings.json', 'w') as fd:
     @staticmethod
     def write_daint_exec(dst_dir, folder_name, offspring, max_gen, job_name, mode='start'):
         """
-        Write the excecution script for the Piz-Daint (UNICORE) system.
+        Write the execution script for the Piz-Daint (UNICORE) system.
 
         Parameters
         ----------
         dst_dir : str
-                  destination folder where the file will be writen.
+                  destination folder where the file will be written.
         folder_name : str
                       the model root folder name.
         max_gen : int
                   maximum number of generations used by opt_neuron.
         offspring : int
-                    number of individuals in offspring useb by opt_neuron.
+                    number of individuals in offspring used by opt_neuron.
         job_name : str
                    set job_name
         mode : str, optional, default='start'

@@ -162,7 +162,7 @@ class Workflow(_WorkflowBase):
         """
         Create a new workflow by generating a workflow id from
         the current timestamp and unpacking all files from the
-        zip passed as argoument. 
+        zip passed as argument. 
 
         Parameters
         ----------
@@ -205,7 +205,7 @@ class Workflow(_WorkflowBase):
     @classmethod
     def get_user_workflow_by_id(cls, user_sub, workflow_id):
         """
-        Get a worfklow object by specifing the user sub id and
+        Get a workflow object by specifying the user sub id and
         the workflow id. 
         This classmethod method is useful when the folders are
         already written on the disk but it is needed to reinitialize
@@ -405,14 +405,6 @@ class Workflow(_WorkflowBase):
         os.mkdir(unzipped_tmp_model_dir)
         shutil.unpack_archive(model_zip, unzipped_tmp_model_dir)
         
-        
-        # The ModelCatalog model case
-        # if len(os.listdir(unzipped_tmp_model_dir)) == 1:
-            # unzipped_tmp_model_dir = os.path.join(unzipped_tmp_model_dir,   
-                                                #   os.listdir(unzipped_tmp_model_dir)[0])
-        
-        # The uploaded results case  
-        # else:
         for f in os.listdir(unzipped_tmp_model_dir):
             if 'output' in f:
                 shutil.unpack_archive(os.path.join(unzipped_tmp_model_dir, f), 
@@ -436,16 +428,22 @@ class Workflow(_WorkflowBase):
         self._model.update_optimization_files(unzipped_tmp_model_dir)
         ModelUtil.update_key(model=self._model)
         
-        
-
     def _set_optimization_settings(self, optimization_settings):
+        """
+        Create the optimization settings file for the current workflow.
+
+        Parameters
+        ----------
+        optimization_settings : dict
+            the optimization settings
+        """
         with open(self._optimization_settings, 'w') as fd:
             json.dump(optimization_settings, fd, indent=4)
 
     def get_optimization_settings(self):
         """
-        Returns the workflow optimization settings as json if presents,
-        otherwise a FileNotFoundError will be raised. 
+        Returns the optimization settings of the current workflow,
+        otherwise an empty dict will be returned.
         """
         try:
             with open(self._optimization_settings, 'r') as fd:
@@ -458,20 +456,28 @@ class Workflow(_WorkflowBase):
 
     def add_optimization_settings(self, update_json):
         """
-        Write/Overwrite the workflow optimization settings in the current workflow.
+        Update the optimization settings of the current workflow
+        with the new settings provided in the "update_json" dict.
 
         Parameters
         ----------
-        optimization_settings : dict
-            the workflow optimization settings
-        job_submitted_flag : bool, optional
-            this flag tells if the job was already submitted or not, by default False
+        update_json : dict
+            the update dict
         """
         settings = self.get_optimization_settings()
         settings.update(update_json)
         self._set_optimization_settings(settings)
 
     def get_resume_settings(self):
+        """
+        Returns the resume settings for the current workflow,
+        otherwise an empty dict will be returned.
+
+        Returns
+        -------
+        dict
+            the resume settings, an empty dict.
+        """
         try:
             with open(os.path.join(self._model_dir, 'resume_job_settings.json'),
                       'r') as fd:
@@ -492,12 +498,12 @@ class Workflow(_WorkflowBase):
         ----------
         file_path : str
             the file to delete, can be also "some_path/*" to
-            delete all files insede the "some_path" folder
+            delete all files inside the "some_path" folder
 
         Raises
         ------
         PermissionError
-            Raised if the file path passed as argoument points to a
+            Raised if the file path passed as argument points to a
             file that not belong to the application
         FileNotFoundError
             Raised if the file is not found
@@ -597,7 +603,7 @@ class WorkflowUtil:
         workflow : hhnb.core.workflow.Workflow
             the workflow
         key : str, optional
-            the new global model key, by default the current model key is choosen
+            the new global model key, by default the current model key is chosen
         """
         ModelUtil.update_key(workflow.get_model(), key)
 
@@ -641,7 +647,7 @@ class WorkflowUtil:
     @staticmethod
     def make_archive(workflow, zip_name, dir_name, file_list):
         """
-        Create a zip archive of the listed file containend in the workflow.
+        Create a zip archive of the listed file contained in the workflow.
 
         Parameters
         ----------
@@ -708,7 +714,7 @@ class WorkflowUtil:
     @staticmethod
     def make_features_archive(workflow):
         """
-        Create a zip archive contaning the features file of the workflow.
+        Create a zip archive containing the features file of the workflow.
 
         Parameters
         ----------
@@ -826,7 +832,7 @@ class WorkflowUtil:
                                         dst=os.path.join(workflow.get_tmp_dir(), 'opt_model',
                                                          workflow.get_model().get_key()))
 
-        # craeting directories and script
+        # creating directories and script
         try:
             os.mkdir(os.path.join(tmp_model_dir, 'checkpoints'))
             os.mkdir(os.path.join(tmp_model_dir, 'figures'))
@@ -855,7 +861,7 @@ class WorkflowUtil:
     @staticmethod
     def download_from_hhf(workflow, hhf_dict):
         """
-        Download all files containend in the "hhf_dict" dictionaire in
+        Download all files contained in the "hhf_dict" dictionary in
         the workflow that comes from the HippocampusHub.
 
         Parameters
@@ -863,7 +869,7 @@ class WorkflowUtil:
         workflow : hhnb.core.workflow.Workflow
             the workflow in which to download the files
         hhf_dict : dict
-            the dictionaire containing all files that
+            the dictionary containing all files that
             comes from the HippocampusHub
         """
         WorkflowUtil.set_default_parameters(workflow)
@@ -907,8 +913,8 @@ class WorkflowUtil:
     @staticmethod
     def list_model_files(workflow):
         """
-        Returns a dictionaire containing all the model's files
-        within the workflow. The keys of the dictionaire 
+        Returns a dictionary containing all the model's files
+        within the workflow. The keys of the dictionary 
         represent the type of the model's files and can be one of
         the following values "config", "morphology", "model" and
         "root" that contains the root model folder path.
@@ -919,7 +925,7 @@ class WorkflowUtil:
         Returns
         -------
         dict
-            a dictionaire containing the type of files as the key
+            a dictionary containing the type of files as the key
             and the path of the files as value.
         """
         model_files = {}
@@ -970,7 +976,7 @@ class WorkflowUtil:
         workflow : hhnb.core.workflow.Workflow
             the workflow
         data : dict
-            the data object containing all the informations about
+            the data object containing all the information about
             the job result files to download from the HPC system
 
         Raises
@@ -1028,20 +1034,20 @@ class WorkflowUtil:
         Parameters
         ----------
         workflow : hhnb.core.workflow.Workflow
-            the workflow that will contain the analysis 
+            the workflow that will contain the analysis.
         job_output : str
-            the path where the job to analyse is placed
+            the path where the job to analyse is placed.
 
         Raises
         ------
         FileNotFoundError
-            if any required files is not found
+            if any required files is not found.
         AnalysisProcessError
             if the "opt_neuron.py" script ends with an error
             or if the script can't be run due to a required
-            file that is not found
+            file that is not found.
         MechanismsProcessError
-            if the "nrnivmodl" program ends with an error
+            if the "nrnivmodl" program ends with an error.
         """
         analysis_dir = workflow.get_analysis_dir()
         shutil.unpack_archive(job_output, analysis_dir)
@@ -1173,6 +1179,21 @@ class WorkflowUtil:
 
     @staticmethod
     def load_parameters_template(workflow, template_type):
+        """
+        Load the chosen parameters template in the current workflow.
+
+        Parameters
+        ----------
+        workflow : hhnb.core.workflow.Workflow
+            the workflow in which load the parameters template.
+        template_type : str
+            the parameters template type. Can be "pyramidal" or "interneuron". 
+
+        Raises
+        ------
+        UnknownParametersTemplate
+            if the "template_type" is of an unknown type.
+        """
         if template_type not in ['pyramidal', 'interneuron']:
             raise UnknownParametersTemplate
         
@@ -1183,6 +1204,14 @@ class WorkflowUtil:
 
     @staticmethod
     def clean_model(workflow):
+        """
+        Clean the model folder in the workflow from all unnecessary folders and files. 
+
+        Parameters
+        ----------
+        workflow : hhnb.core.workflow.Workflow
+            the workflow of the model to clean.
+        """
         try:
             shutil.rmtree(os.path.join(workflow.get_model_dir(), 'checkpoints'))
             shutil.rmtree(os.path.join(workflow.get_model_dir(), 'tools'))

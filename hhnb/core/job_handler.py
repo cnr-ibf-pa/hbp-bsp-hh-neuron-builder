@@ -70,7 +70,7 @@ def is_job_expired(job_details):
 
 class JobHandler:
     """
-    Useful class to easly handle jobs, and the relative files, 
+    Useful class to easily handle jobs, and the relative files, 
     on the selected HPC system. This class is intended
     to be used by calling its static methods and for this
     it is not recommended to instantiate a JobHandler object
@@ -214,7 +214,7 @@ class JobHandler:
         Returns
         -------
         dict
-            a dictionaire of all submitted jobs. 
+            a dictionary of all submitted jobs. 
 
         Raises
         ------
@@ -313,7 +313,7 @@ class JobHandler:
         logger.debug(f'requests: {r.url} with headers: {r.headers}')
         if r.status_code != 200:
             logger.error(f'CODE: {r.status_code}, CONTENT: {r.content}')
-            raise self.HPCException(messages.JOB_RESULTS_FETCH_ERRROR)
+            raise self.HPCException(messages.JOB_RESULTS_FETCH_ERROR)
         
         file_list = {}
         root = xml.etree.ElementTree.fromstring(r.text)
@@ -349,7 +349,7 @@ class JobHandler:
         Returns the UNICORE job description.
         The job description is a payload that is formed by the command
         to run, the name of the job, and the resources list to 
-        reserve for the job that are substracted from the project.
+        reserve for the job that are subtracted from the project.
 
         Parameters
         ----------
@@ -466,6 +466,33 @@ class JobHandler:
 
     def _reoptimize_model_on_unicore(self, job_id, job_name, hpc, max_gen,
                                      node_num, core_num, runtime, token):
+        """
+        Submit job to reoptimize model on unicore. The job executes a dedicated script on 
+        CSCS-PizDAINT that make a copy of the output of the previous optimization and then
+        resume the optimization starting from its checkpoint.  
+
+        Args:
+            job_id : str
+                the job id.
+            job_name : str
+                the job name.
+            hpc : str
+                the HPC in which submit the job.
+            max_gen : int
+                the new generation parameter for the optimization.
+            node_num : int
+                the node number allocated for the optimization.
+            core_num : int
+                the core number allocated for the optimization.
+            runtime : str
+                the maximum amount of time for the job to be completed.
+            token : str
+                the EBRAINS user token.
+
+        Returns:
+            Response : (status_code, content)
+                the response of the submission request. 
+        """
         job_description = {
             'User precommand': f'cp -r /scratch/snx3000/unicore/FILESPACE/{job_id}/{job_name}/ .',
             'Executable': f'/apps/hbp/ich002/cnr-software-utils/hhnb/reoptimize_model.sh {job_name} {max_gen}',
@@ -716,7 +743,7 @@ class JobHandler:
         self.JobsFilesNotFound
             if the job is not found for the selected HPC system.
         self.ServiceAccountException
-            if something happends on the Service Account side or
+            if something happens on the Service Account side or
             if it is down.
         """
         headers = self._get_service_account_headers(token)
@@ -745,8 +772,8 @@ class JobHandler:
     @classmethod
     def submit_job(cls, user, zip_file, settings):
         """
-        A static method to easly submit a job in the HPC system.
-        A settings dictionaire must be provided with the "hpc" key
+        A static method to easily submit a job in the HPC system.
+        A settings dictionary must be provided with the "hpc" key
         that indicate in which HPC system the job should be submitted.
         A ResponseUtil object will be returned.
 
@@ -781,7 +808,7 @@ class JobHandler:
     @classmethod
     def fetch_jobs_list(cls, hpc, user, sa_hpc=None, sa_project=None):
         """
-        A static method to easly fetch the jobs list from the selected HPC system.
+        A static method to easily fetch the jobs list from the selected HPC system.
         
         Parameters
         ----------
@@ -789,11 +816,17 @@ class JobHandler:
             the HPC system according to the available ones
         user : hhnb.core.user.HhnbUser
             the user who wants to fetch the jobs
-
+        sa_hpc : str, optional
+            select which HPC will be used behind the Service Account. Only works
+            with the "hpc" parameter set to "SA"
+        sa_project : str, optional
+            select which Service Account project will be used to fetch jobs. Only
+            works with the "hpc" parameter set to "SA"
+            
         Returns
         -------
         dict
-            a dictionaire containing the list of job
+            a dictionary containing the list of job
             ordered by the date from the most recent 
         """
         logger.info(LOG_ACTION.format(user, 'fetch %s jobs list' % hpc))
@@ -839,11 +872,11 @@ class JobHandler:
     @classmethod
     def fetch_job_files(cls, hpc, job_id, user, sa_hpc=None, sa_project=None):
         """
-        A static method to easly fetch the job's files that are produced
+        A static method to easily fetch the job's files that are produced
         once the HPC ends to process the job. To fetch the list a 
         the parameters that must be passed are the HPC in which the job
         was submitted, the job id to identify the correct job, and the 
-        user as owner of the job. The result will be a dictionaire 
+        user as owner of the job. The result will be a dictionary 
         containing the "root_url" that is required to download the files,
         the list of files and, optionally, an header that must be passed
         in the download request to correctly identify user when the HPC
@@ -857,11 +890,17 @@ class JobHandler:
             the job id
         user : hhnb.core.user.HhnbUser
             the owner of the job
+        sa_hpc : str, optional
+            select which HPC will be used behind the Service Account. Only
+            works with the "hpc" parameter set to "SA"
+        sa_project : str, optional
+            select the job'project where the job was submitted. Only works
+            with the "hpc" parameter set to "SA"
 
         Returns
         -------
         dict
-            a dictionaire containing all required information to download the files
+            a dictionary containing all required information to download the files
         """
         logger.info(LOG_ACTION.format(user, 'fetch files of job: %s in %s' % (job_id, hpc)))
         job_handler = cls()

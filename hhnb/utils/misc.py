@@ -31,14 +31,14 @@ def validate_archive(archive):
     """
     Validate a zip file previously download from the Hodgkin-Huxley
     Neuron Builder. This function ensures that the file is not 
-    corrupted or modified with a malevolus intenction by verifing
+    corrupted or modified with a malicious intention by verifying
     its sign.
 
-    The validation process is done by recalcuting the hash of the 
-    original zip archive. If it matchs with the provided one within
+    The validation process is done by recalculating the hash of the 
+    original zip archive. If it matches with the provided one within
     the archive, then the archive will be accepted and its path 
     will be returned from the function, otherwise an 
-    InvlidSign error will be generated.
+    InvalidSign error will be generated.
 
     Parameters
     ----------
@@ -66,7 +66,7 @@ def validate_archive(archive):
         if f.endswith('.zip'):
             archive_name = f 
     
-    # check if the archive zip is malfomed
+    # check if the archive zip is malformed
     if not archive_name:
         raise InvalidArchiveError(f'{archive} not valid.')
 

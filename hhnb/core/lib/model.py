@@ -1,8 +1,6 @@
-""" This package provide some useful classes and methods to easly handle a model instance. """
+""" This package provide some useful classes and methods to easily handle a model instance. """
 
-from typing import Type
 from .exception.model_exception import *
-from multipledispatch import dispatch
 
 import os
 import json
@@ -156,7 +154,7 @@ class Morphology:
             the morphology file path. The morphology must be in ".asc" format.
         key : str, optional
             the model global key to generate the config file, if set to None
-            a temporarely key will be used.
+            a temporarily key will be used.
 
         Raises
         ------
@@ -248,7 +246,7 @@ class ModelBase:
         if 'morphology' in kwargs and kwargs['morphology']:
             self.set_morphology(kwargs['morphology'])
         if 'protocols' in kwargs and kwargs['protocols']:
-            self.set_protocols(protocols=kwargs['protocols'])
+            self.set_features(protocols=kwargs['protocols'])
         if 'parameters' in kwargs and kwargs['parameters']:
             self.set_parameters(kwargs['parameters'])
         if 'mechanisms' in kwargs and kwargs['mechanisms']:
@@ -257,7 +255,7 @@ class ModelBase:
     def set_features(self, *args, **kwargs):
         """
         Set the model features and protocols. 
-        This method accepts a unique Features instance as argoument, 
+        This method accepts a unique Features instance as argument, 
         or can be called by passing a "features" and/or "protocols" kwargs with the relative file 
 
         Raises
@@ -274,7 +272,7 @@ class ModelBase:
             for k in kwargs.keys():
                 if k != 'features' and k != 'protocols':
                     raise TypeError('set_features() got an unexpected\
-                                     keyword argoument %s' % k)
+                                     keyword argument %s' % k)
             if 'features' in kwargs.keys():
                 self._features.set_features(kwargs['features'])
             if 'protocols' in kwargs.keys():
@@ -300,7 +298,7 @@ class ModelBase:
     def set_mechanisms(self, mechanisms):
         """
         Set the mechanisms files for the model. 
-        The mechanisms file can be a list of file, a directory cotaining the mechanisms file or a list of files.
+        The mechanisms file can be a list of file, a directory containing the mechanisms file or a list of files.
 
         Parameters
         ----------
@@ -314,17 +312,19 @@ class ModelBase:
         IsADirectoryError
             if it tries to access a file but is a directory.
         """
+        self._mechanisms = []
+        
         if type(mechanisms) == list:
             self._mechanisms = mechanisms
 
-        if type(mechanisms) == str:
+        elif type(mechanisms) == str:
             if os.path.isdir(mechanisms):
                 self._mechanisms = [
                     os.path.join(mechanisms, m) for m in os.listdir(mechanisms)
                 ]
             else:
-                self._mechanisms = mechanisms
-        
+                self._mechanisms.append(mechanisms)
+                
         for m in self._mechanisms:
             if not os.path.exists(m):
                 raise FileNotFoundError('%s not found' % m)

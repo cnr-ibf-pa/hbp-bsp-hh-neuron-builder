@@ -3,13 +3,8 @@ This package provide a useful class to handle HttpResponse in a easy way.
 """
 
 
-from dis import dis
-from genericpath import isfile
-from os import stat
-from typing import Tuple
 from django.http.response import JsonResponse, HttpResponse, FileResponse, HttpResponseNotAllowed
 from multipledispatch import dispatch
-import json
 import os
 
 
@@ -26,7 +21,7 @@ def _json_response(status_code, data, safe=False):
     This private function takes the status code, some data and 
     return a JsonResponse object. Optionally the safe flag can
     be set True (False by default) to prevent the serialization
-    of non "dict" obejcts. 
+    of non "dict" objects. 
     """
     return JsonResponse(data=data, status=status_code, safe=safe,
                         content_type='application/json')
@@ -162,7 +157,7 @@ class ResponseUtil:
     @dispatch(int, str)
     def ko_json_response(code, data):
         """
-        Returns an error JsonResponse with a custom erro code and json.
+        Returns a JsonResponse with a custom error code and json.
         """
         return _json_response(code, data)
 
@@ -170,7 +165,7 @@ class ResponseUtil:
     @dispatch(int, dict)
     def ko_json_response(code, data):
         """
-        Returns an error JsonResponse with a custom erro code and json.
+        Returns a JsonResponse with a custom error code and json.
         """
         return _json_response(code, data)
 

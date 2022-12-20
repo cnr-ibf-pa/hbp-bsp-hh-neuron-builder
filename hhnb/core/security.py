@@ -70,7 +70,7 @@ class Cypher:
 class Sign:
     """
     This class is used to sign a file and to verify the integrity of the file
-    by verifing its sign. 
+    by verifying its sign. 
     """
     
     def __init__(self):
@@ -110,7 +110,7 @@ class Sign:
     @classmethod
     def verify_data_sign(cls, sign, data):
         """
-        Verify if the sign is valide for the data.
+        Verify if the sign is valid for the data.
 
         Parameters
         ----------
