@@ -188,7 +188,7 @@ def get_data(request, cellname=""):
 
     trace_info['coefficient'] = coefficient
     trace_info['disp_sampling_rate'] = disp_sampling_rate
-    trace_info['md5'] = content['md5']
+    trace_info['md5'] = content.get('md5')
     trace_info['sampling_rate'] = content['sampling_rate']
     trace_info['etype'] = content['etype']
 
@@ -618,7 +618,7 @@ def file_formats_docs(request):
     """
     Render Guidebook file formats page
     """
-    logger.info(LOG_ACTION.format(request.session['username'], 'access FILE_FORMATS page'))
+    logger.info(LOG_ACTION.format(request.session.get('username', 'anonymous'), 'access FILE_FORMATS page'))
 
     return render(request, 'efelg/docs/file_formats.html')
 
@@ -638,7 +638,7 @@ def dataset(request):
     """
     Return Guidebook dataset page
     """
-    logger.info(LOG_ACTION.format(request.session['username'], 'access DATASET page'))
+    logger.info(LOG_ACTION.format(request.session.get('username', 'anonymous'), 'access DATASET page'))
 
     return render(request, 'efelg/docs/dataset.html')
 

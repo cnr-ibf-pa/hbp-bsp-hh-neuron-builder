@@ -13,7 +13,7 @@ class ExcConverter:
 
 class CtxConverter:
     """
-    Unsed due to uuid built-in converter
+    Unused due to uuid built-in converter
     """
     regex = '[0-9a-zA-Z]{8}-[0-9a-zA-Z]{4}-[0-9a-zA-Z]{4}-[0-9a-zA-Z]{4}-[0-9a-zA-Z]{12}'
 
@@ -144,4 +144,13 @@ class FileTypeConverter:
 
     def to_url(self, value):
         return value
-        
+    
+    
+class JobModeConverters:
+    regex = 'start|resume|'
+    
+    def to_python(self, value):
+        return value
+    
+    def to_url(self, value):
+        return value

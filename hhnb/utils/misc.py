@@ -6,7 +6,7 @@ from hhnb.utils import messages
 import os
 import shutil
 import time
-
+import json
 
 
 class InvalidArchiveError(Exception):
@@ -31,14 +31,14 @@ def validate_archive(archive):
     """
     Validate a zip file previously download from the Hodgkin-Huxley
     Neuron Builder. This function ensures that the file is not 
-    corrupted or modified with a malevolus intenction by verifing
+    corrupted or modified with a malicious intention by verifying
     its sign.
 
-    The validation process is done by recalcuting the hash of the 
-    original zip archive. If it matchs with the provided one within
+    The validation process is done by recalculating the hash of the 
+    original zip archive. If it matches with the provided one within
     the archive, then the archive will be accepted and its path 
     will be returned from the function, otherwise an 
-    InvlidSign error will be generated.
+    InvalidSign error will be generated.
 
     Parameters
     ----------
@@ -66,7 +66,7 @@ def validate_archive(archive):
         if f.endswith('.zip'):
             archive_name = f 
     
-    # check if the archive zip is malfomed
+    # check if the archive zip is malformed
     if not archive_name:
         raise InvalidArchiveError(f'{archive} not valid.')
 
@@ -82,9 +82,7 @@ def validate_archive(archive):
     # read zip data and validate the sign
     with open(archive_path, 'rb') as fd:
         Sign.verify_data_sign(signature, fd.read())
-    
     return archive_path
-
 
 
 def get_signed_archive(arch_file):
@@ -131,3 +129,28 @@ def get_signed_archive(arch_file):
     shutil.rmtree(tmp_dir)
     return signed_archive
 
+
+def validate_json_file(file):
+    # check the uploaded file if it is a json file 
+    full_path = os.path.abspath(file)
+    if file.endswith('.json'):
+        fd = open(full_path, 'r')
+        jj = json.load(fd)
+        fd.close()
+
+        if full_path.endswith('parameters.json'):
+            # check for wf_id key as main key
+            if len(jj.keys()) == 1:
+                main_key = list(jj.keys())[0]
+                jj = jj[main_key]
+            # check for distribution and add an empty field if not exists
+            if not 'distributions' in jj.keys():
+                jj.update({'distributions': {}})
+
+            os.remove(full_path)
+            fd = open(full_path, 'w')
+            json.dump({main_key: jj} if main_key else jj, fd)
+            fd.close()
+    
+    # return True if everything is ok, otherwise some exception will be raised
+    return True

@@ -2,16 +2,18 @@ import Log from "./utils/logger.js";
 import Workflow from "./workflow/workflow.js";
 import { UploadFileDialog, OptimizationSettingsDialog, MessageDialog, ModelRegistrationDialog } from "./ui/components/dialog.js";
 
-Log.enabled = true;
+if (window.location.href.startsWith("https://127.0.0.1")) {
+    Log.enabled = true;
+}
 
 const exc = sessionStorage.getItem("exc");
 const hhf_dict = sessionStorage.getItem("hhf_dict");
 const workflow = new Workflow(exc, hhf_dict);
 
-
 function checkRefreshSession(response) {
-    console.log(response);
+    Log.debug(response);
     if (response.status === 403 && response.responseJSON.refresh_url) {
+        $("#overlaywrapper").css("display", "none");
         showLoadingAnimation("Session expired.<br>Refreshing session automatically...");
         $.ajax({
             url: "/hh-neuron-builder/session-refresh/" + exc,
@@ -28,8 +30,7 @@ function checkRefreshSession(response) {
     } 
 }
 
-
-$(document).ready(() => {
+$(window).on("load", () => {
     if (workflow.getProps().hhf_flag) {
         $("#modalHHF").modal("show");
     }
@@ -53,7 +54,6 @@ $("#wf-btn-new-wf").on("click", () => {
 // Clone workflow button callback
 $("#wf-btn-clone-wf").on("click", () => {
     showLoadingAnimation("Cloning current workflow...");
-    let new_exc = null;
     $.ajax({
         url: "/hh-neuron-builder/clone-workflow/" + exc,
         method: "GET",
@@ -65,11 +65,11 @@ $("#wf-btn-clone-wf").on("click", () => {
         error: (error) => {
             checkRefreshSession(error);
             Log.error("Status: " + error.status + " > " + error.responseText);
-            let message = error.responseText;
             if (error.status == 404) {
-                message = "Something goes wrong.<br>Try to reload the application.";
+                MessageDialog.openReloadDialog("Something goes wrong.<br>Try to reload the application.");
+            } else {
+                MessageDialog.openErrorDialog(error.responseText);
             }
-            MessageDialog.openErrorDialog(message);
         }
     }).always(() => { hideLoadingAnimation() });
 });
@@ -113,7 +113,7 @@ $("#uploadForm").submit(function (e) {
     for (let v of formFileData.values()) {
         Log.debug(v);
     }
-
+    
     workflow.uploadFile(formFileData);
 });
 
@@ -129,18 +129,16 @@ $("#cancelUploadFormButton").on("click", () => {
 })
 
 // display upload dialog and set file type to upload
-$(".upload-btn").on("click", (button) => {
-    Log.debug(button);
+$(".upload-btn").on("click", async event => {
     $("#formFile").val(""); // clean formFile input
-    switch (button.target.id) {
+    switch (event.currentTarget.id) {
         case "feat-up-btn":
             UploadFileDialog.openFeatures();
             workflow.setUploadFileType("features");
             break;
 
         case "opt-up-btn":
-            UploadFileDialog.openModel();
-            workflow.setUploadFileType("model");
+            preOperationOnOptUp();
             break;
 
         case "opt-res-up-btn":
@@ -152,6 +150,23 @@ $(".upload-btn").on("click", (button) => {
     }
 });
 
+function onOptUp() {
+    $("#confirmationDialogModalOkButton").off("click");
+    UploadFileDialog.openModel();
+    workflow.setUploadFileType("model");
+}
+
+function preOperationOnOptUp() {
+    if (workflow.getUIFlags().features) {
+        $("#confirmationDialogModalTitle").text("Warning")
+        $("#confirmationDialogModalBody").html("This operation will overwrite features and protocols files.<br>Do you want to continue anyway ?");
+        $("#confirmationDialogModalCancelButton").text("Cancel");
+        $("#confirmationDialogModalOkButton").text("Yes").on("click", onOptUp);
+        $("#confirmationDialogModal").modal("show");
+    } else {
+        return onOptUp();
+    }
+}
 
 // delete features
 $(".delete-btn").on("click", (button) => {
@@ -179,7 +194,20 @@ $(".delete-btn").on("click", (button) => {
                     "config/parameters.json",
                     "config/morph.json",
                     "morphology/*",
-                    "mechanisms/*"
+                    "mechanisms/*",
+                    "x86_64/",
+                    "zipfolder.py",
+                    "job_parameters.json",
+                    "ipyparallel.sbatch",
+                    "checkpoints/",
+                    "mod_nsgportal/",
+                    "figures/",
+                    "resume_job_settings.json",
+                    "makelib.err",
+                    "makelib.out",
+                    "tools/",
+                    "figures/",
+                    "r_seed*/"
                 ]
             });
             break;
@@ -228,13 +256,29 @@ $(".download-btn").on("click", (button) => {
 
 
 // display and close settings dialog
-$("#opt-set-btn").on("click", () => {
-    Log.debug("Set parameters button clicked");
-    let settings = workflow.getOptimizationSettings();
-    Log.debug(settings);
-    OptimizationSettingsDialog.loadSettings(settings);
-    OptimizationSettingsDialog.open();
-})
+$("#opt-set-btn").on("click", openOptimizationSettings);
+
+async function openOptimizationSettings(event) {
+    let btn = event.currentTarget.id;
+    $("#" + btn).blur();
+
+    Log.debug(btn + " clicked, optimization settings opening...");
+
+    await workflow.getOptimizationSettingsAsPromise()
+        .then(settings => {
+            if (!workflow.getProps().resume) {
+                $("#job-action-resume").addClass("disabled");
+            } else {
+                $("#job-action-resume").removeClass("disabled");
+            }
+            OptimizationSettingsDialog.loadSettings(settings);
+            OptimizationSettingsDialog.open();
+        }).catch(error => {
+            checkRefreshSession(error);       
+            Log.error("Error on getting settings");
+            Log.debug(error);
+        });
+}
 
 $("#cancel-param-btn").on("click", () => {
     Log.debug("Close parameters button clicked");
@@ -243,8 +287,8 @@ $("#cancel-param-btn").on("click", () => {
 
 $("#apply-param").on("click", () => {
     Log.debug("Uploading optimization settings");
-    let formData = OptimizationSettingsDialog.getJsonData();
-    if (formData.hpc == "DAINT-CSCS" || formData.hpc == "SA-CSCS" || "SA-NSG" ) {
+    let formData = OptimizationSettingsDialog.getJsonData();    
+    if (formData.hpc == "DAINT-CSCS" || formData.hpc == "SA" ) {
         showLoadingAnimation("Checking login...");
         $.get("/hh-neuron-builder/get-authentication")
             .done(() => {
@@ -252,8 +296,9 @@ $("#apply-param").on("click", () => {
                 workflow.uploadOptimizationSettings(formData);
             }).fail((error) => {
                 checkRefreshSession(error);
-                $("#hpcAuthAlert").addClass("show");        
-            }).always(() => { hideLoadingAnimation() });
+                showHpcAuthAlert();
+                hideLoadingAnimation();  
+            })
     } else {
         OptimizationSettingsDialog.close();
         workflow.uploadOptimizationSettings(formData);
@@ -297,15 +342,16 @@ $("#save-feature-files").on("click", () => {
             $("#modalNFEContainer").removeClass("show");
             workflow.updateProperties();
         }).fail((error) => {
-            alert("Something goes wrong. Please download the Features files and upload them manually.");
-        }).always(() => { hideLoadingAnimation() });
+            hideLoadingAnimation();
+            showErrorAlert(makeAlertText("Error", "Something goes wrong. Please download the Features files and upload them manually."));
+        });
 });
 
 /* **** */
 
 /* Model Catalog */
 
-$("#opt-db-hpc-btn").on("click", chooseOptModel);
+$("#opt-db-hpc-btn").on("click", preOperationOnChooseOpt);
 $("#closeModalMCButton").on("click", closeModelCatalog);
 
 function closeModelCatalog() {
@@ -314,8 +360,22 @@ function closeModelCatalog() {
 }
 
 
+function preOperationOnChooseOpt() {
+    if (workflow.getUIFlags().features) {
+        $("#confirmationDialogModalTitle").text("Warning")
+        $("#confirmationDialogModalBody").html("This operation will overwrite features and protocols files.<br>Do you want to continue anyway ?");
+        $("#confirmationDialogModalCancelButton").text("Cancel");
+        $("#confirmationDialogModalOkButton").text("Yes").on("click", chooseOptModel);
+        $("#confirmationDialogModal").modal("show");
+    } else {
+        return chooseOptModel();
+    }
+}
+
+
 var modelsReady = false;
 function chooseOptModel() {
+    $("#confirmationDialogModalOkButton").off("click")
     if (modelsReady) {
         $("#modalMC").modal("show");
         $("#closeModalMCButton").css("display", "block").addClass("show");
@@ -364,7 +424,6 @@ function chooseOptModel() {
         $("#modalMC").modal("show");
         $("#closeModalMCButton").css("display", "block").addClass("show");
         $(".mc-model").on("click", (button) => {
-            console.log(button.target.getAttribute("id"));
             if (button.target.getAttribute("id") != "external_link") {
                 closeModelCatalog();
                 let optimization_id = button.currentTarget.getAttribute("id");
@@ -378,7 +437,8 @@ function chooseOptModel() {
                     }).fail((error) => {
                         checkRefreshSession(error);
                         Log.error(error);
-                    }).always(() => { hideLoadingAnimation() })
+                        MessageDialog.openInfoDialog(error.responseText);
+                    }).always( () => hideLoadingAnimation() );
             }
         });
     }).done(() => {
@@ -449,7 +509,6 @@ function formatDescription(meta = "") {
 
 $("#launch-opt-btn").on("click", () => {
     workflow.runOptimization();
-
 })
 
 $("#closeFileManagerButton").on("click", () => {
@@ -459,28 +518,30 @@ $("#closeFileManagerButton").on("click", () => {
 })
 
 
-
-
-
 /* FETCH JOBS */
 
-
-$("#opt-fetch-btn").on("click", () => {
+$("#opt-fetch-btn").on("click", async () => {
     Log.debug('Fetch job');
-    $("#overlayjobs").css("display", "block");
-    // $("#overlaywrapper").css("z-index", "100").addClass("show");
     $("#overlaywrapper").css("display", "block");
+    $("#overlayjobs").css("display", "block");
+    await sleep(10);
+    $("#overlaywrapper").addClass("show");
+    $("#overlayjobs").addClass("show");
     $(".list-group-item.fetch-jobs").attr("aria-disabled", "false").removeClass("disabled active");
 });
 
 $("#cancel-job-list-btn").on("click", closeJobFetchDiv);
 
-function closeJobFetchDiv() {
+async function closeJobFetchDiv() {
     Log.debug('Close job fetch');
-    resetJobFetchDiv();
+
     $("#overlayjobs").removeClass("show scroll-long-content");
+    $("#overlaywrapper").removeClass("show");
+    await sleep(500);
     $("#overlayjobs").css("display", "none");
     $("#overlaywrapper").css("display", "none");
+
+    resetJobFetchDiv();
 }
 
 $("#refresh-job-list-btn").on("click", () => {
@@ -493,26 +554,22 @@ $("#refresh-job-list-btn").on("click", () => {
 });
 
 
-// var is_user_authenticated = sessionStorage.getItem("isUserAuthenticated");
-
-function dismissAlert(el) {
-    console.log($(el).parent().removeClass("show"));
-}
-
 function resetJobFetchDiv() {
     $("#overlayjobs").removeClass("scroll-long-content");
     $("#nsgLoginRow").css("display", "none");
+    $("#saChoiseRow").css("display", "none");
     $("#spinnerRow").css("display", "none");
     $("#progressRow").css("display", "none");
     $("#tableRow").css("display", "none");
     $("#job-list-body").empty();
-    $("#jobsAuthAlert").removeClass("show");
     $("#cancel-job-list-btn").prop("disabled", false);
     $("#refresh-job-list-btn").prop("disabled", true);
     $(".list-group-item.fetch-jobs").removeClass("disabled active clicked").attr("aria-disabled", "false");
     $("#checkNsgSpinnerButton").css("opacity", "0");
     $("#usernameNsg").removeClass("is-invalid");
     $("#passwordNsg").removeClass("is-invalid");
+    $("#sa-project-dropdown-jobs-btn").prop("disabled", true);
+    $("#sa-fetch-jobs").prop("disabled", true);
     resetProgressBar();
 }
 
@@ -524,16 +581,57 @@ $(".jobs-unicore").on("click", (button) => {
         return false;
     }
     resetJobFetchDiv();
+    $("#spinnerRow").css("display", "flex");
+    jButton.addClass("clicked active");
     $.get("/hh-neuron-builder/get-authentication")
         .done(() => {
-            jButton.addClass("clicked");
-            displayJobList(jButton);
+            if (button.currentTarget.id == "jobsDaint") {
+                displayJobList(jButton);
+            } else if (button.currentTarget.id == "jobsSA") {
+                jButton.addClass("active clicked");
+                loadSAContent();
+            }
         })
         .fail((error) => { 
             checkRefreshSession(error);
-            $("#jobsAuthAlert").addClass("show");
+            $("#spinnerRow").css("display", "none");
+            showJobsAuthAlert();
+            jButton.removeClass("clicked active");
         });
 });
+
+
+function loadSAContent() {
+    $("#spinnerRow").css("display", "flex");
+    $.getJSON("/hh-neuron-builder/get-service-account-content")
+        .done((data) => {
+            Log.debug(data);
+            if (!data["service-account"]) {
+                showServiceAccountAlert()
+                $("#jobsSA").removeClass("clicked active").blur();
+                return;
+            }
+            populateServiceAccountSettings(data["service-account"], "jobs");
+            $("#tableRow").css("display", "none");
+            $("#saChoiseRow").css("display", "flex");
+            if ($("#sa-hpc-dropdown-jobs-btn").text().toLowerCase() != "select hpc") {
+                $(".dropdown-item.project." + $("#sa-hpc-dropdown-jobs-btn").text().toLowerCase()).removeClass("gone");
+                $("#sa-project-dropdown-jobs-btn").prop("disabled", false);
+                $("#sa-fetch-jobs").prop("disabled", false);
+            }
+        })
+        .then(() => {
+            $("#spinnerRow").css("display", "none");
+        })
+}
+
+
+$("#sa-fetch-jobs").on("click", () => {
+    // resetJobFetchDiv();
+    $("#saChoiseRow").css("display", "none");
+    displayJobList($("#jobsSA"));
+}) 
+
 
 $("#jobsNSG").on("click", (button) => {
     let jButton = $("#" + button.currentTarget.id);
@@ -541,10 +639,9 @@ $("#jobsNSG").on("click", (button) => {
         return false;
     }
     resetJobFetchDiv();
-    $("#jobsNSG").addClass("active");
+    $("#jobsNSG").addClass("active clicked");
     $("#tableRow").css("display", "none");
     $("#nsgLoginRow").css("display", "flex");
-    jButton.addClass("clicked");
 });
 
 
@@ -561,29 +658,39 @@ function displayJobList(button) {
     button.attr("aria-disabled", "false").removeClass("disabled").addClass("active");
     let hpc = button.attr("name");
 
-    $.getJSON("/hh-neuron-builder/fetch-jobs/" + exc, { hpc })
+    let saHPC, saProject;
+    if (hpc == "SA") {
+        saHPC = $("#sa-hpc-dropdown-jobs-btn").text().toLowerCase();
+        saProject = $("#sa-project-dropdown-jobs-btn").text().toLowerCase();
+    }
+
+    $.getJSON("/hh-neuron-builder/fetch-jobs/" + exc, { hpc, saHPC, saProject })
         .done((results) => {
             let jobs = results.jobs;
-            Log.debug(jobs);
             if ($.isEmptyObject(jobs)) {
                 closeJobFetchDiv();
                 MessageDialog.openInfoDialog("No jobs on <b>" + hpc + "</b> system");
                 return false;
             }
+            // jobs = $.extend({'-1': {}, '-2': {}, '-3': {}}, jobs);
             for (let job_id of Object.keys(jobs)) {
+                if (job_id < 0) {
+                    $("#job-list-body").append("<tr><td style='color: rgba(255, 255, 255, .5)'>1</td></tr>");
+                    continue;
+                }
                 let job = jobs[job_id];
                 let statusColor = "";
-                let disabled = "disabled";
-                if (job.status == "COMPLETED" || job.status == "SUCCESSFUL" || job.status == "FAILED") {
+                let downloadDisabled = "disabled";
+                if (job.status == "COMPLETED" || job.status == "SUCCESSFUL") {
                     statusColor = "#00802b"
-                    disabled = "";
-                    if (job.status == "FAILED") {
-                        statusColor = "#DD9900";
-                    }
+                    downloadDisabled = "";
+                } else if (job.status == "FAILED") {
+                    statusColor = "#DF0000";
+                    downloadDisabled = ""
                 } else {
                     statusColor = "#DD9900";
-                    disabled = "disabled";
                 }
+                $("#overlayjobs").removeClass("scroll-long-content");
 
                 $("#job-list-body").append(
                     "<tr>"
@@ -592,21 +699,17 @@ function displayJobList(button) {
                     + "<td style='font-weight: bold; color: " + statusColor + "'>" + job.status + "</td>"
                     + "<td>" + job.date + "</td>"
                     + "<td>"
-                    + "<button type='button' id='" + job_id + "' class='btn workflow-btn job-download-button'" + disabled + ">Download</button>"
+                    + "<div id='" + job_id + "' class='row g-0'>"
+                    + "<div class='col'>" 
+                    + "<button type='button' class='btn workflow-btn job-button download' title='Download' " + downloadDisabled + "><i class='fas fa-cloud-download-alt fa-lg'></i></button>"
+                    + "</div>"
+                    + "</div>"
                     + "</td>"
                     + "</tr>"
-                )
+                );
             }
 
-            $(".job-download-button").on("click", (button) => {
-                var jobId = button.target.id;
-                var jobStatus = jobs[jobId].status
-                if (jobStatus == "SUCCESSFUL" || jobStatus == "COMPLETED") {
-                    downloadJobAndRunAnalysis(jobId);
-                } else {
-                    downloadJobOnly(jobId);
-                }
-            });
+            $(".job-button.download").on("click", downloadJobButtonCallback);
 
             $("#spinnerRow").css("display", "none");
             $("#progressRow").css("display", "none");
@@ -615,10 +718,9 @@ function displayJobList(button) {
             $("#cancel-job-list-btn").prop("disabled", false);
             $(".list-group-item.fetch-jobs").attr("aria-disabled", "false").removeClass("disabled clicked");
             
-            let windowHeight = $(window).height();
-            let overlayJobsHeight = $("#overlayjobs").height();
-            if (overlayJobsHeight > (windowHeight - (windowHeight / 10))) {
-                $("#overlayjobs").addClass("scroll-long-content");
+            let maxHeight = $(window).height() - $(window).height() * 30 / 100;
+            if ($("#tableRow").height() > maxHeight) {
+                $("#tableRow").css("max-height", maxHeight.toString() + "px");
             }
         }).fail((error) => {
             checkRefreshSession(error);
@@ -629,44 +731,61 @@ function displayJobList(button) {
     jobListButtonClicked = false;
 }
 
-function animateProgressBar(progress) {
-    let current_progress = parseFloat($(".progress-bar").attr("aria-valuenow"));
-    let next_progress = current_progress + progress;
-    $(".progress-bar").css("width", next_progress + "%").attr("aria-valuenow", next_progress);
+function downloadJobButtonCallback(button) {
+    let rowElement = button.currentTarget.parentElement.parentElement.parentElement.parentElement;
+    let jobId = button.currentTarget.parentElement.parentElement.id;
+    let jobName = rowElement.children[0].innerText;
+    let jobStatus = rowElement.children[2].innerText;
+    if (jobStatus == "SUCCESSFUL" || jobStatus == "COMPLETED") {
+        downloadJobAndRunAnalysis(jobId, jobName);
+    } else {
+        downloadJobOnly(jobId);
+    }
 }
 
 function setProgressBarValue(value) {
-    $(".progress-bar").css("width", parseInt(value) + "%").attr("aria-valuenow", parseInt(value));
+    $(".progress-bar").width(parseInt(value) + "%").attr("aria-valuenow", parseInt(value));
 }
 
 function resetProgressBar() {
-    $(".progress-bar").css("width", "0%").attr("aria-valuenow", "0");
+    $(".progress-bar").width("0%").attr("aria-valuenow", "0");
 }
 
 function setJobProcessingTitle(message) {
     $("#jobProcessingTitle").html(message);
 }
 
-function openJobProcessingDiv() {
-    $("#overlaywrapper").css("display", "block");
+async function openJobProcessingDiv() {
+    resetJobFetchDiv();
+    $("#overlayjobs").removeClass("show");
+    await sleep(500);
+    $("#overlayjobs").css("display", "none");
     $("#overlayjobprocessing").css("display", "block");
-    setProgressBarValue(0);
+    await sleep(10);
+    $("#overlayjobprocessing").addClass("show");
 }
 
-function closeJobProcessingDiv() {
+async function closeJobProcessingDiv() {
+    $("#overlayjobprocessing").removeClass("show");
+    $("#overlaywrapper").removeClass("show");
+    await sleep(500);
     $("#overlaywrapper").css("display", "none");
     $("#overlayjobprocessing").css("display", "none");
-    setProgressBarValue(0);
+    resetProgressBar();
 }
 
 async function downloadJobOnly(jobId) {
     Log.debug("Downloading " + jobId);
     // disable all buttons
-    const data = { "job_id": jobId, "hpc": $("button.fetch-jobs.active").attr("name") }
+    const data = {
+        "job_id": jobId,
+        "hpc": $("button.fetch-jobs.active").attr("name"),
+        "saHPC": $("#sa-hpc-dropdown-jobs-btn").text().toLowerCase(),
+        "saProject": $("#sa-project-dropdown-jobs-btn").text().toLowerCase() 
+    }
 
     $("#jobProcessingTitle").html("Downloading job:<br>" + jobId.toUpperCase() + "<br>");
 
-    closeJobFetchDiv();
     openJobProcessingDiv();
 
     await sleep(500);
@@ -685,52 +804,58 @@ async function downloadJobOnly(jobId) {
             checkRefreshSession(downloadError);
             closeJobProcessingDiv();
             Log.error("Status: " + downloadError.status + " > " + downloadError.responseText);
-            MessageDialog.openErrorDialog(downloadError.responseText)
+            MessageDialog.openErrorDialog(downloadError.responseText);
             workflow.updateProperties();
         });
 }
 
-async function downloadJobAndRunAnalysis(jobId) {
+async function downloadJobAndRunAnalysis(jobId, jobName) {
     Log.debug("Downloading " + jobId);
     // disable all buttons
-    const data = { "job_id": jobId, "hpc": $("button.fetch-jobs.active").attr("name") }
+    const data = {
+        "job_id": jobId,
+        "job_name": jobName,
+        "hpc": $("button.fetch-jobs.active").attr("name"),
+        "saHPC": $("#sa-hpc-dropdown-jobs-btn").text().toLowerCase(),
+        "saProject": $("#sa-project-dropdown-jobs-btn").text().toLowerCase() 
+    }
 
     $("#jobProcessingTitle").html("Downloading job:<br>" + jobId.toUpperCase() + "<br>");
 
-    closeJobFetchDiv();
     openJobProcessingDiv();
 
     await sleep(500);
-    $("#progressBarFetchJob").addClass("s40").removeClass("s20 s4 s2");
+    $("#progressBarFetchJob").addClass("s20").removeClass("s40 s4 s2");
     setProgressBarValue(40);
 
     $.get("/hh-neuron-builder/fetch-job-result/" + exc, data)
         .done((downloadResult) => {
             Log.debug(downloadResult);
             setJobProcessingTitle("Running Analysis...<br> ");
+            $("#progressBarFetchJob").addClass("s40").removeClass("s20 s4 s2");
             setProgressBarValue(80);
             $.get("/hh-neuron-builder/run-analysis/" + exc)
                 .done(async (analysisResult) => {
                     setJobProcessingTitle("Completing...<br>");
-                    $("#progressBarFetchJob").addClass("s4").removeClass("s40 s20 s2");
+                    $("#progressBarFetchJob").addClass("s2").removeClass("s40 s20 s4");
                     setProgressBarValue(100);
-                    await sleep(4000);
+                    await sleep(2000);
                     closeJobProcessingDiv(); 
-                    workflow.updateProperties();
                 }).fail((analysisError) => {
                     checkRefreshSession(analysisError);
                     Log.error("Status: " + analysisError.status + " > " + analysisError.responseText);
                     closeJobProcessingDiv();
                     MessageDialog.openErrorDialog(analysisError.responseText);
+                }).always(() => {
                     workflow.updateProperties();
                 })
         }).fail((downloadError) => {
             checkRefreshSession(downloadError);
             closeJobProcessingDiv();
             Log.error("Status: " + downloadError.status + " > " + downloadError.responseText);
-            MessageDialog.openErrorDialog(downloadError.responseText)
+            MessageDialog.openErrorDialog(downloadError.responseText);
             workflow.updateProperties();
-        });
+        })
 }
 
 $("#checkNsgLoginButton").on("click", () => {
@@ -760,7 +885,7 @@ $("#checkNsgLoginButton").on("click", () => {
 var blueNaasModel = "";
 $("#run-sim-btn").on("click", () => {
     showLoadingAnimation("Uploading to BlueNaas...");
-    $("#run-sim-btn").prop("disabled", true);
+    $("#run-sim-btn").prop("disabled", true).blur();
     $.get("/hh-neuron-builder/upload-to-naas/" + exc)
         .done((data) => {
             if (blueNaasModel != data) {
@@ -795,8 +920,9 @@ $("#back-to-wf-btn").on("click", () => {
 
 /*          Registration Model           */
 
-$("#reg-mod-main-btn").on("click", () => {
+$("#reg-mod-main-btn").on("click", async () => {
     $("#modalBlueNaasContainer").removeClass("show");
+    // await sleep(300);
     ModelRegistrationDialog.open();
 })
 
@@ -825,5 +951,35 @@ $("#register-model-btn").on("click", () => {
     workflow.registerModel(formData);
 })
 
-
 /* ************************************* */
+
+$("#modalHHFCloseButton").on("click", async () => {
+    if (workflow.getProps().model.optimization_files.parameters !== "") {
+        $("#overlaywrapper").css("display", "block");
+        $("#overlayparameterstemplate").css("display", "block");
+        await sleep(200);
+        $("#overlaywrapper").addClass("show");
+        $("#overlayparameterstemplate").addClass("show");
+    } else {
+        openFileManager(true);
+    }
+})
+
+$(".parametersTemplate").on("click", (event) => {
+    showLoadingAnimation("Loading paramteres template...");
+    let parametersType = $(event.currentTarget).attr("name");
+    $.post("/hh-neuron-builder/hhf-load-parameters-template/" + exc, {type: parametersType})
+        .fail((error) => {
+            Log.error(error);
+            MessageDialog.openErrorDialog("Please upload a parameters file manually.", "Something went wrong!");
+        }).always(async () => {
+            workflow.updateProperties();
+            hideLoadingAnimation();
+            $("#overlaywrapper").removeClass("show");
+            $("#overlayparameterstemplate").removeClass("show");
+            await sleep(500);
+            $("#overlaywrapper").css("display", "none");
+            $("#overlayparameterstemplate").css("display", "none");
+            openFileManager(true);
+        })
+})

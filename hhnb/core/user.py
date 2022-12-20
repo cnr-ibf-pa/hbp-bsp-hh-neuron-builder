@@ -48,7 +48,7 @@ class EbrainsUser:
 
     def _get_user_info(self):
         """
-        Returns a json containing all the user informations.
+        Returns a json containing all the user information.
         If any error occurred an UserInfoError will be raised.
         """
         r = requests.get(url=OIDC_OP_USER_ENDPOINT,
@@ -154,7 +154,6 @@ class NsgUser:
                          auth=(self._username, self._password), 
                          headers={'cipres-appkey': NSG_KEY},
                          verify=False)
-        print(r.status_code, r.content)
         if r.status_code == 200:
             return True
         return False

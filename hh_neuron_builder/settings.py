@@ -166,12 +166,13 @@ STATICFILES_DIRS = [
 MEDIA_ROOT = conf.MEDIA_ROOT
 
 HHF_TEMPLATE_DIR = os.path.join(BASE_DIR, 'hh_neuron_builder', 'config', 'hhf_template', 'hhf')
+HHF_PARAMETERS_TEMPLATE_DIR = os.path.join(BASE_DIR, 'hh_neuron_builder', 'config', 'hhf_template', 'parameters')
 if not os.path.exists(HHF_TEMPLATE_DIR):
     os.makedirs(HHF_TEMPLATE_DIR)
     
 TMP_DIR = os.path.join(MEDIA_ROOT, 'hhnb', 'tmp')
 if not os.path.exists(TMP_DIR):
-    os.mkdir(TMP_DIR) 
+    os.makedirs(TMP_DIR) 
 
 
 MODEL_CATALOG_FILTER = {
@@ -219,11 +220,14 @@ OIDC_OP_AUTHORIZATION_ENDPOINT = 'https://iam.ebrains.eu/auth/realms/hbp/protoco
 OIDC_OP_TOKEN_ENDPOINT = 'https://iam.ebrains.eu/auth/realms/hbp/protocol/openid-connect/token'
 OIDC_OP_USER_ENDPOINT = 'https://iam.ebrains.eu/auth/realms/hbp/protocol/openid-connect/userinfo'
 
+
+# OIDC_TIMEOUT = 1
+
+
 LOGIN_REDIRECT_URL = "/hh-neuron-builder"
 LOGOUT_REDIRECT_URL = "/hh-neuron-builder"
 
 LOGIN_URL = 'oidc_authentication_init'
-
 
 # Logging
 

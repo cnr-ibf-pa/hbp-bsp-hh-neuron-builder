@@ -5,7 +5,6 @@ This package contains all the stuff to build up a Neuron Model object.
 """
 
 
-import datetime
 from hhnb.core.lib.exception.model_exception import *
 from hhnb.core.lib.model import *
 
@@ -41,7 +40,7 @@ def _write_file_to_directory(src_file, dst_dir, dst_file=None):
     The destination file can be also a json file and in this case,
     the output will be formatted as json. In the other case the
     source file will be treated as a binary file. Furthermore
-    the copy can be explicitely named using the "dst_file" parameter
+    the copy can be explicitly named using the "dst_file" parameter
     otherwise the source file name will be used.   
 
     Parameters
@@ -84,7 +83,7 @@ class Model(ModelBase):
         """
         Initialize the Model object by reading all the files present
         in the "model_dir" folder.
-        For keyword argouments read the hhnb.core.model.Model doc.
+        For keyword arguments read the hhnb.core.model.Model doc.
 
         Parameters
         ----------
@@ -100,7 +99,6 @@ class Model(ModelBase):
         super().__init__(key, **kwargs)
         self._ETRACES = False
 
-
     def _check_if_file_exists(self, **kwargs):
         """
         Private method that checks if a file already exists
@@ -114,12 +112,12 @@ class Model(ModelBase):
         Raises
         ------
         TypeError
-            if the argoument passed is wrong
+            if the argument passed is wrong
         """
         if len(kwargs) > 1:
             raise TypeError(f'{__name__} takes only 1 keyword argument')
         
-        keyword_list = ['paramters', 'protocols', 'features', 'morphology']
+        keyword_list = ['parameters', 'protocols', 'features', 'morphology']
         key = list(kwargs.keys())[0]
         
         if key not in keyword_list:
@@ -138,49 +136,10 @@ class Model(ModelBase):
             return False
         return c
 
-    # def set_features(self, features=None, protocols=None):
-        # f = self._features.get_features()
-        # if not self._check_if_file_exists(features=f):
-            # shutil.copy(f)
-        # super().set_features(features=features, protocols=protocols)
-
-    # def set_features(self, features=None, protocols=None):
-    #     if not features and not protocols:
-    #         if os 
-
-    # def set_morphology(self, morphology=None):
-    #     if not morphology:
-    #         morphology = os.path.join(
-    #             self._model_dir, 
-    #             os.listdir(os.path.join(self._model_dir, 'morphology'))[0]
-    #         )
-
-    #     super().set_morphology(morphology)
-
-    # def set_mechanisms(self, mechansisms=None):
-    #     if not mechansisms:
-    #         mechansisms = os.path.join(self._model_dir, 'mechanisms')
-    #     super().set_mechanisms(mechansisms=mechansisms)
-
-    # def set_parameters(self, parameters=None):
-    #     if not parameters:
-    #         parameters = os.path.join(self._model_dir, 'config', 'parameters.json')
-    #     super().set_parameters(parameters=parameters)
-
-
-    # @classmethod
-    # def from_zip(cls, zip_model):
-    #     model = cls()
-    #     # TODO: to be complete
-    #     tmp_unzip_model = os.path.join(TMP_DIR, datetime.datetime.now())
-    #     shutil.unpack_archive(zip_model, tmp_unzip_model)
-    #     pass
-
-
     @classmethod
     def from_dir(cls, model_dir, key):
         """
-        Thie method is used to initialize automatically a Model object
+        This method is used to initialize automatically a Model object
         by passing the model root folder as parameter, reads all the 
         files and the structure of the folder subtree and return a 
         Model object with the "key" set as the model global key. 
@@ -261,9 +220,9 @@ class Model(ModelBase):
     def update_optimization_files(self, model_dir):
         """
         This method update the current model optimization files using 
-        the new ones in the "model_dir" folder passed as argoument.
+        the new ones in the "model_dir" folder passed as argument.
         
-        With "optimization files" is intendend any files that belog to 
+        With "optimization files" is intended any files that belong to 
         the following categories: ["parameters", "morphology", "mechanisms"].  
 
         Parameters
@@ -276,30 +235,60 @@ class Model(ModelBase):
         FileNotFoundError
             if any optimization file is not found 
         """
+        
+        src_config_dir = os.path.join(model_dir, 'config')
+        src_morph_dir = os.path.join(model_dir, 'morphology')
+        src_mechans_dir = os.path.join(model_dir, 'mechanisms')
+        
+        dst_config_dir = os.path.join(self._model_dir, 'config')
+        dst_morph_dir = os.path.join(self._model_dir, 'morphology')
+        dst_mechans_dir = os.path.join(self._model_dir, 'mechanisms')
+
         try:
             # parameters
-            parameters = shutil.copy(os.path.join(model_dir, 'config', 'parameters.json'),
-                                     os.path.join(self._model_dir, 'config'))
-            self.set_parameters(parameters)
+            if os.path.exists(src_config_dir) and \
+                os.path.exists(os.path.join(src_config_dir, 'parameters.json')):
+                parameters = shutil.copy(os.path.join(src_config_dir, 'parameters.json'),
+                                         dst_config_dir)
+                self.set_parameters(parameters)
+
             # morphology
-            for m in os.listdir(os.path.join(model_dir, 'morphology')):
-                morph = shutil.copy(os.path.join(model_dir, 'morphology', m),
-                                    os.path.join(self._model_dir, 'morphology'))
-                conf_file = shutil.copy(os.path.join(model_dir, 'config', 'morph.json'),
-                                        os.path.join(self._model_dir, 'config'))
-            self.set_morphology(morphology=morph)
+            if os.path.exists(src_morph_dir) and len(os.listdir(src_morph_dir)) == 1:
+                for m in os.listdir(dst_morph_dir):
+                    os.remove(os.path.join(dst_morph_dir, m))
+                try:
+                    os.remove(os.path.join(dst_config_dir, 'morph.json'))
+                except FileNotFoundError:
+                    pass
+                
+                for m in os.listdir(src_morph_dir):
+                    morph = shutil.copy(os.path.join(src_morph_dir, m),
+                                        os.path.join(dst_morph_dir, m))
+
+                self.set_morphology(morph)
+                with open(os.path.join(dst_config_dir, 'morph.json'), 'w') as morph_conf:
+                    json.dump(self.get_morphology().get_config(), morph_conf)
+
+
             # mechanisms
-            for m in os.listdir(os.path.join(model_dir, 'mechanisms')):
-                shutil.copy(os.path.join(model_dir, 'mechanisms', m),
-                            os.path.join(self._model_dir, 'mechanisms'))
-            self.set_mechanisms(os.path.join(self._model_dir, 'mechanisms'))
-            # python's files
+            if os.path.exists(src_mechans_dir) and len(os.listdir(src_mechans_dir)) > 0:
+                for m in os.listdir(dst_mechans_dir):
+                    os.remove(os.path.join(dst_mechans_dir, m))
+                
+                for m in os.listdir(src_mechans_dir):
+                    shutil.copy(os.path.join(src_mechans_dir, m),
+                                os.path.join(dst_mechans_dir, m))
+
+                self.set_mechanisms(dst_mechans_dir)
+
+            pass
+
         except FileNotFoundError as e:
             raise FileNotFoundError(e)
 
     def get_optimization_files_raw_status(self):
         """
-        Returns a dictionaire with the optimization files as keys and 
+        Returns a dictionary with the optimization files as keys and 
         their status (True if present, False otherwise) as a boolean value.
         """
         return {
@@ -310,7 +299,7 @@ class Model(ModelBase):
 
     def get_optimization_files_status(self):
         """
-        Returns a dictionaire with the optimization files as keys and
+        Returns a dictionary with the optimization files as keys and
         their status as a message.
         """
         return {
@@ -338,7 +327,7 @@ class ModelUtil:
     @staticmethod
     def clone(model):
         """
-        Static method that clone a Model object passed as argoument.
+        Static method that clone a Model object passed as argument.
 
         Parameters
         ----------
@@ -350,13 +339,36 @@ class ModelUtil:
         hhnb.core.model.Model
             a new Model object with the same files and properties of the cloned one
         """
-        return Model(
+        return ModelBase(
             features=model.get_features(),
             parameters=model.get_parameters(),
             morphology=model.get_morphology(),
             mechanisms=model.get_mechanisms(),
             key=model.get_key()
         )
+
+    @staticmethod
+    def create_model_tree(model_dir):
+        """
+        Create model tree folder by passing the model_dir path.
+
+        Parameters
+        ----------
+        model_dir : str
+            the path of where to create the model tree.
+
+        Raise
+        -----
+        FileExistError
+            if any subfolder already exists.
+        """
+        
+        if not os.path.exists(model_dir):
+            os.mkdir(model_dir)
+        os.mkdir(os.path.join(model_dir, 'config'))
+        os.mkdir(os.path.join(model_dir, 'morphology'))
+        os.mkdir(os.path.join(model_dir, 'mechanisms'))
+        os.mkdir(os.path.join(model_dir, 'template'))
 
     @staticmethod
     def write_to_workflow(model, workflow_id):
@@ -385,8 +397,8 @@ class ModelUtil:
             raise FileNotFoundError('%s path not found' % workflow_id)
         model_dir = os.path.join(workflow_id, 'model')
         if os.path.exists(model_dir):
-            os.rmtree(model_dir)
-        ModelUtil.create_model_subdir(model_dir)
+            shutil.rmtree(model_dir)
+        ModelUtil.create_model_tree(model_dir)      
         _write_file_to_directory(model.get_features().get_features(), 
                    os.path.join(model_dir, 'config'), 'features.json')
         _write_file_to_directory(model.get_features().get_protocols(),
@@ -463,7 +475,7 @@ class ModelUtil:
     def update_key(model, key=None):
         """
         This static method update the key of all Model's files with the 
-        new one passed as argoument and then it will be set as the Model
+        new one passed as argument and then it will be set as the Model
         global key. Otherwise the files' keys are updated using the current
         Model global key.
 
@@ -477,7 +489,7 @@ class ModelUtil:
         Raises
         ------
         TypeError
-            if the model object passed is not an istance of hhnb.core.model.Model
+            if the model object passed is not an instance of hhnb.core.model.Model
         shutil.Error
             is any error occurred when trying to update the files' key
         """

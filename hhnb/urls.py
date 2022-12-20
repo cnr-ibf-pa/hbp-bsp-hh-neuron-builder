@@ -33,10 +33,7 @@ register_converter(converters.HpcConverter, 'hpc')
 register_converter(converters.JobIdConverter, 'jobid')
 register_converter(converters.FolderConverter, 'folder')
 register_converter(converters.ConfigFileConverter, 'config_file')
-
-
 register_converter(converters.FileTypeConverter, 'file_type')
-
 
 urlpatterns = [
     # session refresh
@@ -102,4 +99,9 @@ urlpatterns = [
     path('hhf-get-model-key/<exc:exc>', views.hhf_get_model_key),
     path('hhf-apply-model-key/<exc:exc>', views.hhf_apply_model_key),
     path('hhf-save-config-file/<folder:folder>/<config_file:config_file>/<exc:exc>', views.hhf_save_config_file),
+
+    path('hhf-load-parameters-template/<exc:exc>', views.hhf_load_parameters_template),
+
+    # get service-account content
+    path('get-service-account-content', views.get_service_account_content),
 ]
