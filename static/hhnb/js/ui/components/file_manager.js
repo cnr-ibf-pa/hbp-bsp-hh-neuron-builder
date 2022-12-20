@@ -153,10 +153,11 @@ $("#deleteFileButton").click(function() {
         return false;
     }
 
+    $("#confimationDialogModalTitle").text("Warning");
     if (!editorMode && $(".file-item.active").length > 1) {
-        $("#confirmationDialogModalTitle").text("Are you sure to delete these files ?");
+        $("#confirmationDialogModalBody").text("Are you sure to delete these files ?");
     } else {
-        $("#confirmationDialogModalTitle").text("Are you sure to delete this file ?");
+        $("#confirmationDialogModalBody").text("Are you sure to delete this file ?");
     }
 
     $("#confirmationDialogModalCancelButton").text("Cancel");

@@ -129,18 +129,16 @@ $("#cancelUploadFormButton").on("click", () => {
 })
 
 // display upload dialog and set file type to upload
-$(".upload-btn").on("click", (button) => {
-    Log.debug(button);
+$(".upload-btn").on("click", event => {
     $("#formFile").val(""); // clean formFile input
-    switch (button.target.id) {
+    switch (event.currentTarget.id) {
         case "feat-up-btn":
             UploadFileDialog.openFeatures();
             workflow.setUploadFileType("features");
             break;
 
         case "opt-up-btn":
-            UploadFileDialog.openModel();
-            workflow.setUploadFileType("model");
+            preOperationOnOptUp();
             break;
 
         case "opt-res-up-btn":
@@ -152,6 +150,22 @@ $(".upload-btn").on("click", (button) => {
     }
 });
 
+function onOptUp() {
+    UploadFileDialog.openModel();
+    workflow.setUploadFileType("model");
+}
+
+function preOperationOnOptUp() {
+    if (workflow.getUIFlags().features) {
+        $("#confirmationDialogModalTitle").text("Warning")
+        $("#confirmationDialogModalBody").html("This operation will overwrite features and protocols files.<br>Do you want to continue anyway ?");
+        $("#confirmationDialogModalCancelButton").text("Cancel");
+        $("#confirmationDialogModalOkButton").text("Yes").attr("onclick", "onOptUp()");
+        $("#confirmationDialogModal").modal("show");
+    } else {
+        return onOptUp();
+    }
+}
 
 // delete features
 $(".delete-btn").on("click", (button) => {
@@ -336,7 +350,7 @@ $("#save-feature-files").on("click", () => {
 
 /* Model Catalog */
 
-$("#opt-db-hpc-btn").on("click", chooseOptModel);
+$("#opt-db-hpc-btn").on("click", preOperationOnChooseOpt);
 $("#closeModalMCButton").on("click", closeModelCatalog);
 
 function closeModelCatalog() {
@@ -345,8 +359,21 @@ function closeModelCatalog() {
 }
 
 
+function preOperationOnChooseOpt() {
+    if (workflow.getUIFlags().features) {
+        $("#confirmationDialogModalTitle").text("Warning")
+        $("#confirmationDialogModalBody").html("This operation will overwrite features and protocols files.<br>Do you want to continue anyway ?");
+        $("#confirmationDialogModalCancelButton").text("Cancel");
+        $("#confirmationDialogModalOkButton").text("Yes").attr("onclick", "chooseOptModel()");
+        $("#confirmationDialogModal").modal("show");
+    } else {
+        return chooseOptModel();
+    }
+}
+
+
 var modelsReady = false;
-function chooseOptModel() {
+function chooseOptModel() {    
     if (modelsReady) {
         $("#modalMC").modal("show");
         $("#closeModalMCButton").css("display", "block").addClass("show");
