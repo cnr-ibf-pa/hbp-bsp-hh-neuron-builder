@@ -1,5 +1,11 @@
 #! /usr/bin/python3
 
+"""
+This script is used to automatically clean the storage of the
+Hodgkin-Huxley Neuron Builder backend.
+"""
+
+
 import argparse
 import os
 import datetime
