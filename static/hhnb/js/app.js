@@ -129,7 +129,7 @@ $("#cancelUploadFormButton").on("click", () => {
 })
 
 // display upload dialog and set file type to upload
-$(".upload-btn").on("click", event => {
+$(".upload-btn").on("click", async event => {
     $("#formFile").val(""); // clean formFile input
     switch (event.currentTarget.id) {
         case "feat-up-btn":
@@ -151,6 +151,7 @@ $(".upload-btn").on("click", event => {
 });
 
 function onOptUp() {
+    $("#confirmationDialogModalOkButton").off("click");
     UploadFileDialog.openModel();
     workflow.setUploadFileType("model");
 }
@@ -160,7 +161,7 @@ function preOperationOnOptUp() {
         $("#confirmationDialogModalTitle").text("Warning")
         $("#confirmationDialogModalBody").html("This operation will overwrite features and protocols files.<br>Do you want to continue anyway ?");
         $("#confirmationDialogModalCancelButton").text("Cancel");
-        $("#confirmationDialogModalOkButton").text("Yes").attr("onclick", "onOptUp()");
+        $("#confirmationDialogModalOkButton").text("Yes").on("click", onOptUp);
         $("#confirmationDialogModal").modal("show");
     } else {
         return onOptUp();
@@ -364,7 +365,7 @@ function preOperationOnChooseOpt() {
         $("#confirmationDialogModalTitle").text("Warning")
         $("#confirmationDialogModalBody").html("This operation will overwrite features and protocols files.<br>Do you want to continue anyway ?");
         $("#confirmationDialogModalCancelButton").text("Cancel");
-        $("#confirmationDialogModalOkButton").text("Yes").attr("onclick", "chooseOptModel()");
+        $("#confirmationDialogModalOkButton").text("Yes").on("click", chooseOptModel);
         $("#confirmationDialogModal").modal("show");
     } else {
         return chooseOptModel();
@@ -373,7 +374,8 @@ function preOperationOnChooseOpt() {
 
 
 var modelsReady = false;
-function chooseOptModel() {    
+function chooseOptModel() {
+    $("#confirmationDialogModalOkButton").off("click")
     if (modelsReady) {
         $("#modalMC").modal("show");
         $("#closeModalMCButton").css("display", "block").addClass("show");
