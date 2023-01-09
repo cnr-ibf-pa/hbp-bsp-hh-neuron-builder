@@ -872,7 +872,6 @@ class WorkflowUtil:
             the dictionary containing all files that
             comes from the HippocampusHub
         """
-        WorkflowUtil.set_default_parameters(workflow)
 
         morph = hhf_dict.get('morphology')
         etraces = hhf_dict.get('electrophysiologies', [])

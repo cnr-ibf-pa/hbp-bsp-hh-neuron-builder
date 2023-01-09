@@ -973,13 +973,14 @@ $(".parametersTemplate").on("click", (event) => {
             Log.error(error);
             MessageDialog.openErrorDialog("Please upload a parameters file manually.", "Something went wrong!");
         }).always(async () => {
-            workflow.updateProperties();
-            hideLoadingAnimation();
             $("#overlaywrapper").removeClass("show");
             $("#overlayparameterstemplate").removeClass("show");
             await sleep(500);
             $("#overlaywrapper").css("display", "none");
             $("#overlayparameterstemplate").css("display", "none");
+            workflow.updateProperties();
+            await sleep(500);
             openFileManager(true);
+            hideLoadingAnimation();
         })
 })
