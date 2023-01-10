@@ -622,7 +622,27 @@ def download_files(request, exc):
 
         return ResponseUtil.file_response(arch_file)
     
+    
     return ResponseUtil.ko_response(messages.NO_FILE_TO_DOWNLOAD)
+
+def show_results(request, exc):
+    """
+    Returns the pdf generated from the model analysis
+    """
+    
+    if request.method != 'GET':
+        return ResponseUtil.method_not_allowed('GET')
+    if not exc in request.session.keys():
+        return ResponseUtil.no_exc_code_response()
+    
+    workflow, _ = get_workflow_and_user(request, exc)
+    
+    try:
+        pdf = WorkflowUtil.generate_pdf_result(workflow)
+    except FileNotFoundError:
+        return ResponseUtil.ko_response(messages.FILE_NOT_FOUND_ERROR)
+       
+    return ResponseUtil.file_response(pdf)
 
 
 def delete_files(request, exc):

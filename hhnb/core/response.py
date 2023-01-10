@@ -189,3 +189,4 @@ class ResponseUtil:
         Returns an error HttpResponse when the request's method is not allowed. 
         """
         return HttpResponseNotAllowed(allowed_methods)
+    

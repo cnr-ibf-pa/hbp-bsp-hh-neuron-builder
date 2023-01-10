@@ -984,3 +984,22 @@ $(".parametersTemplate").on("click", (event) => {
             hideLoadingAnimation();
         })
 })
+
+// PDF Viewer
+async function showPDF(blob) {
+    let newBlob = new Blob([blob], {type: "application/pdf"});
+    const data = window.URL.createObjectURL(newBlob);
+    console.log(data);
+    let link = document.createElement("a");
+    link.href = data;
+    link.download = "results.pdf";
+    link.click();
+    setTimeout(function() {
+        window.URL.revokeObjectURL(data);
+    }, 100); 
+}
+$("#show-results-btn").on("click", () => {
+    fetch("/hh-neuron-builder/show-results/" + exc)
+        .then(r => r.blob())
+        .then(showPDF);
+})

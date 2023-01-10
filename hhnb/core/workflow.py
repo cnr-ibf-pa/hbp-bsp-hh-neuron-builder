@@ -15,6 +15,8 @@ from datetime import datetime
 from sys import prefix as env_prefix
 from pathlib import Path
 
+from PyPDF2 import PdfMerger
+
 import shutil
 import os
 import json
@@ -537,13 +539,19 @@ class Workflow(_WorkflowBase):
 
     def get_properties(self):
         """ Returns the workflow properties. """
+        
         analysis_flag = False
+        show_results_flag = False
         if len(os.listdir(self._analysis_dir)) == 1:
             analysis_model_dir = os.path.join(self._analysis_dir,
                                               os.listdir(self._analysis_dir)[0])
             if os.path.isdir(analysis_model_dir) != \
                 ['mechanisms', 'morphology', 'checkpoints']:
                 analysis_flag = True
+                
+            show_results_flag = any(os.scandir(os.path.join(analysis_model_dir, 
+                                                            'figures')))
+
 
         optset_flag = (False, 'Optimization parameters NOT set')
         if os.path.exists(self._optimization_settings):
@@ -569,7 +577,8 @@ class Workflow(_WorkflowBase):
             'job_submitted': self.get_optimization_settings().get('job_submitted', False),
             'results': any(os.scandir(self._results_dir)),
             'resume': os.path.exists(os.path.join(self._model_dir, 'checkpoints', 'checkpoint.pkl')),
-            'analysis': analysis_flag
+            'analysis': analysis_flag,
+            'show_results': show_results_flag
         }
         return props
 
@@ -1223,3 +1232,40 @@ class WorkflowUtil:
         except FileNotFoundError:
             pass                
         
+    @staticmethod
+    def generate_pdf_result(workflow):
+        """
+        Merge all pdf generated from the analysis process into one single pdf
+        for the current workflow.
+        
+        Parameters
+        ----------
+        workflow : hhnb.core.workflow.Workflow
+            the workflow that contains the figures.
+            
+        Returns
+        -------
+        str
+            the generated pdf file path.
+            
+        Raise
+        -----
+        FileNotFoundError
+            if analysis directory is not found inside the workflow.  
+        """
+
+        if len(os.listdir(workflow.get_analysis_dir())) != 1:
+            raise FileNotFoundError()
+        pdf_path = os.path.join(workflow.get_analysis_dir(),
+                                os.listdir(workflow.get_analysis_dir())[0],
+                                'figures')
+        pdf_list = os.listdir(pdf_path)
+        pdf_result = os.path.join(workflow.get_tmp_dir(), 'results.pdf')
+        
+        merger = PdfMerger()
+        for pdf in pdf_list:
+            merger.append(os.path.join(pdf_path, pdf))
+        merger.write(pdf_result)
+        merger.close()
+        
+        return pdf_result

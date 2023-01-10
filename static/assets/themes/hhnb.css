@@ -2037,3 +2037,8 @@ i.disabled:hover {
     background-color: #664d03;
     border-color: #fff3cd;
 }
+
+.pad-x-0 {
+    padding-left: 0;
+    padding-right: 0;
+}

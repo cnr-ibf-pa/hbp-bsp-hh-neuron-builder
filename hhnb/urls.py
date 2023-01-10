@@ -104,4 +104,7 @@ urlpatterns = [
 
     # get service-account content
     path('get-service-account-content', views.get_service_account_content),
+
+    # get pdfs
+    path('show-results/<exc:exc>', views.show_results),
 ]

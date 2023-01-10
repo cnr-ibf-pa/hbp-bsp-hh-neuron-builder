@@ -196,10 +196,17 @@ export default class Workflow {
         let bar = $("#opt-res-bar");
         let fetchButton = $("#opt-fetch-btn");
         let uploadButton = $("#opt-res-up-btn");
+        let showResultsLink = $("#show-results-btn");
         let downloadResultLink = $("#down-opt-btn");
         let downloadAnalysisLink = $("#down-sim-btn");
         let deleteLink = $("#del-sim-btn");
         this.#simulationBlock = false;
+
+        if (this.#props.show_results) {
+            enable(showResultsLink);
+        } else {
+            disable(showResultsLink);
+        }
 
         if (this.#props.analysis) {
             bar.addClass("green").removeClass("red");
