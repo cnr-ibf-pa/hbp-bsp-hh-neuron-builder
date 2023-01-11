@@ -120,7 +120,7 @@ def get_signed_archive(arch_file):
 
     # create archive with original zip, the signature's zip and the readme file
     signed_archive = shutil.make_archive(
-        base_name=os.path.join(TMP_DIR, zip_name.split('.zip')[0]),
+        base_name=os.path.join(TMP_DIR, zip_name.split('.zip')[0] + '_signed'),
         format='zip',
         root_dir=tmp_dir
     )

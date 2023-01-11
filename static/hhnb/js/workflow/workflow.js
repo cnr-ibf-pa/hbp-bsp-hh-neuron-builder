@@ -224,7 +224,7 @@ export default class Workflow {
         } else {
             bar.addClass("red").removeClass("green");
             if (this.#props.results) {
-                bar.text("Something goes wrong. Download job results to check the error");
+                bar.text("Something went wrong. Download job results to check the error");
                 disable(fetchButton);
                 disable(uploadButton);
                 enable(downloadResultLink);

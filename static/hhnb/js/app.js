@@ -66,7 +66,7 @@ $("#wf-btn-clone-wf").on("click", () => {
             checkRefreshSession(error);
             Log.error("Status: " + error.status + " > " + error.responseText);
             if (error.status == 404) {
-                MessageDialog.openReloadDialog("Something goes wrong.<br>Try to reload the application.");
+                MessageDialog.openReloadDialog("Something went wrong.<br>Try to reload the application.");
             } else {
                 MessageDialog.openErrorDialog(error.responseText);
             }
@@ -385,7 +385,7 @@ function chooseOptModel() {
     $.getJSON("/hh-neuron-builder/fetch-models/" + exc, { 'model': 'all' }, function (data) {
         var counter = 0;
         if (data.length == 0) {
-            openErrorDiv("Something goes wrong.<br>Please restart the application.", "error");
+            openErrorDiv("Something went wrong.<br>Please restart the application.", "error");
             return;
         }
         $.each(data, function (idx, val) {
@@ -989,11 +989,8 @@ $(".parametersTemplate").on("click", (event) => {
 async function showPDF(blob) {
     let newBlob = new Blob([blob], {type: "application/pdf"});
     const data = window.URL.createObjectURL(newBlob);
-    console.log(data);
-    let link = document.createElement("a");
-    link.href = data;
-    link.download = "results.pdf";
-    link.click();
+    let win = window.open(data);
+    win.focus();
     setTimeout(function() {
         window.URL.revokeObjectURL(data);
     }, 100); 
