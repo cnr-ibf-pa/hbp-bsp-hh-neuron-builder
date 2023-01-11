@@ -38,7 +38,7 @@ class MessageDialog {
             case "info":
             default:
                 if (!title) {
-                    title = "Info:";
+                    title = "Info";
                 }
                 classes += "alert-info";
         }

@@ -669,7 +669,11 @@ function displayJobList(button) {
             let jobs = results.jobs;
             if ($.isEmptyObject(jobs)) {
                 closeJobFetchDiv();
-                MessageDialog.openInfoDialog("No jobs on <b>" + hpc + "</b> system");
+                let msg = "No jobs available in the <b>" + hpc + "</b> system.<br>Try using another system.";
+                if (saHPC && saProject) {
+                    msg = "No jobs available in the <b>" + saProject + "</b> project of the <b>Service Account</b>.<br>Try using another <i>Service Account Project</i> and/or <i>HPC System</i>.";
+                }
+                MessageDialog.openInfoDialog(msg);
                 return false;
             }
             // jobs = $.extend({'-1': {}, '-2': {}, '-3': {}}, jobs);
