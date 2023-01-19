@@ -225,8 +225,8 @@ $("#downloadFileButton").click(function() {
         if ($(".folder-item.active").attr("id") == "optNeuronFolder") {
             jj_ids.path.push("opt_neuron.py");
             showLoadingAnimation("Downloading files...");
-            $.get("/hh-neuron-builder/download-files/" + req_pattern + "?file_list=" + encodeURIComponent(JSON.stringify(jj_ids)))
-            .done(() => { window.location.href = "/hh-neuron-builder/download-files/" + req_pattern + "?file_list=" + encodeURIComponent(JSON.stringify(jj_ids)) })
+            $.get("/hh-neuron-builder/generate-download-file/" + req_pattern + "?file_list=" + encodeURIComponent(JSON.stringify(jj_ids)))
+            .done((result) => { window.location.href = "/hh-neuron-builder/download-file/" + req_pattern + "?filepath=" + result })
             .fail((error) => { checkRefreshSession(error) })
             .always(() => { hideLoadingAnimation() })
         } 
@@ -249,8 +249,8 @@ $("#downloadFileButton").click(function() {
 
     showLoadingAnimation("Downloading files...");
 
-    $.get("/hh-neuron-builder/download-files/" + req_pattern + "?file_list=" + encodeURIComponent(JSON.stringify(jj_ids)))
-        .done(() => { window.location.href = "/hh-neuron-builder/download-files/" + req_pattern + "?file_list=" + encodeURIComponent(JSON.stringify(jj_ids)) })
+    $.get("/hh-neuron-builder/generate-download-file/" + req_pattern + "?file_list=" + encodeURIComponent(JSON.stringify(jj_ids)))
+        .done((result) => { window.location.href = "/hh-neuron-builder/download-file/" + req_pattern + "?filepath=" + result })
         .fail((error) => { checkRefreshSession(error) })
         .always(() => { hideLoadingAnimation() })
 });

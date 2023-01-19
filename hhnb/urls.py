@@ -62,7 +62,8 @@ urlpatterns = [
     path('upload-analysis/<exc:exc>', views.upload_analysis),
     path('upload-files/<exc:exc>', views.upload_files),
 
-    path('download-files/<exc:exc>', views.download_files),
+    path('generate-download-file/<exc:exc>', views.generate_download_file),
+    path('download-file/<exc:exc>', views.download_file),
     path('delete-files/<exc:exc>', views.delete_files),
 
     # optimization settings api

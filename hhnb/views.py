@@ -563,10 +563,12 @@ def upload_files(request, exc):
     return ResponseUtil.ok_response('')
 
 
-def download_files(request, exc):
+def generate_download_file(request, exc):
     """
-    This download API can works in two different ways depending
-    on which parameter is passed through the GET request. 
+    This API is used to generate a package to download and returns a
+    the path of the package.
+    It works in two different ways depending on which
+    parameter is passed through the GET request.
 
     If the key "pack" is found in the GET request, then an archive zip 
     will be downloaded depends on what the relative value is. The accepted
@@ -593,7 +595,7 @@ def download_files(request, exc):
         logger.info(LOG_ACTION.format(user, 'downloading %s from %s' % (pack, workflow)))
         if pack == 'features':
             arch_file = WorkflowUtil.make_features_archive(workflow)
-            return ResponseUtil.file_response(arch_file)
+            return ResponseUtil.ok_response(arch_file)
         
         elif pack == 'model':
             arch_file = WorkflowUtil.make_model_archive(workflow)
@@ -602,7 +604,7 @@ def download_files(request, exc):
         elif pack == 'analysis':
             arch_file = WorkflowUtil.make_analysis_archive(workflow)
 
-        return ResponseUtil.file_response(get_signed_archive(arch_file))
+        return ResponseUtil.ok_response(get_signed_archive(arch_file))
 
     elif file_list:
         logger.info(LOG_ACTION.format(user, 'download %s from %s' % (file_list, workflow)))
@@ -620,10 +622,25 @@ def download_files(request, exc):
             logger.error(e)
             return ResponseUtil.ko_response(str(e))
 
-        return ResponseUtil.file_response(arch_file)
-    
+        return ResponseUtil.ok_response(arch_file)
     
     return ResponseUtil.ko_response(messages.NO_FILE_TO_DOWNLOAD)
+
+def download_file(request, exc):
+    """
+    Download the file specified in the GET request.
+    """
+    if request.method != 'GET':
+        return ResponseUtil.method_not_allowed('GET')
+    if not exc in request.session.keys():
+        return ResponseUtil.no_exc_code_response()
+    
+    filepath = request.GET.get('filepath')
+    if not filepath:
+        return ResponseUtil.ko_response(messages.NO_FILE_TO_DOWNLOAD)
+    
+    return ResponseUtil.file_response(filepath)
+
 
 def show_results(request, exc):
     """

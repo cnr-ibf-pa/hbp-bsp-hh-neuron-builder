@@ -258,10 +258,12 @@ export default class Workflow {
 
     downloadFiles(jFilesList) {
         showLoadingAnimation("Generating download package...");
-        $.get("/hh-neuron-builder/download-files/" + this.#exc + "?" + jFilesList)
+        $.get("/hh-neuron-builder/generate-download-file/" + this.#exc + "?" + jFilesList)
             .done((result) => {
+                Log.debug("RESULT: ");
+                Log.debug(result);
                 Log.debug("Files downloaded correctly");
-                window.location.href = "/hh-neuron-builder/download-files/" + this.#exc + "?" + jFilesList;
+                window.location.href = "/hh-neuron-builder/download-file/" + this.#exc + "?filepath=" + result;
             }).fail((error) => {
                 checkRefreshSession(error);
                 Log.error("Status: " + error.status + " > " + error.responseText);
