@@ -67,6 +67,11 @@ if __name__ == '__main__':
         wfs = [os.path.join(user_wf, wf) for wf in os.listdir(user_wf)]
         for wf in wfs:
             wf_time = (os.path.split(wf)[1])[2:]
-            wf_datetime = datetime.datetime.strptime(wf_time, DATETIME_FORMAT)
-            if (time_now - wf_datetime).days > 2:
-                check_and_clean(wf, False)
+            try:
+                wf_datetime = datetime.datetime.strptime(wf_time, DATETIME_FORMAT)
+                if (time_now - wf_datetime).days > 2:
+                    check_and_clean(wf, False)
+            except ValueError:
+                if 'anonymous' in wf_time:
+                    print('OLD wf: ' + wf_time)
+                    check_and_clean(wf, False)

@@ -8,11 +8,8 @@ def createDirIfNotExists(mpath):
     """Check if a directory exists, if not, create it
     """
 
-    try:
-        if not os.path.exists(mpath):
-            os.makedirs(mpath)
-    except FileExistsError:
-        pass
+    if not os.path.exists(mpath):
+        os.makedirs(mpath)
 
 
 class EfelStorage():
