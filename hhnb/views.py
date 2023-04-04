@@ -735,8 +735,8 @@ def optimization_settings(request, exc=None):
             return ResponseUtil.ko_response('Invalid settings')
 
         if optimization_settings['hpc'] == 'NSG':
-            nsg_username = optimization_settings.get('username_submit')
-            nsg_password = optimization_settings.get('password_submit')
+            nsg_username = optimization_settings.pop('username_submit')
+            nsg_password = optimization_settings.pop('password_submit')
 
             if nsg_username and nsg_password:
                 nsg_user = NsgUser(nsg_username, nsg_password)
@@ -1094,9 +1094,12 @@ def get_user_avatar(request):
     """
     logger.debug('get_user_avatar() called')
     hhnb_user = HhnbUser.get_user_from_request(request)
-    return ResponseUtil.raw_response(content=hhnb_user.get_user_avatar(),
-                                     content_type='image/png',
-                                     charset='UTF-8')
+    try:
+        return ResponseUtil.raw_response(content=hhnb_user.get_user_avatar(),
+                                         content_type='image/png',
+                                         charset='UTF-8')
+    except AvatarNotFoundError:
+        return ResponseUtil.ko_response(code=404, msg='Avatar not found')
 
 
 def get_user_page(request):
