@@ -302,16 +302,26 @@ def fetch_models(request, exc):
         mc_username, mc_password = MODEL_CATALOG_CREDENTIALS
         mc = ModelCatalog(username=mc_username, password=mc_password)
 
+        print(mc)
+
         if request.GET.get('model') == 'all':    
-            models = mc.list_models(organization=mc_filter['organization'],
-                                    model_scope=mc_filter['model_scope'],
-                                    species=mc_filter['species'],
-                                    collab_id=mc_filter['collab_id'])
+            # models = mc.list_models(organization=mc_filter['organization'],
+            #                         model_scope=mc_filter['model_scope'],
+            #                         species=mc_filter['species'],
+            #                         collab_id=mc_filter['collab_id'])
+            from hhnb.utils.models_list import get_models_list
+            models = []
+            for model in get_models_list():
+                try:
+                    models.append(mc.get_model(model_id=model))
+                except ResponseError as e: 
+                    print(e)
+            print("Models #: ", len(models))
             if len(models) > 0:
                 logger.debug(f'{len(models)} models found')
                 return ResponseUtil.ok_json_response({'models': models})
             logger.debug(f'no model founds in the ModelCatalog using the filter {mc_filter}')
-            return ResponseUtil.ok_response(204, 'No content')
+            return ResponseUtil.no_content(204, 'No content')
         else:
             workflow, hhnb_user = get_workflow_and_user(request, exc)
             requested_model = request.GET.get('model')
@@ -333,10 +343,10 @@ def fetch_models(request, exc):
                 except FileExistsError:
                     model_path = os.path.join(TMP_DIR, model['name'] + '.zip')
                 workflow.load_model_zip(model_path)
-                
                 logger.info(LOG_ACTION.format(hhnb_user, 'downloaded model %s on %s' % (model, workflow)))
 
     except ResponseError as e:
+        print(e)
         logger.error(e)
         return ResponseUtil.ko_response(messages.MODEL_CATALOG_NOT_AVAILABLE)
     except EnvironmentError as e:

@@ -79,6 +79,12 @@ class ResponseUtil:
         Returns a 200 HttpResponse with a custom message.
         """
         return _http_response(200, msg)
+    
+    @staticmethod
+    def no_content():
+        """
+        Returns a 204 No Content HttpResponse with
+        """
 
     @staticmethod
     @dispatch(int)
