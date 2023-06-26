@@ -11,14 +11,14 @@ jobs:
       - name: syncmaster
         uses: wei/git-sync@v3
         with:
-          source_repo: "cnr-ibf-pa/hbp-bsp-hh-neuron-builder"
+          source_repo: "cls/hbp-bsp-hh-neuron-builder"
           source_branch: "main"
-          destination_repo: "https://ghpusher:${{ secrets.EBRAINS_GITLAB_ACCESS_TOKEN }}@gitlab.ebrains.eu/cnr-ibf-pa/hbp-bsp-hh-neuron-builder.git"
+          destination_repo: "https://ghpusher:${{ secrets.EBRAINS_GITLAB_ACCESS_TOKEN }}@gitlab.ebrains.eu/cls/hbp-bsp-hh-neuron-builder.git"
           destination_branch: "main"
       - name: synctags
         uses: wei/git-sync@v3
         with:
-          source_repo: "cnr-ibf-pa/hbp-bsp-hh-neuron-builder"
+          source_repo: "cls/hbp-bsp-hh-neuron-builder"
           source_branch: "refs/tags/*"
-          destination_repo: "https://ghpusher:${{ secrets.EBRAINS_GITLAB_ACCESS_TOKEN }}@gitlab.ebrains.eu/cnr-ibf-pa/hbp-bsp-hh-neuron-builder.git"
+          destination_repo: "https://ghpusher:${{ secrets.EBRAINS_GITLAB_ACCESS_TOKEN }}@gitlab.ebrains.eu/cls/hbp-bsp-hh-neuron-builder.git"
           destination_branch: "refs/tags/*"
