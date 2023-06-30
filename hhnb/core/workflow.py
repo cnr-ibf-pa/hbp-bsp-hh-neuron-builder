@@ -896,6 +896,10 @@ class WorkflowUtil:
             with open(file_path, 'wb') as fd:
                 for chunk in r.iter_content(chunk_size=4096):
                     fd.write(chunk)
+            with open(os.path.join(workflow.get_model_dir(),
+                                   'config/morphology.json'), 'w') as fd:
+                json.dump(workflow.get_model().get_morphology().get_config(),
+                          fd, indent=4)
             workflow.get_model().set_morphology(morphology=file_path)
 
         for etrace in etraces:
