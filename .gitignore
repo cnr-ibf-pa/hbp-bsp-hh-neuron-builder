@@ -22,3 +22,6 @@ efel.log
 hhnb.log
 job_handler.log
 debug.log
+
+.DS_Store
+.venv
