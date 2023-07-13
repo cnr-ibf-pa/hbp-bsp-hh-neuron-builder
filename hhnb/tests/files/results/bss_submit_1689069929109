@@ -1,0 +1,13 @@
+#!/bin/bash
+#SBATCH --job-name=UNICORE_job
+#SBATCH --partition=normal
+#SBATCH --account=ich002
+#SBATCH --nodes=6
+#SBATCH --ntasks-per-node=24
+#SBATCH --constraint=mc
+#SBATCH --time=120
+#SBATCH --output=/scratch/snx3000/unicore/FILESPACE/fb78a1d5-d3ef-4829-b4dd-00ed342e643d//stdout
+#SBATCH --error=/scratch/snx3000/unicore/FILESPACE/fb78a1d5-d3ef-4829-b4dd-00ed342e643d//stderr
+#SBATCH --chdir=/scratch/snx3000/unicore/FILESPACE/fb78a1d5-d3ef-4829-b4dd-00ed342e643d/
+umask 77
+/scratch/snx3000/unicore/FILESPACE/fb78a1d5-d3ef-4829-b4dd-00ed342e643d//UNICORE_Job_1689069929109

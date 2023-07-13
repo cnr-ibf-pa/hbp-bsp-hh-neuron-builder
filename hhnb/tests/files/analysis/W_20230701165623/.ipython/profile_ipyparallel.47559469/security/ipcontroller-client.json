@@ -1,0 +1,18 @@
+{
+  "ssh": "",
+  "interface": "tcp://*",
+  "registration": 50167,
+  "control": 51291,
+  "mux": 45167,
+  "task": 57123,
+  "task_scheme": "leastload",
+  "iopub": 44379,
+  "notification": 41991,
+  "broadcast": 41763,
+  "key": "cd9b7471-1aa9111c0e2377f44f6f63d4",
+  "curve_serverkey": null,
+  "location": "nid00477",
+  "pack": "json",
+  "unpack": "json",
+  "signature_scheme": "hmac-sha256"
+}

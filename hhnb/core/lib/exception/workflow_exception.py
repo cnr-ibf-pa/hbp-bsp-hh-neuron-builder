@@ -29,3 +29,6 @@ class AnalysisProcessError(CalledProcessError):
 
 class UnknownParametersTemplate(Exception):
     pass
+
+class FileNotAddedYet(Exception):
+    pass

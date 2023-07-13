@@ -11,12 +11,12 @@ class MyOIDCBackend(OIDCAuthenticationBackend):
         """
         Check for the "sub" id in the claims and return an User instance.
         """
-        
+
         sub_id = claims.get('sub')
         if not sub_id:
             return self.UserModel.objects.none()
         try:
-            user = User.objects.get(sub=sub_id)
+            user = User.objects.get(sub=sub_id, password=None)
             return user
         except User.DoesNotExist:
             return self.UserModel.objects.none()
@@ -39,4 +39,3 @@ class MyOIDCBackend(OIDCAuthenticationBackend):
             user = User(sub=sub)
             user.save()
             return user
-          

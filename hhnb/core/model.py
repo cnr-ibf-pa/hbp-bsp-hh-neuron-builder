@@ -41,7 +41,7 @@ def _write_file_to_directory(src_file, dst_dir, dst_file=None):
     the output will be formatted as json. In the other case the
     source file will be treated as a binary file. Furthermore
     the copy can be explicitly named using the "dst_file" parameter
-    otherwise the source file name will be used.   
+    otherwise the source file name will be used.
 
     Parameters
     ----------
@@ -116,10 +116,10 @@ class Model(ModelBase):
         """
         if len(kwargs) > 1:
             raise TypeError(f'{__name__} takes only 1 keyword argument')
-        
+
         keyword_list = ['parameters', 'protocols', 'features', 'morphology']
         key = list(kwargs.keys())[0]
-        
+
         if key not in keyword_list:
             raise TypeError(f'{__name__} take only 1 of the following\
                             arguments {keyword_list}')
@@ -140,9 +140,9 @@ class Model(ModelBase):
     def from_dir(cls, model_dir, key):
         """
         This method is used to initialize automatically a Model object
-        by passing the model root folder as parameter, reads all the 
-        files and the structure of the folder subtree and return a 
-        Model object with the "key" set as the model global key. 
+        by passing the model root folder as parameter, reads all the
+        files and the structure of the folder subtree and return a
+        Model object with the "key" set as the model global key.
 
         Parameters
         ----------
@@ -165,13 +165,13 @@ class Model(ModelBase):
         """
 
         model = cls(model_dir, key=key)
-        
+
         if not os.path.exists(model_dir):
             raise FileNotFoundError('Model dir %s not found' % model_dir)
         if not os.path.isdir(model_dir):
             raise NotADirectoryError('Model dir %s is not a directory')
-        
-        # check if exists sub directories otherwise return an empty model instance 
+
+        # check if exists sub directories otherwise return an empty model instance
         if not any(os.scandir(model_dir)):
             return model
 
@@ -179,7 +179,7 @@ class Model(ModelBase):
         config_dir = os.path.join(model_dir, 'config')
         morph_dir = os.path.join(model_dir, 'morphology')
         mechanisms_dir = os.path.join(model_dir, 'mechanisms')
-        
+
         # check for features
         try:
             feat = os.path.join(config_dir, 'features.json')
@@ -203,7 +203,7 @@ class Model(ModelBase):
         # check for morphology
         try:
             morphs = os.listdir(morph_dir)
-            if len(morphs) == 1:                
+            if len(morphs) == 1:
                 morphology = Morphology(os.path.join(morph_dir, morphs[0]))
                 model.set_morphology(morphology)
         except FileNotFoundError:
@@ -219,11 +219,11 @@ class Model(ModelBase):
 
     def update_optimization_files(self, model_dir):
         """
-        This method update the current model optimization files using 
+        This method update the current model optimization files using
         the new ones in the "model_dir" folder passed as argument.
-        
-        With "optimization files" is intended any files that belong to 
-        the following categories: ["parameters", "morphology", "mechanisms"].  
+
+        With "optimization files" is intended any files that belong to
+        the following categories: ["parameters", "morphology", "mechanisms"].
 
         Parameters
         ----------
@@ -233,13 +233,13 @@ class Model(ModelBase):
         Raises
         ------
         FileNotFoundError
-            if any optimization file is not found 
+            if any optimization file is not found
         """
-        
+
         src_config_dir = os.path.join(model_dir, 'config')
         src_morph_dir = os.path.join(model_dir, 'morphology')
         src_mechans_dir = os.path.join(model_dir, 'mechanisms')
-        
+
         dst_config_dir = os.path.join(self._model_dir, 'config')
         dst_morph_dir = os.path.join(self._model_dir, 'morphology')
         dst_mechans_dir = os.path.join(self._model_dir, 'mechanisms')
@@ -260,7 +260,7 @@ class Model(ModelBase):
                     os.remove(os.path.join(dst_config_dir, 'morph.json'))
                 except FileNotFoundError:
                     pass
-                
+
                 for m in os.listdir(src_morph_dir):
                     morph = shutil.copy(os.path.join(src_morph_dir, m),
                                         os.path.join(dst_morph_dir, m))
@@ -274,7 +274,7 @@ class Model(ModelBase):
             if os.path.exists(src_mechans_dir) and len(os.listdir(src_mechans_dir)) > 0:
                 for m in os.listdir(dst_mechans_dir):
                     os.remove(os.path.join(dst_mechans_dir, m))
-                
+
                 for m in os.listdir(src_mechans_dir):
                     shutil.copy(os.path.join(src_mechans_dir, m),
                                 os.path.join(dst_mechans_dir, m))
@@ -288,7 +288,7 @@ class Model(ModelBase):
 
     def get_optimization_files_raw_status(self):
         """
-        Returns a dictionary with the optimization files as keys and 
+        Returns a dictionary with the optimization files as keys and
         their status (True if present, False otherwise) as a boolean value.
         """
         return {
@@ -310,14 +310,14 @@ class Model(ModelBase):
 
     def get_properties(self):
         """
-        Returns the status of the Model properties. 
+        Returns the status of the Model properties.
         """
         return {
             'features': self.get_features().get_status(),
             'optimization_files': self.get_optimization_files_status(),
             'model_key': self.get_key()
         }
-    
+
 
 class ModelUtil:
     """
@@ -362,7 +362,7 @@ class ModelUtil:
         FileExistError
             if any subfolder already exists.
         """
-        
+
         if not os.path.exists(model_dir):
             os.mkdir(model_dir)
         os.mkdir(os.path.join(model_dir, 'config'))
@@ -374,7 +374,7 @@ class ModelUtil:
     def write_to_workflow(model, workflow_id):
         """
         Write the whole Model object to the disk in the "workflow_id" subfolder
-        and returns the new Model root folder. 
+        and returns the new Model root folder.
 
         Parameters
         ----------
@@ -386,7 +386,7 @@ class ModelUtil:
         Returns
         -------
         str
-            the model root folder 
+            the model root folder
 
         Raises
         ------
@@ -398,18 +398,18 @@ class ModelUtil:
         model_dir = os.path.join(workflow_id, 'model')
         if os.path.exists(model_dir):
             shutil.rmtree(model_dir)
-        ModelUtil.create_model_tree(model_dir)      
-        _write_file_to_directory(model.get_features().get_features(), 
+        ModelUtil.create_model_tree(model_dir)
+        _write_file_to_directory(model.get_features().get_features(),
                    os.path.join(model_dir, 'config'), 'features.json')
         _write_file_to_directory(model.get_features().get_protocols(),
                    os.path.join(model_dir, 'config'), 'protocols.json')
-        _write_file_to_directory(model.get_parameters(), 
+        _write_file_to_directory(model.get_parameters(),
                    os.path.join(model_dir, 'config'), 'parameters.json')
-        _write_file_to_directory(model.get_morphology(), 
+        _write_file_to_directory(model.get_morphology(),
                     os.path.join(model_dir, 'morphology'))
         for m in model.get_mechanisms():
             shutil.copy(m, os.path.join(model_dir, 'mechanisms'))
-        
+
         return model_dir
 
     @staticmethod
@@ -430,12 +430,12 @@ class ModelUtil:
         zip_name : str, optional
             the zip file name, by default the source folder name is used
         """
-        if not dst_dir: 
+        if not dst_dir:
             dst_dir = src_dir
         if not zip_name:
             zip_name = src_dir.split('/')[-1]
         shutil.make_archive(os.path.join(dst_dir, zip_name), 'zip', src_dir)
-    
+
     # TODO: to change
     @staticmethod
     @dispatch(Model, str, str)
@@ -465,8 +465,8 @@ class ModelUtil:
             zip_name = os.path.split(zip_name)[1]
         zip_name = zip_name.split('.zip')[0]
         zip_path = os.path.join(dst_dir, zip_name)
-        shutil.make_archive(base_name=zip_path, 
-                     format='zip', 
+        shutil.make_archive(base_name=zip_path,
+                     format='zip',
                      root_dir=ModelUtil.write_to_workflow(model, os.path.join(dst_dir)),
                      base_dir='model')
         return zip_path
@@ -474,7 +474,7 @@ class ModelUtil:
     @staticmethod
     def update_key(model, key=None):
         """
-        This static method update the key of all Model's files with the 
+        This static method update the key of all Model's files with the
         new one passed as argument and then it will be set as the Model
         global key. Otherwise the files' keys are updated using the current
         Model global key.

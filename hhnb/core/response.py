@@ -18,10 +18,10 @@ def _http_response(status_code, content):
 
 def _json_response(status_code, data, safe=False):
     """
-    This private function takes the status code, some data and 
+    This private function takes the status code, some data and
     return a JsonResponse object. Optionally the safe flag can
     be set True (False by default) to prevent the serialization
-    of non "dict" objects. 
+    of non "dict" objects.
     """
     return JsonResponse(data=data, status=status_code, safe=safe,
                         content_type='application/json')
@@ -29,7 +29,7 @@ def _json_response(status_code, data, safe=False):
 
 def _file_response(file_path):
     """
-    This private function takes a file path string and returns 
+    This private function takes a file path string and returns
     a FileResponse object.
 
     If the file is not found an HttpResponse("File not found", status=404)
@@ -87,6 +87,22 @@ class ResponseUtil:
         """
 
     @staticmethod
+    @dispatch(int, str)
+    def ok_response(code, msg):
+        """
+        Returns a 200 HttpResponse with a custom message.
+        """
+        return _http_response(code, msg)
+
+    @staticmethod
+    @dispatch()
+    def ko_response():
+        """
+        Returns a 400 HttpResponse.
+        """
+        return _http_response(400, b'KO')
+
+    @staticmethod
     @dispatch(int)
     def ko_response(code):
         """
@@ -99,7 +115,7 @@ class ResponseUtil:
     @dispatch(int, str)
     def ko_response(code, msg):
         """
-        Returns an error HttpResponse with a custom error code and message. 
+        Returns an error HttpResponse with a custom error code and message.
         """
         return _http_response(code, msg)
 
@@ -107,7 +123,7 @@ class ResponseUtil:
     @dispatch(str)
     def ko_response(msg):
         """
-        Returns a 400 HttpResponse with a custom message. 
+        Returns a 400 HttpResponse with a custom message.
         """
         return _http_response(400, msg)
 
@@ -115,7 +131,7 @@ class ResponseUtil:
     @dispatch()
     def ok_json_response():
         """
-        Returns a 200 JsonResponse with an empty json. 
+        Returns a 200 JsonResponse with an empty json.
         """
         return _json_response(200, {})
 
@@ -177,7 +193,7 @@ class ResponseUtil:
 
     @staticmethod
     def file_response(file_path):
-        """ 
+        """
         Returns a simple FileResponse.
         """
         return _file_response(file_path)
@@ -192,7 +208,6 @@ class ResponseUtil:
     @staticmethod
     def method_not_allowed(allowed_methods):
         """
-        Returns an error HttpResponse when the request's method is not allowed. 
+        Returns an error HttpResponse when the request's method is not allowed.
         """
         return HttpResponseNotAllowed(allowed_methods)
-    

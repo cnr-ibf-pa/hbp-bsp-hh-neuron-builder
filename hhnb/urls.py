@@ -37,75 +37,76 @@ register_converter(converters.FileTypeConverter, 'file_type')
 
 urlpatterns = [
     # session refresh
-    path('session-refresh/<exc:exc>', views.session_refresh),
-   
-    # server status 
-    path('status', views.status),
+    path('session-refresh', views.session_refresh, name='session-refresh'),
+
+    # server status
+    path('status', views.status, name='status'),
 
     # pages
-    path('', views.home_page),
-    path('workflow/<exc:exc>', views.workflow_page),
-    path('docs/', views.index_docs),
-    path('docs/index/', views.index_docs),
+    path('', views.home_page, name='home'),
+    path('workflow/<exc:exc>', views.workflow_page, name='workflow'),
+    path('docs/', views.index_docs, name='docs'),
+    path('docs/index/', views.index_docs, name='docs-index'),
 
     # workflow apis
-    path('initialize-workflow', views.initialize_workflow),
-    path('upload-workflow', views.upload_workflow),
-    path('store-workflow-in-session/<exc:exc>', views.store_workflow_in_session),
-    path('clone-workflow/<exc:exc>', views.clone_workflow),
-    path('download-workflow/<exc:exc>', views.download_workflow),
-    path('get-workflow-properties/<exc:exc>', views.get_workflow_properties), 
+    path('initialize-workflow', views.initialize_workflow, name='initialize-workflow'),
+    path('upload-workflow', views.upload_workflow, name='upload-workflow'),
+    path('store-workflow-in-session/<exc:exc>', views.store_workflow_in_session, name='store-workflow-in-session'),
+    path('clone-workflow/<exc:exc>', views.clone_workflow, name='clone-workflow'),
+    path('download-workflow/<exc:exc>', views.download_workflow, name='download-workflow'),
+    path('get-workflow-properties/<exc:exc>', views.get_workflow_properties, name='get-workflow-properties'),
+    path('get-workflow-id/<exc:exc>', views.get_workflow_id, name='get-workflow-id'),
 
     # files apis
-    path('upload-features/<exc:exc>', views.upload_features),
-    path('upload-model/<exc:exc>', views.upload_model),
-    path('upload-analysis/<exc:exc>', views.upload_analysis),
-    path('upload-files/<exc:exc>', views.upload_files),
+    path('upload-features/<exc:exc>', views.upload_features, name='upload-features'),
+    path('upload-model/<exc:exc>', views.upload_model, name='upload-model'),
+    path('upload-analysis/<exc:exc>', views.upload_analysis, name='upload-analysis'),
+    path('upload-files/<exc:exc>', views.upload_files, name='upload-files'),
 
-    path('generate-download-file/<exc:exc>', views.generate_download_file),
-    path('download-file/<exc:exc>', views.download_file),
-    path('delete-files/<exc:exc>', views.delete_files),
+    path('generate-download-file/<exc:exc>', views.generate_download_file, name='generate-download-file'),
+    path('download-file/<exc:exc>', views.download_file, name='download-file'),
+    path('delete-files/<exc:exc>', views.delete_files, name='delete-files'),
 
     # optimization settings api
-    path('optimization-settings/<exc:exc>', views.optimization_settings),
+    path('optimization-settings/<exc:exc>', views.optimization_settings, name='optimization-settings'),
 
     # model catalog
-    path('get-model-catalog-attribute-options', views.get_model_catalog_attribute_options),
-    path('fetch-models/<exc:exc>', views.fetch_models),
-    path('register-model/<exc:exc>', views.register_model),
+    path('get-model-catalog-attribute-options', views.get_model_catalog_attribute_options, name='get-model-catalog-attribute-options'),
+    path('fetch-models/<exc:exc>', views.fetch_models, name='fetch-models'),
+    path('register-model/<exc:exc>', views.register_model, name='register-model'),
 
     # user avatar
-    path('get-user-avatar', views.get_user_avatar),
-    path('get-user-page', views.get_user_page),
-    path('get-authentication', views.get_authentication),
+    path('get-user-avatar', views.get_user_avatar, name='get-user-avatar'),
+    path('get-user-page', views.get_user_page, name='get-user-page'),
+    path('get-authentication', views.get_authentication, name='get-authentication'),
 
     # jobs apis
-    path('run-optimization/<exc:exc>', views.run_optimization),
-    path('fetch-jobs/<exc:exc>', views.fetch_jobs),
-    path('fetch-job-result/<exc:exc>', views.fetch_job_results),
+    path('run-optimization/<exc:exc>', views.run_optimization, name='run-optimization'),
+    path('fetch-jobs/<exc:exc>', views.fetch_jobs, name='fetch-jobs'),
+    path('fetch-job-result/<exc:exc>', views.fetch_job_results, name='fetch-job-result'),
 
     # analysis apis
-    path('run-analysis/<exc:exc>', views.run_analysis),
+    path('run-analysis/<exc:exc>', views.run_analysis, name='run-analysis'),
 
     # blue-naas apis
-    path('upload-to-naas/<exc:exc>', views.upload_to_naas),
+    path('upload-to-naas/<exc:exc>', views.upload_to_naas, name='upload-to-naas'),
 
     # hippocampus hub api
-    path('hhf-comm', views.hhf_comm),
-    path('hhf-etraces-dir', views.hhf_etraces_dir),
-    path('hhf-list-files/<exc:exc>', views.hhf_list_files),
+    path('hhf-comm', views.hhf_comm, name='hhf-comm'),
+    path('hhf-etraces-dir/<exc:exc>', views.hhf_etraces_dir, name='hhf-etraces-dir'),
+    path('hhf-list-files/<exc:exc>', views.hhf_list_files, name='hhf-list-files'),
 
     # these functions below will be deprecated soon
-    path('hhf-get-files-content/<folder:folder>/<exc:exc>', views.hhf_get_files_content),
-    path('hhf-get-model-key/<exc:exc>', views.hhf_get_model_key),
-    path('hhf-apply-model-key/<exc:exc>', views.hhf_apply_model_key),
-    path('hhf-save-config-file/<folder:folder>/<config_file:config_file>/<exc:exc>', views.hhf_save_config_file),
+    path('hhf-get-files-content/<folder:folder>/<exc:exc>', views.hhf_get_files_content, name='hhf-get-files-content'),
+    path('hhf-get-model-key/<exc:exc>', views.hhf_get_model_key, name='hhf-get-model-key'),
+    path('hhf-apply-model-key/<exc:exc>', views.hhf_apply_model_key, name='hhf-apply-model-key'),
+    path('hhf-save-config-file/<folder:folder>/<config_file:config_file>/<exc:exc>', views.hhf_save_config_file, name='hhf-save-config-file'),
 
-    path('hhf-load-parameters-template/<exc:exc>', views.hhf_load_parameters_template),
+    path('hhf-load-parameters-template/<exc:exc>', views.hhf_load_parameters_template, name='hhf-load-parameters-template'),
 
     # get service-account content
-    path('get-service-account-content', views.get_service_account_content),
+    path('get-service-account-content', views.get_service_account_content, name='get-service-account-content'),
 
     # get pdfs
-    path('show-results/<exc:exc>', views.show_results),
+    path('show-results/<exc:exc>', views.show_results, name='show-results'),
 ]

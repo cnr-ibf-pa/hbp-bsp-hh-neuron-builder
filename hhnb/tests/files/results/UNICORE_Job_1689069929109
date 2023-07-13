@@ -1,0 +1,41 @@
+#!/bin/sh
+#TSI_SUBMIT
+
+unset CSCS_CUSTOM_ENV
+source /etc/opt/cscs/profile/bash.bashrc
+
+#TSI_OUTCOME_DIR /scratch/snx3000/unicore/FILESPACE/fb78a1d5-d3ef-4829-b4dd-00ed342e643d/
+#TSI_USPACE_DIR /scratch/snx3000/unicore/FILESPACE/fb78a1d5-d3ef-4829-b4dd-00ed342e643d/
+#TSI_STDOUT stdout
+#TSI_STDERR stderr
+#TSI_JOBNAME W_20230711100058
+#TSI_EMAIL NONE
+#TSI_PROJECT ich002
+#TSI_BSS_NODES_FILTER mc
+#TSI_TIME 7200
+#TSI_NODES 6
+#TSI_PROCESSORS_PER_NODE 24
+#TSI_TOTAL_PROCESSORS -1
+#TSI_QUEUE normal
+UC_NODES=6; export UC_NODES;
+UC_PROCESSORS_PER_NODE=24; export UC_PROCESSORS_PER_NODE;
+UC_TOTAL_PROCESSORS=-1; export UC_TOTAL_PROCESSORS;
+UC_RUNTIME=7200; export UC_RUNTIME;
+UC_MEMORY_PER_NODE=-1; export UC_MEMORY_PER_NODE;
+
+#TSI_SCRIPT
+#TSI_UMASK 77
+umask 77
+UC_USERDN="UID=roberto.smiriglia@ibf.cnr.it"; export UC_USERDN
+PATH=$PATH:. ; export PATH
+cd /scratch/snx3000/unicore/FILESPACE/fb78a1d5-d3ef-4829-b4dd-00ed342e643d/
+UC_EXECUTABLE='unzip W_20230711100058.zip; cd W_20230711100058; chmod +rx *.sbatch; ./ipyparallel.sbatch'; export UC_EXECUTABLE
+chmod u+x unzip 2> /dev/null 
+rm -f /scratch/snx3000/unicore/FILESPACE/fb78a1d5-d3ef-4829-b4dd-00ed342e643d//UNICORE_SCRIPT_EXIT_CODE
+unzip W_20230711100058.zip; cd W_20230711100058; chmod +rx *.sbatch; ./ipyparallel.sbatch
+
+echo $? > /scratch/snx3000/unicore/FILESPACE/fb78a1d5-d3ef-4829-b4dd-00ed342e643d//UNICORE_SCRIPT_EXIT_CODE
+
+
+#TSI_IDENTITY rsmirigl DEFAULT_GID
+

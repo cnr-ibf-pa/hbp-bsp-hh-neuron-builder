@@ -169,10 +169,10 @@ HHF_TEMPLATE_DIR = os.path.join(BASE_DIR, 'hh_neuron_builder', 'config', 'hhf_te
 HHF_PARAMETERS_TEMPLATE_DIR = os.path.join(BASE_DIR, 'hh_neuron_builder', 'config', 'hhf_template', 'parameters')
 if not os.path.exists(HHF_TEMPLATE_DIR):
     os.makedirs(HHF_TEMPLATE_DIR)
-    
+
 TMP_DIR = os.path.join(MEDIA_ROOT, 'hhnb', 'tmp')
 if not os.path.exists(TMP_DIR):
-    os.makedirs(TMP_DIR) 
+    os.makedirs(TMP_DIR)
 
 
 MODEL_CATALOG_FILTER = {
@@ -210,7 +210,6 @@ OIDC_RP_SCOPES = 'openid profile email team clb.wiki.read clb.drive:read clb.dri
 OIDC_CREATE_USER = False
 OIDC_PERSISTENT_USER = False
 OIDC_STORE_ACCESS_TOKEN = True
-
 
 OIDC_RP_SIGN_ALGO = 'RS256'
 
@@ -272,7 +271,7 @@ LOGGING = {
             'class': 'logging.FileHandler',
             'filename': LOG_ROOT_PATH + 'hhnb.log',
             'level': 'INFO',
-            'formatter': 'default', 
+            'formatter': 'default',
         },
         'job_handler': {
             'class': 'logging.FileHandler',
@@ -285,7 +284,7 @@ LOGGING = {
             'filename': LOG_ROOT_PATH + 'efel.log',
             'level': 'INFO',
             'formatter': 'default',
-        } 
+        }
     },
     'loggers': {
         '': {

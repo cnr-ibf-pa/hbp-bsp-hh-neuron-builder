@@ -25,7 +25,7 @@ urlpatterns = [
 
     path('', lambda request: redirect('hh-neuron-builder/', permanent=True)),
     path('hh-neuron-builder/', include('hhnb.urls')),
-    
+
     path('efelg/', include('efelg.urls')),
 
     path('status', lambda request: redirect('hh-neuron-builder/status', permanent=True)),

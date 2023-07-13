@@ -38,11 +38,11 @@ def str_to_datetime(datetime_string, format=None):
 
     date_re = '\d{4}(-\d{2}){2}'
     time_re = '(\d{2}:){2}\d{2}'
-    
+
     match = re.match(date_re + 'T' + time_re + '\+\d{4}', datetime_string)
     if match and match.end() == len(datetime_string):
         format = '%Y-%m-%dT%H:%M:%S%z'
-    
+
     match = re.match(date_re + 'T' + time_re + 'Z', datetime_string)
     if match and match.end() == len(datetime_string):
         format = '%Y-%m-%dT%H:%M:%SZ'
@@ -70,11 +70,11 @@ def is_job_expired(job_details):
 
 class JobHandler:
     """
-    Useful class to easily handle jobs, and the relative files, 
+    Useful class to easily handle jobs, and the relative files,
     on the selected HPC system. This class is intended
     to be used by calling its static methods and for this
     it is not recommended to instantiate a JobHandler object
-    and call its private methods. 
+    and call its private methods.
     """
 
     class UnicoreClientException(Exception):
@@ -95,7 +95,7 @@ class JobHandler:
         self._SA_FILES_URL = self._SA_ROOT_URL + 'files/{}/{}/'
         self._NSG_URL = 'https://nsgr.sdsc.edu:8443/cipresrest/v1'
         self._DAINT_URL = 'https://brissago.cscs.ch:8080/DAINT-CSCS/rest/core'
-        
+
         self._DAINT_CSCS = 'DAINT-CSCS'
         self._SA = 'SA'
         self._SA_CSCS = 'SA-CSCS'
@@ -113,7 +113,7 @@ class JobHandler:
     def _get_nsg_payload(self, job_name, core_num, node_num, runtime):
         """
         Returns the configuration payload with all settings to
-        submit/run the job on the HPC system.  
+        submit/run the job on the HPC system.
 
         Parameters
         ----------
@@ -131,7 +131,7 @@ class JobHandler:
         dict
             returns the job payload.
         """
-        
+
         payload = {
             'tool': self._NSG_TOOL,
             'metadata.statusEmail': 'false',
@@ -140,7 +140,7 @@ class JobHandler:
             'vparam.number_nodes_': node_num,
             'vparam.runtime_': runtime,
             'vparam.filename_': 'init.py'
-        } 
+        }
         logger.debug(f'NSG payload: {payload}')
         return payload
 
@@ -148,7 +148,7 @@ class JobHandler:
         """
         Submit the job on NSG system. Once the job is submitted,
         a ResponseUtil object is returned according to the
-        submission result. 
+        submission result.
 
         Parameters
         ----------
@@ -174,7 +174,7 @@ class JobHandler:
         headers = self._get_nsg_headers()
 
         files = {'input.infile_': open(zip_file, 'rb')}
-        r = requests.post(url=f'{self._NSG_URL}/job/{username}', 
+        r = requests.post(url=f'{self._NSG_URL}/job/{username}',
                           auth=(username, password),
                           data=payload,
                           headers=headers,
@@ -196,7 +196,7 @@ class JobHandler:
             if not r.status_code == 200:
                 return ResponseUtil.ko_response(r.text)
 
-            return ResponseUtil.ok_response(messages.JOB_SUBMITTED.format('<b>NSG</b>'))            
+            return ResponseUtil.ok_response(messages.JOB_SUBMITTED.format('<b>NSG</b>'))
 
         return ResponseUtil.ko_response(r.text)
 
@@ -214,7 +214,7 @@ class JobHandler:
         Returns
         -------
         dict
-            a dictionary of all submitted jobs. 
+            a dictionary of all submitted jobs.
 
         Raises
         ------
@@ -231,7 +231,7 @@ class JobHandler:
                     + root.find('message').text
             logger.error(f'CODE: {r.status_code}, CONTENT: {r.content}')
             raise self.HPCException(message)
-        
+
         jobs = {}
         root = xml.etree.ElementTree.fromstring(r.text)
         job_list = root.find('jobs')
@@ -245,11 +245,11 @@ class JobHandler:
                                  headers=self._get_nsg_headers())
             logger.debug(f'requests: {r.url} with headers: {r.headers}')
             if r_job.status_code != 200:
-                logger.error(f'CODE: {r.status_code}, CONTENT: {r.content}')    
+                logger.error(f'CODE: {r.status_code}, CONTENT: {r.content}')
                 raise self.HPCException(messages.JOB_FETCH_ERROR.format('NSG'))
 
             root_job = xml.etree.ElementTree.fromstring(r_job.text)
-            
+
             job_date_submitted = ''
             job_stage = ''
             job_terminal_stage = ''
@@ -269,7 +269,7 @@ class JobHandler:
                     for entry in child.findall('entry'):
                         if entry.find('key').text == 'clientJobId':
                             job_client_id = entry.find('value').text
-            
+
             if job_terminal_stage and job_failed:
                 job_stage = 'FAILED'
 
@@ -281,7 +281,7 @@ class JobHandler:
                     'date': job_date_submitted
                 }
             })
-            
+
         return jobs
 
     def _get_nsg_job_results(self, username, password, job_id):
@@ -314,7 +314,7 @@ class JobHandler:
         if r.status_code != 200:
             logger.error(f'CODE: {r.status_code}, CONTENT: {r.content}')
             raise self.HPCException(messages.JOB_RESULTS_FETCH_ERROR)
-        
+
         file_list = {}
         root = xml.etree.ElementTree.fromstring(r.text)
         for child in root.find('jobfiles').findall('jobfile'):
@@ -343,12 +343,12 @@ class JobHandler:
                 + '; chmod +rx *.sbatch; ./ipyparallel.sbatch'
         return command
 
-    def _get_unicore_job_description(self, command, job_name, node_num, 
+    def _get_unicore_job_description(self, command, job_name, node_num,
                                      core_num, runtime, project):
         """
         Returns the UNICORE job description.
         The job description is a payload that is formed by the command
-        to run, the name of the job, and the resources list to 
+        to run, the name of the job, and the resources list to
         reserve for the job that are subtracted from the project.
 
         Parameters
@@ -427,12 +427,12 @@ class JobHandler:
 
     def _submit_on_unicore(self, hpc, token, zip_file, settings):
         """
-        Submit the job on UNICORE system. 
+        Submit the job on UNICORE system.
         To submit a job, first a UNICORE client is created using
         the user token and the relative HPC in which the user want
-        to submit the job, and then will be passed the zip file 
+        to submit the job, and then will be passed the zip file
         containing the job and the settings to run the job.
-        Then a ResponseUtil is returned as the job submission result. 
+        Then a ResponseUtil is returned as the job submission result.
 
         Parameters
         ----------
@@ -448,7 +448,7 @@ class JobHandler:
         Returns
         -------
         hhnb.core.response.ResponseUtil
-            the result of the submission as ResponseUtil object. 
+            the result of the submission as ResponseUtil object.
         """
         zip_name = os.path.split(zip_file)[1]
         job_description = self._get_unicore_job_description(
@@ -459,7 +459,7 @@ class JobHandler:
             runtime=settings['runtime'],
             project=settings['project'],
         )
-        client = self._initialize_unicore_client(hpc, token)        
+        client = self._initialize_unicore_client(hpc, token)
         job = client.new_job(job_description=job_description, inputs=[zip_file])
         logger.info(f'job submitted on UNICORE Client: {job}')
         return ResponseUtil.ok_response(messages.JOB_SUBMITTED.format('<b>' + hpc + '</b>'))
@@ -467,9 +467,9 @@ class JobHandler:
     def _reoptimize_model_on_unicore(self, job_id, job_name, hpc, max_gen,
                                      node_num, core_num, runtime, token):
         """
-        Submit job to reoptimize model on unicore. The job executes a dedicated script on 
+        Submit job to reoptimize model on unicore. The job executes a dedicated script on
         CSCS-PizDAINT that make a copy of the output of the previous optimization and then
-        resume the optimization starting from its checkpoint.  
+        resume the optimization starting from its checkpoint.
 
         Args:
             job_id : str
@@ -491,7 +491,7 @@ class JobHandler:
 
         Returns:
             Response : (status_code, content)
-                the response of the submission request. 
+                the response of the submission request.
         """
         job_description = {
             'User precommand': f'cp -r /scratch/snx3000/unicore/FILESPACE/{job_id}/{job_name}/ .',
@@ -520,7 +520,7 @@ class JobHandler:
     def _get_unicore_jobs(self, hpc, token):
         """
         Returns a list of submitted jobs by the user (identified by
-        its token) and the relative HPC system in which the user 
+        its token) and the relative HPC system in which the user
         wants to fetch its jobs.
         The result is a list of a Job object.
 
@@ -565,16 +565,16 @@ class JobHandler:
 
     def _get_service_account_payload(self, node_num, core_num, runtime, title, command=None, tool=None):
         """
-        Returns the payload for the Service Account. 
-        It is formed by the node and core number the HPC can use to 
-        processes the job, the maximum runtime for the job, the 
+        Returns the payload for the Service Account.
+        It is formed by the node and core number the HPC can use to
+        processes the job, the maximum runtime for the job, the
         job title, and optionally the command (only for UNICORE system)
         or the tool (only for NSG system).
 
         Parameters
         ----------
         node_num : int
-            the HPC node number 
+            the HPC node number
         core_num : int
             the HPC core number
         runtime : float
@@ -602,7 +602,7 @@ class JobHandler:
             payload.update({'command': command})
         elif tool:
             payload.update({'tool': tool, 'init_file': 'init.py'})
-        
+
         logger.debug(f'Service Account payload: {str(payload)}')
         return payload
 
@@ -610,7 +610,7 @@ class JobHandler:
         """
         Returns the Service Account headers to pass in the requests
         object. This is formed by the user token, the input zip file
-        and the job payload. 
+        and the job payload.
 
         Parameters
         ----------
@@ -635,12 +635,12 @@ class JobHandler:
 
     def _submit_on_service_account(self, hpc, project, token, zip_file, settings):
         """
-        Submit a job behind the Service Account in the selected HPC 
+        Submit a job behind the Service Account in the selected HPC
         system. To submit a job, an available HPC system must be choose
         from the list of HPC linked to the Service Account, the user
-        token must be provide to identify the user, and finally 
-        the input zip file and the job configuration can be set.  
-        Once the job is submitted a ResponseUtil object will be 
+        token must be provide to identify the user, and finally
+        the input zip file and the job configuration can be set.
+        Once the job is submitted a ResponseUtil object will be
         returned with the result of the submission.
 
         Parameters
@@ -667,11 +667,11 @@ class JobHandler:
             core_num=settings['core-num'],
             runtime=settings['runtime'],
             title=settings['job_name']
-        ) 
+        )
 
         headers = self._get_service_account_headers(token, zip_name, payload)
         job_file = {'file': open(zip_file, 'rb')}
-        
+
         sa_endpoint = self._SA_JOBS_URL.format(hpc, project)
 
         r = requests.post(url=sa_endpoint, headers=headers, files=job_file)
@@ -702,7 +702,7 @@ class JobHandler:
         Returns
         -------
         dict
-            a dict object  
+            a dict object
 
         Raises
         ------
@@ -712,6 +712,7 @@ class JobHandler:
         headers = self._get_service_account_headers(token)
         sa_endpoint = self._SA_JOBS_URL.format(hpc, project)
         r = requests.get(url=sa_endpoint, headers=headers)
+        print(r.status_code, r.content)
         logger.debug(f'requests: {r.url} with headers: {r.headers}')
         if r.status_code != 200:
             logger.error(f'CODE: {r.status_code}, CONTENT: {r.content}')
@@ -721,9 +722,9 @@ class JobHandler:
     def _get_service_account_job_results(self, hpc, project, token, job_id):
         """
         Returns a list of the files once the job ends.
-        The list is formed by a json object per file 
+        The list is formed by a json object per file
         composed by the "id" and the "name" keys.
-        
+
         Parameters
         ----------
         hpc : str
@@ -747,9 +748,9 @@ class JobHandler:
             if it is down.
         """
         headers = self._get_service_account_headers(token)
-        
+
         sa_endpoint = self._SA_FILES_URL.format(hpc, project)
-        
+
         r = requests.get(url=sa_endpoint + job_id + '/', headers=headers)
 
         logger.debug(f'requests: {r.url} with headers: {r.headers}')
@@ -759,7 +760,7 @@ class JobHandler:
         if r.status_code != 200:
             logger.error(f'CODE: {r.status_code}, CONTENT: {r.content}')
             raise self.ServiceAccountException(r.content, r.status_code)
-        
+
         file_list = []
         for f in r.json():
             if hpc == 'pizdaint':
@@ -767,7 +768,7 @@ class JobHandler:
             elif hpc == 'nsg':
                 file_list.append({'id': f['fileid'], 'name': f['filename']})
         return file_list
-          
+
 
     @classmethod
     def submit_job(cls, user, zip_file, settings):
@@ -804,12 +805,12 @@ class JobHandler:
             return job_handler._submit_on_service_account(settings['sa-hpc'], settings['sa-project'],
                                                           user.get_token(), zip_file, settings)
         return ResponseUtil.ko_response(messages.GENERAL_ERROR)
-       
+
     @classmethod
     def fetch_jobs_list(cls, hpc, user, sa_hpc=None, sa_project=None):
         """
         A static method to easily fetch the jobs list from the selected HPC system.
-        
+
         Parameters
         ----------
         hpc : str
@@ -822,12 +823,12 @@ class JobHandler:
         sa_project : str, optional
             select which Service Account project will be used to fetch jobs. Only
             works with the "hpc" parameter set to "SA"
-            
+
         Returns
         -------
         dict
             a dictionary containing the list of job
-            ordered by the date from the most recent 
+            ordered by the date from the most recent
         """
         logger.info(LOG_ACTION.format(user, 'fetch %s jobs list' % hpc))
         job_handler = cls()
@@ -859,7 +860,7 @@ class JobHandler:
                 }}
                 if not is_job_expired(job[raw_job['job_id']]):
                     jobs.update(job)
-        
+
         # sort jobs from last to first
         ordered_jobs = OrderedDict(sorted(jobs.items(),
                                           key=lambda x: x[1]['date'],
@@ -873,10 +874,10 @@ class JobHandler:
     def fetch_job_files(cls, hpc, job_id, user, sa_hpc=None, sa_project=None):
         """
         A static method to easily fetch the job's files that are produced
-        once the HPC ends to process the job. To fetch the list a 
+        once the HPC ends to process the job. To fetch the list a
         the parameters that must be passed are the HPC in which the job
-        was submitted, the job id to identify the correct job, and the 
-        user as owner of the job. The result will be a dictionary 
+        was submitted, the job id to identify the correct job, and the
+        user as owner of the job. The result will be a dictionary
         containing the "root_url" that is required to download the files,
         the list of files and, optionally, an header that must be passed
         in the download request to correctly identify user when the HPC
@@ -910,29 +911,29 @@ class JobHandler:
                                                              user.get_nsg_user().get_password(),
                                                              job_id)
             file_list = {
-                'root_url': 'nsg', 
+                'root_url': 'nsg',
                 'file_list': raw_file_list,
                 'headers': job_handler._get_nsg_headers(),
                 'username': user.get_nsg_user().get_username(),
                 'password': user.get_nsg_user().get_password()
             }
-        
+
         elif hpc == job_handler._DAINT_CSCS:
             raw_file_list = job_handler._get_unicore_job_results(hpc, user.get_token(), job_id)
             file_list = {
-                'root_url': 'unicore', 
+                'root_url': 'unicore',
                 'file_list': raw_file_list
             }
-        
+
         elif hpc == job_handler._SA:
             raw_file_list = job_handler._get_service_account_job_results(sa_hpc, sa_project, user.get_token(), job_id)
             root_url = job_handler._SA_FILES_URL.format(sa_hpc, sa_project) + job_id
             if sa_hpc == 'nsg':
                 root_url += '/'
             file_list = {
-                'root_url': root_url, 
+                'root_url': root_url,
                 'file_list': raw_file_list,
                 'headers': {'Authorization': 'Bearer ' + user.get_token()}
             }
-        
+
         return file_list

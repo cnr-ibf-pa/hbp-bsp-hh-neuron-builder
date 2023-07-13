@@ -8,6 +8,8 @@ UNABLE_TO_FETCH_FILES = '<b>Something went wrong !</b><br><br>Unable to fetch fi
 #  Model Catalog error messages
 MODEL_CATALOG_INVALID_CREDENTIALS = '<b>Error !</b><br><br>Invalid Model Catalog credentials.<br><br>Please, contact the <a href="https://ebrains.eu/support" class="alert-link" target="_blank">EBRAINS support</a>.'
 MODEL_CATALOG_NOT_AVAILABLE = 'The Model Catalog is temporarily not available.<br>Please, try again later.'
+MODEL_CATALOG_INVALID_DOWNLOADED_FILE = '<b>Something went wrong.</b><br><br>The download model file seems to be invalid file.<br>Please, try another model instance or contact the  <a href="https://ebrains.eu/support" class="alert-link" target="_blank">EBRAINS support</a>.'
+MODEL_CATALOG_RESPONSE_ERROR = '<b>Model Catalog error!</b><br><br><i>{}</i>'
 
 
 # Files error messages
@@ -18,9 +20,10 @@ ONLY_ACCEPTED_FILE = 'You can upload only a {} file.'
 INVALID_FILE = '<b>Invalid file !</b><br><br>Upload a correct {} archive.'
 INVALID_SIGNATURE = '<b>Invalid signature !</b><br><br>Uploaded {} archive is corrupted or was modified.'
 MALFORMED_FILE = '<b>Error !</b><br><br>Malformed "{}" file.'
-NO_FILE_TO_DOWNLOAD = 'No file selected to download.' 
+NO_FILE_TO_DOWNLOAD = 'No file selected to download.'
 NO_FILE_TO_DELETE = 'No file to delete.'
 FILE_NOT_FOUND_ERROR = '<b>Error !</b><br><br>File not found.'
+FILE_NOT_ADDED_YET_ERROR = '<b>Error !</b><br><br>File is not added yet.'
 
 
 # Authentication messages
@@ -54,6 +57,6 @@ MODEL_ALREADY_EXISTS = 'Model already exists on the Model Catalog.'
 SIGNATURE_README_DESCRIPTION = \
 """
 The "signature" file provides the ".zip" file sign generated from the Hodgikin-Huxley NeuronBuilder.
-This signature is unique and is generated using the ".zip" file read bitwise. 
+This signature is unique and is generated using the ".zip" file read bitwise.
 If you want to upload a previously downloaded ".zip" file, you must provide the original "signature.txt" otherwise the file will be rejected.
 """

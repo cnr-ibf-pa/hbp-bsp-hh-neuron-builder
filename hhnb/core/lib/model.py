@@ -8,7 +8,7 @@ import json
 
 class Features:
     """
-    An easy way to handle the features and protocols files.  
+    An easy way to handle the features and protocols files.
     """
 
     def __init__(self, features=None, protocols=None):
@@ -97,7 +97,7 @@ class Features:
 
     def get_raw_status(self):
         """
-        Returns the instance status.  
+        Returns the instance status.
         """
         return {
             'features': self._FEATURES,
@@ -116,9 +116,9 @@ class Features:
 
 class Morphology:
     """
-    An easy way to handle the morphology of the model.  
+    An easy way to handle the morphology of the model.
     """
-    
+
     def __init__(self, morphology=None, key=None):
         """
         Instantiate a Morphology object.
@@ -175,7 +175,7 @@ class Morphology:
         if not key:
             key = 'tmp_key'
         self._config = {key: os.path.split(morphology)[1]}
-    
+
     def set_config(self, conf):
         """
         Set a new config object for the current morphology.
@@ -186,7 +186,7 @@ class Morphology:
             the conf object must have this form: "{'key': 'morph_name.asc'}".
         """
         self._config = conf
-        
+
     def get_morphology(self):
         """ Returns the morphology file. """
         return self._morphology
@@ -217,26 +217,26 @@ class Morphology:
 class ModelBase:
     """
     A primitive version of the model class.
-    Useful to set and get only the files that are required from the model. 
+    Useful to set and get only the files that are required from the model.
     """
 
     def __init__(self, key, **kwargs):
         """
-        Instantiate a Model object. 
+        Instantiate a Model object.
         The accepted kwargs can be: 'features', 'morphology',
         'protocols', 'mechanisms' and 'parameters'.
 
         Parameters
         ----------
         key : str
-            set the model global key.            
+            set the model global key.
         """
         self._PARAMETERS = False
         self._MECHANISMS = False
         self._mechanisms = None
         self._parameters = None
         self._features = None
-        self._morphology = None 
+        self._morphology = None
         self._key = key
         self.set_features(Features())
         self.set_morphology(Morphology())
@@ -254,9 +254,9 @@ class ModelBase:
 
     def set_features(self, *args, **kwargs):
         """
-        Set the model features and protocols. 
-        This method accepts a unique Features instance as argument, 
-        or can be called by passing a "features" and/or "protocols" kwargs with the relative file 
+        Set the model features and protocols.
+        This method accepts a unique Features instance as argument,
+        or can be called by passing a "features" and/or "protocols" kwargs with the relative file
 
         Raises
         ------
@@ -282,8 +282,8 @@ class ModelBase:
 
     def set_morphology(self, morphology):
         """
-        Set the model morphology. This method can be accept a Morphology instance or 
-        the morphology file path. 
+        Set the model morphology. This method can be accept a Morphology instance or
+        the morphology file path.
 
         Parameters
         ----------
@@ -297,7 +297,7 @@ class ModelBase:
 
     def set_mechanisms(self, mechanisms):
         """
-        Set the mechanisms files for the model. 
+        Set the mechanisms files for the model.
         The mechanisms file can be a list of file, a directory containing the mechanisms file or a list of files.
 
         Parameters
@@ -313,7 +313,7 @@ class ModelBase:
             if it tries to access a file but is a directory.
         """
         self._mechanisms = []
-        
+
         if type(mechanisms) == list:
             self._mechanisms = mechanisms
 
@@ -324,7 +324,7 @@ class ModelBase:
                 ]
             else:
                 self._mechanisms.append(mechanisms)
-                
+
         for m in self._mechanisms:
             if not os.path.exists(m):
                 raise FileNotFoundError('%s not found' % m)

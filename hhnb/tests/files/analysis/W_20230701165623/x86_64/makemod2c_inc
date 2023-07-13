@@ -1,0 +1,104 @@
+./cacumm.c: ../mechanisms/cacumm.mod
+	@printf " -> $(C_GREEN)NMODL$(C_RESET) $<\\n"
+	(cd "../mechanisms";  MODLUNIT=$(NRNUNITS) $(NOCMODL) "cacumm.mod" -o "/mnt/hhnb-storage/hhnb-data/hhnb/workflows/36f285cf-5539-455a-949e-fa6c6bc4dea5/W_20230703092114/analysis/W_20230701165623/x86_64")
+
+./cacumm.o: ./cacumm.c
+	@printf " -> $(C_GREEN)Compiling$(C_RESET) $<\\n"
+	$(COMPILE) -I"../mechanisms" $(INCLUDES) -fPIC -c $< -o $@
+
+./cagk.c: ../mechanisms/cagk.mod
+	@printf " -> $(C_GREEN)NMODL$(C_RESET) $<\\n"
+	(cd "../mechanisms";  MODLUNIT=$(NRNUNITS) $(NOCMODL) "cagk.mod" -o "/mnt/hhnb-storage/hhnb-data/hhnb/workflows/36f285cf-5539-455a-949e-fa6c6bc4dea5/W_20230703092114/analysis/W_20230701165623/x86_64")
+
+./cagk.o: ./cagk.c
+	@printf " -> $(C_GREEN)Compiling$(C_RESET) $<\\n"
+	$(COMPILE) -I"../mechanisms" $(INCLUDES) -fPIC -c $< -o $@
+
+./cal2.c: ../mechanisms/cal2.mod
+	@printf " -> $(C_GREEN)NMODL$(C_RESET) $<\\n"
+	(cd "../mechanisms";  MODLUNIT=$(NRNUNITS) $(NOCMODL) "cal2.mod" -o "/mnt/hhnb-storage/hhnb-data/hhnb/workflows/36f285cf-5539-455a-949e-fa6c6bc4dea5/W_20230703092114/analysis/W_20230701165623/x86_64")
+
+./cal2.o: ./cal2.c
+	@printf " -> $(C_GREEN)Compiling$(C_RESET) $<\\n"
+	$(COMPILE) -I"../mechanisms" $(INCLUDES) -fPIC -c $< -o $@
+
+./can2.c: ../mechanisms/can2.mod
+	@printf " -> $(C_GREEN)NMODL$(C_RESET) $<\\n"
+	(cd "../mechanisms";  MODLUNIT=$(NRNUNITS) $(NOCMODL) "can2.mod" -o "/mnt/hhnb-storage/hhnb-data/hhnb/workflows/36f285cf-5539-455a-949e-fa6c6bc4dea5/W_20230703092114/analysis/W_20230701165623/x86_64")
+
+./can2.o: ./can2.c
+	@printf " -> $(C_GREEN)Compiling$(C_RESET) $<\\n"
+	$(COMPILE) -I"../mechanisms" $(INCLUDES) -fPIC -c $< -o $@
+
+./cat.c: ../mechanisms/cat.mod
+	@printf " -> $(C_GREEN)NMODL$(C_RESET) $<\\n"
+	(cd "../mechanisms";  MODLUNIT=$(NRNUNITS) $(NOCMODL) "cat.mod" -o "/mnt/hhnb-storage/hhnb-data/hhnb/workflows/36f285cf-5539-455a-949e-fa6c6bc4dea5/W_20230703092114/analysis/W_20230701165623/x86_64")
+
+./cat.o: ./cat.c
+	@printf " -> $(C_GREEN)Compiling$(C_RESET) $<\\n"
+	$(COMPILE) -I"../mechanisms" $(INCLUDES) -fPIC -c $< -o $@
+
+./h.c: ../mechanisms/h.mod
+	@printf " -> $(C_GREEN)NMODL$(C_RESET) $<\\n"
+	(cd "../mechanisms";  MODLUNIT=$(NRNUNITS) $(NOCMODL) "h.mod" -o "/mnt/hhnb-storage/hhnb-data/hhnb/workflows/36f285cf-5539-455a-949e-fa6c6bc4dea5/W_20230703092114/analysis/W_20230701165623/x86_64")
+
+./h.o: ./h.c
+	@printf " -> $(C_GREEN)Compiling$(C_RESET) $<\\n"
+	$(COMPILE) -I"../mechanisms" $(INCLUDES) -fPIC -c $< -o $@
+
+./kadist.c: ../mechanisms/kadist.mod
+	@printf " -> $(C_GREEN)NMODL$(C_RESET) $<\\n"
+	(cd "../mechanisms";  MODLUNIT=$(NRNUNITS) $(NOCMODL) "kadist.mod" -o "/mnt/hhnb-storage/hhnb-data/hhnb/workflows/36f285cf-5539-455a-949e-fa6c6bc4dea5/W_20230703092114/analysis/W_20230701165623/x86_64")
+
+./kadist.o: ./kadist.c
+	@printf " -> $(C_GREEN)Compiling$(C_RESET) $<\\n"
+	$(COMPILE) -I"../mechanisms" $(INCLUDES) -fPIC -c $< -o $@
+
+./kaprox.c: ../mechanisms/kaprox.mod
+	@printf " -> $(C_GREEN)NMODL$(C_RESET) $<\\n"
+	(cd "../mechanisms";  MODLUNIT=$(NRNUNITS) $(NOCMODL) "kaprox.mod" -o "/mnt/hhnb-storage/hhnb-data/hhnb/workflows/36f285cf-5539-455a-949e-fa6c6bc4dea5/W_20230703092114/analysis/W_20230701165623/x86_64")
+
+./kaprox.o: ./kaprox.c
+	@printf " -> $(C_GREEN)Compiling$(C_RESET) $<\\n"
+	$(COMPILE) -I"../mechanisms" $(INCLUDES) -fPIC -c $< -o $@
+
+./kca.c: ../mechanisms/kca.mod
+	@printf " -> $(C_GREEN)NMODL$(C_RESET) $<\\n"
+	(cd "../mechanisms";  MODLUNIT=$(NRNUNITS) $(NOCMODL) "kca.mod" -o "/mnt/hhnb-storage/hhnb-data/hhnb/workflows/36f285cf-5539-455a-949e-fa6c6bc4dea5/W_20230703092114/analysis/W_20230701165623/x86_64")
+
+./kca.o: ./kca.c
+	@printf " -> $(C_GREEN)Compiling$(C_RESET) $<\\n"
+	$(COMPILE) -I"../mechanisms" $(INCLUDES) -fPIC -c $< -o $@
+
+./kdb.c: ../mechanisms/kdb.mod
+	@printf " -> $(C_GREEN)NMODL$(C_RESET) $<\\n"
+	(cd "../mechanisms";  MODLUNIT=$(NRNUNITS) $(NOCMODL) "kdb.mod" -o "/mnt/hhnb-storage/hhnb-data/hhnb/workflows/36f285cf-5539-455a-949e-fa6c6bc4dea5/W_20230703092114/analysis/W_20230701165623/x86_64")
+
+./kdb.o: ./kdb.c
+	@printf " -> $(C_GREEN)Compiling$(C_RESET) $<\\n"
+	$(COMPILE) -I"../mechanisms" $(INCLUDES) -fPIC -c $< -o $@
+
+./kdrbca1.c: ../mechanisms/kdrbca1.mod
+	@printf " -> $(C_GREEN)NMODL$(C_RESET) $<\\n"
+	(cd "../mechanisms";  MODLUNIT=$(NRNUNITS) $(NOCMODL) "kdrbca1.mod" -o "/mnt/hhnb-storage/hhnb-data/hhnb/workflows/36f285cf-5539-455a-949e-fa6c6bc4dea5/W_20230703092114/analysis/W_20230701165623/x86_64")
+
+./kdrbca1.o: ./kdrbca1.c
+	@printf " -> $(C_GREEN)Compiling$(C_RESET) $<\\n"
+	$(COMPILE) -I"../mechanisms" $(INCLUDES) -fPIC -c $< -o $@
+
+./kmb.c: ../mechanisms/kmb.mod
+	@printf " -> $(C_GREEN)NMODL$(C_RESET) $<\\n"
+	(cd "../mechanisms";  MODLUNIT=$(NRNUNITS) $(NOCMODL) "kmb.mod" -o "/mnt/hhnb-storage/hhnb-data/hhnb/workflows/36f285cf-5539-455a-949e-fa6c6bc4dea5/W_20230703092114/analysis/W_20230701165623/x86_64")
+
+./kmb.o: ./kmb.c
+	@printf " -> $(C_GREEN)Compiling$(C_RESET) $<\\n"
+	$(COMPILE) -I"../mechanisms" $(INCLUDES) -fPIC -c $< -o $@
+
+./na3n.c: ../mechanisms/na3n.mod
+	@printf " -> $(C_GREEN)NMODL$(C_RESET) $<\\n"
+	(cd "../mechanisms";  MODLUNIT=$(NRNUNITS) $(NOCMODL) "na3n.mod" -o "/mnt/hhnb-storage/hhnb-data/hhnb/workflows/36f285cf-5539-455a-949e-fa6c6bc4dea5/W_20230703092114/analysis/W_20230701165623/x86_64")
+
+./na3n.o: ./na3n.c
+	@printf " -> $(C_GREEN)Compiling$(C_RESET) $<\\n"
+	$(COMPILE) -I"../mechanisms" $(INCLUDES) -fPIC -c $< -o $@
+

@@ -16,7 +16,7 @@ function checkRefreshSession(response) {
         $("#overlaywrapper").css("display", "none");
         showLoadingAnimation("Session expired.<br>Refreshing session automatically...");
         $.ajax({
-            url: "/hh-neuron-builder/session-refresh/" + exc,
+            url: "/hh-neuron-builder/session-refresh",
             method: "POST",
             data: response.responseJSON,
             async: false,
@@ -27,7 +27,7 @@ function checkRefreshSession(response) {
                 MessageDialog.openReloadDialog("Unable to refresh session automatically.<br>Try by reloading the page.")
             }
         })
-    } 
+    }
 }
 
 $(window).on("load", () => {
@@ -113,7 +113,7 @@ $("#uploadForm").submit(function (e) {
     for (let v of formFileData.values()) {
         Log.debug(v);
     }
-    
+
     workflow.uploadFile(formFileData);
 });
 
@@ -274,7 +274,7 @@ async function openOptimizationSettings(event) {
             OptimizationSettingsDialog.loadSettings(settings);
             OptimizationSettingsDialog.open();
         }).catch(error => {
-            checkRefreshSession(error);       
+            checkRefreshSession(error);
             Log.error("Error on getting settings");
             Log.debug(error);
         });
@@ -287,7 +287,7 @@ $("#cancel-param-btn").on("click", () => {
 
 $("#apply-param").on("click", () => {
     Log.debug("Uploading optimization settings");
-    let formData = OptimizationSettingsDialog.getJsonData();    
+    let formData = OptimizationSettingsDialog.getJsonData();
     if (formData.hpc == "DAINT-CSCS" || formData.hpc == "SA" ) {
         showLoadingAnimation("Checking login...");
         $.get("/hh-neuron-builder/get-authentication")
@@ -297,12 +297,12 @@ $("#apply-param").on("click", () => {
             }).fail((error) => {
                 checkRefreshSession(error);
                 showHpcAuthAlert();
-                hideLoadingAnimation();  
+                hideLoadingAnimation();
             })
     } else {
         OptimizationSettingsDialog.close();
         workflow.uploadOptimizationSettings(formData);
-    }    
+    }
 })
 
 
@@ -592,7 +592,7 @@ $(".jobs-unicore").on("click", (button) => {
                 loadSAContent();
             }
         })
-        .fail((error) => { 
+        .fail((error) => {
             checkRefreshSession(error);
             $("#spinnerRow").css("display", "none");
             showJobsAuthAlert();
@@ -630,7 +630,7 @@ $("#sa-fetch-jobs").on("click", () => {
     // resetJobFetchDiv();
     $("#saChoiseRow").css("display", "none");
     displayJobList($("#jobsSA"));
-}) 
+})
 
 
 $("#jobsNSG").on("click", (button) => {
@@ -704,7 +704,7 @@ function displayJobList(button) {
                     + "<td>" + job.date + "</td>"
                     + "<td>"
                     + "<div id='" + job_id + "' class='row g-0'>"
-                    + "<div class='col'>" 
+                    + "<div class='col'>"
                     + "<button type='button' class='btn workflow-btn job-button download' title='Download' " + downloadDisabled + "><i class='fas fa-cloud-download-alt fa-lg'></i></button>"
                     + "</div>"
                     + "</div>"
@@ -721,7 +721,7 @@ function displayJobList(button) {
             $("#refresh-job-list-btn").prop("disabled", false).blur();
             $("#cancel-job-list-btn").prop("disabled", false);
             $(".list-group-item.fetch-jobs").attr("aria-disabled", "false").removeClass("disabled clicked");
-            
+
             let maxHeight = $(window).height() - $(window).height() * 30 / 100;
             if ($("#tableRow").height() > maxHeight) {
                 $("#tableRow").css("max-height", maxHeight.toString() + "px");
@@ -785,7 +785,7 @@ async function downloadJobOnly(jobId) {
         "job_id": jobId,
         "hpc": $("button.fetch-jobs.active").attr("name"),
         "saHPC": $("#sa-hpc-dropdown-jobs-btn").text().toLowerCase(),
-        "saProject": $("#sa-project-dropdown-jobs-btn").text().toLowerCase() 
+        "saProject": $("#sa-project-dropdown-jobs-btn").text().toLowerCase()
     }
 
     $("#jobProcessingTitle").html("Downloading job:<br>" + jobId.toUpperCase() + "<br>");
@@ -802,7 +802,7 @@ async function downloadJobOnly(jobId) {
             $("#progressBarFetchJob").addClass("s2").removeClass("s40 s20 s4");
             setProgressBarValue(100);
             await sleep(2000);
-            closeJobProcessingDiv(); 
+            closeJobProcessingDiv();
             workflow.updateProperties();
         }).fail((downloadError) => {
             checkRefreshSession(downloadError);
@@ -821,7 +821,7 @@ async function downloadJobAndRunAnalysis(jobId, jobName) {
         "job_name": jobName,
         "hpc": $("button.fetch-jobs.active").attr("name"),
         "saHPC": $("#sa-hpc-dropdown-jobs-btn").text().toLowerCase(),
-        "saProject": $("#sa-project-dropdown-jobs-btn").text().toLowerCase() 
+        "saProject": $("#sa-project-dropdown-jobs-btn").text().toLowerCase()
     }
 
     $("#jobProcessingTitle").html("Downloading job:<br>" + jobId.toUpperCase() + "<br>");
@@ -844,7 +844,7 @@ async function downloadJobAndRunAnalysis(jobId, jobName) {
                     $("#progressBarFetchJob").addClass("s2").removeClass("s40 s20 s4");
                     setProgressBarValue(100);
                     await sleep(2000);
-                    closeJobProcessingDiv(); 
+                    closeJobProcessingDiv();
                 }).fail((analysisError) => {
                     checkRefreshSession(analysisError);
                     Log.error("Status: " + analysisError.status + " > " + analysisError.responseText);
@@ -913,7 +913,7 @@ $("#run-sim-btn").on("click", () => {
             hideLoadingAnimation();
         }).always(() => {
             $("#run-sim-btn").prop("disabled", false);
-        }) 
+        })
 })
 
 
@@ -997,7 +997,7 @@ async function showPDF(blob) {
     win.focus();
     setTimeout(function() {
         window.URL.revokeObjectURL(data);
-    }, 100); 
+    }, 100);
 }
 $("#show-results-btn").on("click", () => {
     fetch("/hh-neuron-builder/show-results/" + exc)

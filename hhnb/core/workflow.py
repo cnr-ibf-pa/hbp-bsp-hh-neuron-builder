@@ -28,7 +28,7 @@ class _WorkflowBase:
     """
     Base class to handle the Hodgkin-Huxley Neuron Builder workflow.
     """
-    
+
     def __init__(self, user_sub, workflow_id):
         """
         Initialize the workflow.
@@ -42,7 +42,7 @@ class _WorkflowBase:
         """
         self._user_sub = user_sub
         if workflow_id[0] in '1234567890':
-            workflow_id = 'W_' + workflow_id 
+            workflow_id = 'W_' + workflow_id
         self._id = workflow_id
         self._workflow_path = os.path.abspath(os.path.join(MEDIA_ROOT, 'hhnb', 'workflows',
                                                            self._user_sub, self._id))
@@ -51,15 +51,12 @@ class _WorkflowBase:
         self._model_dir = os.path.join(self._workflow_path, 'model')
         self._tmp_dir = os.path.join(self._workflow_path, 'tmp')
         self._etraces_dir = os.path.join(self._workflow_path, 'etraces')
-        
+
         self._optimization_settings = os.path.join(self._workflow_path,
                                                    'optimization_settings.json')
-        
+
         if os.path.exists(self._model_dir) and any(os.scandir(self._model_dir)):
             self._model = Model.from_dir(self._model_dir, key=workflow_id)
-
-    def __repr__(self):
-        return self.__class__
 
     def __str__(self):
         return f'<Workflow {self._id}>'
@@ -108,14 +105,14 @@ class _WorkflowBase:
     def get_model(self):
         return self._model
 
-    
+
 class Workflow(_WorkflowBase):
     """
     Workflow class that extends the WorkflowBase class
     with many useful methods.
 
-    It is recommended to initialize this class by calling 
-    one of the following classmethod: 
+    It is recommended to initialize this class by calling
+    one of the following classmethod:
         generate_user_workflow(),
         generate_user_workflow_from_zip(),
         generate_user_workflow_from_path(),
@@ -158,13 +155,13 @@ class Workflow(_WorkflowBase):
         if make_files:
             wf.make_workflow_dirs()
         return wf
-    
+
     @classmethod
     def generate_user_workflow_from_zip(cls, user_sub, zip_file):
         """
         Create a new workflow by generating a workflow id from
         the current timestamp and unpacking all files from the
-        zip passed as argument. 
+        zip passed as argument.
 
         Parameters
         ----------
@@ -181,15 +178,15 @@ class Workflow(_WorkflowBase):
         workflow_id = datetime.now().strftime('%Y%m%d%H%M%S')
         wf = cls(user_sub, workflow_id)
         shutil.unpack_archive(zip_file, wf.get_workflow_path())
-        return wf 
+        return wf
 
     @classmethod
     def generate_user_workflow_from_path(cls, user_sub, path_to_clone):
         """
         Create a workflow by cloning every files from an old workflow,
         including the workflow id.
-        This classmethod method is useful when the old workflow is in 
-        another folder. 
+        This classmethod method is useful when the old workflow is in
+        another folder.
 
         Returns
         -------
@@ -197,7 +194,7 @@ class Workflow(_WorkflowBase):
             the workflow object
         """
         old_wf_id = os.path.split(path_to_clone)[1]
-        user_dir = os.path.join(MEDIA_ROOT, 'hhnb', 'workflows', user_sub) 
+        user_dir = os.path.join(MEDIA_ROOT, 'hhnb', 'workflows', user_sub)
         wf = cls(user_sub, old_wf_id)
         if not os.path.exists(user_dir):
             os.mkdir(user_dir)
@@ -208,7 +205,7 @@ class Workflow(_WorkflowBase):
     def get_user_workflow_by_id(cls, user_sub, workflow_id):
         """
         Get a workflow object by specifying the user sub id and
-        the workflow id. 
+        the workflow id.
         This classmethod method is useful when the folders are
         already written on the disk but it is needed to reinitialize
         the workflow object.
@@ -249,7 +246,7 @@ class Workflow(_WorkflowBase):
             be raised to prevent the file overwriting.
         """
         if src_file in os.listdir(dst_path) and safe:
-            raise FileExistsError('%s exists yet on %s. Try with safe=False flag.' 
+            raise FileExistsError('%s exists yet on %s. Try with safe=False flag.'
                                   % (src_file, dst_path))
         shutil.copy(src_file, dst_path)
 
@@ -262,7 +259,7 @@ class Workflow(_WorkflowBase):
         fd : django.core.files.uploadedfile.UploadedFile
             the uploaded file
         file_name : str
-            the file name 
+            the file name
         dst_path : str
             the file path
         mode : str, optional
@@ -275,7 +272,7 @@ class Workflow(_WorkflowBase):
         Returns
         -------
         str
-            the written file path 
+            the written file path
 
         Raises
         ------
@@ -283,7 +280,7 @@ class Workflow(_WorkflowBase):
             if the same filename is found in the destination folder
         """
         if file_name in dst_path and safe:
-            raise FileExistsError('%s exists yet on %s. Try with safe=False flag.' 
+            raise FileExistsError('%s exists yet on %s. Try with safe=False flag.'
                                   % (file_name, dst_path))
         file_path = os.path.join(dst_path, file_name)
         with open(file_path, mode) as fd_dst:
@@ -306,7 +303,7 @@ class Workflow(_WorkflowBase):
         if os.path.exists(self._workflow_path):
             raise WorkflowExists('The workspace already exists. Use another path.')
         os.makedirs(self._workflow_path)
-        shutil.copytree(HHF_TEMPLATE_DIR, self._model_dir) 
+        shutil.copytree(HHF_TEMPLATE_DIR, self._model_dir)
 
         #  force empty dir to be created in model directory
         sub_dir = ['config', 'mechanisms', 'model', 'morphology']
@@ -345,9 +342,9 @@ class Workflow(_WorkflowBase):
         Parameters
         ----------
         src_file : str
-            the features file to copy 
+            the features file to copy
         safe : bool, optional
-            set to False to overwrite the file if 
+            set to False to overwrite the file if
             it is already present, by default True
         """
         self._copy_file(src_file, os.path.join(self._model_dir, 'config'), safe)
@@ -368,9 +365,9 @@ class Workflow(_WorkflowBase):
             is already present, by default True
         """
         dir_path = os.path.join(self._model_dir, 'config')
-        file_path = self._write_file(fd, 'features.json', dir_path, mode, safe) 
+        file_path = self._write_file(fd, 'features.json', dir_path, mode, safe)
         self.get_model().set_features(features=file_path)
-    
+
     def write_protocols(self, fd, mode='wb', safe=True):
         """
         Write the model "protocols" files content inside the "config" model
@@ -406,30 +403,30 @@ class Workflow(_WorkflowBase):
             shutil.rmtree(unzipped_tmp_model_dir)
         os.mkdir(unzipped_tmp_model_dir)
         shutil.unpack_archive(model_zip, unzipped_tmp_model_dir)
-        
+
         for f in os.listdir(unzipped_tmp_model_dir):
             if 'output' in f or f == model_zip:
-                shutil.unpack_archive(os.path.join(unzipped_tmp_model_dir, f), 
+                shutil.unpack_archive(os.path.join(unzipped_tmp_model_dir, f),
                                       unzipped_tmp_model_dir)
-        
+
         for model_folder in os.listdir(unzipped_tmp_model_dir):
             if not os.path.isdir(os.path.join(unzipped_tmp_model_dir, model_folder)):
                 os.remove(os.path.join(unzipped_tmp_model_dir, model_folder))
-            
-        while not 'opt_neuron.py' in os.listdir(unzipped_tmp_model_dir): 
-            unzipped_tmp_model_dir = os.path.join(unzipped_tmp_model_dir,   
+
+        while not 'opt_neuron.py' in os.listdir(unzipped_tmp_model_dir):
+            unzipped_tmp_model_dir = os.path.join(unzipped_tmp_model_dir,
                                                   os.listdir(unzipped_tmp_model_dir)[0])
 
         shutil.rmtree(self._model_dir)
         if not os.path.exists(self._model_dir):
             os.mkdir(self._model_dir)
-        
+
         shutil.copytree(unzipped_tmp_model_dir, self._model_dir, dirs_exist_ok=True)
-        
+
         # The uploaded origin model case
         self._model.update_optimization_files(unzipped_tmp_model_dir)
         ModelUtil.update_key(model=self._model)
-        
+
     def _set_optimization_settings(self, optimization_settings):
         """
         Create the optimization settings file for the current workflow.
@@ -450,7 +447,7 @@ class Workflow(_WorkflowBase):
         try:
             with open(self._optimization_settings, 'r') as fd:
                 try:
-                    return json.load(fd)                    
+                    return json.load(fd)
                 except JSONDecodeError:
                     return {}
         except FileNotFoundError:
@@ -516,11 +513,11 @@ class Workflow(_WorkflowBase):
         if os.path.commonpath([os.path.abspath(self._workflow_path), target_dir]) != \
             os.path.abspath(self._workflow_path):
             raise PermissionError('Can\'t delete files on %s' % target_dir)
-            
+
         if filename == '*':
             shutil.rmtree(target_dir)
             os.mkdir(target_dir)
-        
+
         elif not filename:
             if os.path.isdir(target_dir):
                 shutil.rmtree(target_dir)
@@ -530,7 +527,7 @@ class Workflow(_WorkflowBase):
                     if dd.startswith(d):
                         shutil.rmtree(os.path.join(self._model_dir, dd))
         else:
-            full_file_path = os.path.join(self._model_dir, file_path) 
+            full_file_path = os.path.join(self._model_dir, file_path)
             if os.path.exists(full_file_path):
                 os.remove(full_file_path)
 
@@ -539,7 +536,7 @@ class Workflow(_WorkflowBase):
 
     def get_properties(self):
         """ Returns the workflow properties. """
-        
+
         analysis_flag = False
         show_results_flag = False
         if len(os.listdir(self._analysis_dir)) == 1:
@@ -548,8 +545,8 @@ class Workflow(_WorkflowBase):
             if os.path.isdir(analysis_model_dir) != \
                 ['mechanisms', 'morphology', 'checkpoints']:
                 analysis_flag = True
-                
-            show_results_flag = any(os.scandir(os.path.join(analysis_model_dir, 
+
+            show_results_flag = any(os.scandir(os.path.join(analysis_model_dir,
                                                             'figures')))
 
 
@@ -566,12 +563,12 @@ class Workflow(_WorkflowBase):
             elif jj.get('hpc') == 'NSG':
                 if not jj.get('username_submit') or not jj.get('password_submit'):
                     optset_flag = (False, 'NSG credentials required')
-                else: 
+                else:
                     optset_flag = (True, '')
-                    
+
         props = {
             'id': self._id,
-            'model': self._model.get_properties(), 
+            'model': self._model.get_properties(),
             'optimization_settings': optset_flag,
             'etraces': any(os.scandir(self._etraces_dir)),
             'job_submitted': self.get_optimization_settings().get('job_submitted', False),
@@ -598,7 +595,7 @@ class Workflow(_WorkflowBase):
 
 class WorkflowUtil:
     """
-    A collection of static method that handle the workflow. 
+    A collection of static method that handle the workflow.
     """
 
 
@@ -627,7 +624,7 @@ class WorkflowUtil:
         workflow : hhnb.core.workflow.Workflow
             the workflow
         """
-        src_params = os.path.join(HHF_TEMPLATE_DIR, '..', 'parameters.json') 
+        src_params = os.path.join(HHF_TEMPLATE_DIR, '..', 'parameters.json')
         dst_params = os.path.join(workflow.get_model_dir(), 'config')
         shutil.copy(src_params, dst_params)
         workflow.get_model().set_parameters(dst_params)
@@ -647,8 +644,13 @@ class WorkflowUtil:
         hhnb.core.workflow.Workflow
             the new cloned workflow
         """
-        new_workflow = Workflow.generate_user_workflow(workflow.get_user(), make_files=False)
-        shutil.copytree(workflow.get_workflow_path(), new_workflow.get_workflow_path())
+        while True:
+            try:
+                new_workflow = Workflow.generate_user_workflow(workflow.get_user(), make_files=False)
+                shutil.copytree(workflow.get_workflow_path(), new_workflow.get_workflow_path())
+                break
+            except FileExistsError:
+                pass
         if os.path.exists(new_workflow._optimization_settings):
             os.remove(new_workflow._optimization_settings)
         return new_workflow
@@ -687,18 +689,19 @@ class WorkflowUtil:
         tmp_dir = os.path.join(workflow.get_tmp_dir(), dir_name)
         os.mkdir(tmp_dir)
 
-        wf_path = workflow.get_workflow_path()
-
-        for f in file_list:
+        for f in file_list :
+            if not f:
+                raise FileNotAddedYet(f'file "{f}" was not added in the workflow !')
             if not os.path.exists(f):
                 raise FileNotFoundError(f'{f} file not found!')
-            if not os.path.commonpath([wf_path, f]) == wf_path:
+            if not os.path.commonpath([workflow.get_workflow_path() , f]) \
+                == workflow.get_workflow_path():
                 raise PermissionError(f'file "{f} is not inside the workflow path!')
             shutil.copy(f, tmp_dir)
         shutil.make_archive(os.path.splitext(zip_path)[0], 'zip', tmp_dir)
         shutil.rmtree(tmp_dir)
         return zip_path
-        
+
     @staticmethod
     def make_workflow_archive(workflow):
         """
@@ -739,13 +742,14 @@ class WorkflowUtil:
             workflow.get_model().get_features().get_features(),
             workflow.get_model().get_features().get_protocols()
         ]
+
         return WorkflowUtil.make_archive(
             workflow=workflow,
             zip_name=workflow.get_id() + '_features.zip',
             dir_name='feature',
             file_list=file_list
         )
-        
+
     @staticmethod
     def make_model_archive(workflow):
         """
@@ -761,7 +765,7 @@ class WorkflowUtil:
         str
             the path of the zip file
         """
-        zip_name = os.path.join(workflow.get_tmp_dir(), 
+        zip_name = os.path.join(workflow.get_tmp_dir(),
                                 workflow.get_id() + '_orig_model.zip')
         shutil.make_archive(
             base_name=os.path.splitext(zip_name)[0],
@@ -831,13 +835,13 @@ class WorkflowUtil:
         Returns
         -------
         str
-            the tmp folder where the optimization model files is stored. 
+            the tmp folder where the optimization model files is stored.
         """
 
         # fixing all model's keys
         ModelUtil.update_key(workflow.get_model())
-        
-        tmp_model_dir = shutil.copytree(src=workflow.get_model_dir(), 
+
+        tmp_model_dir = shutil.copytree(src=workflow.get_model_dir(),
                                         dst=os.path.join(workflow.get_tmp_dir(), 'opt_model',
                                                          workflow.get_model().get_key()))
 
@@ -864,8 +868,8 @@ class WorkflowUtil:
                                           max_gen=settings['gen-max'],
                                           mode=settings['mode'],
                                           job_name=settings['job_name'])
-        
-        return tmp_model_dir 
+
+        return tmp_model_dir
 
     @staticmethod
     def download_from_hhf(workflow, hhf_dict):
@@ -896,6 +900,11 @@ class WorkflowUtil:
             with open(file_path, 'wb') as fd:
                 for chunk in r.iter_content(chunk_size=4096):
                     fd.write(chunk)
+            with open(os.path.join(workflow.get_model_dir(),
+                                   'config/morph.json'), 'w') as fd:
+                json.dump(workflow.get_model().get_morphology().get_config(),
+                          fd,
+                          indent=4)
             workflow.get_model().set_morphology(morphology=file_path)
             with open(os.path.join(workflow.get_model_dir(),
                                    'config/morph.json'), 'w') as fd:
@@ -912,7 +921,7 @@ class WorkflowUtil:
             with open(file_path + '_metadata.json', 'wb') as fd:
                 for chunk in r.iter_content(chunk_size=4096):
                     fd.write(chunk)
-        
+
         mechanisms_dir = os.path.join(workflow.get_model_dir(), 'mechanisms')
         for mod in mechanisms:
             file_path = os.path.join(mechanisms_dir, mod['name'])
@@ -926,7 +935,7 @@ class WorkflowUtil:
     def list_model_files(workflow):
         """
         Returns a dictionary containing all the model's files
-        within the workflow. The keys of the dictionary 
+        within the workflow. The keys of the dictionary
         represent the type of the model's files and can be one of
         the following values "config", "morphology", "model" and
         "root" that contains the root model folder path.
@@ -941,7 +950,7 @@ class WorkflowUtil:
             and the path of the files as value.
         """
         model_files = {}
-        
+
         for root, dirs, files in os.walk(workflow.get_model_dir()):
             if os.path.split(root)[1] == 'config':
                 model_files.update({'config': files})
@@ -951,9 +960,9 @@ class WorkflowUtil:
                 model_files.update({'model': files})
             if root == workflow.get_model_dir():
                 model_files.update({'root': files})
-                
+
         return model_files
-        
+
     @staticmethod
     def write_file_content(workflow, file_path, file_content):
         """
@@ -1016,12 +1025,12 @@ class WorkflowUtil:
                 if type(file_list[f]) == UnicorePathFile:
                     dst = os.path.join(workflow.get_results_dir(), f)
                     file_list[f].download(dst)
-        
+
         elif hpc_system.startswith('https://bspsa.cineca.it'):
             for f in file_list:
                 r = requests.get(url=data['root_url'] + f['id'] + '/',
                                  headers=data['headers'],)
-                if r.status_code != 200:   
+                if r.status_code != 200:
                     continue
                 if f['name'].startswith('/'):
                     f['name'] = f['name'][1:]
@@ -1029,7 +1038,7 @@ class WorkflowUtil:
                 with open(dst, 'wb') as fd:
                     for chunk in r.iter_content(chunk_size=4096):
                         fd.write(chunk)
-        
+
         else:
             raise Exception('No hpc system found!')
 
@@ -1038,10 +1047,10 @@ class WorkflowUtil:
         """
         Run the analysis process for the current downloaded job inside
         the workflow. This static method runs the external program
-        "nrnivmodl" (from the NUERON suite) to build the model's 
-        mechanism files and then run the external job script 
+        "nrnivmodl" (from the NUERON suite) to build the model's
+        mechanism files and then run the external job script
         "opt_neuron.py" starting from the checkpoint found in the job
-        output processed by the HPC system. 
+        output processed by the HPC system.
 
         Parameters
         ----------
@@ -1063,16 +1072,17 @@ class WorkflowUtil:
         """
         analysis_dir = workflow.get_analysis_dir()
         shutil.unpack_archive(job_output, analysis_dir)
-        
-        output_dir = None
-        for f in [os.path.join(analysis_dir, f) for f in os.listdir(analysis_dir)]:
-            if os.path.isdir(f):
-                output_dir = f
-            else:
-                os.remove(f)
+
+        output_dir = analysis_dir
+        if not 'opt_neuron.py' in os.listdir(analysis_dir):
+            for f in [os.path.join(analysis_dir, f) for f in os.listdir(analysis_dir)]:
+                if os.path.isdir(f):
+                    output_dir = f
+                else:
+                    os.remove(f)
+
         if not output_dir:
             raise FileNotFoundError('Output folder')
-        
 
         analysis_file = os.path.join(output_dir, 'model', 'analysis.py')
         if not os.path.exists(analysis_file):
@@ -1104,31 +1114,31 @@ class WorkflowUtil:
         buffer = ['import matplotlib\n', 'matplotlib.use(\'Agg\')\n'] + buffer
         with open(opt_neuron_file, 'w') as fd:
             fd.writelines(buffer)
-        
+
         r_0_dir = os.path.join(output_dir, 'r_0')
         if os.path.exists(r_0_dir):
             shutil.rmtree(r_0_dir)
         os.mkdir(r_0_dir)
-        
+
         # delete compiled mods files directory
         compiled_mods_dir = os.path.join(output_dir, 'x86_64')
         if os.path.exists(compiled_mods_dir):
             shutil.rmtree(compiled_mods_dir)
-        curr_dir = os.getcwd()  
-        
+        curr_dir = os.getcwd()
+
         log_file_path = os.path.join(LOG_ROOT_PATH, 'analysis', workflow.get_user())
         if not os.path.exists(log_file_path):
             os.makedirs(log_file_path)
-        log_file = os.path.join(log_file_path, workflow.get_id() + '.log')    
+        log_file = os.path.join(log_file_path, workflow.get_id() + '.log')
         Path(log_file).touch()
 
-        os.chdir(output_dir)        
-        
+        os.chdir(output_dir)
+
         build_mechanisms_command = f'source {env_prefix}/bin/activate; nrnivmodl mechanisms > {log_file}'
         opt_neuron_analysis_command = f'source {env_prefix}/bin/activate; python ./opt_neuron.py --analyse --checkpoint ./checkpoints > {log_file}'
         p0 = subprocess.run(build_mechanisms_command, shell=True, executable='/bin/bash', capture_output=True, text=True)
         p1 = subprocess.run(opt_neuron_analysis_command, shell=True, executable='/bin/bash', capture_output=True, text=True)
-            
+
         os.chdir(curr_dir)
 
         if p0.returncode > 0:
@@ -1139,7 +1149,7 @@ class WorkflowUtil:
     @staticmethod
     def make_naas_archive(workflow):
         """
-        Generate a zip archive that contains all needed files that are 
+        Generate a zip archive that contains all needed files that are
         required from the BlueNaas application to run the simulation.
 
         Parameters
@@ -1163,7 +1173,7 @@ class WorkflowUtil:
                 if os.path.isdir(os.path.join(f_path)):
                     shutil.rmtree(f_path)
                 else:
-                    os.remove(f_path)            
+                    os.remove(f_path)
 
         # rename .hoc file
         hoc_file = None
@@ -1199,7 +1209,7 @@ class WorkflowUtil:
         workflow : hhnb.core.workflow.Workflow
             the workflow in which load the parameters template.
         template_type : str
-            the parameters template type. Can be "pyramidal" or "interneuron". 
+            the parameters template type. Can be "pyramidal" or "interneuron".
 
         Raises
         ------
@@ -1208,7 +1218,7 @@ class WorkflowUtil:
         """
         if template_type not in ['pyramidal', 'interneuron']:
             raise UnknownParametersTemplate
-        
+
         shutil.copy(
             os.path.join(HHF_PARAMETERS_TEMPLATE_DIR, template_type, 'parameters.json'),
             os.path.join(workflow.get_model_dir(), 'config')
@@ -1217,7 +1227,7 @@ class WorkflowUtil:
     @staticmethod
     def clean_model(workflow):
         """
-        Clean the model folder in the workflow from all unnecessary folders and files. 
+        Clean the model folder in the workflow from all unnecessary folders and files.
 
         Parameters
         ----------
@@ -1234,28 +1244,28 @@ class WorkflowUtil:
             shutil.rmtree(os.path.join(workflow.get_model_dir(), 'mod_nsgportal'))
             shutil.rmtree(os.path.join(workflow.get_model_dir(), 'x86_64'))
         except FileNotFoundError:
-            pass                
-        
+            pass
+
     @staticmethod
     def generate_pdf_result(workflow):
         """
         Merge all pdf generated from the analysis process into one single pdf
         for the current workflow.
-        
+
         Parameters
         ----------
         workflow : hhnb.core.workflow.Workflow
             the workflow that contains the figures.
-            
+
         Returns
         -------
         str
             the generated pdf file path.
-            
+
         Raise
         -----
         FileNotFoundError
-            if analysis directory is not found inside the workflow.  
+            if analysis directory is not found inside the workflow.
         """
 
         if len(os.listdir(workflow.get_analysis_dir())) != 1:
@@ -1265,11 +1275,11 @@ class WorkflowUtil:
                                 'figures')
         pdf_list = os.listdir(pdf_path)
         pdf_result = os.path.join(workflow.get_tmp_dir(), 'results.pdf')
-        
+
         merger = PdfMerger()
         for pdf in pdf_list:
             merger.append(os.path.join(pdf_path, pdf))
         merger.write(pdf_result)
         merger.close()
-        
+
         return pdf_result

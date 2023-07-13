@@ -19,7 +19,7 @@ class UserInfoError(Exception):
 
 class EbrainsUser:
     """
-    Ebrains user class. 
+    Ebrains user class.
     """
     _AVATAR_URL = 'https://wiki.ebrains.eu/bin/download/XWiki/{}/avatar.png?width=36&height=36&keepAspectRatio=true'
     _USER_PAGE_URL = 'https://wiki.ebrains.eu/bin/view/Identity/#/users/{}'
@@ -80,20 +80,19 @@ class EbrainsUser:
         """
         if not os.path.exists(self._cache_dir):
             os.mkdir(self._cache_dir)
-        
+
         if 'avatar.png' in os.listdir(self._cache_dir):
             with open(os.path.join(self._cache_dir, 'avatar.png'), 'rb') as fd:
-                return fd.read()        
-        
-        r = requests.get(url=self._AVATAR_URL.format(self.get_username()), 
+                return fd.read()
+
+        r = requests.get(url=self._AVATAR_URL.format(self.get_username()),
                          verify=False)
         if r.status_code == 200:
             with open(os.path.join(self._cache_dir, 'avatar.png'), 'wb') as fd:
-                fd.write(r.content)    
+                fd.write(r.content)
             return r.content
 
         raise AvatarNotFoundError('Avatar not found')
-        
 
     def get_user_page(self):
         """ Returns the Ebrains profile page of the current user. """
@@ -151,7 +150,7 @@ class NsgUser:
             True if the credentials are valid, False otherwise
         """
         r = requests.get(url='https://nsgr.sdsc.edu:8443/cipresrest/v1/job',
-                         auth=(self._username, self._password), 
+                         auth=(self._username, self._password),
                          headers={'cipres-appkey': NSG_KEY},
                          verify=False)
         if r.status_code == 200:
@@ -205,7 +204,7 @@ class HhnbUser:
         if type(ebrains_user) != EbrainsUser:
             raise TypeError()
         self._ebrains_user = ebrains_user
-    
+
     def set_nsg_user(self, nsg_user):
         """
         Set the NSG user.
@@ -251,14 +250,13 @@ class HhnbUser:
     def get_sub(self):
         """ Returns the user id. """
         return self._ebrains_user.get_sub()
-    
 
 
     @classmethod
     def get_user_from_request(cls, request):
         """
         This class method returns an HhnbUser instance by processing the request object
-        and automatically authenticated with the Ebrains platform and NSG if 
+        and automatically authenticated with the Ebrains platform and NSG if
         every data is present in the request object.
 
         Parameters
@@ -278,14 +276,14 @@ class HhnbUser:
                                    else 'anonymous')
         if 'oidc_access_token' in request.session.keys():
             ebrains_user.set_token(request.session['oidc_access_token'])
-        
+
         hhnb_user.set_ebrains_user(ebrains_user)
-        
+
         if request.session.get('nsg_username')\
             and request.session.get('nsg_password'):
             nsg_user = NsgUser(request.session.get('nsg_username'),
                                request.session.get('nsg_password'))
 
-            hhnb_user.set_nsg_user(nsg_user)    
-        
+            hhnb_user.set_nsg_user(nsg_user)
+
         return hhnb_user

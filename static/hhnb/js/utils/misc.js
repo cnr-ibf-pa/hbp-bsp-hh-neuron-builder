@@ -19,7 +19,7 @@ $("#modalNFEContainer")[0].addEventListener("transitionstart", function(transiti
             $("#modalNFE").removeClass("show");
         }
     }
-}); 
+});
 
 $("#modalMC")[0].addEventListener("transitionstart", function() {
     if ( ! $(this).hasClass("show") ) {
@@ -34,7 +34,7 @@ async function checkLastPage(iframe){
     var test = innerDiv.getElementById("hiddendiv");
     var flag = innerDiv.getElementById("hiddendiv2");
 
-    // if the hiddendiv is present, display button 
+    // if the hiddendiv is present, display button
     if (test == null || test == undefined) {
         $("#save-feature-files").prop("disabled", true);
     } else {
@@ -76,7 +76,7 @@ $("#modalBlueNaasContainer")[0].addEventListener("transitionstart", function (tr
 
 
 $("#modelPrivate").on("click", (button) => {
-    console.log(button.target.checked); 
+    console.log(button.target.checked);
     if (button.target.checked) {
         $("#modelPrivateValue").text("Private");
     } else {
@@ -88,11 +88,11 @@ $("#modelPrivate").on("click", (button) => {
 function setServiceAccountHPC(hpc, context) {
     let hpcButton = $("#sa-hpc-dropdown-" + context + " > button");
     let projectButton = $("#sa-project-dropdown-" + context + " > button");
-    
+
     if (hpcButton.text() == hpc) {
         return false;
     }
-    
+
     hpcButton.html(hpc);
     projectButton.prop("disabled", false);
 
@@ -106,7 +106,7 @@ function setServiceAccountHPC(hpc, context) {
 
     $(".dropdown-item.project").addClass("gone");
     $(".dropdown-item.project." + hpc.toLowerCase()).removeClass("gone");
-    
+
     // automatically set the project if there is only one project for the selecte HPC system
     if ($(".dropdown-item.project." + context + "." + hpc.toLowerCase()).length == 1) {
         setServiceAccountProject($(".dropdown-item.project." + context + "." + hpc.toLowerCase()).text(), context)
@@ -123,7 +123,7 @@ function setServiceAccountProject(project, context) {
 }
 
 function populateServiceAccountSettings(jObj, context) {
-    var hpcList = $("#sa-hpc-dropdown-" + context + " > ul"); 
+    var hpcList = $("#sa-hpc-dropdown-" + context + " > ul");
     var projectList = $("#sa-project-dropdown-" + context + " > ul");
 
     hpcList.empty();
@@ -137,7 +137,7 @@ function populateServiceAccountSettings(jObj, context) {
         if (dividerNum > 0) {
             hpcList.append("<li><hr class='dropdown-divider'></li>");
             dividerNum -= 1;
-        } 
+        }
     }
 
     for (var hpc in jObj) {
@@ -148,7 +148,7 @@ function populateServiceAccountSettings(jObj, context) {
             if (dividerNum > 0) {
                 projectList.append("<li><hr class='dropdown-divider'></li>");
                 dividerNum -= 1;
-            } 
+            }
         }
     }
 }
@@ -159,7 +159,7 @@ async function closeAlertDialog() {
     await sleep(500);
     $("#shadow-layer").css("display", "none");
     $("#alert-dialog").remove();
-} 
+}
 /* Alerts functions */
 
 
@@ -174,7 +174,7 @@ async function closeAlert(counter) {
 var counter = 0;
 /**
  * Show the alert.
- * 
+ *
  * @param {*} msg           The message to be shown in the alert.
  * @param {String} level    Optional param. Can be "danger", "warning", "success", "info" (default).
  */
@@ -261,7 +261,7 @@ function showHpcAuthAlert() {
     console.log("showHpcAuthAlert() called.");
     showAlert(
         makeAlertText(
-            head="", 
+            head="",
             strong="You need to be logged in to use this HPC system !",
             content="Please, click \"Cancel\" and login with the button in the top right corner before doing this operation."
         ),

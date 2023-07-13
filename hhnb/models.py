@@ -1,9 +1,9 @@
+from django.contrib.auth.models import AbstractBaseUser
 from django.db import models
 
 
-class User(models.Model):
+class User(AbstractBaseUser):
     sub = models.UUIDField('sub', primary_key=True)
-    last_login = models.DateTimeField('last login', auto_now=True, blank=True, null=True)
 
     USERNAME_FIELD = 'sub'
     REQUIRED_FIELDS = []
@@ -25,3 +25,7 @@ class User(models.Model):
         authenticated in templates.
         """
         return True
+
+    def save(self, *args, **kwargs):
+        self.set_unusable_password()
+        super().save(*args, **kwargs)
