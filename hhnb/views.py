@@ -310,13 +310,12 @@ def fetch_models(request, exc):
             #                         species=mc_filter['species'],
             #                         collab_id=mc_filter['collab_id'])
             from hhnb.utils.models_list import get_models_list
+            all_models = mc.list_models()
+            my_models = get_models_list()
             models = []
-            for model in get_models_list():
-                try:
-                    models.append(mc.get_model(model_id=model))
-                except ResponseError as e: 
-                    print(e)
-            print("Models #: ", len(models))
+            for model in all_models:
+                if model['id'] in my_models:
+                    models.append(model)
             if len(models) > 0:
                 logger.debug(f'{len(models)} models found')
                 return ResponseUtil.ok_json_response({'models': models})
@@ -328,6 +327,7 @@ def fetch_models(request, exc):
             logger.debug(f'requesting {requested_model} on ModelCatalog')
             model = mc.get_model(model_id=requested_model)
             if model:
+                model_path = None
                 logger.debug(f'downloading model {model} from ModelCatalog')
                 try:
                     model_path = mc.download_model_instance(
@@ -341,8 +341,13 @@ def fetch_models(request, exc):
                                        model {model} from ModelCatalog on model_path: {model_path}')
                         return ResponseUtil.ko_response(messages.MODEL_CATALOG_NOT_AVAILABLE)
                 except FileExistsError:
-                    model_path = os.path.join(TMP_DIR, model['name'] + '.zip')
-                workflow.load_model_zip(model_path)
+                    for f in os.listdir(TMP_DIR):
+                        if f in model['name']:
+                            model_path = os.path.join(TMP_DIR, f)
+                if not model_path.endswith('.zip'):
+                    os.rename(model_path, model_path + '.zip')
+                    model_path = model_path + '.zip'
+                workflow.load_model_zip(model_path, model_name=model['name'])
                 logger.info(LOG_ACTION.format(hhnb_user, 'downloaded model %s on %s' % (model, workflow)))
 
     except ResponseError as e:
@@ -350,6 +355,7 @@ def fetch_models(request, exc):
         logger.error(e)
         return ResponseUtil.ko_response(messages.MODEL_CATALOG_NOT_AVAILABLE)
     except EnvironmentError as e:
+        print(e)
         logger.error(e)
         return ResponseUtil.ko_response(messages.MODEL_CATALOG_INVALID_CREDENTIALS)
 

@@ -147,7 +147,7 @@ function populateServiceAccountSettings(jObj, context) {
             projectList.append("<li><a class='dropdown-item project " + context + " " + hpc.toLowerCase() + " gone' onclick='setServiceAccountProject(this.innerText,\"" + context + "\");'>"+ projects[i] +"</a></li>");
             if (dividerNum > 0) {
                 projectList.append("<li><hr class='dropdown-divider'></li>");
-                dividerNumm -= 1;
+                dividerNum -= 1;
             } 
         }
     }
