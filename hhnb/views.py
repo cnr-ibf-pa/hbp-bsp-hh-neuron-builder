@@ -302,6 +302,8 @@ def fetch_models(request, exc):
         mc_username, mc_password = MODEL_CATALOG_CREDENTIALS
         mc = ModelCatalog(username=mc_username, password=mc_password)
 
+        print(mc)
+
         if request.GET.get('model') == 'all':    
             # models = mc.list_models(organization=mc_filter['organization'],
             #                         model_scope=mc_filter['model_scope'],
