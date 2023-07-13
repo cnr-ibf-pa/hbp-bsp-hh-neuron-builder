@@ -390,7 +390,7 @@ class Workflow(_WorkflowBase):
         file_path = self._write_file(fd, 'protocols.json', dir_path, mode, safe)
         self.get_model().set_features(protocols=file_path)
 
-    def load_model_zip(self, model_zip):
+    def load_model_zip(self, model_zip, model_name=None):
         """
         Unpack a zipped model in the current workflow.
         This method delete the model folder tree if it is found
@@ -408,22 +408,22 @@ class Workflow(_WorkflowBase):
         shutil.unpack_archive(model_zip, unzipped_tmp_model_dir)
         
         for f in os.listdir(unzipped_tmp_model_dir):
-            if 'output' in f:
+            if 'output' in f or f == model_zip:
                 shutil.unpack_archive(os.path.join(unzipped_tmp_model_dir, f), 
-                                        unzipped_tmp_model_dir)
+                                      unzipped_tmp_model_dir)
         
         for model_folder in os.listdir(unzipped_tmp_model_dir):
-            if os.path.isdir(os.path.join(unzipped_tmp_model_dir, model_folder)):
-                print(os.path.join(unzipped_tmp_model_dir, model_folder))
-            else:
+            if not os.path.isdir(os.path.join(unzipped_tmp_model_dir, model_folder)):
                 os.remove(os.path.join(unzipped_tmp_model_dir, model_folder))
-
-        unzipped_tmp_model_dir = os.path.join(unzipped_tmp_model_dir,   
-                                              os.listdir(unzipped_tmp_model_dir)[0])
+            
+        while not 'opt_neuron.py' in os.listdir(unzipped_tmp_model_dir): 
+            unzipped_tmp_model_dir = os.path.join(unzipped_tmp_model_dir,   
+                                                  os.listdir(unzipped_tmp_model_dir)[0])
 
         shutil.rmtree(self._model_dir)
         if not os.path.exists(self._model_dir):
             os.mkdir(self._model_dir)
+        
         shutil.copytree(unzipped_tmp_model_dir, self._model_dir, dirs_exist_ok=True)
         
         # The uploaded origin model case
