@@ -136,18 +136,16 @@ def initialize_workflow(request):
     will be raised if any else error occurred.
     """
     hhnb_user = HhnbUser.get_user_from_request(request)
-    print(hhnb_user)
     logger.debug(f'initializing workflow for "{hhnb_user}"')
 
     try:
         workflow = Workflow.generate_user_workflow(hhnb_user.get_sub())
         logger.debug(f'workflow {workflow} created for "{hhnb_user}"')
-    except WorkflowExists as e:
-        logger.error(e)
-        print(e)
-        return ResponseUtil.ko_response(497, str(e))
-    except PermissionError as e:
-        logger.critical(e)
+    except WorkflowExists as err:
+        logger.error(err)
+        return ResponseUtil.ko_response(497, str(err))
+    except PermissionError as err:
+        logger.critical(err)
         return ResponseUtil.ko_response(500, messages.CRITICAL_ERROR)
 
     exc = generate_exc_code(request)
@@ -206,9 +204,9 @@ def upload_workflow(request):
     try:
         workflow = Workflow.generate_user_workflow_from_zip(hhnb_user.get_sub(),
                                                             valid_wf_zip)
-    except WorkflowExists as e:
-        logger.error(e)
-        return ResponseUtil.ko_json_response({'response': 'KO', 'message': str(e)})
+    except WorkflowExists as err:
+        logger.error(err)
+        return ResponseUtil.ko_json_response({'response': 'KO', 'message': str(err)})
 
     request.session[exc]['workflow_id'] = workflow.get_id()
     request.session.save()
@@ -266,8 +264,8 @@ def get_workflow_properties(request, exc):
         not request.session[exc]['hhf_already_downloaded']:
         try:
             WorkflowUtil.download_from_hhf(workflow, request.session[exc]['hhf_dict'])
-        except requests.exceptions.ConnectionError as e:
-            logger.error(e)
+        except requests.exceptions.ConnectionError as err:
+            logger.error(err)
             return ResponseUtil.ko_response(messages.UNABLE_TO_FETCH_FILES)
         request.session[exc]['hhf_already_downloaded'] = True
         request.session.save()
@@ -340,7 +338,6 @@ def fetch_models(request, exc):
                     )
                     model_path = model_path.decode()
                     if not model_path:
-                        print("MODEL PATH NONE")
                         logger.error(f'User: {hhnb_user} got error while fetching\
                                         model {model} from ModelCatalog on model_path: {model_path}')
                         return ResponseUtil.ko_response(messages.MODEL_CATALOG_NOT_AVAILABLE)
@@ -355,11 +352,10 @@ def fetch_models(request, exc):
 
                 logger.info(LOG_ACTION.format(hhnb_user, 'downloaded model %s on %s' % (model, workflow)))
 
-    except ResponseError as e:
-        logger.error(e)
-        return ResponseUtil.ko_response(497, messages.MODEL_CATALOG_RESPONSE_ERROR.format(str(e)))
-    except EnvironmentError as e:
-        logger.error(e)
+    except ResponseError as err:
+        return ResponseUtil.ko_response(497, messages.MODEL_CATALOG_RESPONSE_ERROR.format(str(err)))
+    except EnvironmentError as err:
+        logger.error(err)
         logger.error(messages.MODEL_CATALOG_INVALID_CREDENTIALS)
         return ResponseUtil.ko_response(498, messages.MODEL_CATALOG_NOT_AVAILABLE)
 
@@ -386,9 +382,9 @@ def upload_features(request, exc):
                 if os.path.splitext(d)[1] == '':
                     workflow.copy_features(os.path.join(folder, d, 'features.json'))
                     workflow.copy_features(os.path.join(folder, d, 'protocols.json'))
-        except FileNotFoundError as e:
-            logger.error(e)
-            return ResponseUtil.ko_response(str(e))
+        except FileNotFoundError as err:
+            logger.error(err)
+            return ResponseUtil.ko_response(str(err))
         return ResponseUtil.ok_response()
 
     # get uploaded features
@@ -446,8 +442,8 @@ def upload_model(request, exc):
 
     try:
         workflow.load_model_zip(zip_path)
-    except FileNotFoundError as e:
-        logger.error(e)
+    except FileNotFoundError as err:
+        logger.error(err)
         return ResponseUtil.ko_response(messages.MALFORMED_FILE.format('model.zip'))
 
     return ResponseUtil.ok_response()
@@ -518,9 +514,8 @@ def upload_analysis(request, exc):
 
         return ResponseUtil.ok_response('')
 
-    except Exception as e:
-        print(e)
-        logger.error(e)
+    except Exception as err:
+        logger.error(err)
 
     return ResponseUtil.ko_response(messages.MALFORMED_FILE.format(f'"{uploaded_file.name}"'))
 
@@ -566,19 +561,16 @@ def upload_files(request, exc):
         elif folder == 'config/':
             if not uploaded_file.name in ['features.json', 'protocols.json', 'parameters.json']:
                 os.remove(full_path)
-                return ResponseUtil.ko_response(
-                    'Config file must be one of the fallowing files:<br>\
-                    "<b>protocols.json</b>", "<b>features.json</b>", <b>"parameters.json</b>"'
-                )
+                return ResponseUtil.ko_response(messages.UPLOADED_WRONG_CONFIG_FILE)
             validate_json_file(full_path)
 
-    except InvalidMorphologyFile as e:
+    except InvalidMorphologyFile as err:
         os.remove(full_path)
-        return ResponseUtil.ko_response('<b>File Format Error</b><br><br>' + str(e))
+        return ResponseUtil.ko_response('<b>File Format Error</b><br><br>' + str(err))
 
-    except json.decoder.JSONDecodeError as e:
+    except json.decoder.JSONDecodeError as err:
         os.remove(full_path)
-        return ResponseUtil.ko_response('<b>JSON Decode Error:</b><br><br>' + str(e) + '.')
+        return ResponseUtil.ko_response('<b>JSON Decode Error:</b><br><br>' + str(err) + '.')
 
     return ResponseUtil.ok_response('')
 
@@ -636,18 +628,17 @@ def generate_download_file(request, exc):
     elif file_list:
         logger.info(LOG_ACTION.format(user, 'download %s from %s' % (file_list, workflow)))
         path_list = json.loads(file_list).get('path')
-
         files = [os.path.join(workflow.get_model_dir(), f) for f in path_list]
         arch_name = workflow.get_id() + '_model_files.zip'
 
         try:
             arch_file = WorkflowUtil.make_archive(workflow, arch_name, 'files', files)
-        except PermissionError as e:
-            logger.error(e)
+        except PermissionError as err:
+            logger.error(err)
             return ResponseUtil.ko_response(messages.CRITICAL_ERROR)
-        except FileNotFoundError as e:
-            logger.error(e)
-            return ResponseUtil.ko_response(str(e))
+        except FileNotFoundError as err:
+            logger.error(err)
+            return ResponseUtil.ko_response(str(err))
 
         return ResponseUtil.ok_response(arch_file)
 
@@ -709,8 +700,8 @@ def delete_files(request, exc):
     for f in file_list:
         try:
             workflow.remove_file(f)
-        except PermissionError as e:
-            logger.error(e)
+        except PermissionError as err:
+            logger.error(err)
             return ResponseUtil.ko_response(messages.CRITICAL_ERROR)
         except FileNotFoundError:
             pass
@@ -746,7 +737,7 @@ def optimization_settings(request, exc=None):
             settings['resume'].update(workflow.get_resume_settings())
 
             return ResponseUtil.ok_json_response(settings)
-        except FileNotFoundError as e:
+        except FileNotFoundError as err:
             return ResponseUtil.ok_json_response(settings)
 
     elif request.method == 'POST':
@@ -832,9 +823,9 @@ def run_optimization(request, exc):
 
     try:
         response = JobHandler.submit_job(hhnb_user, zip_file, optimization_settings)
-    except JobHandler.HPCException as e:
-        return ResponseUtil.ko_response(str(e))
-    except JobHandler.ServiceAccountException as e:
+    except JobHandler.HPCException as err:
+        return ResponseUtil.ko_response(str(err))
+    except JobHandler.ServiceAccountException as err:
         return ResponseUtil.ko_response(messages.HPC_NOT_AVAILABLE.format('SERVICE ACCOUNT'))
     if response.status_code == 200:
         workflow.add_optimization_settings({'job_submitted': True})
@@ -862,18 +853,18 @@ def fetch_jobs(request, exc):
     try:
         data = JobHandler.fetch_jobs_list(hpc, hhnb_user, sa_hpc, sa_project)
         return ResponseUtil.ok_json_response(data)
-    except JobHandler.ServiceAccountException as e:
-        logger.error(e)
+    except JobHandler.ServiceAccountException as err:
+        logger.error(err)
         return ResponseUtil.ko_response(messages.JOB_FETCH_ERROR.format('SERVICE ACCOUNT'))
-    except JobHandler.UnicoreClientException as e:
-        logger.error(e)
+    except JobHandler.UnicoreClientException as err:
+        logger.error(err)
         return ResponseUtil.ko_response(messages.JOB_FETCH_ERROR.format('DAINT-CSCS'))
-    except JobHandler.HPCException as e:
-        logger.error(e)
-        return ResponseUtil.ko_response(str(f'<b>{e}</b>'))
+    except JobHandler.HPCException as err:
+        logger.error(err)
+        return ResponseUtil.ko_response(str(f'<b>{err}</b>'))
 
-    except Exception as e:
-        logger.error(e)
+    except Exception as err:
+        logger.error(err)
         return ResponseUtil.ko_response(messages.CRITICAL_ERROR)
 
 
@@ -907,12 +898,12 @@ def fetch_job_results(request, exc):
 
         return ResponseUtil.ok_response()
 
-    except JobHandler.JobsFilesNotFound as e:
-        logger.error(e)
-        return ResponseUtil.ko_response(str(e))
+    except JobHandler.JobsFilesNotFound as err:
+        logger.error(err)
+        return ResponseUtil.ko_response(404, str(err))
 
-    except Exception as e:
-        logger.error(e)
+    except Exception as err:
+        logger.error(err)
 
     return ResponseUtil.ko_response(messages.JOB_RESULTS_FETCH_ERROR)
 
@@ -936,24 +927,23 @@ def run_analysis(request, exc):
         WorkflowUtil.run_analysis(workflow, job_output)
         return ResponseUtil.ok_response('')
 
-    except MechanismsProcessError as e:
-        logger.error(e)
+    except MechanismsProcessError as err:
+        logger.error(err)
         workflow.clean_analysis_dir()
-        return ResponseUtil.ko_response(498, messages.MECHANISMS_PROCESS_ERROR.format(e.stderr))
+        return ResponseUtil.ko_response(498, messages.MECHANISMS_PROCESS_ERROR.format(err.stderr))
 
-    except AnalysisProcessError as e:
-        logger.error(e)
+    except AnalysisProcessError as err:
+        logger.error(err)
         workflow.clean_analysis_dir()
-        return ResponseUtil.ko_response(499, messages.ANALYSIS_PROCESS_ERROR.format(e.stderr))
+        return ResponseUtil.ko_response(499, messages.ANALYSIS_PROCESS_ERROR.format(err.stderr))
 
-    except FileNotFoundError as e:
-        logger.error(e)
+    except FileNotFoundError as err:
+        logger.error(err)
         workflow.clean_analysis_dir()
-        return ResponseUtil.ko_response(404, messages.ANALYSIS_FILE_NOT_FOUND_ERROR.format(e))
+        return ResponseUtil.ko_response(404, messages.ANALYSIS_FILE_NOT_FOUND_ERROR.format(err))
 
-    except Exception as e:
-        logger.error(e)
-        print(e)
+    except Exception as err:
+        logger.error(err)
         workflow.clean_analysis_dir()
     return ResponseUtil.ko_response(messages.ANALYSIS_ERROR)
 
@@ -975,8 +965,8 @@ def upload_to_naas(request, exc):
     try:
         naas_archive = WorkflowUtil.make_naas_archive(workflow)
         naas_model = os.path.split(naas_archive)[1].split('.zip')[0]
-    except Exception as e:
-        logger.error(e)
+    except Exception as err:
+        logger.error(err)
         return ResponseUtil.ko_response(messages.ANALYSIS_ERROR)
 
     uploaded_naas_model = request.session[exc].get('naas_model')
@@ -990,8 +980,8 @@ def upload_to_naas(request, exc):
             request.session[exc]['naas_model'] = naas_model
             request.session.save()
             return ResponseUtil.ok_response(naas_model)
-    except requests.exceptions.ConnectionError as e:
-        logger.error(e)
+    except requests.exceptions.ConnectionError as err:
+        logger.error(err)
         return ResponseUtil.ko_response(500, messages.BLUE_NAAS_NOT_AVAILABLE)
 
     return ResponseUtil.ko_response(r.status_code, r.content)
@@ -1008,8 +998,8 @@ def get_model_catalog_attribute_options(request):
         mc = ModelCatalog(username=mc_username, password=mc_password)
         options = mc.get_attribute_options()
         return ResponseUtil.ok_json_response(options)
-    except Exception as e:
-        logger.error('get_model_catalog_attribute_options(): %s' % e)
+    except Exception as err:
+        logger.error('get_model_catalog_attribute_options(): %s' % err)
         return ResponseUtil.ko_response(messages.GENERAL_ERROR)
 
 
@@ -1069,14 +1059,12 @@ def register_model(request, exc):
         own_given_name = form_data.get('ownerFirstName')
         license = form_data.get('modelLicense')
         description = form_data.get('modelDescription')
-        private_flag = True if form_data.get('modelPrivate') == 'true' else False
 
         registered_model = mc.register_model(
             collab_id='hhnb-registeredmodels',
             name=model_zip_name.split('.')[0],
             author={'family_name': auth_family_name, 'given_name': auth_given_name},
             organization=organization,
-            private=private_flag,
             species=species,
             brain_region=brain_region,
             cell_type=cell_type,
@@ -1096,22 +1084,22 @@ def register_model(request, exc):
 
         return ResponseUtil.ok_response(messages.MODEL_SUCCESSFULLY_REGISTERED.format(model_path_on_mc))
 
-    except EbrainsDriveClientError as e:
-        logger.error(e)
-        return ResponseUtil.ko_response(e.code, e.message)
+    except EbrainsDriveClientError as err:
+        logger.error(err)
+        return ResponseUtil.ko_response(err.code, err.message)
 
-    except FileExistsError as e:
-        logger.error(e)
+    except FileExistsError as err:
+        logger.error(err)
         return ResponseUtil.ko_response(messages.MODEL_ALREADY_EXISTS)
 
-    except EnvironmentError as e:
-        logger.error(e)
+    except EnvironmentError as err:
+        logger.error(err)
         return ResponseUtil.ko_response(messages.MODEL_CATALOG_INVALID_CREDENTIALS)
 
-    except Exception as e:
-        logger.error(e)
+    except Exception as err:
+        logger.error(err)
         uploaded_model.delete()
-        return ResponseUtil.ko_response(f'<b>Error !</b><br><br>{str(e)}')
+        return ResponseUtil.ko_response(f'<b>Error !</b><br><br>{str(err)}')
 
     return ResponseUtil.ko_response(messages.GENERAL_ERROR)
 
@@ -1127,7 +1115,7 @@ def get_user_avatar(request):
                                          content_type='image/png',
                                          charset='UTF-8')
     except AvatarNotFoundError:
-        return ResponseUtil.ko_response(code=404, msg='Avatar not found')
+        return ResponseUtil.ko_response(404, 'Avatar not found')
 
 
 def get_user_page(request):
@@ -1270,7 +1258,7 @@ def hhf_get_files_content(request, folder, exc):
                 try:
                     jj = json.load(fd)
                     hhf_files_content[f] = json.dumps(jj, indent=8)
-                except json.decoder.JSONDecodeError as e:
+                except json.decoder.JSONDecodeError as err:
                     logger.warning(LOG_ACTION.format(user, 'JSON Decode error on file: "%s".' % os.path.join(file_path, f)))
                     fd.seek(0)
                     hhf_files_content[f] = fd.read()
@@ -1343,8 +1331,7 @@ def hhf_save_config_file(request, folder, config_file, exc):
         return ResponseUtil.ko_response(messages.MALFORMED_FILE.format(config_file))
     except FileNotFoundError:
         return ResponseUtil.ko_response(404, messages.CRITICAL_ERROR)
-    except Exception as e:
-        print(str(e))
+    except Exception as err:
         return ResponseUtil.ko_response(400, messages.GENERAL_ERROR)
 
 
@@ -1392,8 +1379,8 @@ def get_service_account_content(request):
                         projects.append(p['name'])
                 sa_content['service-account'].update({h: projects})
 
-    except requests.RequestException as e:
-        logger.error('Service-Account connection error: "%s".' % str(e))
+    except requests.RequestException as err:
+        logger.error('Service-Account connection error: "%s".' % str(err))
         sa_content = {'service-account': False}
 
     return ResponseUtil.ok_json_response(sa_content, True)

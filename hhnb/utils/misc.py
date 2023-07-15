@@ -15,12 +15,12 @@ class InvalidArchiveError(Exception):
 
 def _get_tmp_dir():
     """
-    Create new tmp dir based on system time. 
+    Create new tmp dir based on system time.
     """
     tmp_dir = ''
     while True:
         # change tmp dir if already exists
-        tmp_dir = os.path.join(TMP_DIR, str(time.time())) 
+        tmp_dir = os.path.join(TMP_DIR, str(time.time()))
         if not os.path.exists(tmp_dir):
             break
     os.mkdir(tmp_dir)
@@ -30,14 +30,14 @@ def _get_tmp_dir():
 def validate_archive(archive):
     """
     Validate a zip file previously download from the Hodgkin-Huxley
-    Neuron Builder. This function ensures that the file is not 
+    Neuron Builder. This function ensures that the file is not
     corrupted or modified with a malicious intention by verifying
     its sign.
 
-    The validation process is done by recalculating the hash of the 
+    The validation process is done by recalculating the hash of the
     original zip archive. If it matches with the provided one within
-    the archive, then the archive will be accepted and its path 
-    will be returned from the function, otherwise an 
+    the archive, then the archive will be accepted and its path
+    will be returned from the function, otherwise an
     InvalidSign error will be generated.
 
     Parameters
@@ -59,13 +59,13 @@ def validate_archive(archive):
 
     # unpack the archive to tmp_dir
     shutil.unpack_archive(archive, tmp_dir)
-    
+
     archive_name = None
     # look for the real zip name
     for f in os.listdir(tmp_dir):
         if f.endswith('.zip'):
-            archive_name = f 
-    
+            archive_name = f
+
     # check if the archive zip is malformed
     if not archive_name:
         raise InvalidArchiveError(f'{archive} not valid.')
@@ -73,7 +73,7 @@ def validate_archive(archive):
     for f in [archive_name, 'signature']:
         if not f in os.listdir(tmp_dir):
             raise InvalidArchiveError(f'{archive} not valid')
-    
+
     archive_path = os.path.join(tmp_dir, archive_name)
 
     # read the zip signature
@@ -101,7 +101,7 @@ def get_signed_archive(arch_file):
         the path to the signed archive
     """
 
-    tmp_dir = _get_tmp_dir() 
+    tmp_dir = _get_tmp_dir()
 
     zip_name = os.path.split(arch_file)[1]
     arch_copy = shutil.copy2(arch_file, os.path.join(tmp_dir, zip_name))
@@ -131,7 +131,7 @@ def get_signed_archive(arch_file):
 
 
 def validate_json_file(file):
-    # check the uploaded file if it is a json file 
+    # check the uploaded file if it is a json file
     full_path = os.path.abspath(file)
     if file.endswith('.json'):
         fd = open(full_path, 'r')
@@ -151,6 +151,6 @@ def validate_json_file(file):
             fd = open(full_path, 'w')
             json.dump({main_key: jj} if main_key else jj, fd)
             fd.close()
-    
+
     # return True if everything is ok, otherwise some exception will be raised
     return True

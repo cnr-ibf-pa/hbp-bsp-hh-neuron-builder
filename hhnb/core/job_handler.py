@@ -676,7 +676,6 @@ class JobHandler:
 
         r = requests.post(url=sa_endpoint, headers=headers, files=job_file)
         logger.debug(f'requests: {r.url} with headers: {r.headers} and files: {job_file}')
-        print(f"SERVICE ACCOUNT RESPONSE: {r.status_code}, {r.content}")
         if r.status_code >= 400:
             logger.error(f'CODE: {r.status_code}, CONTENT: {r.content}')
             if r.status_code == 500:
@@ -712,7 +711,6 @@ class JobHandler:
         headers = self._get_service_account_headers(token)
         sa_endpoint = self._SA_JOBS_URL.format(hpc, project)
         r = requests.get(url=sa_endpoint, headers=headers)
-        print(r.status_code, r.content)
         logger.debug(f'requests: {r.url} with headers: {r.headers}')
         if r.status_code != 200:
             logger.error(f'CODE: {r.status_code}, CONTENT: {r.content}')
@@ -833,7 +831,6 @@ class JobHandler:
         logger.info(LOG_ACTION.format(user, 'fetch %s jobs list' % hpc))
         job_handler = cls()
         jobs = {}
-
         if hpc == job_handler._NSG:
             jobs = job_handler._get_nsg_jobs(user.get_nsg_user().get_username(),
                                              user.get_nsg_user().get_password())

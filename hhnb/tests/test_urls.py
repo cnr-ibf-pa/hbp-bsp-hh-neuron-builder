@@ -33,7 +33,7 @@ class TestResolverUrls(SimpleTestCase):
         self.assertEqual(resolve(url).func, views.index_docs)
 
     def test_docs_index(self):
-        url = reverse('docs_index')
+        url = reverse('docs-index')
         self.assertEqual(resolve(url).func, views.index_docs)
 
     def test_initialize_workflow(self):
@@ -141,7 +141,7 @@ class TestResolverUrls(SimpleTestCase):
         self.assertEqual(resolve(url).func, views.hhf_comm)
 
     def test_hhf_etraces_dir(self):
-        url = reverse('hhf-etraces-dir')
+        url = reverse('hhf-etraces-dir', args=[EXC_CODE])
         self.assertEqual(resolve(url).func, views.hhf_etraces_dir)
 
     def test_hhf_list_files(self):

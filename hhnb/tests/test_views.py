@@ -7,12 +7,13 @@ import shutil
 import json
 from time import sleep
 from urllib.parse import unquote
-import requests
 from uuid import uuid4 as uuid_generator
+import requests
 from django.test import SimpleTestCase, TestCase, Client, modify_settings
 from django.urls import reverse
 from django.core.files.uploadedfile import SimpleUploadedFile
 from hhnb import models
+from hhnb.utils import messages
 from hh_neuron_builder.settings import (
     MEDIA_ROOT, BASE_DIR, OIDC_OP_TOKEN_ENDPOINT
 )
@@ -34,7 +35,7 @@ def get_user_token():
     if username and password:
         r = requests.post(
             OIDC_OP_TOKEN_ENDPOINT,
-            auth=('hbp-bsp-hhnb-dev', ''),
+            auth=('ebrains-drive', ''),
             data={
                 'grant_type':'password',
                 'username': username,
@@ -44,8 +45,6 @@ def get_user_token():
         )
         if r.status_code == 200:
             return r.json()['access_token']
-        else:
-            print(r.status_code, r.content)
     return None
 
 
@@ -79,11 +78,13 @@ class TestMiscViews(SimpleTestCase):
         """
         Test the session refresh functionality.
 
-        This function tests the functionality of refreshing a session. It performs the following steps:
+        This function tests the functionality of refreshing a session.
+        It performs the following steps:
         1. Retrieves the URL for the 'session-refresh' endpoint.
         2. Sends a GET request to the 'session-refresh' endpoint.
         3. Asserts that the response status code is 400.
-        4. Sends a POST request to the 'session-refresh' endpoint with the 'refresh_url' parameter to test the refresh url.
+        4. Sends a POST request to the 'session-refresh' endpoint
+           with the 'refresh_url' parameter to test the refresh url.
         5. Asserts that the response status code is 200.
         """
         url = reverse('session-refresh')
@@ -289,7 +290,28 @@ class TestViews(TestCase):
                       'results', 'resume', 'analysis', 'show_results', 'hhf_flag']
         self.assertListEqual(list(response.json().keys()), properties)
 
+    def test_get_workflow_id(self):
+        """
+        Test the get_workflow_id function.
+
+        This function tests the functionality of the get_workflow_id API endpoint.
+        It sends a GET request to the endpoint with the specified exception code as an argument.
+        response JSON is equal to {'workflow_id': self.workflow_id}.
+        The function then asserts that the response status code is 200 and the
+        """
+        url = reverse('get-workflow-id', args=[self.exc_code])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertDictEqual(response.json(), {'workflow_id': self.workflow_id})
+
     def test_fetch_models(self):
+        """
+        Test the fetch_models function.
+
+        This test method verifies the behavior of the fetch_models function.
+        It sends a GET request to the 'fetch-models' endpoint with different
+        parameters and checks the response status code and content.
+        """
         url = reverse('fetch-models', args=[self.exc_code])
         response = self.client.get(url, data={'model': 'all'})
         self.assertIn(response.status_code, [200, 204])
@@ -298,19 +320,31 @@ class TestViews(TestCase):
         response = self.client.get(url, data={'model': MODEL_IDS[1]})
         self.assertIn(response.status_code, [200, 400, 497, 498])
         if response.status_code == 400:
-            self.assertEqual(response.content, b'<b>Something went wrong.</b><br><br>The download model file seems to be invalid file.<br>Please, try another model instance or contact the  <a href="https://ebrains.eu/support" class="alert-link" target="_blank">EBRAINS support</a>.')
+            self.assertEqual(response.content.decode(),
+                             messages.MODEL_CATALOG_INVALID_DOWNLOADED_FILE)
         if response.status_code == 497:
             self.assertTrue(response.content.startswith(b'<b>Model Catalog error!</b>'))
         if response.status_code == 498:
-            self.assertEqual(response.content, b'The Model Catalog is temporarily not available.<br>Please, try again later.')
+            self.assertEqual(response.content.decode(),
+                             messages.MODEL_CATALOG_NOT_AVAILABLE)
 
-    def test_upload_features(self):
-        url = reverse('upload-features', args=[self.exc_code])
+    def test_download_and_upload_features(self):
+        """
+        Test the download and upload of features.
+        This function tests the download and upload of features by performing
+        a series of HTTP requests using the Django testing client. It verifies
+        that the HTTP responses have the expected status codes and content.
+        """
+        download_url = reverse('generate-download-file', args=[self.exc_code])
+        response = self.client.get(download_url, data={'pack': 'features'})
+        self.assertEqual(response.status_code, 200)
+
+        upload_url = reverse('upload-features', args=[self.exc_code])
 
         # test case from NFE
         shutil.copy2(os.path.join(CONFIG_FILES_DIR, 'features.json'), self.tmp_nfe_dir)
         shutil.copy2(os.path.join(CONFIG_FILES_DIR, 'protocols.json'), self.tmp_nfe_dir)
-        response = self.client.post(url, data={'folder': self.tmp_nfe_dir})
+        response = self.client.post(upload_url, data={'folder': self.tmp_nfe_dir})
         self.assertEqual(response.status_code, 200)
 
         # test form_file with features.json
@@ -318,7 +352,7 @@ class TestViews(TestCase):
         features_form_file = SimpleUploadedFile(name='features.json',
                                                 content=features.read(),
                                                 content_type='application/json')
-        response = self.client.post(url, data={'formFile': [features_form_file]})
+        response = self.client.post(upload_url, data={'formFile': [features_form_file]})
         self.assertEqual(response.status_code, 200)
 
         # test form_file with protocols.json
@@ -326,125 +360,204 @@ class TestViews(TestCase):
         protocols_form_file = SimpleUploadedFile(name='protocols.json',
                                                  content=protocols.read(),
                                                  content_type='application/json')
-        response = self.client.post(url, data={'formFile': [protocols_form_file]})
+        response = self.client.post(upload_url, data={'formFile': [protocols_form_file]})
         self.assertEqual(response.status_code, 200)
 
         # test form_file with features.json and protocols.json
-        response = self.client.post(url, data={'formFile': [features_form_file,
+        response = self.client.post(upload_url, data={'formFile': [features_form_file,
                                                             protocols_form_file]})
         self.assertEqual(response.status_code, 200)
 
         # test with no files
-        response = self.client.post(url, data={'formFile': []})
+        response = self.client.post(upload_url, data={'formFile': []})
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.content, b'No file was uploaded.')
+        self.assertEqual(response.content.decode(), messages.NO_FILE_UPLOADED)
 
         # test with different file
         other = open(os.path.join(CONFIG_FILES_DIR, 'morph.json'), 'rb')
         other_form_file = SimpleUploadedFile(name='morph.json',
                                              content=other.read(),
                                              content_type='application/json')
-        response = self.client.post(url, data={'formFile': [other_form_file]})
+        response = self.client.post(upload_url, data={'formFile': [other_form_file]})
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.content, b'The uploaded file/s is/are wrong.')
+        self.assertEqual(response.content.decode(), messages.WRONG_UPLOADED_FILE)
 
         # test with more than two files
-        response = self.client.post(url, data={'formFile': [features_form_file,
+        response = self.client.post(upload_url, data={'formFile': [features_form_file,
                                                             protocols_form_file,
                                                             other_form_file]})
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.content, b'You can upload only 2 files.')
+        self.assertEqual(response.content.decode(), messages.NO_MORE_THEN.format('2 files'))
 
         features.close()
         protocols.close()
         other.close()
 
-    # def test_upload_model(self):
-    #     url = reverse('upload-model', args=[self.exc_code])
-    #     response = self.client.get(url)
-    #     self.assertEqual(response.status_code, 405)
-
-    #     # test empty form file
-    #     response = self.client.post(url, data={'formFile': []})
-    #     self.assertEqual(response.status_code, 200)
-    #     self.assertEqual(response.content, b'No file was uploaded.')
-
-    #     # test more then 1 file
-    #     features = open(os.path.join(CONFIG_FILES_DIR, 'features.json'), 'rb')
-    #     features_form_file = SimpleUploadedFile(name='features.json',
-    #                                             content=features.read(),
-    #                                             content_type='application/json')
-    #     protocols = open(os.path.join(CONFIG_FILES_DIR, 'protocols.json'), 'rb')
-    #     protocols_form_file = SimpleUploadedFile(name='protocols.json',
-    #                                              content=protocols.read(),
-    #                                              content_type='application/json')
-    #     response = self.client.post(url, data={'formFile': [features_form_file,
-    #                                                         protocols_form_file]})
-    #     self.assertEqual(response.status_code, 400)
-    #     self.assertEqual(response.content, b'You can upload only a "model.zip" file.')
-
-    #     features.close()
-    #     protocols.close()
-
-    def test_upload_analysis(self):
-        pass
-
-    def test_upload_files(self):
-        pass
-
-    def test_download_file(self):
-        gen_url = reverse('generate-download-file', args=[self.exc_code])
-        down_url = reverse('download-file', args=[self.exc_code])
-        response = self.client.post(down_url)
-        self.assertEqual(response.status_code, 405)
-        response = self.client.get(down_url)
-        self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.content, b'No file selected to download.')
-
-        # test features pack
-        response = self.client.get(gen_url, data={'pack': 'features'})
-        self.assertEqual(response.status_code, 400)
-        self.assertIn(response.content, [b'<b>Error !</b><br><br>File not found.',
-                                             b'<b>Error !</b><br><br>File is not added yet.'])
-
-        upload_url = reverse('upload-features', args=[self.exc_code])
-        features = open(os.path.join(CONFIG_FILES_DIR, 'features.json'), 'rb')
-        features_form_file = SimpleUploadedFile(name='features.json',
-                                                content=features.read(),
-                                                content_type='application/json')
-        self.client.post(upload_url, data={'formFile': [features_form_file]})
-
-        # test form_file with protocols.json
-        protocols = open(os.path.join(CONFIG_FILES_DIR, 'protocols.json'), 'rb')
-        protocols_form_file = SimpleUploadedFile(name='protocols.json',
-                                                 content=protocols.read(),
-                                                 content_type='application/json')
-        self.client.post(upload_url, data={'formFile': [protocols_form_file]})
-
-        for pack in ['features', 'model', 'results', 'analysis']:
-            response = self.client.get(gen_url, data={'pack': pack})
-            self.assertEqual(response.status_code, 200)
-            response = self.client.get(down_url, data={'filepath': response.content})
+    def test_download_and_upload_model(self):
+        """
+        This function tests the download and upload functionality of the model.
+        """
+        download_url = reverse('generate-download-file', args=[self.exc_code])
+        response = self.client.get(download_url, data={'pack': 'model'})
+        self.assertEqual(response.status_code, 200)
+        zip_path = response.content.decode()
+        upload_url = reverse('upload-model', args=[self.exc_code])
+        with open(zip_path, 'rb') as fd:
+            form_file = SimpleUploadedFile(name='model.zip',
+                                           content=fd.read(),
+                                           content_type='application/zip')
+            response = self.client.post(upload_url, data={'formFile': [form_file]})
             self.assertEqual(response.status_code, 200)
 
-    def show_results(self):
+    def test_download_and_upload_analysis(self):
+        """
+        Test the download and upload analysis functionality.
+
+        This function tests the download and upload analysis
+        functionality of the system. It performs the following steps:
+        1. Retrieves the download URL for the generated file
+           using the `generate-download-file` API endpoint.
+        2. Sends a GET request to the download URL with
+           the necessary data to download the analysis pack.
+        3. Verifies that the response status code is 200.
+        4. Retrieves the path of the downloaded ZIP file.
+        5. Retrieves the upload URL for the analysis using the `upload-analysis` API endpoint.
+        6. Opens the downloaded ZIP file in binary mode.
+        7. Creates a `SimpleUploadedFile` object with the contents of the ZIP file.
+        8. Sends a POST request to the upload URL with the `formFile`
+           parameter set to the `SimpleUploadedFile` object.
+        9. Removes the downloaded ZIP file from the local filesystem.
+        10. Verifies that the response status code is 200.
+        """
+        download_url = reverse('generate-download-file', args=[self.exc_code])
+        response = self.client.get(download_url, data={'pack': 'analysis'})
+        self.assertEqual(response.status_code, 200)
+        zip_path = response.content.decode()
+        upload_url = reverse('upload-analysis', args=[self.exc_code])
+        with open(zip_path, 'rb') as fd:
+            form_file = SimpleUploadedFile(name='analysis.zip',
+                                           content=fd.read(),
+                                           content_type='application/zip')
+            response = self.client.post(upload_url, data={'formFile': [form_file]})
+            os.remove(zip_path)
+            self.assertEqual(response.status_code, 200)
+
+    def test_download_and_upload_files(self):
+        """
+        This function tests the download and upload functionality for files.
+
+        This function performs the following steps:
+        1. Creates the paths for the morphology, config, and mechanisms directories.
+        2. Retrieves a list of files in each directory.
+        3. Serializes the file paths as a JSON object.
+        4. Sends a GET request to the 'generate-download-file' endpoint with the serialized data.
+        5. Asserts that the response status code is 200.
+        6. Sends a POST request to the 'upload-files' endpoint
+           for each file in the morphology directory.
+        7. Asserts that the response status code is 200.
+        8. Sends a POST request to the 'upload-files' endpoint
+           for each file in the config directory.
+        9. Asserts that the response status code is 200
+           for all files except 'morph.json'.
+        10. Sends a POST request to the 'upload-files' endpoint
+            for each file in the mechanisms directory.
+        11. Asserts that the response status code is 200 for all files.
+        """
+
+        morphology_dir = os.path.join(self.workflow_path, 'model', 'morphology')
+        config_dir = os.path.join(self.workflow_path, 'model', 'config')
+        mechanisms_dir = os.path.join(self.workflow_path, 'model', 'mechanisms')
+        files_list = []
+        files_list += ['morphology/' + f for f in os.listdir(morphology_dir)]
+        files_list += ['config/' + f for f in os.listdir(config_dir)]
+        files_list += ['mechanisms/' + f for f in os.listdir(mechanisms_dir)]
+        data = json.dumps({'path': files_list})
+
+        download_url = reverse('generate-download-file', args=[self.exc_code])
+        response = self.client.get(download_url,
+                                   data={'file_list': data},
+                                   content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+
+        upload_url = reverse('upload-files', args=[self.exc_code])
+
+        # test morphology
+        morph_file = os.listdir(morphology_dir)[0]
+        with open(os.path.join(morphology_dir, morph_file), 'rb') as fd:
+            form_file = SimpleUploadedFile(name=morph_file,
+                                           content=fd.read(),
+                                           content_type='octet-stream')
+            response = self.client.post(upload_url,
+                                        data={'file': [form_file], 'folder': 'morphology/'})
+            self.assertEqual(response.status_code, 200)
+
+        # test config
+        config_files = os.listdir(config_dir)
+        for config_file in config_files:
+            with open(os.path.join(config_dir, config_file), 'rb') as fd:
+                form_file = SimpleUploadedFile(name=config_file,
+                                               content=fd.read(),
+                                               content_type='octet-stream')
+                response = self.client.post(upload_url,
+                                            data={'file': [form_file], 'folder': 'config/'})
+                if config_file == 'morph.json':
+                    self.assertEqual(response.status_code, 400)
+                    self.assertEqual(response.content.decode(),
+                                     messages.UPLOADED_WRONG_CONFIG_FILE)
+                else:
+                    self.assertEqual(response.status_code, 200)
+
+        # test mechanisms
+        for mechanism in os.listdir(mechanisms_dir):
+            with open(os.path.join(mechanisms_dir, mechanism), 'rb') as fd:
+                form_file = SimpleUploadedFile(name=mechanism,
+                                               content=fd.read(),
+                                               content_type='octet-stream')
+                response = self.client.post(upload_url,
+                                            data={'file': [form_file], 'folder': 'mechanisms/'})
+                self.assertEqual(response.status_code, 200)
+
+    def test_show_results(self):
+        """
+        Test the behavior of the show_results API endpoint.
+
+        This function sends a POST request to the show-results
+        endpoint with a specific exception code. It then sends a
+        GET request to the same endpoint and checks the response status codes.
+        """
         url = reverse('show-results', args=[self.exc_code])
         response = self.client.post(url)
         self.assertEqual(response.status_code, 405)
-        response = self.client.post(url)
-        self.assertEqual(response.status_code, 404)
-        self.assertEqual(response.content, b'<b>Error !</b><br><br>File not found.')
-        wf_analysis_path = os.path.join(self.workflow_path, 'analysis')
-        for f in os.listdir(FILES_DIR):
-            if 'analysis' in f and os.path.isdir(f):
-                shutil.copytree(f, wf_analysis_path)
-        response = self.client.post(url)
+        response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
 
     def test_delete_files(self):
-        pass
+        """
+        Tests the functionality of deleting files.
+        """
+        url = reverse('delete-files', args=[self.exc_code])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 405)
+
+        morphology_dir = os.path.join(self.workflow_path, 'model', 'morphology')
+        config_dir = os.path.join(self.workflow_path, 'model', 'config')
+        mechanisms_dir = os.path.join(self.workflow_path, 'model', 'mechanisms')
+        files_list = []
+        files_list += ['morphology/' + f for f in os.listdir(morphology_dir)]
+        files_list += ['config/' + f for f in os.listdir(config_dir)]
+        files_list += ['mechanisms/' + f for f in os.listdir(mechanisms_dir)]
+        data = json.dumps({'file_list': files_list})
+
+        response = self.client.post(url, data, content_type='application/json')
+        self.assertEqual(response.status_code, 200)
 
     def test_optimization_settings(self):
+        """
+        Test the optimization settings API endpoint.
+
+        This function performs a series of tests on the optimization settings API endpoint.
+        It tests both GET and POST requests with various data inputs.
+        """
         url = reverse('optimization-settings', args=[self.exc_code])
 
         # test get
@@ -487,7 +600,7 @@ class TestViews(TestCase):
         data.update({'password_submit': 'incorrect'})
         response = self.client.post(url, json.dumps(data), content_type='application/json')
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.content, b'Invalid credentials.')
+        self.assertEqual(response.content.decode(), messages.AUTHENTICATION_INVALID_CREDENTIALS)
 
         # test post without hpc
         data = {
@@ -504,33 +617,79 @@ class TestViews(TestCase):
         self.assertEqual(response.content, b'Invalid settings')
 
     def test_run_optimization(self):
-
+        """
+        This function is used to test the 'run_optimization' endpoint of the API.
+        It performs multiple tests with different optimization
+        settings and checks the response status code.
+        """
         url = reverse('run-optimization', args=[self.exc_code])
 
-        # test with default workflow in DAINT
+        # test with DAINT, default optimization settings
         response = self.client.get(url)
         self.assertIn(response.status_code, [200, 400])
 
-    def test_fetch_jobs_with_daint(self):
+        # test with NSG, overriding runtime and hpc
+        with open(os.path.join(self.workflow_path, 'optimization_settings.json'), 'r') as fd:
+            jj = json.load(fd)
+        jj['hpc'] = 'NSG'
+        jj['runtime'] = 0.1
+        jj['username_submit'] = os.environ['NSG_USERNAME']
+        jj['password_submit'] = os.environ['NSG_PASSWORD']
+        opt_url = reverse('optimization-settings', args=[self.exc_code])
+        response = self.client.post(opt_url, json.dumps(jj), content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+    def test_fetch_jobs_and_results_in_daint(self):
+        """
+        Test the fetch_jobs_and_results_in_daint function.
+
+        This function tests the fetch_jobs_and_results_in_daint function of the API
+        class. It performs a series of HTTP GET requests to different endpoints and
+        asserts the response status code, content, and JSON keys.
+        """
         url = reverse('fetch-jobs', args=[self.exc_code])
         auth_url = reverse('get-authentication')
 
         # test without hpc
         response = self.client.get(url)
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.content, b'No HPC was selected.')
+        self.assertEqual(response.content.decode(),
+                         messages.NO_HPC_SELECTED)
 
         # test authentication first
         response = self.client.get(auth_url)
         self.assertEqual(response.status_code, 200)
 
         # test in DAINT
-        response = self.client.get(url, data={"hpc": "CSCS-DAINT"})
+        response = self.client.get(url, data={"hpc": "DAINT-CSCS"})
         self.assertIn(response.status_code, [200, 400])
+
         if response.status_code == 200:
             self.assertListEqual(list(response.json().keys()), ['jobs'])
+            # test download results
+            if len(list(response.json()['jobs'])) > 0:
+                url = reverse('fetch-job-result', args=[self.exc_code])
+                response = self.client.get(
+                    url,
+                    data={'job_id': list(response.json()['jobs'].keys())[0],
+                        'hpc': 'DAINT-CSCS'}
+                )
+                self.assertEqual(response.status_code, 200)
 
-    def test_fetch_jobs_with_nsg(self):
+    def test_fetch_jobs_and_results_in_nsg(self):
+        """
+        Test the fetch jobs and results in NSG.
+
+        The function sends a POST request to the 'get-authentication' endpoint
+        to set the credentials for NSG. It then sends a GET request to the
+        'fetch-jobs' endpoint with the 'hpc' parameter set to 'NSG' to fetch jobs.
+        If the response status code is 200, it asserts that the response contains a list of jobs.
+        If there are jobs available, it sends a GET request to the 'fetch-job-result'
+        endpoint with the 'job_id' and 'hpc' parameters to fetch the job results.
+        The function asserts that the response status code is either 200 or 404.
+        """
         url = reverse('fetch-jobs', args=[self.exc_code])
         auth_url = reverse('get-authentication')
 
@@ -543,33 +702,94 @@ class TestViews(TestCase):
 
         response = self.client.get(url, data={"hpc": "NSG"})
         self.assertIn(response.status_code, [200, 400])
-        print(response.content)
         if response.status_code == 200:
             self.assertListEqual(list(response.json().keys()), ['jobs'])
+            # test download results
+            if len(list(response.json()['jobs'])) > 0:
+                url = reverse('fetch-job-result', args=[self.exc_code])
+                response = self.client.get(
+                    url,
+                    data={'job_id': list(response.json()['jobs'].keys())[0],
+                        'hpc': 'NSG'}
+                )
+                self.assertIn(response.status_code, [200, 404])
 
-    def test_fetch_jobs_with_service_account(self):
+    def test_fetch_jobs_and_results_in_service_account(self):
+        """
+        Test fetching jobs and results in service account.
+
+        This function sends a GET request to the 'fetch-jobs'
+        endpoint with the specified parameters:
+        - `hpc`: "SA"
+        - `saHPC`: "pizdaint"
+        - `saProject`: "hhnb_daint_cscs"
+
+        The response status code is checked to be either 200 or 400.
+        If it is 200, the response JSON is expected to have a key named 'jobs'.
+        If the length of the list of 'jobs' is greater than 0, another GET request is
+        sent to the 'fetch-job-result' endpoint with the following parameters:
+        - `job_id`: The first key in the 'jobs' dictionary of the response JSON
+        - `hpc`: "SA"
+        - `saHPC`: "pizdaint"
+        - `saProject`: "hhnb_daint_cscs"
+
+        The response status code is again checked to be either 200 or 404.
+
+        This test ensures that the 'fetch-jobs' and 'fetch-job-result'
+        endpoints in the service account API are functioning correctly.
+        """
         url = reverse('fetch-jobs', args=[self.exc_code])
-        auth_url = reverse('get-authentication')
-
-        response = self.client.get(url, data={"hpc": "SA", "saHPC": "pizdaint", "saProject": 'hhnb_daint_cscs'})
+        response = self.client.get(url, data={"hpc": "SA", "saHPC": "pizdaint",
+                                              "saProject": 'hhnb_daint_cscs'})
         self.assertIn(response.status_code, [200, 400])
-        print(response.content)
         if response.status_code == 200:
             self.assertListEqual(list(response.json().keys()), ['jobs'])
-
-    def test_fetch_job_results(self):
-        pass
+            if len(list(response.json()['jobs'])) > 0:
+                url = reverse('fetch-job-result', args=[self.exc_code])
+                response = self.client.get(
+                    url,
+                    data={'job_id': list(response.json()['jobs'].keys())[0],
+                        'hpc': 'SA', 'saHPC': 'pizdaint',
+                        'saProject': 'hhnb_daint_cscs'}
+                )
+                print(response.status_code, response.content)
+                self.assertIn(response.status_code, [200, 404])
 
     def test_run_analysis(self):
+        """
+        Test the run_analysis endpoint.
+
+        This function sends a GET request to the run-analysis endpoint with the specified
+        exception code. It then asserts that the response status code is 200.
+        """
         url = reverse('run-analysis', args=[self.exc_code])
         response = self.client.get(url)
-        print(response.status_code, response.content)
         self.assertEqual(response.status_code, 200)
 
     def test_upload_to_naas(self):
-        pass
+        """
+        Test the upload_to_naas function.
+
+        This function tests the functionality of the upload_to_naas function.
+        It performs the following steps:
+        1. Calls the reverse function to generate the URL for the 'upload-to-naas'
+           endpoint, passing the self.exc_code as an argument.
+        2. Sends a GET request to the generated URL using the self.client object.
+        3. Asserts that the response status code is either 200 or 500.
+        4. If the response status code is 500, it asserts that the response content
+           is equal to the messages.BLUE_NAAS_NOT_AVAILABLE constant.
+        """
+        url = reverse('upload-to-naas', args=[self.exc_code])
+        response = self.client.get(url)
+        self.assertIn(response.status_code, [200, 500])
+        if response.status_code == 500:
+            self.assertEqual(response.content.decode(),
+                             messages.BLUE_NAAS_NOT_AVAILABLE)
 
     def test_get_model_catalog_attribute_options(self):
+        """
+        Test the 'get_model_catalog_attribute_options' function.
+        """
         url = reverse('get-model-catalog-attribute-options')
         response = self.client.post(url)
         self.assertEqual(response.status_code, 405)
@@ -579,20 +799,63 @@ class TestViews(TestCase):
             self.assertEqual(response.content, b'<b>Error !</b>')
 
     def test_register_model(self):
-        pass
+        """
+        Test the registration of a model.
+
+        This function tests the registration of a model by sending a POST request
+        to the 'register-model' API endpoint. It ensures that the response status code
+        is either 200 or 400, indicating a successful or unsuccessful registration.
+        """
+        url = reverse('register-model', args=[self.exc_code])
+        form_data = {
+            'authorLastName': 'test',
+            'authorFirstName': 'test',
+            'modelOrganization': 'test',
+            'modelCellType': 'test',
+            'modelScope': 'test',
+            'modelAbstraction': 'test',
+            'modelBrainRegion': 'test',
+            'modelSpecies': 'test',
+            'modelLicense': 'test',
+            'modelDescription': 'test',
+            'modelPrivate': True
+        }
+        response = self.client.post(url, data=json.dumps(form_data), content_type='application/json')
+        self.assertIn(response.status_code, [200, 400])
 
     def test_user_avatar(self):
+        """
+        Test the the get-user-avatar url.
+        Returns a 200 response with the user's avatar image otherwise 404.
+        """
+        # can't be used due to the user is not being logged in
         url = reverse('get-user-avatar')
         response = self.client.get(url)
         self.assertIn(response.status_code, [200, 404])
-        if response.status_code == 400:
+        if response.status_code == 404:
             self.assertEqual(response.content, b'Avatar not found')
 
     def test_get_user_page(self):
+        """
+        Test the `get_user_page` API endpoint.
+        Returns a 302 redirect with the EBRAINS user's page url.
+        """
         # can't test due to the user not being logged in
-        pass
+        url = reverse('get-user-page')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 302)
 
     def test_get_authentication(self):
+        """
+        Test the get_authentication function.
+
+        This function tests the functionality of the get_authentication function.
+        It sends a GET request to the 'get-authentication' URL to test the EBRAINS
+        authentication and a POST request with username and password data for NSG.
+        The function then checks the status codes of the responses and verifies
+        that they are either 200 or 400. If the status code is 400, the function
+        also checks the content of the response to ensure it matches the expected value.
+        """
         url = reverse('get-authentication')
         response_ebrains = self.client.get(url)
         response_nsg = self.client.post(url, data={'username': os.environ['NSG_USERNAME'],
@@ -600,11 +863,23 @@ class TestViews(TestCase):
         self.assertIn(response_ebrains.status_code, [200, 400])
         self.assertIn(response_nsg.status_code, [200, 400])
         if response_ebrains.status_code == 400:
-            self.assertEqual(response_ebrains.content, b'User is not authenticated')
+            self.assertEqual(response_ebrains.content.decode(),
+                             messages.NOT_AUTHENTICATED)
         if response_ebrains.status_code == 400:
-            self.assertEqual(response_nsg.content, b'User is not authenticated.')
+            self.assertEqual(response_nsg.content.decode(),
+                             messages.NOT_AUTHENTICATED)
 
     def test_hhf_comm(self):
+        """
+        Test case for the `test_hhf_comm` function.
+
+        This function sends a GET request to the `hhf-comm` API endpoint
+        with the `hhf_dict` parameter set to the encoded data.
+        The encoded data is a JSON string that contains information about
+        the `HHF-Comm` morphology and electrophysiologies.
+        The function then asserts that the response status code is 200
+        and returns the exception context from the response.
+        """
         encoded_data = '{%22HHF-Comm%22:{%22morphology%22:{%22name%22:%22010710HP2%22,%22url%22:%22https%3A%2F%2Fbbp.epfl.ch%2Fnexus%2Fv1%2Ffiles%2Fpublic%2Fhippocampus-hub%2Fhttps%253A%252F%252Fbbp.epfl.ch%252Fneurosciencegraph%252Fdata%252F325731aa-c302-471b-b9fa-2b4cd4cdb4fc%22},%22electrophysiologies%22:[{%22name%22:%2295810006%22,%22url%22:%22https%3A%2F%2Fbbp.epfl.ch%2Fnexus%2Fv1%2Ffiles%2Fpublic%2Fhippocampus-hub%2Fhttps%253A%252F%252Fbbp.epfl.ch%252Fneurosciencegraph%252Fdata%252Fa42f0923-2bfa-43fe-aff4-670155d286ee%22,%22metadata%22:%22https%3A%2F%2Fobject.cscs.ch%2Fv1%2FAUTH_c0a333ecf7c045809321ce9d9ecdfdea%2Fweb-resources-bsp%2Fdata%2FNFE%2FMetadataHippocampusHub%2F95810006_metadata.json%22},{%22name%22:%2295810007%22,%22url%22:%22https%3A%2F%2Fbbp.epfl.ch%2Fnexus%2Fv1%2Ffiles%2Fpublic%2Fhippocampus-hub%2Fhttps%253A%252F%252Fbbp.epfl.ch%252Fneurosciencegraph%252Fdata%252F07a6c7d4-4ee2-41b5-bc7d-44476b4256d2%22,%22metadata%22:%22https%3A%2F%2Fobject.cscs.ch%2Fv1%2FAUTH_c0a333ecf7c045809321ce9d9ecdfdea%2Fweb-resources-bsp%2Fdata%2FNFE%2FMetadataHippocampusHub%2F95810007_metadata.json%22},{%22name%22:%2295810008%22,%22url%22:%22https%3A%2F%2Fbbp.epfl.ch%2Fnexus%2Fv1%2Ffiles%2Fpublic%2Fhippocampus-hub%2Fhttps%253A%252F%252Fbbp.epfl.ch%252Fneurosciencegraph%252Fdata%252Fca85bca0-6c40-496a-88cb-78562cc10639%22,%22metadata%22:%22https%3A%2F%2Fobject.cscs.ch%2Fv1%2FAUTH_c0a333ecf7c045809321ce9d9ecdfdea%2Fweb-resources-bsp%2Fdata%2FNFE%2FMetadataHippocampusHub%2F95810008_metadata.json%22}],%22modFiles%22:[{%22name%22:%22bg2pyr.mod%22,%22url%22:%22https%3A%2F%2Fsenselab.med.yale.edu%2Fmodeldb%2FgetModelFile%3Fmodel%3D150288%26AttrID%3D23%26s%3Dyes%26file%3D%2F%252fKimEtAl2013%252fbg2pyr.mod%22},{%22name%22:%22cal2.mod%22,%22url%22:%22https%3A%2F%2Fsenselab.med.yale.edu%2Fmodeldb%2FgetModelFile%3Fmodel%3D150288%26AttrID%3D23%26s%3Dyes%26file%3D%2F%252fKimEtAl2013%252fcal2.mod%22},{%22name%22:%22h.mod%22,%22url%22:%22https%3A%2F%2Fsenselab.med.yale.edu%2Fmodeldb%2FgetModelFile%3Fmodel%3D150288%26AttrID%3D23%26s%3Dyes%26file%3D%2F%252fKimEtAl2013%252fh.mod%22}]}}'
         data = {'hhf_dict': unquote(encoded_data)}
         url = reverse('hhf-comm')
@@ -614,6 +889,9 @@ class TestViews(TestCase):
         return response.context['exc']
 
     def test_hhf_etraces_dir(self):
+        """
+        Test the 'hhf-etraces-dir' endpoint by sending a GET request with a specific exception code.
+        """
         self.exc_code = self.test_hhf_comm()
         url = reverse('hhf-etraces-dir', args=[self.exc_code])
         response = self.client.get(url)
@@ -621,12 +899,23 @@ class TestViews(TestCase):
         self.assertListEqual(list(response.json().keys()), ['hhf_etraces_dir'])
 
     def test_hhf_list_files(self):
+        """
+        Test the 'hhf-list-files' API endpoint.
+
+        This function sends a GET request to the 'hhf-list-files' URL with the
+        appropriate arguments. It then checks that the response status code is
+        200, indicating a successful request.
+        """
         url = reverse('hhf-list-files', args=[self.exc_code])
         response = self.client.get(url)
-        print(response.status_code, response.content)
         self.assertEqual(response.status_code, 200)
 
     def test_hhf_get_files_content(self):
+        """
+        Tests the "hhf_get_files_content" API endpoint by making GET requests to retrieve
+        the content of files in various folders. It verifies that the response status code
+        is either 200 or 400.
+        """
         folders = ['morphologyFolder' , 'mechanismsFolder', 'configFolder',
                    'modelFolder', 'parametersFolder', 'optNeuronFolder']
         for folder in folders:
@@ -635,12 +924,26 @@ class TestViews(TestCase):
             self.assertIn(response.status_code, [200, 400])
 
     def test_hhf_get_model_key(self):
+        """
+        Test the `hhf_get_model_key` function.
+
+        This function tests the `hhf_get_model_key` function by making
+        a GET request to the `hhf-get-model-key` endpoint and checking
+        if the response status code is 200 and if the returned JSON contains the key `model_key`.
+        """
         url = reverse('hhf-get-model-key', args=[self.exc_code])
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(set(response.json().keys()), {'model_key'})
 
     def test_hhf_apply_model_key(self):
+        """
+        Test the `hhf_apply_model_key` API endpoint.
+
+        This function tests if the `files` key is updated correctly.
+        However, the current implementation takes the model key from
+        the model workflow path, which makes it impossible to test.
+        """
         # files key are updated correctly but currently
         # the model key is taken from the model workflow path
         # and it can't be test
@@ -649,6 +952,13 @@ class TestViews(TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_hhf_save_config_file(self):
+        """
+        Test case for the `hhf_save_config_file` method.
+
+        This test case checks the behavior of the `hhf_save_config_file`
+        method in the `TestClassName` class. It verifies that the method
+        correctly saves a configuration file.
+        """
         for config_file in os.listdir(CONFIG_FILES_DIR):
             url = reverse('hhf-save-config-file', args=['configFolder', config_file, self.exc_code])
             with open(os.path.join(CONFIG_FILES_DIR, config_file), 'r') as fd:
@@ -657,6 +967,9 @@ class TestViews(TestCase):
             self.assertEqual(response.status_code, 200)
 
     def test_hhf_load_parameters_template(self):
+        """
+        This function is used to test the 'hhf-load-parameters-template' API endpoint.
+        """
         url = reverse('hhf-load-parameters-template', args=[self.exc_code])
         response = self.client.get(url)
         self.assertEqual(response.status_code, 405)
@@ -665,6 +978,14 @@ class TestViews(TestCase):
             self.assertEqual(response.status_code, 200)
 
     def test_get_service_account_content(self):
+        """
+        Test the 'get_service_account_content' API endpoint.
+
+        This function sends a POST request to the 'get-service-account-content' URL
+        and asserts that the response status code is 405. Then it sends a GET request
+        to the same URL and asserts that the response status code is 200.
+        Finally, it asserts that the response JSON contains the key 'service-account'.
+        """
         url = reverse('get-service-account-content')
         response = self.client.post(url)
         self.assertEqual(response.status_code, 405)

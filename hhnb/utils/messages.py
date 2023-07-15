@@ -24,7 +24,7 @@ NO_FILE_TO_DOWNLOAD = 'No file selected to download.'
 NO_FILE_TO_DELETE = 'No file to delete.'
 FILE_NOT_FOUND_ERROR = '<b>Error !</b><br><br>File not found.'
 FILE_NOT_ADDED_YET_ERROR = '<b>Error !</b><br><br>File is not added yet.'
-
+UPLOADED_WRONG_CONFIG_FILE = 'Config file must be one of the fallowing files:<br><b>protocols.json</b>", "<b>features.json</b>", <b>"parameters.json</b>"'
 
 # Authentication messages
 AUTHENTICATION_INVALID_CREDENTIALS = 'Invalid credentials.'

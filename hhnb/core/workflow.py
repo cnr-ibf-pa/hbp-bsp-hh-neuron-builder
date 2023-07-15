@@ -404,21 +404,24 @@ class Workflow(_WorkflowBase):
         os.mkdir(unzipped_tmp_model_dir)
         shutil.unpack_archive(model_zip, unzipped_tmp_model_dir)
 
+        # check if is the uploaded model was a results zip with 'output' archive
         for f in os.listdir(unzipped_tmp_model_dir):
             if 'output' in f or f == model_zip:
                 shutil.unpack_archive(os.path.join(unzipped_tmp_model_dir, f),
                                       unzipped_tmp_model_dir)
 
-        for model_folder in os.listdir(unzipped_tmp_model_dir):
-            if not os.path.isdir(os.path.join(unzipped_tmp_model_dir, model_folder)):
-                os.remove(os.path.join(unzipped_tmp_model_dir, model_folder))
+        # look for model folder with the file identified with the file 'opt_neuron.py'
+        if not 'opt_neuron.py' in os.listdir(unzipped_tmp_model_dir):
+            for model_folder in os.listdir(unzipped_tmp_model_dir):
+                if not os.path.isdir(os.path.join(unzipped_tmp_model_dir, model_folder)):
+                    os.remove(os.path.join(unzipped_tmp_model_dir, model_folder))
 
         while not 'opt_neuron.py' in os.listdir(unzipped_tmp_model_dir):
             unzipped_tmp_model_dir = os.path.join(unzipped_tmp_model_dir,
                                                   os.listdir(unzipped_tmp_model_dir)[0])
 
-        shutil.rmtree(self._model_dir)
-        if not os.path.exists(self._model_dir):
+        if os.path.exists(self._model_dir):
+            shutil.rmtree(self._model_dir)
             os.mkdir(self._model_dir)
 
         shutil.copytree(unzipped_tmp_model_dir, self._model_dir, dirs_exist_ok=True)

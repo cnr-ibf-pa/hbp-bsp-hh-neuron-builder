@@ -1,11 +1,11 @@
 {
     "hpc": "DAINT-CSCS",
-    "job_name": "W_20230706094559",
+    "job_name": "test_unit",
     "gen-max": 2,
     "offspring": 10,
     "node-num": 6,
     "core-num": 24,
-    "runtime": "120m",
+    "runtime": "1m",
     "project": "ich002",
     "mode": "start"
 }
