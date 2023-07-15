@@ -12,6 +12,7 @@ from hhnb.core.workflow import Workflow, WorkflowUtil
 from hhnb.core.user import *
 from hhnb.core.security import *
 from hhnb.core.job_handler import *
+from hhnb.utils.models_list import get_models_list
 
 from hhnb.utils import messages
 
@@ -307,8 +308,6 @@ def fetch_models(request, exc):
 
         mc_username, mc_password = MODEL_CATALOG_CREDENTIALS
         mc = ModelCatalog(username=mc_username, password=mc_password)
-
-        print(mc)
 
         if request.GET.get('model') == 'all':
             all_models = mc.list_models()
