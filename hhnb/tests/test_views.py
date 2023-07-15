@@ -211,6 +211,10 @@ class TestViews(TestCase):
         )
         shutil.rmtree(self.tmp_nfe_dir)
         self.user.delete()
+        if os.path.exists(os.path.join(BASE_DIR, '.swp')):
+            os.remove(os.path.join(BASE_DIR, '.swp'))
+        if os.path.exists(os.path.join(BASE_DIR, 'arm64/')):
+            shutil.rmtree(os.path.join(BASE_DIR, 'arm64/'))
 
     def test_store_workflow_in_session(self):
         """
