@@ -1,32 +1,27 @@
-import functools
-from json.decoder import JSONDecodeError
+import os
+import datetime
 import math
 import re
 import shutil
-import urllib.parse as urllib
+import json
+from json.decoder import JSONDecodeError
 import zipfile
+import logging
+import requests
+import efel
 
 from django.shortcuts import render, redirect
-from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
-from django.http.response import HttpResponse, HttpResponseServerError, JsonResponse
+from django.http.response import HttpResponse, JsonResponse
 from django.http.response import HttpResponseBadRequest
-
-from hh_neuron_builder import settings
-from hhnb.views import hhf_etraces_dir
-from efelg.tools import resources, manage_json
-from efelg.tools.manage_storage import EfelStorage
-
-import efel
-import requests
-import datetime
-import sys
-import os
-import json
 
 import bluepyefe as bpefe
 
-import logging
+from hh_neuron_builder import settings
+from hhnb.views import hhf_etraces_dir
+from efelg.tools import manage_json
+from efelg.tools.manage_storage import EfelStorage
+
 logger = logging.getLogger(__name__)
 
 
@@ -34,7 +29,7 @@ LOG_ACTION = 'User: "{}"\t Action: {}'
 
 
 def overview(request, wfid=None):
-    
+
     """
     Render the NeuroFeatureExtract main page
     """
@@ -44,7 +39,7 @@ def overview(request, wfid=None):
     else:
         username = 'anonymous'
 
-    logger.info(LOG_ACTION.format(username, 'access OVERVIEW page'))    
+    logger.info(LOG_ACTION.format(username, 'access OVERVIEW page'))
 
     if wfid:
         time_info = wfid.split('_')[0]
@@ -64,7 +59,8 @@ def select_features(request):
     """
     Render the application select-features page
     """
-    logger.info(LOG_ACTION.format(request.session['username'], 'access SELECT_FEATURES page'))
+    logger.info(LOG_ACTION.format(request.session.get('username', 'anonymous'),
+                                  'access SELECT_FEATURES page'))
 
     # if not context variable exists exit the application
     if not request.session.get("is_free_space_enough"):
@@ -87,8 +83,8 @@ def show_traces(request):
     """
     Render the trace selection page
     """
-    logger.info(LOG_ACTION.format(request.session['username'], 'access TRACES page'))
-
+    logger.info(LOG_ACTION.format(request.session.get('username', 'anonymous'),
+                                  'access TRACES page'))
 
     # check the space left on disk and show a message in case >10GB are left
     if EfelStorage.isThereEnoughFreeSpace():
@@ -158,7 +154,6 @@ def get_data(request, cellname=""):
                     return HttpResponse(content={'response': 'KO', 'message': e.msg},
                                         content_type='application/json')
 
-    print(path_to_file)
     with open(path_to_file, "r") as f:
         try:
             content = json.loads(f.read())
@@ -195,7 +190,7 @@ def get_data(request, cellname=""):
     keys = [
         "md5", "sampling_rate", "etype", "cell_type", "cell_id",
         "brain_structure", "filename", "animal_species", "cell_soma_location",
-        "stimulus_unit", "voltage_unit", "contributors_affiliations", 
+        "stimulus_unit", "voltage_unit", "contributors_affiliations",
         "voltage_correction", "voltage_correction_unit"
     ]
     for key in keys:
@@ -218,7 +213,7 @@ def get_data(request, cellname=""):
 
 def extract_features(request):
     """
-    Extract features from the selected traces. 
+    Extract features from the selected traces.
     """
 
     # if not enough space is left on disk display error page
@@ -264,8 +259,7 @@ def extract_features(request):
 
         crr_file_all_stim = list(crr_file_dict['traces'].keys())
         crr_file_sel_stim = selected_traces_rest_json[k]['stim']
-        print(crr_file_sel_stim)
-        
+
         if "stimulus_unit" in crr_file_dict:
             crr_file_amp_unit = crr_file_dict["stimulus_unit"]
         elif "amp_unit" in crr_file_dict:
@@ -314,7 +308,7 @@ def extract_features(request):
             # set etype and ljp (common for all files)
             final_cell_dict[crr_cell_name]['etype'] = 'etype'
             final_cell_dict[crr_cell_name]['ljp'] = 0
-            
+
             # initialize arrays
             final_cell_dict[crr_cell_name]['exclude'] = []
             final_cell_dict[crr_cell_name]['exclude_unit'] = []
@@ -325,7 +319,7 @@ def extract_features(request):
         # append current file name
         final_cell_dict[crr_cell_name]['experiments']['step']['files'].append(
             k)
-        
+
         # set list of stimuli to be excluded
         final_cell_dict[crr_cell_name]['exclude'].append(exc_stim_lists)
 
@@ -336,7 +330,7 @@ def extract_features(request):
         # set v_corr
         final_cell_dict[crr_cell_name]['v_corr'].append(
             float(selected_traces_rest_json[k]['v_corr']))
-  
+
     # build option configuration dictionary for the feature extraction
     config = {}
     config['features'] = {'step': [str(i) for i in selected_features]}
@@ -370,12 +364,11 @@ def extract_features(request):
             'num_events': int(global_parameters_json['num_events']),
         }
     }
-    
+
    # launch the feature extraction process
     try:
         main_results_folder = os.path.join(user_results_dir,
                                             time_info + "_nfe_results")
-        print(main_results_folder, config)
         extractor = bpefe.Extractor(main_results_folder, config)
         extractor.create_dataset()
         extractor.plt_traces()
@@ -392,7 +385,7 @@ def extract_features(request):
             config["options"]["tolerance"].tolist()
         with open(os.path.join(main_results_folder, "config.json"), "w") as cf:
             config.update(
-                    {'info': 
+                    {'info':
                         {'libraries': {
                                 'efel': efel.__version__,
                                 'blupyefe': bpefe.__version__
@@ -402,7 +395,7 @@ def extract_features(request):
             json.dump(config, cf, indent=4)
         shutil.copy(src=os.path.join(settings.BASE_DIR, 'requirements.txt'),
                     dst=os.path.join(main_results_folder, 'libraries.txt'))
-        
+
     except Exception as e:
         print(e)
         return HttpResponse(json.dumps({"status": "KO", "message": f"Unexpected {e}, {type(e)}"}))
@@ -461,7 +454,7 @@ def results(request):
     """
     Render result page
     """
-    logger.info(LOG_ACTION.format(request.session['username'], 'access RESULT page'))
+    logger.info(LOG_ACTION.format(request.session.get('username', 'anonymous'), 'access RESULT page'))
 
 
     # if not enough space is left on disk display error page
@@ -472,7 +465,7 @@ def results(request):
     # render final page containing the link to the result zip file if any
     request.session["selected_features"] = \
         request.POST.getlist('crr_feature_check_features')
-    
+
     time_info = request.session["time_info"]
     return render(request, 'efelg/results.html', context={"efel_wf_id": time_info})
 
@@ -498,7 +491,7 @@ def download_zip(request):
 
 def features_dict(request):
     """
-    Return the feature dictionary containing all feature names, 
+    Return the feature dictionary containing all feature names,
     grouped by feature type
     """
 
@@ -644,11 +637,11 @@ def dataset(request):
 
 
 def hhf_etraces(request, exc):
-    """ 
+    """
     Render NFE trace selection page in case electrophysiological signals have
     been sent from the Hippocampus Hub
     """
-    
+
     etraces_dir = json.loads(hhf_etraces_dir(request, exc).content.decode())['hhf_etraces_dir']
     r = overview(request)
     context = {
@@ -676,7 +669,7 @@ def load_hhf_etraces(request):
 
     if not hhf_etraces_dir:
         return HttpResponseBadRequest('"hhf_etraces_dir" not found')
-    
+
     username = request.session['username']
     time_info = request.session['time_info']
 
@@ -710,8 +703,6 @@ def load_hhf_etraces(request):
         return HttpResponse(json.dumps({'resp': 'KO', 'message':
                                         'file not found error'}))
 
-    print(data_name_dict)
-
     return HttpResponse(json.dumps(data_name_dict),
                         content_type="application/json")
 
@@ -721,5 +712,5 @@ def error_space_left(request):
     Render no-space-left error page
     """
     time_info = request.session["time_info"]
-    logger.info(LOG_ACTION.format(request.session['username'], 'access ERROR_SPACE_LEFT page'))
+    logger.info(LOG_ACTION.format(request.session.get('username', 'anonymous'), 'access ERROR_SPACE_LEFT page'))
     return render(request, 'efelg/error_space_left.html', context={'efel_wf_id': time_info})

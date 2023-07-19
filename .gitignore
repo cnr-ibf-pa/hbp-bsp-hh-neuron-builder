@@ -28,3 +28,7 @@ debug.log
 
 arm64/
 .swp
+
+requirements.txt
+
+node_modules/

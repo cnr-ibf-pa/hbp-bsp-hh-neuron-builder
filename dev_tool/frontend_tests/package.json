@@ -1,0 +1,14 @@
+{
+  "name": "frontend-tests",
+  "version": "1.0.0",
+  "description": "Tests for HHNB and NFE frontend",
+  "scripts": {
+    "test": "cd ./NFE; cypress run; cd ../HHNB; cypress run",
+    "test-nfe": "cd ./NFE; cypress run",
+    "test-hhnb": "cd ./HHNB; cypress run",
+    "cypress": "cypress"
+  },
+  "dependencies": {
+    "cypress": "^12.17.1"
+  }
+}

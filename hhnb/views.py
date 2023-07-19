@@ -326,10 +326,13 @@ def fetch_models(request, exc):
             requested_model = request.GET.get('model')
             logger.debug(f'requesting {requested_model} on ModelCatalog')
             model = mc.get_model(model_id=requested_model)
+            import pprint
+            pprint.pprint(model)
             if model:
                 model_path = None
                 logger.debug(f'downloading model {model} from ModelCatalog')
                 try:
+                    print(model['instances'][-1])
                     model_path = mc.download_model_instance(
                         instance_id=model['instances'][-1]['id'],
                         local_directory=TMP_DIR,

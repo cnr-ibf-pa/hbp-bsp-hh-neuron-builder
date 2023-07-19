@@ -103,7 +103,7 @@ class EfelStorage():
 
     @staticmethod
     def getUserFilesDir(username, timestamp):
-        """Get the path to the local unique user directory 
+        """Get the path to the local unique user directory
            containing the files that are used by the user
 
         Parameters
