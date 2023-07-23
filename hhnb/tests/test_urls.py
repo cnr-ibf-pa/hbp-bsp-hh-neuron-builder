@@ -29,11 +29,11 @@ class TestResolverUrls(SimpleTestCase):
         self.assertEqual(resolve(url).func, views.workflow_page)
 
     def test_docs(self):
-        url = reverse('docs')
+        url = reverse('hhnb-docs')
         self.assertEqual(resolve(url).func, views.index_docs)
 
     def test_docs_index(self):
-        url = reverse('docs-index')
+        url = reverse('hhnb-docs-index')
         self.assertEqual(resolve(url).func, views.index_docs)
 
     def test_initialize_workflow(self):
