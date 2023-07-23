@@ -72,13 +72,13 @@ class TestUrlResolver(SimpleTestCase):
         self.assertEqual(resolve(url).func, views.load_hhf_etraces)
 
     def test_docs(self):
-        url = reverse('docs')
+        url = reverse('efelg-docs')
         self.assertEqual(resolve(url).func, views.index_docs)
 
     def test_docs_index(self):
-        url = reverse('docs-index')
+        url = reverse('efelg-docs-index')
         self.assertEqual(resolve(url).func, views.index_docs)
 
     def test_docs_dataset(self):
-        url = reverse('docs-dataset')
+        url = reverse('efelg-docs-dataset')
         self.assertEqual(resolve(url).func, views.dataset)

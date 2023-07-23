@@ -25,7 +25,7 @@ urlpatterns = [
     path('hhf_etraces/<exc:exc>', views.hhf_etraces, name='hhf-etraces'),
     path('load_hhf_etraces/', views.load_hhf_etraces, name='load-hhf-etraces'),
 
-    path('docs/', views.index_docs, name='docs'),
-    path('docs/index/', views.index_docs, name='docs-index'),
-    path('docs/dataset/', views.dataset, name='docs-dataset'),
+    path('docs/', views.index_docs, name='efelg-docs'),
+    path('docs/index/', views.index_docs, name='efelg-docs-index'),
+    path('docs/dataset/', views.dataset, name='efelg-docs-dataset'),
 ]
