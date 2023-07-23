@@ -326,13 +326,10 @@ def fetch_models(request, exc):
             requested_model = request.GET.get('model')
             logger.debug(f'requesting {requested_model} on ModelCatalog')
             model = mc.get_model(model_id=requested_model)
-            import pprint
-            pprint.pprint(model)
             if model:
                 model_path = None
                 logger.debug(f'downloading model {model} from ModelCatalog')
                 try:
-                    print(model['instances'][-1])
                     model_path = mc.download_model_instance(
                         instance_id=model['instances'][-1]['id'],
                         local_directory=TMP_DIR,
@@ -472,10 +469,8 @@ def upload_analysis(request, exc):
 
     workflow, user = get_workflow_and_user(request, exc)
     logger.info(LOG_ACTION.format(user, 'uploading analysis to %s' % workflow))
-
     for uploaded_file in uploaded_files:
-        uploaded_file_path = os.path.join(workflow.get_tmp_dir(),
-                                          uploaded_file.name)
+        uploaded_file_path = os.path.join(TMP_DIR, uploaded_file.name)
         with open(uploaded_file_path, 'wb') as fd:
             if uploaded_file.multiple_chunks(chunk_size=4096):
                 for chunk in uploaded_file.chunks(chunk_size=4096):
@@ -484,35 +479,29 @@ def upload_analysis(request, exc):
                 fd.write(uploaded_file.read())
 
     try:
-        analysis_zip = validate_archive(uploaded_file_path)
+        validated_zip = validate_archive(uploaded_file_path)
     except InvalidSign:
         return ResponseUtil.ko_response(messages.INVALID_SIGNATURE.format(f'"{uploaded_file.name}"'))
     except InvalidArchiveError:
         return ResponseUtil.ko_response(messages.INVALID_FILE.format(f'"{uploaded_file.name}"'))
     try:
-        shutil.unpack_archive(analysis_zip, workflow.get_tmp_dir())
+        shutil.unpack_archive(validated_zip, workflow.get_tmp_dir())
 
-        try:
-            os.remove(os.path.join(workflow.get_tmp_dir(), os.path.split(analysis_zip)[1]))
-        except FileNotFoundError:
-            # go haed if file is not found
-            pass
-
-        tmp_dir_list = os.listdir(workflow.get_tmp_dir())
-        if len(tmp_dir_list) > 1:
-            # if uploaded zip has more then one file it means that it is a job results zip
-            for f in tmp_dir_list:
+        if len(os.listdir(workflow.get_tmp_dir())) > 1 and \
+            any(['output' in f for f in os.listdir(workflow.get_tmp_dir())]):
+            # if uploaded zip has more then one and has the output archive
+            # it means that it is a job results zip
+            for f in os.listdir(workflow.get_tmp_dir()):
                 shutil.move(os.path.join(workflow.get_tmp_dir(), f),
                             workflow.get_results_dir())
-            # and then run the analisys
+            # and then run the analysis
             return run_analysis(request, exc)
 
-        else:
-            # otherwise check if it has the required folders to run the simulation
-            unzip_dir_path = os.path.join(workflow.get_tmp_dir(), tmp_dir_list[0])
-            simulation_folder_list = ['mechanisms', 'morphology', 'checkpoints']
-            if all([folder in os.listdir(unzip_dir_path) for folder in simulation_folder_list]):
-                shutil.move(unzip_dir_path, workflow.get_analysis_dir())
+        # otherwise check if it has the required folders to run the simulation
+        unzip_dir_path = os.path.join(workflow.get_tmp_dir(), os.listdir(workflow.get_tmp_dir())[0])
+        simulation_folder_list = ['mechanisms', 'morphology', 'checkpoints']
+        if all([folder in os.listdir(unzip_dir_path) for folder in simulation_folder_list]):
+            shutil.move(unzip_dir_path, workflow.get_analysis_dir())
 
         return ResponseUtil.ok_response('')
 
@@ -923,10 +912,22 @@ def run_analysis(request, exc):
     logger.info(LOG_ACTION.format(hhnb_user, 'run analysis on %s' % workflow))
 
     try:
+        job_output = None
+        copy = False
         for f in os.listdir(workflow.get_results_dir()):
             if 'output' in f:
                 job_output = os.path.join(workflow.get_results_dir(), f)
-        WorkflowUtil.run_analysis(workflow, job_output)
+        if not job_output and \
+            (len(os.listdir(workflow.get_results_dir())) > 1 and \
+                len(os.listdir(workflow.get_results_dir())) <= 3):
+            for f in os.listdir(workflow.get_results_dir()):
+                filepath = os.path.join(workflow.get_results_dir(), f)
+                if os.path.isdir(filepath):
+                    job_output = filepath
+                    copy = True
+
+
+        WorkflowUtil.run_analysis(workflow, job_output, copy)
         return ResponseUtil.ok_response('')
 
     except MechanismsProcessError as err:

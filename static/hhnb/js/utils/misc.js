@@ -1,4 +1,6 @@
 $("#modalNFE")[0].addEventListener("transitionstart", function(transition) {
+    console.log("TRANSITION: ", transition.target);
+    console.log($(this)[0])
     if (transition.target == $(this)[0]) {
         if ($(this).hasClass("show")) {
             $("#modalNFEContainer").addClass("show");

@@ -20,7 +20,7 @@ function checkRefreshSession(response) {
                     true
                 );
             })
-    } 
+    }
 }
 
 
@@ -56,7 +56,7 @@ function fetchHHFFileList() {
         url: "/hh-neuron-builder/hhf-list-files/" + exc,
         method: "GET",
         async: false,
-        success: (data) => { 
+        success: (data) => {
 
             if (data.morphology && data.morphology.length > 0) {
                 for (let i = 0; i < data.morphology.length; i++) {
@@ -79,7 +79,7 @@ function fetchHHFFileList() {
                 $("#mechanismsFileList").append("<div class='file-item empty'>Empty</div>");
                 $("#mechanismsFileList").addClass("empty-list");
             }
-            
+
             if (data.config && data.config.length > 0) {
                 for (let i = 0; i < data.config.length; i++) {
                     let name = data.config[i];
@@ -106,7 +106,7 @@ function fetchHHFFileList() {
                 $("#optNeuronCode").html(data["opt_neuron.py"]);
             }
             hljs.highlightAll();
-    
+
             $("#fileItemSpinner").css("display", "none");
             showFileList($(".folder-item.active"));
         },
@@ -173,7 +173,7 @@ function deleteHHFFiles() {
             $("#uploadFileButton").removeClass("disabled");
         }
     }
-    
+
     var data = {"file_list": []};
     var directory = $(".folder-item.active").attr("id").split("Folder")[0];
 
@@ -197,11 +197,11 @@ function deleteHHFFiles() {
 
     $.ajax({
         url: "/hh-neuron-builder/delete-files/" + exc,
-        method: "POST",           
+        method: "POST",
         dataType: "json",
         contentType: "application/json",
         data: JSON.stringify(data),
-        error: (error) => { 
+        error: (error) => {
             let sm = splitTitleAndMessage(error.responseText);
             if (sm) {
                 MessageDialog.openErrorDialog(sm.message, sm.title);
@@ -209,7 +209,7 @@ function deleteHHFFiles() {
                 MessageDialog.openErrorDialog(error.responseText);
             }
         },
-    }).always(() => { 
+    }).always(() => {
         hideLoadingAnimation();
         refreshHHFFileList();
         updateEditor();
@@ -229,13 +229,13 @@ $("#downloadFileButton").click(function() {
             .done((result) => { window.location.href = "/hh-neuron-builder/download-file/" + req_pattern + "?filepath=" + result })
             .fail((error) => { checkRefreshSession(error) })
             .always(() => { hideLoadingAnimation() })
-        } 
+        }
         if ($(".file-item.active").length == 0) {
             return false;
         } else {
             $(".file-item.active").each(function(i) {
                 jj_ids.path.push($(".folder-item.active").attr("id").split("Folder")[0] + "/" + $(this).attr("id"));
-                
+
             });
         }
     } else {
@@ -260,8 +260,9 @@ $("#uploadFileButton").click(function() {
     if ($(this).hasClass("disabled")) {
         return false;
     }
-    
+
     const input = document.createElement("input");
+    input.id = "fileUploadInput";
     let folderId = $(".folder-item.active").attr("id");
     if (folderId == "mechanismsFolder") {
         input.setAttribute("multiple", "true");
@@ -275,7 +276,7 @@ $("#uploadFileButton").click(function() {
     }
     input.setAttribute("type", "file");
     input.click();
-    
+
     var counter = 0;
     var files = 0
 
@@ -309,7 +310,7 @@ $("#uploadFileButton").click(function() {
         })
     }
 
-    const onSelectFile = async function(x) {        
+    const onSelectFile = async function(x) {
         files = input.files.length;
 
         $(".file-group").css("display", "none");
@@ -367,28 +368,28 @@ function showFileList(folder) {
     $(".file-group").css("display", "none").removeClass("active");
     $(".file-code").css("display", "none");
     $(".ui-button").removeClass("disabled");
-    
+
     hideFloatingOpenFileButton();
 
     folder.addClass("active").attr("aria-current", true);
 
     if (currFolder == "morphologyFolder") {
-        currList = $("#morphologyFileList"); 
+        currList = $("#morphologyFileList");
         if (!currList.hasClass("empty-list")) {
             $("#uploadFileButton").addClass("disabled");
         }
     } else if (currFolder == "mechanismsFolder") {
         currList = $("#mechanismsFileList");
     } else if (currFolder == "configFolder") {
-        currList = $("#configFileList"); 
+        currList = $("#configFileList");
         showFloatingOpenFileButton();
     } else if (currFolder == "modelFolder") {
-        currList = $("#modelFileList"); 
+        currList = $("#modelFileList");
         $("#uploadFileButton").addClass("disabled");
         $("#deleteFileButton").addClass("disabled");
         showFloatingOpenFileButton();
     } else if (currFolder == "optNeuronFolder") {
-        currList = $("#optNeuronTextArea"); 
+        currList = $("#optNeuronTextArea");
         $("#deleteFileButton").addClass("disabled");
         $("#selectAllButton").addClass("disabled");
         $("#uploadFileButton").addClass("disabled");
@@ -398,7 +399,7 @@ function showFileList(folder) {
     if (currList.hasClass("empty-list")) {
         $("#downloadFileButton").addClass("disabled");
         $("#selectAllButton").addClass("disabled");
-        $("#deleteFileButton").addClass("disabled"); 
+        $("#deleteFileButton").addClass("disabled");
     }
 }
 
@@ -469,19 +470,19 @@ $("#editFileButton").mouseout(function() {
 
 function resetEditorMode() {
     editorMode = false;
- 
+
     $("#folderselector").css("display", "block").removeClass("fade-out fade-in");
     $("#editorselector").css("display", "none").removeClass("fade-out fade-in");
- 
+
     $("#fileselector").css("display", "block").removeClass("fade-out fade-in");
     $("#fileeditor").css("display", "none").removeClass("fade-out fade-in");
- 
+
     $("#editFileButtonImage").attr("src", "/static/assets/img/open-file-white.svg").removeClass("show zoomout back-arrow").css("top", "8px").css("left", "2px");
     $("#editFileButton").attr("title", "Open/Edit files");
     $("#editorfilelist").empty();
     $("#saveFileButton").removeClass("show disabled");
     $("#saveFileButtonSpinner").css("display", "none");
-    $("#saveFileButtonImage").css("display", "inline");        
+    $("#saveFileButtonImage").css("display", "inline");
 }
 
 
@@ -495,7 +496,7 @@ function switchMode() {
 
 
     editorMode = !editorMode;
-    
+
     folderSelector[0].addEventListener("animationend", function(){
         if (editorMode) {
             folderSelector.css("display", "none");
@@ -530,7 +531,7 @@ function switchMode() {
             editFileButtonImage.addClass("back-arrow")
             if (!navigator.userAgent.toString().match("Chrome")) {
                 editFileButtonImage.attr("src", "/static/assets/img/back-arrow-white.svg");
-            } 
+            }
             $("#editFileButton").attr("title", "Go back");
         } else {
             editFileButtonImage.removeClass("back-arrow");
@@ -541,7 +542,7 @@ function switchMode() {
         }
         editFileButtonImage.removeClass("zoomout");
     })
-    
+
     editFileButtonImage.addClass("zoomout");
     if (editorMode) {
         loadEditor();
@@ -581,7 +582,7 @@ function loadEditor() {
     var currFile = $(".file-item.active").attr("id");
 
     $.getJSON("/hh-neuron-builder/hhf-get-files-content/" + currFolder + "/" + exc, function(jj) {
-        
+
         let files = Object.keys(jj);
 
         for (let i = 0; i < files.length; i++) {
@@ -605,9 +606,9 @@ function loadEditor() {
                 }
             }
 
-        } 
+        }
         hljs.highlightAll();
- 
+
         if (!currFile) {
             $("#editor-spinner").css("display", "none");
             $("#openafilediv").css("display", "block");
@@ -653,7 +654,7 @@ function selectFileEditor(filename) {
 }
 
 function changeFileEditor(filename) {
-    
+
     if ($("#editor-spinner").css("display") == "block") {
         return false;
     }
@@ -661,7 +662,7 @@ function changeFileEditor(filename) {
     $("#openafilediv").css("display", "none");
     $(".editor-item").removeClass("active");
     $(".editor-item[name='" + filename + "']").addClass("active");
-    
+
     $(".file-code").css("display", "none").removeClass("active");
     $(".file-textarea").css("display", "none").removeClass("active");
 
@@ -699,7 +700,7 @@ async function runCheckDiffWorker() {
         $("#saveFileButton").addClass("show");
     }
 }
-    
+
 
 $("#saveFileButton").mousedown(function() {
     if ($(this).hasClass("disabled")) {
@@ -822,7 +823,7 @@ class MessageDialog {
         $("#shadow-layer").removeClass("show");
         await sleep(500);
         $("#shadow-layer").css("display", "none");
-    } 
+    }
 
     static openSuccessDialog(msg, title="Success !") {
         this.#openDialog("success", title, msg)

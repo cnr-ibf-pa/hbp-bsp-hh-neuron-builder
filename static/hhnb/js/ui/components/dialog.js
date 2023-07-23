@@ -95,7 +95,7 @@ class UploadFileDialog {
         await sleep(10);
         $("#overlaywrapper").addClass("show");
         $("#overlayupload").addClass("show");
-        $("#uploadFormLabel").html("<strong>" + label + "<strong>");
+        $("#uploadFormLabel").html("<strong>" + label + "</strong>");
         $("#uploadFormButton").prop("disabled", true);
     }
 
@@ -116,7 +116,7 @@ class UploadFileDialog {
         this.#open(label);
     }
 
-    static openModel(msg) {
+    static openModel() {
         Log.debug("Open model upload box");
         $("#formFile").prop("multiple", false).attr("accept", ".zip");
         $("#uploadImg").css("display", "none");
@@ -149,7 +149,7 @@ $(".accordion-button.hpc").on("click",async event => {
         $(".accordion-button.hpc").removeClass("active").blur();
         btn.addClass("active");
     }
-    
+
     if ($(".accordion-button.hpc.active").length == 1) {
         Log.debug("Accordion button active = 1... Enabling ApplyParam button");
         $("#apply-param").prop("disabled", false);
@@ -171,7 +171,7 @@ $(".accordion-button.hpc").on("click",async event => {
             }
         });
     }
-}); 
+});
 
 $("#username_submit").on("input", () => {
     $("#username_submit").removeClass("is-valid is-invalid");
@@ -187,16 +187,16 @@ $("#job-action-start").on("click", () => {
     if (jobName.endsWith("_resume")) {
         $("#job-name").val($("#job-name").val().toString().split("_resume")[0]);
     }
-    
+
     let jObj = JSON.parse(window.sessionStorage.getItem("job_settings"));
     OptimizationSettingsDialog.loadSettings(jObj, "start");
-})  
+})
 
 $("#job-action-resume").on("click", () => {
     $("#job-action").text("Resume");
     let jObj = JSON.parse(window.sessionStorage.getItem("job_settings"));
     OptimizationSettingsDialog.loadSettings(jObj, "resume");
-})  
+})
 
 
 class OptimizationSettingsDialog {
@@ -219,7 +219,7 @@ class OptimizationSettingsDialog {
         $("#nsg-node-num").val(1);
         $("#nsg-core-num").val(2);
         $("#nsg-runtime").val(2);
-        
+
         $("#sa-gen-max").val(2);
         $("#sa-offspring").val(10).prop("disabled", false);
         $("#sa-runtime").val(2);
@@ -227,7 +227,7 @@ class OptimizationSettingsDialog {
 
     static loadSettings(jObj, mode="start") {
         window.sessionStorage.setItem("job_settings", JSON.stringify(jObj));
-        Log.debug(jObj);        
+        Log.debug(jObj);
 
         if (!jObj["service-account"]) {
             $("#accordionSA").addClass("disabled").prop("disabled", true);
@@ -236,7 +236,7 @@ class OptimizationSettingsDialog {
             }
         }
         populateServiceAccountSettings(jObj["service-account"], "optset");
-        
+
         let settings = jObj.settings;
         let resume = jObj.resume;
 
@@ -268,12 +268,12 @@ class OptimizationSettingsDialog {
                     $("#nsg-runtime").val(settings.runtime);
                     if (settings["username_submit"]) {
                         $("#username_submit").addClass("is-valid").removeClass("is-invalid");
-                    } else { 
+                    } else {
                         $("#username_submit").addClass("is-invalid").removeClass("is-valid");
                     }
                     if (settings["password_submit"]) {
                         $("#password_submit").addClass("is-valid").removeClass("is-invalid");
-                    } else { 
+                    } else {
                         $("#password_submit").addClass("is-invalid").removeClass("is-valid");
                     }
                 } else if (settings.hpc == "SA") {
@@ -320,7 +320,7 @@ class OptimizationSettingsDialog {
         if (hpc == "DAINT-CSCS") {
             if ($("#daint_project_id").val() == "") {
                 $("#daint_project_id").removeClass("is-valid").addClass("is-invalid");
-                showWarningAlert('Please fill "Project ID" to apply settings and cotinue your workflow.');
+                showWarningAlert('Please fill "Project ID" to apply settings and continue your workflow.');
                 throw "daint_project empty";
             }
             data["gen-max"] = parseInt($("#daint-gen-max").val());
@@ -343,7 +343,7 @@ class OptimizationSettingsDialog {
 
             let nsgUser = $("#username_submit");
             let nsgPass = $("#password_submit");
-            
+
             if (nsgUser.val() == "") {
                 nsgUser.addClass("is-invalid");
             }
@@ -354,20 +354,20 @@ class OptimizationSettingsDialog {
                 showWarningAlert("Please fill \"username\" and/or \"password\" to apply settings and continue your workflow.");
                 throw "credentials empty";
             }
-            
-            
+
+
             if (nsgUser.val() == "" || nsgPass.val() == "") {
                 if (nsgUser.val())
                 nsgUser.addClass("is-invalid")
-                
+
                 if (!nsgUser.hasClass("is-valid") && !nsgPass.hasClass("is-valid")) {
                     showWarningAlert("Please fill \"username\" and/or \"password\" to apply settings and continue your workflow.");
-                    throw "credentials empty";            
+                    throw "credentials empty";
                 }
             } else {
                 data["username_submit"] = nsgUser.val();
                 data["password_submit"] = nsgPass.val();
-            }             
+            }
         }
         if (hpc == "SA") {
             if ($("#sa-hpc-dropdown-optset > button").text().toLowerCase() == "select hpc") {
@@ -443,7 +443,7 @@ class OptimizationSettingsDialog {
 
         if (Log.enabled) {
             for (let v of formData.values()) {
-                Log.debug(v); 
+                Log.debug(v);
             }
         }
         return formData;
@@ -457,7 +457,7 @@ class OptimizationSettingsDialog {
         $("#overlaywrapper").addClass("show")
         $("#overlayparam").addClass("show");
     }
-    
+
     static async close() {
         Log.debug("close");
         $("#overlayparam").removeClass("show");
@@ -478,7 +478,7 @@ function replaceWithSelectElement(id, options) {
     $.each(options, (index, value)  => {
         $("#" + id).append("<option>" + value + "</option>");
     });
-}   
+}
 
 class ModelRegistrationDialog {
 
@@ -497,43 +497,45 @@ class ModelRegistrationDialog {
                         case "brain_region":
                             replaceWithSelectElement("modelBrainRegion", options[key]);
                             break;
-                    
+
                         case "model_scope":
                             replaceWithSelectElement("modelScope", options[key]);
                             break;
-                    
+
                         case "abstraction_level":
                             replaceWithSelectElement("modelAbstraction", options[key]);
                             break;
-                    
+
                         case "cell_type":
                             replaceWithSelectElement("modelCellType", options[key]);
                             break;
 
                         case "license":
-                            
-                            $("#modelLicense").empty();    
+
+                            $("#modelLicense").empty();
                             $.each(options[key], (index, value) => {
                                 $("#modelLicense").append("<option>" + value + "</option>");
                             })
                             break
-                        
+
                         default:
                     }
                 }
                 Log.debug("modelName " + modelName);
                 $("#modelName").val(modelName)
-                
+
                 $("#overlaywrapper").css("display", "block");
                 $("#overlaywrapmodreg").css("display", "block");
                 await sleep(10);
                 $("#overlaywrapper").addClass("show");
                 $("#overlaywrapmodreg").addClass("show");
+                hideLoadingAnimation();
             }).catch(error => {
+                hideLoadingAnimation();
                 Log.error("Error while getting options from model catalog: ", error);
                 MessageDialog.openErrorDialog(error);
             }).always(() => {
-                hideLoadingAnimation();
+                // hideLoadingAnimation();
             })
     }
 

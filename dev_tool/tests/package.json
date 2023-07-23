@@ -1,0 +1,17 @@
+{
+  "name": "tests",
+  "version": "1.0.0",
+  "description": "Frontend tests for HHNB and NFE",
+  "main": "index.js",
+  "scripts": {
+    "test": "cypress run -P ./NFE; cypress run -P ./HHNB",
+    "test-nfe": "cypress run -P ./NFE",
+    "test-hhnb": "cypress run -P ./HHNB",
+    "cypress": "cypress"
+  },
+  "author": "Roberto Smiriglia <roberto.smiriglia@ibf.cnr.it>",
+  "license": "ISC",
+  "dependencies": {
+    "cypress": "^12.17.1"
+  }
+}

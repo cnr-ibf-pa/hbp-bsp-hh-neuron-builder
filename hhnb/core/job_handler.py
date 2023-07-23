@@ -410,7 +410,11 @@ class JobHandler:
         """
         transport = unicore_client.Transport(token)
         if hpc == self._DAINT_CSCS:
-            client = unicore_client.Client(transport, self._DAINT_URL)
+            try:
+                client = unicore_client.Client(transport, self._DAINT_URL)
+            except Exception as err:
+                if str(err).find('500') >= 0:
+                    raise self.HPCException(messages.HPC_NOT_AVAILABLE.format(hpc))
         else:
             try:
                 hpc_url = unicore_client.get_sites(transport)[hpc]

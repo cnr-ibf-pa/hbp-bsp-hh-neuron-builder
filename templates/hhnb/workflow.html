@@ -546,7 +546,7 @@
                     <tbody id="job-list-body" class="job-list-body"></tbody>
                 </table>
             </div>
-            
+
             <div class="row">
                 <div class="col">
                     <button type="button" id="cancel-job-list-btn" class="btn workflow-btn fill-background extends">Cancel</button>
@@ -620,7 +620,7 @@
                     <div id="fileeditor" class="col-8 file-selector"></div>
                 </div>
             </div>
-            
+
             <div id="saveFileButton" class="save-floating-btn" title="Save file" draggable="false" ondragstart="return false;">
                 <img id="saveFileButtonImage" src="{% static 'assets/img/save-file-white.svg' %}" draggable="false" ondragstart="return false;">
                 <div id="saveFileButtonSpinner" class="spinner-border" role="status"></div>
@@ -654,7 +654,7 @@
                         </div>
                     </div>
                 </div>
-            </div> 
+            </div>
         </div>
     </div>
 
@@ -926,7 +926,7 @@
     sessionStorage.setItem("hhf_dict", "{{ hhf_dict }}");
 </script>
 
-
+<script type="text/javascript" src="{% static 'hhnb/js/utils/misc.js' %}"></script>
 <script type="text/javascript" src="{% static 'hhnb/js/ui/components/file_manager.js' %}"></script>
 <script type="module" src="{% static 'hhnb/js/app.js' %}"></script>
 

@@ -542,9 +542,19 @@ class Workflow(_WorkflowBase):
 
         analysis_flag = False
         show_results_flag = False
-        if len(os.listdir(self._analysis_dir)) == 1:
-            analysis_model_dir = os.path.join(self._analysis_dir,
-                                              os.listdir(self._analysis_dir)[0])
+
+        if len(os.listdir(self._analysis_dir)) > 0:
+            if 'opt_neuron.py' in os.listdir(self._analysis_dir):
+                analysis_model_dir = self._analysis_dir
+            else:
+                for f in os.listdir(self._analysis_dir):
+                    f_path = os.path.join(self._analysis_dir, f)
+                    if os.path.isdir(f_path) and 'opt_neuron.py' in os.listdir(f_path):
+                        analysis_model_dir = os.path.join(self._analysis_dir, f)
+
+        # if len(os.listdir(self._analysis_dir)) == 1:
+        #     analysis_model_dir = os.path.join(self._analysis_dir,
+        #                                       os.listdir(self._analysis_dir)[0])
             if os.path.isdir(analysis_model_dir) != \
                 ['mechanisms', 'morphology', 'checkpoints']:
                 analysis_flag = True
@@ -1046,7 +1056,7 @@ class WorkflowUtil:
             raise Exception('No hpc system found!')
 
     @staticmethod
-    def run_analysis(workflow, job_output):
+    def run_analysis(workflow, job_output, copy=False):
         """
         Run the analysis process for the current downloaded job inside
         the workflow. This static method runs the external program
@@ -1061,6 +1071,9 @@ class WorkflowUtil:
             the workflow that will contain the analysis.
         job_output : str
             the path where the job to analyse is placed.
+        copy : bool
+            copy the job output to the workflow's results folder
+            instead of unpack it.
 
         Raises
         ------
@@ -1073,13 +1086,19 @@ class WorkflowUtil:
         MechanismsProcessError
             if the "nrnivmodl" program ends with an error.
         """
-        analysis_dir = workflow.get_analysis_dir()
-        shutil.unpack_archive(job_output, analysis_dir)
 
-        output_dir = analysis_dir
-        if not 'opt_neuron.py' in os.listdir(analysis_dir):
+        analysis_dir = workflow.get_analysis_dir()
+        if not copy:
+            shutil.unpack_archive(job_output, analysis_dir)
+        else:
+            shutil.copytree(job_output, analysis_dir, dirs_exist_ok=True)
+
+        output_dir = None
+        if 'opt_neuron.py' in os.listdir(analysis_dir):
+            output_dir = analysis_dir
+        else:
             for f in [os.path.join(analysis_dir, f) for f in os.listdir(analysis_dir)]:
-                if os.path.isdir(f):
+                if os.path.isdir(f) and 'opt_neuron.py' in os.listdir(f):
                     output_dir = f
                 else:
                     os.remove(f)
@@ -1124,9 +1143,10 @@ class WorkflowUtil:
         os.mkdir(r_0_dir)
 
         # delete compiled mods files directory
-        compiled_mods_dir = os.path.join(output_dir, 'x86_64')
-        if os.path.exists(compiled_mods_dir):
-            shutil.rmtree(compiled_mods_dir)
+        if os.path.exists(os.path.join(output_dir, 'x86_64')):
+            shutil.rmtree(os.path.join(output_dir, 'x86_64'))
+        if os.path.exists(os.path.join(output_dir, 'arm64')):
+            shutil.rmtree(os.path.join(output_dir, 'arm64'))
         curr_dir = os.getcwd()
 
         log_file_path = os.path.join(LOG_ROOT_PATH, 'analysis', workflow.get_user())
@@ -1138,16 +1158,20 @@ class WorkflowUtil:
         os.chdir(output_dir)
 
         build_mechanisms_command = f'source {env_prefix}/bin/activate; nrnivmodl mechanisms > {log_file}'
-        opt_neuron_analysis_command = f'source {env_prefix}/bin/activate; python ./opt_neuron.py --analyse --checkpoint ./checkpoints > {log_file}'
-        p0 = subprocess.run(build_mechanisms_command, shell=True, executable='/bin/bash', capture_output=True, text=True)
-        p1 = subprocess.run(opt_neuron_analysis_command, shell=True, executable='/bin/bash', capture_output=True, text=True)
+        opt_neuron_analysis_command = f'source {env_prefix}/bin/activate;' \
+                                    + f'python ./opt_neuron.py --analyse --checkpoint ./checkpoints > {log_file}'
+        p_0 = subprocess.run(build_mechanisms_command, shell=True, executable='/bin/bash',
+                            capture_output=True, text=True, check=False)
+        if p_0.returncode > 0:
+            raise MechanismsProcessError(p_0.returncode, build_mechanisms_command,
+                                         stderr=p_0.stderr)
 
+        p_1 = subprocess.run(opt_neuron_analysis_command, shell=True, executable='/bin/bash',
+                            capture_output=True, text=True, check=False)
+        if p_1.returncode > 0:
+            raise AnalysisProcessError(p_1.returncode, opt_neuron_analysis_command,
+                                       stderr=p_1.stderr)
         os.chdir(curr_dir)
-
-        if p0.returncode > 0:
-            raise MechanismsProcessError(p0.returncode, build_mechanisms_command, stderr=p0.stderr)
-        if p1.returncode > 0:
-            raise AnalysisProcessError(p1.returncode, opt_neuron_analysis_command, stderr=p1.stderr)
 
     @staticmethod
     def make_naas_archive(workflow):
@@ -1165,10 +1189,18 @@ class WorkflowUtil:
         str
             the path in which the naas zip is placed
         """
-        analysis_dir_name = os.listdir(workflow.get_analysis_dir())[0]
-        src_dir = os.path.join(workflow.get_analysis_dir(), analysis_dir_name)
-        dst_dir = os.path.join(workflow.get_tmp_dir(), analysis_dir_name)
-        tmp_analysis_dir = shutil.copytree(src_dir, dst_dir)
+        analysis_dir = None
+        if 'opt_neuron.py' in os.listdir(workflow.get_analysis_dir()):
+            analysis_dir = workflow.get_analysis_dir()
+        else:
+            for d in os.listdir(workflow.get_analysis_dir()):
+                if 'opt_neuron.py' in os.listdir(os.path.join(workflow.get_analysis_dir(), d)):
+                    analysis_dir = os.path.join(workflow.get_analysis_dir(), d)
+        if not analysis_dir:
+            raise FileNotFoundError('Analysis directory file not found')
+
+        dst_dir = os.path.join(workflow.get_tmp_dir(), os.path.split(analysis_dir)[1])
+        tmp_analysis_dir = shutil.copytree(analysis_dir, dst_dir)
 
         for f in os.listdir(tmp_analysis_dir):
             f_path = os.path.join(tmp_analysis_dir, f)
@@ -1194,7 +1226,7 @@ class WorkflowUtil:
         # create naas archive on root wf path
         naas_archive = shutil.make_archive(
             base_name=os.path.join(workflow.get_workflow_path(),
-                                   analysis_dir_name),
+                                   os.path.split(analysis_dir)[1]),
             format='zip',
             root_dir=workflow.get_tmp_dir()
         )
@@ -1271,11 +1303,17 @@ class WorkflowUtil:
             if analysis directory is not found inside the workflow.
         """
 
-        if len(os.listdir(workflow.get_analysis_dir())) != 1:
+        pdf_path = None
+        if 'figures' in os.listdir(workflow.get_analysis_dir()):
+            pdf_path = os.path.join(workflow.get_analysis_dir(), 'figures')
+        else:
+            for d in os.listdir(workflow.get_analysis_dir()):
+                if 'figures' in os.listdir(os.path.join(workflow.get_analysis_dir(), d)):
+                    pdf_path = os.path.join(workflow.get_analysis_dir(), d)
+                    break
+        if not pdf_path:
             raise FileNotFoundError()
-        pdf_path = os.path.join(workflow.get_analysis_dir(),
-                                os.listdir(workflow.get_analysis_dir())[0],
-                                'figures')
+
         pdf_list = os.listdir(pdf_path)
         pdf_result = os.path.join(workflow.get_tmp_dir(), 'results.pdf')
 
