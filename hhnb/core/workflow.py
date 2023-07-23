@@ -1302,14 +1302,13 @@ class WorkflowUtil:
         FileNotFoundError
             if analysis directory is not found inside the workflow.
         """
-
         pdf_path = None
         if 'figures' in os.listdir(workflow.get_analysis_dir()):
             pdf_path = os.path.join(workflow.get_analysis_dir(), 'figures')
         else:
             for d in os.listdir(workflow.get_analysis_dir()):
                 if 'figures' in os.listdir(os.path.join(workflow.get_analysis_dir(), d)):
-                    pdf_path = os.path.join(workflow.get_analysis_dir(), d)
+                    pdf_path = os.path.join(workflow.get_analysis_dir(), d, 'figures')
                     break
         if not pdf_path:
             raise FileNotFoundError()

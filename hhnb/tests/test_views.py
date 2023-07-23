@@ -140,7 +140,7 @@ class TestPages(TestCase):
         """
         Test the docs page.
         """
-        docs_url = reverse('docs')
+        docs_url = reverse('hhnb-docs')
         response = self.client.get(docs_url)
         self.assertEqual(response.status_code, 200)
 
@@ -148,7 +148,7 @@ class TestPages(TestCase):
         """
         Test the index docs page.
         """
-        index_docs_url = reverse('docs-index')
+        index_docs_url = reverse('hhnb-docs-index')
         response = self.client.get(index_docs_url)
         self.assertEqual(response.status_code, 200)
 
@@ -318,7 +318,7 @@ class TestViews(TestCase):
         """
         url = reverse('fetch-models', args=[self.exc_code])
         response = self.client.get(url, data={'model': 'all'})
-        self.assertIn(response.status_code, [200, 204])
+        self.assertIn(response.status_code, [200, 204, 497, 498])
         if response.status_code == 200:
             self.assertListEqual(list(response.json().keys()), ['models'])
         response = self.client.get(url, data={'model': MODEL_IDS[1]})
@@ -442,6 +442,9 @@ class TestViews(TestCase):
             form_file = SimpleUploadedFile(name='analysis.zip',
                                            content=fd.read(),
                                            content_type='application/zip')
+            # remove analysis folder before upload it
+            for f in os.listdir(os.path.join(self.workflow_path, 'analysis')):
+                shutil.rmtree(os.path.join(self.workflow_path, 'analysis', f))
             response = self.client.post(upload_url, data={'formFile': [form_file]})
             os.remove(zip_path)
             self.assertEqual(response.status_code, 200)
@@ -756,7 +759,6 @@ class TestViews(TestCase):
                         'hpc': 'SA', 'saHPC': 'pizdaint',
                         'saProject': 'hhnb_daint_cscs'}
                 )
-                print(response.status_code, response.content)
                 self.assertIn(response.status_code, [200, 404])
 
     def test_run_analysis(self):

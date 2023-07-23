@@ -448,7 +448,6 @@ def upload_model(request, exc):
     return ResponseUtil.ok_response()
 
 
-# TODO: optimize this function
 def upload_analysis(request, exc):
     """
     Allow to upload the analysis zip to run the simulation in the frontend,
@@ -507,7 +506,7 @@ def upload_analysis(request, exc):
 
     except Exception as err:
         logger.error(err)
-
+        print(err)
     return ResponseUtil.ko_response(messages.MALFORMED_FILE.format(f'"{uploaded_file.name}"'))
 
 
