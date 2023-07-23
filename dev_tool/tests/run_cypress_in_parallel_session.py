@@ -21,7 +21,7 @@ def disable_cypress_video(project):
 
 
 def run_cypress(cypress, project, host, browser='', enable_browser=False):
-    cmd = f'{cypress} run -P "{project} --env {host}"'
+    cmd = f'{cypress} run -P {project} --env host="{host}"'
     if enable_browser:
         cmd += ' --headed'
     if browser:
@@ -68,7 +68,6 @@ if __name__ == '__main__':
             sys_exit(1)
 
     args.project = os.path.abspath(args.project)
-    print(args.project)
 
     # disable_cypress_video()
 

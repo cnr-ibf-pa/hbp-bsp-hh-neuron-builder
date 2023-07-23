@@ -4,7 +4,7 @@
   "description": "Frontend tests for HHNB and NFE",
   "main": "index.js",
   "scripts": {
-    "test": "cypress run -P ./NFE; cypress run -P ./HHNB",
+    "test": "cypress run --quiet -P ./NFE; cypress run --quiet -P ./HHNB",
     "test-nfe": "cypress run -P ./NFE",
     "test-hhnb": "cypress run -P ./HHNB",
     "cypress": "cypress"
