@@ -52,7 +52,7 @@ BLUE_NAAS_NOT_AVAILABLE = 'The BlueNaas is temporarily not available.<br>Please,
 
 MODEL_SUCCESSFULLY_REGISTERED = '<b>Congratulation, the model was successfully registered in the Model Catalog !</b><br><br>Model\'s info and metadata can be shown <a href="{}" class="alert-link" target="_blank">here</a>.<br><br>Once the page is opened in a new tab, if a welcome message is displayed instead of the model instance, please click on the "Authorize" button if requested.<br><br>Leave the current tab open in case you need to recollect the model url.'
 MODEL_ALREADY_EXISTS = 'Model already exists on the Model Catalog.'
-
+EBRAINS_DRIVE_ERROR = '<b>Error !</b><br><br>Unable to access the EBRAINS drive to register the model.<br>Please, contact the <a href="https://ebrains.eu/support" class="alert-link" target="_blank">EBRAINS support</a> if the problem persists.'
 
 SIGNATURE_README_DESCRIPTION = \
 """

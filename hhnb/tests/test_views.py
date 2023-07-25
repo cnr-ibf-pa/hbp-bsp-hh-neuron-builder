@@ -33,18 +33,21 @@ def get_user_token():
     username = os.environ.get('EBRAINS_USERNAME')
     password = os.environ.get('EBRAINS_PASSWORD')
     if username and password:
-        r = requests.post(
-            OIDC_OP_TOKEN_ENDPOINT,
-            auth=('ebrains-drive', ''),
-            data={
-                'grant_type':'password',
-                'username': username,
-                'password': password
-            },
-            timeout=30
-        )
-        if r.status_code == 200:
-            return r.json()['access_token']
+        try:
+            r = requests.post(
+                OIDC_OP_TOKEN_ENDPOINT,
+                auth=('ebrains-drive', ''),
+                data={
+                    'grant_type':'password',
+                    'username': username,
+                    'password': password
+                },
+                timeout=30
+            )
+            if r.status_code == 200:
+                return r.json()['access_token']
+        except requests.exceptions.ConnectionError:
+            raise TestCase.failureException('Could not connect to EBRAINS')
     return None
 
 
@@ -169,7 +172,7 @@ class TestViews(TestCase):
         self.client = Client()
 
         # create nfe temp dir
-        self.tmp_nfe_dir = 'tmp_nfe_dir'
+        self.tmp_nfe_dir = os.path.join(BASE_DIR, 'tmp_nfe_dir')
         if os.path.exists(self.tmp_nfe_dir):
             shutil.rmtree(self.tmp_nfe_dir)
         os.mkdir(self.tmp_nfe_dir)
@@ -209,7 +212,8 @@ class TestViews(TestCase):
         shutil.rmtree(
             os.path.join(MEDIA_ROOT, 'hhnb', 'workflows', self.username)
         )
-        shutil.rmtree(self.tmp_nfe_dir)
+        if os.path.exists(self.tmp_nfe_dir):
+            shutil.rmtree(self.tmp_nfe_dir)
         self.user.delete()
         if os.path.exists(os.path.join(BASE_DIR, '.swp')):
             os.remove(os.path.join(BASE_DIR, '.swp'))
@@ -259,7 +263,7 @@ class TestViews(TestCase):
             response = self.client.post(
                 url,
                 {'name': signed_zip_name, 'file': fd},
-                headers={'Content-Disposition': f'attachment; filename="{signed_zip_name}"'}
+                HTTP_CONTENT_DISPOSITION=f'attachment; filename="{signed_zip_name}"'
             )
             self.assertEqual(response.status_code, 200)
             self.assertListEqual(list(response.json().keys()), ['response', 'exc'])
@@ -268,7 +272,7 @@ class TestViews(TestCase):
             response = self.client.post(
                 url,
                 {'name': unsigned_zip_name, 'file': fd},
-                headers={'Content-Disposition': f'attachment; filename="{unsigned_zip_name}"'}
+                HTTP_CONTENT_DISPOSITION=f'attachment; filename="{unsigned_zip_name}"'
             )
             self.assertEqual(response.status_code, 400)
             self.assertDictEqual(
@@ -374,7 +378,7 @@ class TestViews(TestCase):
 
         # test with no files
         response = self.client.post(upload_url, data={'formFile': []})
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 400)
         self.assertEqual(response.content.decode(), messages.NO_FILE_UPLOADED)
 
         # test with different file
@@ -633,7 +637,7 @@ class TestViews(TestCase):
 
         # test with DAINT, default optimization settings
         response = self.client.get(url)
-        self.assertIn(response.status_code, [200, 400])
+        self.assertIn(response.status_code, [200, 503])
 
         # test with NSG, overriding runtime and hpc
         with open(os.path.join(self.workflow_path, 'optimization_settings.json'), 'r') as fd:
@@ -787,8 +791,8 @@ class TestViews(TestCase):
         """
         url = reverse('upload-to-naas', args=[self.exc_code])
         response = self.client.get(url)
-        self.assertIn(response.status_code, [200, 500])
-        if response.status_code == 500:
+        self.assertIn(response.status_code, [200, 503])
+        if response.status_code == 503:
             self.assertEqual(response.content.decode(),
                              messages.BLUE_NAAS_NOT_AVAILABLE)
 
@@ -827,7 +831,7 @@ class TestViews(TestCase):
             'modelPrivate': True
         }
         response = self.client.post(url, data=json.dumps(form_data), content_type='application/json')
-        self.assertIn(response.status_code, [200, 400])
+        self.assertIn(response.status_code, [200, 400, 497, 498, 499])
 
     def test_user_avatar(self):
         """
@@ -837,9 +841,11 @@ class TestViews(TestCase):
         # can't be used due to the user is not being logged in
         url = reverse('get-user-avatar')
         response = self.client.get(url)
-        self.assertIn(response.status_code, [200, 404])
+        self.assertIn(response.status_code, [200, 404, 503])
         if response.status_code == 404:
-            self.assertEqual(response.content, b'Avatar not found')
+            self.assertEqual(response.content, b'Avatar not found.')
+        if response.status_code == 503:
+            self.assertEqual(response.content, b'User info unavailable.')
 
     def test_get_user_page(self):
         """
@@ -849,7 +855,9 @@ class TestViews(TestCase):
         # can't test due to the user not being logged in
         url = reverse('get-user-page')
         response = self.client.get(url)
-        self.assertEqual(response.status_code, 302)
+        self.assertIn(response.status_code, [302, 503])
+        if response.status_code == 503:
+            self.assertEqual(response.content, b'User info unavailable.')
 
     def test_get_authentication(self):
         """

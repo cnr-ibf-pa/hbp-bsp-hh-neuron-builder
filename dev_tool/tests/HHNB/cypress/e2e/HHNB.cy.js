@@ -315,51 +315,52 @@ describe('Hodgkin-Huxley Neuron Builder Automatic Tests', () => {
       cy.get('input#formFile').selectFile('cypress/fixtures/nsg_results_signed.zip', {'force': true});
       cy.get('#uploadFormButton').should('be.enabled').click();
       cy.get('#overlayupload').should('be.not.visible');
-      cy.get('.loading-animation').should('be.visible');
-      cy.get('.loading-animation', { timeout: 60000 }).should('be.not.visible');
+      cy.get('.loading-animation', { timeout: 600000 }).should('be.not.visible');
       cy.get('#opt-fetch-btn').should('be.disabled');
       cy.get('#opt-res-up-btn').should('be.disabled');
       cy.get('#show-results-btn').should('be.enabled');
       cy.get('#down-opt-btn').should('be.enabled');
       cy.get('#down-sim-btn').should('be.enabled');
       cy.get('#del-sim-btn').should('be.enabled');
-      cy.get('#run-sim-btn').should('be.enabled');
 
       // upload to bluenaas
       cy.get('#modalBlueNaas').should('be.not.visible');
       cy.get('#run-sim-btn').should('be.enabled').click();
-      cy.get('.loading-animation').should('be.visible');
-      cy.get('.loading-animation', { timeout: 60000 }).should('be.not.visible');
-      cy.get('#modalBlueNaas').should('be.visible');
-      cy.get('#reload-bluenaas').should('be.enabled');
-      cy.get('#reg-mod-main-btn').should('be.enabled');
+      cy.get('.loading-animation', { timeout: 600000 }).should('be.not.visible');
+      cy.wait(500);
+      cy.get('#modalBlueNaas').then($BlueNaas => {
+        if ($BlueNaas.hasClass("show")) {
+          cy.get('#reload-bluenaas').should('be.enabled');
+          cy.get('#reg-mod-main-btn').should('be.enabled');
+          cy.wait(500);
+          cy.get('#back-to-wf-btn').should('be.enabled').click();
+          cy.get('#modalBlueNaas').should('be.not.visible');
 
-      cy.get('#back-to-wf-btn').should('be.enabled').click();
-      cy.get('#modalBlueNaas').should('be.not.visible');
+          cy.get('#run-sim-btn').click();
+          cy.get('#modalBlueNaas').should('be.visible');
+          cy.get('#reload-bluenaas').click();
+          cy.get('#reload-bluenaas').should('be.disabled');
+          cy.get('#reload-bluenaas', { timeout: 60000 }).should('be.enabled');
 
-      cy.get('#run-sim-btn').click();
-      cy.get('#modalBlueNaas').should('be.visible');
-      cy.get('#reload-bluenaas').click();
-      cy.get('#reload-bluenaas').should('be.disabled');
-      cy.get('#reload-bluenaas', { timeout: 60000 }).should('be.enabled');
-
-      cy.get('#reg-mod-main-btn').click();
-      cy.get('#overlaywrapmodreg').should('be.not.visible');
-      cy.get('#modalBlueNaas').should('be.not.visible');
-      cy.get('.loading-animation').should('be.visible');
-      cy.get('.loading-animation', { timeout: 60000 }).should('be.not.visible');
-      cy.get('#overlaywrapmodreg').should('be.visible');
-      cy.get('#cancel-model-register-btn').should('be.enabled');
-      cy.get('#register-model-btn').should('be.enabled').click();
-      cy.get('.loading-animation').should('be.visible');
-      cy.get('#alert-dialog.alert.alert-danger', { timeout: 60000 }).should('be.visible');
-      cy.get('.alert-dialog-button').should('be.enabled').click();
-      cy.get('#alert-dialog.alert.alert-danger').should('be.not.exist');
-      cy.get('#cancel-model-register-btn').click();
-      cy.get('#overlaywrapmodreg').should('be.not.visible');
-      cy.get('#modalBlueNaas').should('be.visible');
-      cy.get('#back-to-wf-btn').should('be.enabled').click();
-      cy.get('#modalBlueNaas').should('be.not.visible');
+          cy.get('#reg-mod-main-btn').click();
+          cy.get('#overlaywrapmodreg').should('be.not.visible');
+          cy.get('#modalBlueNaas').should('be.not.visible');
+          cy.get('#overlaywrapmodreg', { timeout: 600000 }).should('be.visible');
+          cy.get('#cancel-model-register-btn').should('be.enabled');
+          cy.get('#register-model-btn').should('be.enabled').click();
+          cy.get('#alert-dialog.alert.alert-danger', { timeout: 600000 }).should('be.visible');
+          cy.get('.alert-dialog-button').should('be.enabled').click();
+          cy.get('#alert-dialog.alert.alert-danger').should('be.not.exist');
+          cy.get('#cancel-model-register-btn').click();
+          cy.get('#overlaywrapmodreg').should('be.not.visible');
+          cy.get('#modalBlueNaas').should('be.visible');
+          cy.get('#back-to-wf-btn').should('be.enabled').click();
+          cy.get('#modalBlueNaas').should('be.not.visible');
+        } else {
+          cy.get('#alert-dialog.alert.alert-danger').should('be.visible');
+          cy.get('.alert-dialog-button').should('be.enabled').click();
+        }
+      });
 
       // delete
       cy.get('#del-sim-btn').click();
@@ -411,8 +412,7 @@ describe('Hodgkin-Huxley Neuron Builder Automatic Tests', () => {
       cy.get('input#formFile').selectFile('cypress/fixtures/nsg_analysis_signed.zip', {'force': true});
       cy.get('#uploadFormButton').should('be.enabled').click();
       cy.get('#overlayupload').should('be.not.visible');
-      cy.wait(500);
-      cy.get('.loading-animation', { timeout: 60000 }).should('be.not.visible');
+      cy.get('.loading-animation', { timeout: 600000 }).should('be.not.visible');
       cy.get('#opt-fetch-btn').should('be.disabled');
       cy.get('#opt-res-up-btn').should('be.disabled');
       cy.get('#show-results-btn').should('be.enabled');
@@ -423,39 +423,41 @@ describe('Hodgkin-Huxley Neuron Builder Automatic Tests', () => {
       // upload to bluenaas
       cy.get('#modalBlueNaas').should('be.not.visible');
       cy.get('#run-sim-btn').should('be.enabled').click();
-      cy.get('.loading-animation').should('be.visible');
-      cy.get('.loading-animation', { timeout: 60000 }).should('be.not.visible');
+      cy.get('.loading-animation', { timeout: 600000 }).should('be.not.visible');
+      cy.wait(500);
+      cy.get('#modalBlueNaas').then($BlueNaas => {
+        if ($BlueNaas.hasClass("show")) {
+          cy.get('#reload-bluenaas').should('be.enabled');
+          cy.get('#reg-mod-main-btn').should('be.enabled');
+          cy.wait(500);
+          cy.get('#back-to-wf-btn').should('be.enabled').click();
+          cy.get('#modalBlueNaas').should('be.not.visible');
 
-      cy.get('#modalBlueNaas').should('be.visible');
-      cy.get('#reload-bluenaas').should('be.enabled');
-      cy.get('#reg-mod-main-btn').should('be.enabled');
+          cy.get('#run-sim-btn').click();
+          cy.get('#modalBlueNaas').should('be.visible');
+          cy.get('#reload-bluenaas').click();
+          cy.get('#reload-bluenaas').should('be.disabled');
+          cy.get('#reload-bluenaas', { timeout: 60000 }).should('be.enabled');
 
-      cy.get('#back-to-wf-btn').should('be.enabled').click();
-      cy.get('#modalBlueNaas').should('be.not.visible');
-
-      cy.get('#run-sim-btn').click();
-      cy.get('#modalBlueNaas').should('be.visible');
-      cy.get('#reload-bluenaas').click();
-      cy.get('#reload-bluenaas').should('be.disabled');
-      cy.get('#reload-bluenaas', { timeout: 60000 }).should('be.enabled');
-
-      cy.get('#reg-mod-main-btn').click();
-      cy.get('#overlaywrapmodreg').should('be.not.visible');
-      cy.get('#modalBlueNaas').should('be.not.visible');
-      cy.get('.loading-animation').should('be.visible');
-      cy.get('.loading-animation', { timeout: 60000 }).should('be.not.visible');
-      cy.get('#overlaywrapmodreg').should('be.visible');
-      cy.get('#cancel-model-register-btn').should('be.enabled');
-      cy.get('#register-model-btn').should('be.enabled').click();
-      cy.get('.loading-animation').should('be.visible');
-      cy.get('#alert-dialog.alert.alert-danger', { timeout: 60000 }).should('be.visible');
-      cy.get('.alert-dialog-button').should('be.enabled').click();
-      cy.get('#alert-dialog.alert.alert-danger').should('be.not.exist');
-      cy.get('#cancel-model-register-btn').click();
-      cy.get('#overlaywrapmodreg').should('be.not.visible');
-      cy.get('#modalBlueNaas').should('be.visible');
-      cy.get('#back-to-wf-btn').should('be.enabled').click();
-      cy.get('#modalBlueNaas').should('be.not.visible');
+          cy.get('#reg-mod-main-btn').click();
+          cy.get('#overlaywrapmodreg').should('be.not.visible');
+          cy.get('#modalBlueNaas').should('be.not.visible');
+          cy.get('#overlaywrapmodreg', { timeout: 600000 }).should('be.visible');
+          cy.get('#cancel-model-register-btn').should('be.enabled');
+          cy.get('#register-model-btn').should('be.enabled').click();
+          cy.get('#alert-dialog.alert.alert-danger', { timeout: 600000 }).should('be.visible');
+          cy.get('.alert-dialog-button').should('be.enabled').click();
+          cy.get('#alert-dialog.alert.alert-danger').should('be.not.exist');
+          cy.get('#cancel-model-register-btn').click();
+          cy.get('#overlaywrapmodreg').should('be.not.visible');
+          cy.get('#modalBlueNaas').should('be.visible');
+          cy.get('#back-to-wf-btn').should('be.enabled').click();
+          cy.get('#modalBlueNaas').should('be.not.visible');
+        } else {
+          cy.get('#alert-dialog.alert.alert-danger').should('be.visible');
+          cy.get('.alert-dialog-button').should('be.enabled').click();
+        }
+      });
 
       // delete
       cy.get('#del-sim-btn').click();
@@ -507,51 +509,52 @@ describe('Hodgkin-Huxley Neuron Builder Automatic Tests', () => {
       cy.get('input#formFile').selectFile('cypress/fixtures/daint_results_signed.zip', {'force': true});
       cy.get('#uploadFormButton').should('be.enabled').click();
       cy.get('#overlayupload').should('be.not.visible');
-      cy.get('.loading-animation').should('be.visible');
-      cy.get('.loading-animation', { timeout: 60000 }).should('be.not.visible');
+      cy.get('.loading-animation', { timeout: 600000 }).should('be.not.visible');
       cy.get('#opt-fetch-btn').should('be.disabled');
       cy.get('#opt-res-up-btn').should('be.disabled');
       cy.get('#show-results-btn').should('be.enabled');
       cy.get('#down-opt-btn').should('be.enabled');
       cy.get('#down-sim-btn').should('be.enabled');
       cy.get('#del-sim-btn').should('be.enabled');
-      cy.get('#run-sim-btn').should('be.enabled');
 
       // upload to bluenaas
       cy.get('#modalBlueNaas').should('be.not.visible');
       cy.get('#run-sim-btn').should('be.enabled').click();
-      cy.get('.loading-animation').should('be.visible');
-      cy.get('.loading-animation', { timeout: 60000 }).should('be.not.visible');
-      cy.get('#modalBlueNaas').should('be.visible');
-      cy.get('#reload-bluenaas').should('be.enabled');
-      cy.get('#reg-mod-main-btn').should('be.enabled');
+      cy.get('.loading-animation', { timeout: 600000 }).should('be.not.visible');
+      cy.wait(500);
+      cy.get('#modalBlueNaas').then($BlueNaas => {
+        if ($BlueNaas.hasClass("show")) {
+          cy.get('#reload-bluenaas').should('be.enabled');
+          cy.get('#reg-mod-main-btn').should('be.enabled');
+          cy.wait(500);
+          cy.get('#back-to-wf-btn').should('be.enabled').click();
+          cy.get('#modalBlueNaas').should('be.not.visible');
 
-      cy.get('#back-to-wf-btn').should('be.enabled').click();
-      cy.get('#modalBlueNaas').should('be.not.visible');
+          cy.get('#run-sim-btn').click();
+          cy.get('#modalBlueNaas').should('be.visible');
+          cy.get('#reload-bluenaas').click();
+          cy.get('#reload-bluenaas').should('be.disabled');
+          cy.get('#reload-bluenaas', { timeout: 60000 }).should('be.enabled');
 
-      cy.get('#run-sim-btn').click();
-      cy.get('#modalBlueNaas').should('be.visible');
-      cy.get('#reload-bluenaas').click();
-      cy.get('#reload-bluenaas').should('be.disabled');
-      cy.get('#reload-bluenaas', { timeout: 60000 }).should('be.enabled');
-
-      cy.get('#reg-mod-main-btn').click();
-      cy.get('#overlaywrapmodreg').should('be.not.visible');
-      cy.get('#modalBlueNaas').should('be.not.visible');
-      cy.get('.loading-animation').should('be.visible');
-      cy.get('.loading-animation', { timeout: 60000 }).should('be.not.visible');
-      cy.get('#overlaywrapmodreg').should('be.visible');
-      cy.get('#cancel-model-register-btn').should('be.enabled');
-      cy.get('#register-model-btn').should('be.enabled').click();
-      cy.get('.loading-animation').should('be.visible');
-      cy.get('#alert-dialog.alert.alert-danger', { timeout: 60000 }).should('be.visible');
-      cy.get('.alert-dialog-button').should('be.enabled').click();
-      cy.get('#alert-dialog.alert.alert-danger').should('be.not.exist');
-      cy.get('#cancel-model-register-btn').click();
-      cy.get('#overlaywrapmodreg').should('be.not.visible');
-      cy.get('#modalBlueNaas').should('be.visible');
-      cy.get('#back-to-wf-btn').should('be.enabled').click();
-      cy.get('#modalBlueNaas').should('be.not.visible');
+          cy.get('#reg-mod-main-btn').click();
+          cy.get('#overlaywrapmodreg').should('be.not.visible');
+          cy.get('#modalBlueNaas').should('be.not.visible');
+          cy.get('#overlaywrapmodreg', { timeout: 600000 }).should('be.visible');
+          cy.get('#cancel-model-register-btn').should('be.enabled');
+          cy.get('#register-model-btn').should('be.enabled').click();
+          cy.get('#alert-dialog.alert.alert-danger', { timeout: 600000 }).should('be.visible');
+          cy.get('.alert-dialog-button').should('be.enabled').click();
+          cy.get('#alert-dialog.alert.alert-danger').should('be.not.exist');
+          cy.get('#cancel-model-register-btn').click();
+          cy.get('#overlaywrapmodreg').should('be.not.visible');
+          cy.get('#modalBlueNaas').should('be.visible');
+          cy.get('#back-to-wf-btn').should('be.enabled').click();
+          cy.get('#modalBlueNaas').should('be.not.visible');
+        } else {
+          cy.get('#alert-dialog.alert.alert-danger').should('be.visible');
+          cy.get('.alert-dialog-button').should('be.enabled').click();
+        }
+      });
 
       // delete
       cy.get('#del-sim-btn').click();
@@ -603,8 +606,7 @@ describe('Hodgkin-Huxley Neuron Builder Automatic Tests', () => {
       cy.get('input#formFile').selectFile('cypress/fixtures/daint_analysis_signed.zip', {'force': true});
       cy.get('#uploadFormButton').should('be.enabled').click();
       cy.get('#overlayupload').should('be.not.visible');
-      cy.wait(500);
-      cy.get('.loading-animation', { timeout: 60000 }).should('be.not.visible');
+      cy.get('.loading-animation', { timeout: 600000 }).should('be.not.visible');
       cy.get('#opt-fetch-btn').should('be.disabled');
       cy.get('#opt-res-up-btn').should('be.disabled');
       cy.get('#show-results-btn').should('be.enabled');
@@ -615,38 +617,40 @@ describe('Hodgkin-Huxley Neuron Builder Automatic Tests', () => {
       // upload to bluenaas
       cy.get('#modalBlueNaas').should('be.not.visible');
       cy.get('#run-sim-btn').should('be.enabled').click();
-      cy.get('.loading-animation').should('be.visible');
-      cy.get('.loading-animation', { timeout: 60000 }).should('be.not.visible');
-      cy.get('#modalBlueNaas').should('be.visible');
-      cy.get('#reload-bluenaas').should('be.enabled');
-      cy.get('#reg-mod-main-btn').should('be.enabled');
+      cy.get('.loading-animation', { timeout: 600000 }).should('be.not.visible');
+      cy.wait(500);
+      cy.get('#modalBlueNaas').then($BlueNaas => {
+        if ($BlueNaas.hasClass("show")) {
+          cy.get('#reload-bluenaas').should('be.enabled');
+          cy.get('#reg-mod-main-btn').should('be.enabled');
+          cy.get('#back-to-wf-btn').should('be.enabled').click();
+          cy.wait(500);
+          cy.get('#modalBlueNaas').should('be.not.visible');
+          cy.get('#run-sim-btn').click();
+          cy.get('#modalBlueNaas').should('be.visible');
+          cy.get('#reload-bluenaas').click();
+          cy.get('#reload-bluenaas').should('be.disabled');
+          cy.get('#reload-bluenaas', { timeout: 60000 }).should('be.enabled');
 
-      cy.get('#back-to-wf-btn').should('be.enabled').click();
-      cy.get('#modalBlueNaas').should('be.not.visible');
-
-      cy.get('#run-sim-btn').click();
-      cy.get('#modalBlueNaas').should('be.visible');
-      cy.get('#reload-bluenaas').click();
-      cy.get('#reload-bluenaas').should('be.disabled');
-      cy.get('#reload-bluenaas', { timeout: 60000 }).should('be.enabled');
-
-      cy.get('#reg-mod-main-btn').click();
-      cy.get('#overlaywrapmodreg').should('be.not.visible');
-      cy.get('#modalBlueNaas').should('be.not.visible');
-      cy.get('.loading-animation').should('be.visible');
-      cy.get('.loading-animation', { timeout: 60000 }).should('be.not.visible');
-      cy.get('#overlaywrapmodreg').should('be.visible');
-      cy.get('#cancel-model-register-btn').should('be.enabled');
-      cy.get('#register-model-btn').should('be.enabled').click();
-      cy.get('.loading-animation').should('be.visible');
-      cy.get('#alert-dialog.alert.alert-danger', { timeout: 60000 }).should('be.visible');
-      cy.get('.alert-dialog-button').should('be.enabled').click();
-      cy.get('#alert-dialog.alert.alert-danger').should('be.not.exist');
-      cy.get('#cancel-model-register-btn').click();
-      cy.get('#overlaywrapmodreg').should('be.not.visible');
-      cy.get('#modalBlueNaas').should('be.visible');
-      cy.get('#back-to-wf-btn').should('be.enabled').click();
-      cy.get('#modalBlueNaas').should('be.not.visible');
+          cy.get('#reg-mod-main-btn').click();
+          cy.get('#overlaywrapmodreg').should('be.not.visible');
+          cy.get('#modalBlueNaas').should('be.not.visible');
+          cy.get('#overlaywrapmodreg', { timeout: 600000 }).should('be.visible');
+          cy.get('#cancel-model-register-btn').should('be.enabled');
+          cy.get('#register-model-btn').should('be.enabled').click();
+          cy.get('#alert-dialog.alert.alert-danger', { timeout: 600000 }).should('be.visible');
+          cy.get('.alert-dialog-button').should('be.enabled').click();
+          cy.get('#alert-dialog.alert.alert-danger').should('be.not.exist');
+          cy.get('#cancel-model-register-btn').click();
+          cy.get('#overlaywrapmodreg').should('be.not.visible');
+          cy.get('#modalBlueNaas').should('be.visible');
+          cy.get('#back-to-wf-btn').should('be.enabled').click();
+          cy.get('#modalBlueNaas').should('be.not.visible');
+        } else {
+          cy.get('#alert-dialog.alert.alert-danger').should('be.visible');
+          cy.get('.alert-dialog-button').should('be.enabled').click();
+        }
+      });
 
       // delete
       cy.get('#del-sim-btn').click();

@@ -11,7 +11,6 @@ from hhnb.core.lib.model import *
 from hh_neuron_builder.settings import TMP_DIR
 
 from filecmp import cmp as compare_files
-from multipledispatch import dispatch
 from uuid import uuid4 as uuid
 
 import shutil
@@ -413,8 +412,7 @@ class ModelUtil:
         return model_dir
 
     @staticmethod
-    @dispatch(str, str, str)
-    def zip_model(src_dir, dst_dir=None, zip_name=None):
+    def zip_model(src_dir: str, dst_dir=None, zip_name=None):
         """
         This static method zip a Model object.
         It takes the Model root folder as source dir and the optional
@@ -436,10 +434,8 @@ class ModelUtil:
             zip_name = src_dir.split('/')[-1]
         shutil.make_archive(os.path.join(dst_dir, zip_name), 'zip', src_dir)
 
-    # TODO: to change
     @staticmethod
-    @dispatch(Model, str, str)
-    def zip_model(model, dst_dir=None, zip_name=None):
+    def zip_model(model: Model, dst_dir=None, zip_name=None):
         """
         This static method zip a Model object.
         It takes the Model object directly as model and the optional

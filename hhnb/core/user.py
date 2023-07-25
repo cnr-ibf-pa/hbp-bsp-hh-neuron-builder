@@ -85,14 +85,17 @@ class EbrainsUser:
             with open(os.path.join(self._cache_dir, 'avatar.png'), 'rb') as fd:
                 return fd.read()
 
-        r = requests.get(url=self._AVATAR_URL.format(self.get_username()),
-                         verify=False)
-        if r.status_code == 200:
-            with open(os.path.join(self._cache_dir, 'avatar.png'), 'wb') as fd:
-                fd.write(r.content)
-            return r.content
-
-        raise AvatarNotFoundError('Avatar not found')
+        try:
+            r = requests.get(url=self._AVATAR_URL.format(self.get_username()),
+                            verify=False)
+            if r.status_code == 200:
+                with open(os.path.join(self._cache_dir, 'avatar.png'), 'wb') as fd:
+                    fd.write(r.content)
+                return r.content
+            else:
+                raise AvatarNotFoundError('Avatar not found')
+        except requests.exceptions.ConnectionError:
+            raise AvatarNotFoundError('Avatar not found')
 
     def get_user_page(self):
         """ Returns the Ebrains profile page of the current user. """

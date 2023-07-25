@@ -8,7 +8,9 @@ def createDirIfNotExists(mpath):
     """Check if a directory exists, if not, create it
     """
 
-    if not os.path.exists(mpath):
+    if os.path.exists(mpath):
+        return
+    else:
         os.makedirs(mpath)
 
 

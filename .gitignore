@@ -36,3 +36,6 @@ node_modules/
 # remove tests' screenshots
 dev_tool/tests/NFE/cypress/screenshot/
 dev_tool/tests/HHNB/cypress/screenshot/
+
+geckodriver.log
+tmp_nfe_dir/

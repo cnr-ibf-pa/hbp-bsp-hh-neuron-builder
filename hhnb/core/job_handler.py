@@ -5,6 +5,7 @@ from hhnb.utils import messages
 from collections import OrderedDict
 
 import pyunicore.client as unicore_client
+from pyunicore.credentials import AuthenticationFailedException
 import xml.etree.ElementTree
 import requests
 import os
@@ -408,10 +409,13 @@ class JobHandler:
         self.UnicoreClientException
             if something happens during the client initialization.
         """
+        client = None
         transport = unicore_client.Transport(token)
         if hpc == self._DAINT_CSCS:
             try:
                 client = unicore_client.Client(transport, self._DAINT_URL)
+            except AuthenticationFailedException as err:
+                raise self.UnicoreClientException(messages.USER_LOGIN_ERROR)
             except Exception as err:
                 if str(err).find('500') >= 0:
                     raise self.HPCException(messages.HPC_NOT_AVAILABLE.format(hpc))
@@ -422,6 +426,9 @@ class JobHandler:
                 logger.error(f'KeyError when looking for {hpc} on unicore_client.')
                 raise self.HPCException(messages.HPC_NOT_AVAILABLE.format(hpc))
             client = unicore_client.Client(transport, hpc_url)
+
+        if not client:
+            raise self.UnicoreClientException
         logger.info(f'UNICORE Client initialized for {hpc}')
         logger.debug(f'UNICORE Client access info {client.access_info()}')
         if client.access_info()['role']['selected'] == 'anonymous':

@@ -54,6 +54,7 @@ class MessageDialog {
     }
 
     static async #openDialog(level, text) {
+        console.log(text);
         if (text.startsWith("{\"refresh_url\"")) {
             return false;
         }

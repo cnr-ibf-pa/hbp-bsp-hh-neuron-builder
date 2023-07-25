@@ -46,7 +46,7 @@ def session_refresh(request):
         refresh_url = request.POST.get('refresh_url')
         r = requests.get(url=refresh_url, verify=False)
         if r.status_code == 200:
-            return ResponseUtil.ok_response('')
+            return ResponseUtil.ok_response()
 
     return ResponseUtil.ko_response()
 
@@ -389,7 +389,7 @@ def upload_features(request, exc):
     # get uploaded features
     uploaded_files = request.FILES.getlist('formFile')
     if len(uploaded_files) == 0:
-        return ResponseUtil.ok_response(messages.NO_FILE_UPLOADED)
+        return ResponseUtil.ko_response(messages.NO_FILE_UPLOADED)
     if len(uploaded_files) > 2:
         return ResponseUtil.ko_response(messages.NO_MORE_THEN.format('2 files'))
 
@@ -416,7 +416,7 @@ def upload_model(request, exc):
 
     uploaded_files = request.FILES.getlist('formFile')
     if len(uploaded_files) == 0:
-        return ResponseUtil.ok_response(messages.NO_FILE_UPLOADED)
+        return ResponseUtil.ko_response(messages.NO_FILE_UPLOADED)
     if len(uploaded_files) != 1:
         return ResponseUtil.ko_response(messages.ONLY_ACCEPTED_FILE.format('"model.zip"'))
 
@@ -462,7 +462,7 @@ def upload_analysis(request, exc):
 
     uploaded_files = request.FILES.getlist('formFile')
     if len(uploaded_files) == 0:
-        return ResponseUtil.ok_response(messages.NO_FILE_UPLOADED)
+        return ResponseUtil.ko_response(messages.NO_FILE_UPLOADED)
     if len(uploaded_files) != 1:
         return ResponseUtil.ko_response(messages.NO_MORE_THEN.format('a ".zip" file'))
 
@@ -502,7 +502,7 @@ def upload_analysis(request, exc):
         if all([folder in os.listdir(unzip_dir_path) for folder in simulation_folder_list]):
             shutil.move(unzip_dir_path, workflow.get_analysis_dir())
 
-        return ResponseUtil.ok_response('')
+        return ResponseUtil.ok_response()
 
     except Exception as err:
         logger.error(err)
@@ -562,7 +562,7 @@ def upload_files(request, exc):
         os.remove(full_path)
         return ResponseUtil.ko_response('<b>JSON Decode Error:</b><br><br>' + str(err) + '.')
 
-    return ResponseUtil.ok_response('')
+    return ResponseUtil.ok_response()
 
 
 def generate_download_file(request, exc):
@@ -682,7 +682,7 @@ def delete_files(request, exc):
     file_list = json.loads(request.body).get('file_list')
 
     if file_list and len(file_list) <= 0:
-        return ResponseUtil.ok_response(messages.NO_FILE_TO_DELETE)
+        return ResponseUtil.ko_response(messages.NO_FILE_TO_DELETE)
 
     workflow, user = get_workflow_and_user(request, exc)
     logger.info(LOG_ACTION.format(user, 'deleting %s from %s' % (file_list, workflow)))
@@ -813,10 +813,13 @@ def run_optimization(request, exc):
 
     try:
         response = JobHandler.submit_job(hhnb_user, zip_file, optimization_settings)
+    except JobHandler.UnicoreClientException as err:
+        logger.error(err)
+        return ResponseUtil.ko_response(503, str(f'<b>{err}</b>'))
     except JobHandler.HPCException as err:
-        return ResponseUtil.ko_response(str(err))
+        return ResponseUtil.ko_response(503, str(err))
     except JobHandler.ServiceAccountException as err:
-        return ResponseUtil.ko_response(messages.HPC_NOT_AVAILABLE.format('SERVICE ACCOUNT'))
+        return ResponseUtil.ko_response(503, messages.HPC_NOT_AVAILABLE.format('SERVICE ACCOUNT'))
     if response.status_code == 200:
         workflow.add_optimization_settings({'job_submitted': True})
     return response
@@ -927,10 +930,11 @@ def run_analysis(request, exc):
 
 
         WorkflowUtil.run_analysis(workflow, job_output, copy)
-        return ResponseUtil.ok_response('')
+        return ResponseUtil.ok_response()
 
     except MechanismsProcessError as err:
         logger.error(err)
+        print(err)
         workflow.clean_analysis_dir()
         return ResponseUtil.ko_response(498, messages.MECHANISMS_PROCESS_ERROR.format(err.stderr))
 
@@ -984,7 +988,7 @@ def upload_to_naas(request, exc):
             return ResponseUtil.ok_response(naas_model)
     except requests.exceptions.ConnectionError as err:
         logger.error(err)
-        return ResponseUtil.ko_response(500, messages.BLUE_NAAS_NOT_AVAILABLE)
+        return ResponseUtil.ko_response(503, messages.BLUE_NAAS_NOT_AVAILABLE)
 
     return ResponseUtil.ko_response(r.status_code, r.content)
 
@@ -1001,7 +1005,7 @@ def get_model_catalog_attribute_options(request):
         options = mc.get_attribute_options()
         return ResponseUtil.ok_json_response(options)
     except Exception as err:
-        logger.error('get_model_catalog_attribute_options(): %s' % err)
+        logger.error('get_model_catalog_attribute_options(): %s' % str(err))
         return ResponseUtil.ko_response(messages.GENERAL_ERROR)
 
 
@@ -1088,20 +1092,20 @@ def register_model(request, exc):
 
     except EbrainsDriveClientError as err:
         logger.error(err)
-        return ResponseUtil.ko_response(err.code, err.message)
+        return ResponseUtil.ko_response(499, messages.EBRAINS_DRIVE_ERROR)
 
     except FileExistsError as err:
         logger.error(err)
-        return ResponseUtil.ko_response(messages.MODEL_ALREADY_EXISTS)
+        return ResponseUtil.ko_response(498, messages.MODEL_ALREADY_EXISTS)
 
     except EnvironmentError as err:
         logger.error(err)
-        return ResponseUtil.ko_response(messages.MODEL_CATALOG_INVALID_CREDENTIALS)
+        return ResponseUtil.ko_response(497, messages.MODEL_CATALOG_INVALID_CREDENTIALS)
 
     except Exception as err:
         logger.error(err)
         uploaded_model.delete()
-        return ResponseUtil.ko_response(f'<b>Error !</b><br><br>{str(err)}')
+        return ResponseUtil.ko_response(400, f'<b>Error !</b><br><br>{str(err)}')
 
     return ResponseUtil.ko_response(messages.GENERAL_ERROR)
 
@@ -1117,7 +1121,9 @@ def get_user_avatar(request):
                                          content_type='image/png',
                                          charset='UTF-8')
     except AvatarNotFoundError:
-        return ResponseUtil.ko_response(404, 'Avatar not found')
+        return ResponseUtil.ko_response(404, 'Avatar not found.')
+    except UserInfoError:
+        return ResponseUtil.ko_response(503, 'User info unavailable.')
 
 
 def get_user_page(request):
@@ -1125,7 +1131,10 @@ def get_user_page(request):
     Redirect to the Ebrains user page.
     """
     hhnb_user = HhnbUser.get_user_from_request(request)
-    return redirect(hhnb_user.get_ebrains_user().get_user_page())
+    try:
+        return redirect(hhnb_user.get_ebrains_user().get_user_page())
+    except UserInfoError:
+        return ResponseUtil.ko_response(503, 'User info unavailable.')
 
 
 def get_authentication(request):
@@ -1328,7 +1337,7 @@ def hhf_save_config_file(request, folder, config_file, exc):
             json.dump({main_key: jj} if main_key else jj, fd)
             fd.close()
 
-        return ResponseUtil.ok_response('')
+        return ResponseUtil.ok_response()
     except json.JSONDecodeError:
         return ResponseUtil.ko_response(messages.MALFORMED_FILE.format(config_file))
     except FileNotFoundError:

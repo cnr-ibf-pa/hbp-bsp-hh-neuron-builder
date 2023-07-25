@@ -4,7 +4,6 @@ This package provide a useful class to handle HttpResponse in a easy way.
 
 
 from django.http.response import JsonResponse, HttpResponse, FileResponse, HttpResponseNotAllowed
-from multipledispatch import dispatch
 import os
 
 
@@ -65,137 +64,147 @@ class ResponseUtil:
         return HttpResponse(content, *args, **kwargs)
 
     @staticmethod
-    @dispatch()
-    def ok_response():
+    def ok_response(*args):
         """
-        Returns a 200 HttpResponse.
+        Generate an OK response for the given arguments.
+
+        Parameters
+        ----------
+        *args : variable-length argument list
+            Variable length arguments. Accepts 0, 1, or 2 arguments.
+            - If no arguments are provided, returns a 200 OK response.
+            - If a single integer argument is provided:
+                - If the argument is 204, returns a 204 No Content response.
+                - Otherwise, returns a response with the provided status code and 'OK' message.
+            - If a single string argument is provided, returns a response with a 200 status code and the provided message.
+            - If two arguments are provided:
+                - If the first argument is an integer and the second argument is a string, returns a response with the provided status code and message.
+                - If the first argument is a string and the second argument is an integer, returns a response with the provided status code and message (reversed order).
+
+        Returns
+        -------
+        HttpResponse
+            An HTTP response with the appropriate status code and message.
+
+        Raises
+        ------
+        TypeError
+            If the number or type of arguments is invalid.
         """
-        return _http_response(200, b'OK')
+
+        if len(args) == 0:
+            return _http_response(200, 'OK')
+        elif len(args) == 1:
+            if type(args[0]) == int:
+                if args[0] == 204:
+                    return _http_response(args[0], 'No content')
+                else:
+                    return _http_response(args[0], 'OK')
+            if type(args[0]) == str:
+                return _http_response(200, args[0])
+        elif len(args) == 2:
+            if type(args[0]) == int and \
+                type(args[1]) == str:
+                return _http_response(args[0], args[1])
+            elif type(args[0]) == str and \
+                type(args[1]) == int:
+                return _http_response(args[1], args[0])
+            else:
+                raise TypeError('ok_response() takes 1 int and 1 str and 2 int or 2 str was given.')
 
     @staticmethod
-    @dispatch(str)
-    def ok_response(msg):
+    def ko_response(*args):
         """
-        Returns a 200 HttpResponse with a custom message.
-        """
-        return _http_response(200, msg)
-    
-    @staticmethod
-    def no_content():
-        """
-        Returns a 204 No Content HttpResponse with
+        This static method is used to generate a KO response based on the given arguments.
+
+        Parameters
+        ----------
+        *args : tuple
+            Variable length argument list. The arguments can be of different types and lengths.
+            The function supports the following argument combinations:
+            - No arguments: returns a 400 'KO' response.
+            - One integer argument: returns a response with the given status code and a 'KO' message.
+            - One string argument: returns a 400 response with the given error message.
+            - Two arguments, an integer followed by a string: returns a response with the given status code and error message.
+            - Two arguments, a string followed by an integer: returns a response with the given status code and error message.
+
+        Returns
+        -------
+        response : Response
+            A response object with the appropriate status code and message.
+
+        Raises
+        ------
+        TypeError
+            If the argument combinations are not supported.
         """
 
-    @staticmethod
-    @dispatch(int, str)
-    def ok_response(code, msg):
-        """
-        Returns a 200 HttpResponse with a custom message.
-        """
-        return _http_response(code, msg)
+        if len(args) == 0:
+            return _http_response(400, 'KO')
+        elif len(args) == 1:
+            if type(args[0]) == int:
+                if args[0] == 404:
+                    return _http_response(args[0], 'Not found')
+                else:
+                    return _http_response(args[0], 'KO')
+            if type(args[0]) == str:
+                return _http_response(400, args[0])
+        elif len(args) == 2:
+            if type(args[0]) == int and \
+                type(args[1]) == str:
+                return _http_response(args[0], args[1])
+            elif type(args[0]) == str and \
+                type(args[1]) == int:
+                return _http_response(args[1], args[0])
+            else:
+                raise TypeError('ok_response() takes 1 int and 1 str and 2 int or 2 str was given.')
 
     @staticmethod
-    @dispatch()
-    def ko_response():
+    def ok_json_response(dict={}, safe=False):
         """
-        Returns a 400 HttpResponse.
+        Generate the function comment for the given function body in a markdown code block with the correct language syntax.
+
+        Parameters
+        ----------
+        dict : dict, optional
+            A dictionary containing the response data (default is an empty dictionary).
+        safe : bool, optional
+            A boolean indicating whether the response data should be sanitized (default is False).
+
+        Returns
+        -------
+        dict
+            The JSON response containing the response data.
         """
-        return _http_response(400, b'KO')
+
+        return _json_response(200, dict, safe)
 
     @staticmethod
-    @dispatch(int)
-    def ko_response(code):
+    def ko_json_response(dict={}, safe=False):
         """
-        Returns an error HttpResponse with a custom error code.
-        """
-        return _http_response(code, b'KO')
+        A static method that generates a JSON response with a status code of 400.
 
+        Parameters
+        ----------
+        dict : dict, optional
+            A dictionary containing the JSON data to be returned in the response (default: empty dictionary)
+        safe : bool, optional
+            A boolean indicating whether the JSON data should be safely encoded (default: False)
 
-    @staticmethod
-    @dispatch(int, str)
-    def ko_response(code, msg):
+        Returns
+        -------
+        dict
+            The JSON response with a status code of 400
         """
-        Returns an error HttpResponse with a custom error code and message.
-        """
-        return _http_response(code, msg)
 
-    @staticmethod
-    @dispatch(str)
-    def ko_response(msg):
-        """
-        Returns a 400 HttpResponse with a custom message.
-        """
-        return _http_response(400, msg)
-
-    @staticmethod
-    @dispatch()
-    def ok_json_response():
-        """
-        Returns a 200 JsonResponse with an empty json.
-        """
-        return _json_response(200, {})
-
-    @staticmethod
-    @dispatch(str)
-    def ok_json_response(data):
-        """
-        Returns a 200 JsonResponse with a custom json.
-        """
-        return _json_response(200, data)
-
-    @staticmethod
-    @dispatch(dict)
-    def ok_json_response(data):
-        """
-        Returns a 200 JsonResponse with a custom json.
-        """
-        return _json_response(200, data)
-
-    @staticmethod
-    @dispatch(dict, bool)
-    def ok_json_response(data, safe):
-        """
-        Returns a 200 JsonResponse with a custom json.
-        """
-        return _json_response(200, data, safe)
-
-    @staticmethod
-    @dispatch(str)
-    def ko_json_response(data):
-        """
-        Returns a 400 JsonResponse with a custom json.
-        """
-        return _json_response(400, data)
-
-    @staticmethod
-    @dispatch(dict)
-    def ko_json_response(data):
-        """
-        Returns a 400 JsonResponse with a custom json.
-        """
-        return _json_response(400, data)
-
-    @staticmethod
-    @dispatch(int, str)
-    def ko_json_response(code, data):
-        """
-        Returns a JsonResponse with a custom error code and json.
-        """
-        return _json_response(code, data)
-
-    @staticmethod
-    @dispatch(int, dict)
-    def ko_json_response(code, data):
-        """
-        Returns a JsonResponse with a custom error code and json.
-        """
-        return _json_response(code, data)
+        return _json_response(400, dict, safe)
 
     @staticmethod
     def file_response(file_path):
         """
         Returns a simple FileResponse.
         """
+
         return _file_response(file_path)
 
     @staticmethod
@@ -203,6 +212,7 @@ class ResponseUtil:
         """
         Returns a 404 HttpResponse when the "exc" code is not found.
         """
+
         return _http_response(404, 'exc code not found')
 
     @staticmethod
@@ -210,4 +220,5 @@ class ResponseUtil:
         """
         Returns an error HttpResponse when the request's method is not allowed.
         """
+
         return HttpResponseNotAllowed(allowed_methods)
