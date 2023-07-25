@@ -232,6 +232,8 @@ LOGIN_URL = 'oidc_authentication_init'
 
 # Set LOG_ROOT_PATH for logging files
 LOG_ROOT_PATH = conf.LOG_ROOT_PATH
+if not os.path.exists(LOG_ROOT_PATH):
+    os.makedirs(LOG_ROOT_PATH)
 
 LOGGING = {
     'version': 1,
