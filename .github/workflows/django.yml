@@ -40,5 +40,5 @@ jobs:
         MODEL_CATALOG_PASSWORD: ${{ secrets.MODEL_CATALOG_PASSWORD }}
       run: |
         python manage.py migrate
-        python manage.py migrate --sync-db
+        python manage.py migrate --run-syncdb
         python manage.py test
