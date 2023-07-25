@@ -35,6 +35,9 @@ jobs:
         NSG_USERNAME: ${{ secrets.NSG_USERNAME }}
         NSG_PASSWORD: ${{ secrets.NSG_PASSWORD }}
         FERNET_KEY: ${{ secrets.FERNET_KEY }}
+        NSG_KEY: ${{ secrets.NSG_KEY }}
+        MODEL_CATALOG_USERNAME: ${{ secrets.MODEL_CATALOG_USERNAME }}
+        MODEL_CATALOG_PASSWORD: ${{ secrets.MODEL_CATALOG_PASSWORD }}
       run: |
         python manage.py migrate
         python manage.py migrate --sync-db
