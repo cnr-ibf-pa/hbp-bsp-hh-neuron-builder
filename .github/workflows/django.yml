@@ -39,6 +39,7 @@ jobs:
         MODEL_CATALOG_USERNAME: ${{ secrets.MODEL_CATALOG_USERNAME }}
         MODEL_CATALOG_PASSWORD: ${{ secrets.MODEL_CATALOG_PASSWORD }}
       run: |
+        mv hh_neuron_builder/config/dev_config.py.example hh_neuron_builder/config/dev_config.py
         python manage.py migrate
         python manage.py migrate --sync-db
         python manage.py test
