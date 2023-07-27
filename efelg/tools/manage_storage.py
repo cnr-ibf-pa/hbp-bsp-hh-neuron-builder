@@ -5,13 +5,12 @@ import shutil
 
 
 def createDirIfNotExists(mpath):
-    """Check if a directory exists, if not, create it
+    """
+    Check if a directory exists, if not, create it
     """
 
-    if os.path.exists(mpath):
-        return
-    else:
-        os.makedirs(mpath)
+    if not os.path.exists(mpath):
+        os.makedirs(mpath, exist_ok=True)
 
 
 class EfelStorage():

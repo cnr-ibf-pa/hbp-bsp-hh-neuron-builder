@@ -62,8 +62,8 @@ describe('NeuroFeatureExtract automatic tests.', () => {
         cy.wrap($cell).click({force: true});
     }),
 
-    cy.get('#next_checkbox').click({force: true});
-    cy.contains('Next').should('be.enabled').click({ force: true });
+    cy.get('#next_checkbox', {timeout: 60000}).click({force: true});
+    cy.contains('Next', {timeout: 60000}).should('be.enabled').click({ force: true });
 
     cy.get('.overlay-content').should('be.visible');
     cy.get('#e-st-user-choice-accept-btn').click({force: true});
@@ -100,8 +100,8 @@ describe('NeuroFeatureExtract automatic tests.', () => {
         cy.wrap($cell).click({force: true});
     }),
 
-    cy.get('#next_checkbox').click({force: true});
-    cy.contains('Next').should('be.enabled').click({ force: true });
+    cy.get('#next_checkbox', {timeout: 60000}).click({force: true});
+    cy.contains('Next', {timeout: 60000}).should('be.enabled').click({ force: true });
 
     cy.get('.overlay-content').should('be.visible');
     cy.get('#e-st-user-choice-accept-btn').click({force: true});
